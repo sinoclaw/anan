@@ -90,10 +90,14 @@ class SelfRegulator:
 
     # ------------------------------------------------------------------
     async def attach(self) -> None:
-        """Subscribe to L6.metacognition.warn — react when something's wrong."""
+        """Subscribe to L6.metacognition.warn (reactive) and L5.pattern.discovered (proactive)."""
         async def on_warn(event: Event):
             await self._react(event)
+        async def on_pattern_discovered(event: Event):
+            await self._on_causal_pattern(event)
         self._unsub = self._bus.subscribe("L6.metacognition.warn", on_warn)
+        self._unsub_l5 = self._bus.subscribe("L5.pattern.discovered", on_pattern_discovered)
+        self._learned_risky_patterns = set()  # (antecedent, consequent) we already acted on
 
         # If WM is wired, swap in our wrapping salience_fn (preserves original)
         if self._wm is not None:
@@ -110,10 +114,61 @@ class SelfRegulator:
         if self._unsub:
             self._unsub()
             self._unsub = None
+        if hasattr(self, '_unsub_l5') and self._unsub_l5:
+            self._unsub_l5()
+            self._unsub_l5 = None
         # Restore original salience fn so we don't leak state
         if self._wm is not None and self._original_salience_fn is not None:
             self._wm.salience_fn = self._original_salience_fn
             self._original_salience_fn = None
+
+    async def _on_causal_pattern(self, event: Event) -> None:
+        """L5 discovered a causal pattern — evaluate if we should act preemptively.
+
+        Only acts on high-confidence patterns where:
+        - consequent is a known negative event (L6.metacognition.warn, bus errors)
+        - we haven't already acted on this pattern (avoid spam)
+        """
+        payload = event.payload
+        antecedent = payload.get("antecedent", "")
+        consequent = payload.get("consequent", "")
+        confidence = payload.get("confidence", 0.0)
+        lift = payload.get("lift", 1.0)
+
+        # Skip if already acted, or confidence too low
+        pattern_key = (antecedent, consequent)
+        if pattern_key in self._learned_risky_patterns:
+            return
+        if confidence < 0.8 or lift < 2.0:
+            return
+
+        # Is consequent something bad we can prevent?
+        is_bad = False
+        action = None
+        detail = {}
+
+        # Pattern: X → L6.metacognition.* (X causes metacognition warnings)
+        # PatternMiner abstracts to prefix, so it's "L6.metacognition.*", not "L6.metacognition.warn"
+        if "L6.metacognition" in consequent:
+            # Extract which layer is the antecedent (e.g. "L9.self.*" → "L9")
+            layer = antecedent.split(".")[0]
+            if layer in ("L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9"):
+                is_bad = True
+                action = "attenuate_layer_salience"
+                detail = {
+                    "layer": layer,
+                    "rationale": f"[proactive from L5 insight] {antecedent} → {consequent} (置信={confidence:.0%}, 提升={lift:.1f}x)",
+                    "factor": self._sal_atten,
+                }
+
+        if is_bad and action and self._wm is not None:
+            self._learned_risky_patterns.add(pattern_key)
+            await self._apply_layer_attenuation(detail["layer"], detail["factor"])
+            await self._record_and_emit(
+                trigger=f"L5 insight: {antecedent} → {consequent}",
+                action=action,
+                detail=detail,
+            )
 
     # ------------------------------------------------------------------
     async def _react(self, warn_event: Event) -> None:
@@ -150,7 +205,13 @@ class SelfRegulator:
         layer = self._extract_layer(trigger)
         if not layer:
             return
-        new_atten = self._layer_atten.get(layer, 1.0) * self._sal_atten
+        await self._apply_layer_attenuation(layer, self._sal_atten, trigger)
+
+    async def _apply_layer_attenuation(self, layer: str, factor: float, trigger: str = "proactive") -> None:
+        """Apply salience attenuation to a layer, with floor."""
+        if self._wm is None:
+            return
+        new_atten = self._layer_atten.get(layer, 1.0) * factor
         # Floor it so we don't kill a layer entirely
         new_atten = max(new_atten, 0.05)
         self._layer_atten[layer] = new_atten
@@ -158,7 +219,8 @@ class SelfRegulator:
         detail = {
             "layer": layer,
             "factor": round(new_atten, 4),
-            "rationale": f"L6 说 {layer} 在 WM 占主导，降权让别的层有机会",
+            "rationale": f"L6 说 {layer} 在 WM 占主导，降权让别的层有机会" if trigger.startswith("注意力倾斜")
+                        else trigger,
         }
         await self._record_and_emit(trigger, action, detail)
 
