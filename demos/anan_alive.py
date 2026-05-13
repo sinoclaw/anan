@@ -31,6 +31,7 @@ from kernel.event_bus import Event, EventBus, get_bus
 from adapters.memory_consolidation import JSONLBackend, MemoryConsolidationAdapter
 from adapters.reflection_dream import reflective_sleep_cycle
 from layers.L3_working_memory import WorkingMemory
+from layers.L4_proactive import ProactiveObserver
 from layers.L6_metacognition import Mirror
 from layers.L7_will import SelfRegulator
 from layers.L8_intent import IntentStack
@@ -106,6 +107,20 @@ def setup_observers(bus: EventBus) -> None:
         p = e.payload
         print(f"{_ts()} 💪 L8 加固 — {p['description']} → 强度={p['strength']:.2f} (×{p['reinforce_count']})")
 
+    def on_l8_abandoned(e: Event):
+        p = e.payload
+        print(f"{_ts()} 🍃 L8 放下 — {p['description']} (原因: {p.get('abandon_reason')})")
+
+    def on_l4_verified(e: Event):
+        p = e.payload
+        print(f"{_ts()} 👁️  L4 求证 ✅ — {p['intent_description']}")
+        print(f"        → {p['evidence']}")
+
+    def on_l4_falsified(e: Event):
+        p = e.payload
+        print(f"{_ts()} 👁️  L4 求证 ❌ — {p['intent_description']}")
+        print(f"        → {p['evidence']}")
+
     bus.subscribe("L0.circadian.wake", on_wake)
     bus.subscribe("L0.circadian.bedtime", on_bedtime)
     bus.subscribe("L1.sleep.*.consolidated", on_l1_consolidated)
@@ -116,6 +131,9 @@ def setup_observers(bus: EventBus) -> None:
     bus.subscribe("L7.regulator.acted", on_l7_acted)
     bus.subscribe("L8.intent.proposed", on_l8_proposed)
     bus.subscribe("L8.intent.reinforced", on_l8_reinforced)
+    bus.subscribe("L8.intent.abandoned", on_l8_abandoned)
+    bus.subscribe("L4.observation.verified", on_l4_verified)
+    bus.subscribe("L4.observation.falsified", on_l4_falsified)
 
 
 async def main() -> None:
@@ -180,6 +198,13 @@ async def main() -> None:
     l8 = IntentStack(bus=bus, capacity=7, initial_strength=0.4, reinforce_alpha=0.35)
     await l8.attach()
 
+    # Wire L4 (proactive observer — runs probes when L8 snapshots, satisfies/reinforces intents)
+    l4 = ProactiveObserver(
+        bus=bus, intent_stack=l8, working_memory=wm, self_model=l9.model,
+        auto_satisfy=True, reinforce_on_falsify=True,
+    )
+    await l4.attach()
+
     print(f"{_ts()} 🌱 anan 开始自主运行...")
     print()
     log = await loop.run()
@@ -214,6 +239,7 @@ async def main() -> None:
     print(f"{_ts()} 🧩 L3 working memory: {wm.stats()}")
     print(f"{_ts()} 🔧 L7 self-regulator: {l7.stats()}")
     print(f"{_ts()} 💭 L8 intent stack: {l8.stats()}")
+    print(f"{_ts()} 👁️  L4 observer:    {l4.stats()}")
     print()
 
     print(f"{_ts()} 🎯 anan 现在说『我想要什么』:")
@@ -241,6 +267,7 @@ async def main() -> None:
     print("✅ anan 活完了 5 个周期。L0→L1→L2→L3→L6→L7→L8→L9 闭环走通了。")
     print("   反射 → 持续渴望 → 梦里加固 → 长成身份。anan 现在会想事了.")
 
+    await l4.detach()
     await l8.detach()
     await l7.detach()
     await mirror.detach()
