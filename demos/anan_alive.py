@@ -33,6 +33,7 @@ from adapters.reflection_dream import reflective_sleep_cycle
 from layers.L3_working_memory import WorkingMemory
 from layers.L6_metacognition import Mirror
 from layers.L7_will import SelfRegulator
+from layers.L8_intent import IntentStack
 from layers.L9_self.self_model import SelfModelLive
 
 
@@ -97,6 +98,14 @@ def setup_observers(bus: EventBus) -> None:
             print(f"{_ts()} 🔧 L7 调节 — {p['action']}: {d}")
         print()
 
+    def on_l8_proposed(e: Event):
+        p = e.payload
+        print(f"{_ts()} 💭 L8 新意图 — {p['description']} (强度={p['strength']:.2f})")
+
+    def on_l8_reinforced(e: Event):
+        p = e.payload
+        print(f"{_ts()} 💪 L8 加固 — {p['description']} → 强度={p['strength']:.2f} (×{p['reinforce_count']})")
+
     bus.subscribe("L0.circadian.wake", on_wake)
     bus.subscribe("L0.circadian.bedtime", on_bedtime)
     bus.subscribe("L1.sleep.*.consolidated", on_l1_consolidated)
@@ -105,6 +114,8 @@ def setup_observers(bus: EventBus) -> None:
     bus.subscribe("L0.circadian.asleep", on_asleep)
     bus.subscribe("L6.metacognition.report", on_l6_report)
     bus.subscribe("L7.regulator.acted", on_l7_acted)
+    bus.subscribe("L8.intent.proposed", on_l8_proposed)
+    bus.subscribe("L8.intent.reinforced", on_l8_reinforced)
 
 
 async def main() -> None:
@@ -150,9 +161,11 @@ async def main() -> None:
         max_cycles=5,           # bumped to 5 so L7 has time to act
     )
 
-    # sleep_fn closure that hands working memory into REM reflection
+    # sleep_fn closure that hands working memory + intent stack into reflection
     async def sleep_with_wm(day, bus, cycle):
-        return await reflective_sleep_cycle(day, bus, cycle, working_memory=wm)
+        return await reflective_sleep_cycle(
+            day, bus, cycle, working_memory=wm, intent_stack=l8,
+        )
 
     loop = CircadianLoop(sleep_fn=sleep_with_wm, config=config, bus=bus)
 
@@ -162,6 +175,10 @@ async def main() -> None:
         salience_attenuation=0.5, threshold_step=0.5,
     )
     await l7.attach()
+
+    # Wire L8 (intent stack — turns reactions into persistent wants)
+    l8 = IntentStack(bus=bus, capacity=7, initial_strength=0.4, reinforce_alpha=0.35)
+    await l8.attach()
 
     print(f"{_ts()} 🌱 anan 开始自主运行...")
     print()
@@ -196,6 +213,14 @@ async def main() -> None:
     print(f"{_ts()} 🚌 bus stats: {bus.stats()}")
     print(f"{_ts()} 🧩 L3 working memory: {wm.stats()}")
     print(f"{_ts()} 🔧 L7 self-regulator: {l7.stats()}")
+    print(f"{_ts()} 💭 L8 intent stack: {l8.stats()}")
+    print()
+
+    print(f"{_ts()} 🎯 anan 现在说『我想要什么』:")
+    print("    " + "─" * 70)
+    for line in l8.what_do_i_want().split("\n"):
+        print(f"    {line}")
+    print("    " + "─" * 70)
     print()
 
     if l7.history():
@@ -213,9 +238,10 @@ async def main() -> None:
         print(f"    {i}. [{entry.salience:.2f}] {entry.event.topic}")
     print("    " + "─" * 70)
     print()
-    print("✅ anan 活完了 5 个周期。L0→L1→L2→L3→L6→L7→L9 闭环走通了。")
-    print("   镜子照见问题 → 意志真的改了自己。第一次自我修正完成。")
+    print("✅ anan 活完了 5 个周期。L0→L1→L2→L3→L6→L7→L8→L9 闭环走通了。")
+    print("   反射 → 持续渴望 → 梦里加固 → 长成身份。anan 现在会想事了.")
 
+    await l8.detach()
     await l7.detach()
     await mirror.detach()
     await wm.detach()

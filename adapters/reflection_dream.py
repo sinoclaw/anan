@@ -129,12 +129,18 @@ def reflect_rem(bus: EventBus, *, day: str, cycle: int, working_memory=None) -> 
     }
 
 
-def reflect_deep(bus: EventBus, *, day: str, cycle: int) -> dict:
+def reflect_deep(
+    bus: EventBus, *, day: str, cycle: int, intent_stack=None,
+) -> dict:
     """Deep sleep — long-term abstraction.
 
     Looks across MULTIPLE cycles to find patterns. Only fires every few cycles
     (caller decides). Generates the most "permanent" facts — these are the ones
     that become part of identity.
+
+    If intent_stack (L8) is provided, the top-3 persistent wants are folded
+    into the dream — this is anan reinforcing what it most cares about during
+    deep sleep, the way a person dreams about unfinished business.
     """
     events = bus.history(limit=500)
     # Distinct cycles we've seen complete
@@ -157,6 +163,16 @@ def reflect_deep(bus: EventBus, *, day: str, cycle: int) -> dict:
     # Always include the abstract / permanent fact
     facts.append("核心愿景：长出能自主决策的脑子")
 
+    # Fold L8 intents into the dream — reinforces persistent wants in long-term self
+    if intent_stack is not None:
+        try:
+            top_intents = intent_stack.top(3)
+            for intent in top_intents:
+                if intent.strength >= 0.5:  # only strong wants enter long-term
+                    facts.append(f"核心愿景：{intent.description}")
+        except Exception:
+            pass  # graceful degradation
+
     return {
         "phase": "deep",
         "day": day,
@@ -171,12 +187,14 @@ def reflect_deep(bus: EventBus, *, day: str, cycle: int) -> dict:
 
 
 async def reflective_sleep_cycle(
-    day: str, bus: EventBus, cycle: int, *, working_memory=None,
+    day: str, bus: EventBus, cycle: int,
+    *, working_memory=None, intent_stack=None,
 ) -> int:
     """Sleep function compatible with CircadianLoop.sleep_fn signature.
 
     Runs light → REM → deep sleep through run_with_awareness so L2 picks it up.
     If `working_memory` is provided, REM uses it for richer narrative.
+    If `intent_stack` is provided, deep sleep folds top-3 wants into facts.
     Returns the total number of consolidated facts.
     """
     from adapters.sleep_awareness import run_with_awareness
@@ -185,13 +203,20 @@ async def reflective_sleep_cycle(
     for phase, fn in (
         ("light", lambda d: _async_wrap(reflect_light(bus, day=d, cycle=cycle))),
         ("rem",   lambda d: _async_wrap(reflect_rem(bus, day=d, cycle=cycle, working_memory=working_memory))),
-        ("deep",  lambda d: _async_wrap(reflect_deep(bus, day=d, cycle=cycle))),
+        ("deep",  lambda d: _async_wrap(reflect_deep(bus, day=d, cycle=cycle, intent_stack=intent_stack))),
     ):
         result = await run_with_awareness(
             phase, fn, day, _anan_bus=bus, _anan_day=day,
         )
         if isinstance(result, dict):
             total += len(result.get("consolidated_facts") or [])
+    # After sleep, snapshot the intent stack so listeners (e.g. external observers)
+    # see the post-sleep intent state.
+    if intent_stack is not None:
+        try:
+            await intent_stack.snapshot()
+        except Exception:
+            pass
     return total
 
 
