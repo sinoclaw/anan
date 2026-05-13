@@ -31,6 +31,7 @@ from kernel.event_bus import Event, EventBus, get_bus
 from adapters.memory_consolidation import JSONLBackend, MemoryConsolidationAdapter
 from adapters.reflection_dream import reflective_sleep_cycle
 from layers.L3_working_memory import WorkingMemory
+from layers.L6_metacognition import Mirror
 from layers.L9_self.self_model import SelfModelLive
 
 
@@ -71,6 +72,16 @@ def setup_observers(bus: EventBus) -> None:
         p = e.payload
         print(f"{_ts()} 😴 asleep — cycle {p['cycle']} done in {p['duration_s']:.2f}s "
               f"({p['dream_facts_count']} facts dreamed)")
+
+    def on_l6_report(e: Event):
+        p = e.payload
+        flag = "✅" if p["healthy"] else "⚠️"
+        print(f"{_ts()} 🪞 L6 mirror — {flag} health={p['score']:.2f} "
+              f"({len(p['issues'])} issues, {len(p['suggestions'])} suggestions)")
+        for issue in p["issues"]:
+            print(f"        ⚠ {issue}")
+        for sug in p["suggestions"]:
+            print(f"        💡 {sug}")
         print()  # blank line between cycles
 
     bus.subscribe("L0.circadian.wake", on_wake)
@@ -79,6 +90,7 @@ def setup_observers(bus: EventBus) -> None:
     bus.subscribe("L2.memory.persisted", on_l2_persisted)
     bus.subscribe("L9.self.updated", on_l9_updated)
     bus.subscribe("L0.circadian.asleep", on_asleep)
+    bus.subscribe("L6.metacognition.report", on_l6_report)
 
 
 async def main() -> None:
@@ -106,6 +118,10 @@ async def main() -> None:
     # Wire L9 (live self-model that updates as L2 persists)
     l9 = SelfModelLive(memory_dir=memory_dir)
     await l9.attach(bus)
+
+    # Wire L6 (mirror — reflects on anan after each sleep cycle)
+    mirror = Mirror(bus=bus, working_memory=wm, self_model=l9.model)
+    await mirror.attach()
 
     # Configure the heartbeat — fast cycles for the demo
     config = CircadianConfig(
@@ -163,6 +179,7 @@ async def main() -> None:
     print()
     print("✅ anan 第一次自主活完了 3 个周期。心脏在跳，梦在留，记忆在长。")
 
+    await mirror.detach()
     await wm.detach()
     await l2.detach()
     await l9.detach()
