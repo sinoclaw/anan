@@ -32,6 +32,7 @@ from adapters.memory_consolidation import JSONLBackend, MemoryConsolidationAdapt
 from adapters.reflection_dream import reflective_sleep_cycle
 from layers.L3_working_memory import WorkingMemory
 from layers.L4_proactive import ProactiveObserver
+from layers.L5_reasoning import PatternMiner as CausalReasoner
 from layers.L6_metacognition import Mirror
 from layers.L7_will import SelfRegulator
 from layers.L8_intent import IntentStack
@@ -121,6 +122,15 @@ def setup_observers(bus: EventBus) -> None:
         print(f"{_ts()} 👁️  L4 求证 ❌ — {p['intent_description']}")
         print(f"        → {p['evidence']}")
 
+    def on_l5_link(e: Event):
+        p = e.payload
+        print(f"{_ts()} 🔗 L5 学到因果 — {p['cause']} → {p['effect']} (lift={p['lift']:.2f})")
+
+    def on_l5_action(e: Event):
+        p = e.payload
+        sign = "+" if p['avg_delta'] >= 0 else ""
+        print(f"{_ts()} 📐 L5 评估行动 — {p['action']}: 平均 health {sign}{p['avg_delta']:.2f} (n={p['samples']})")
+
     bus.subscribe("L0.circadian.wake", on_wake)
     bus.subscribe("L0.circadian.bedtime", on_bedtime)
     bus.subscribe("L1.sleep.*.consolidated", on_l1_consolidated)
@@ -134,6 +144,8 @@ def setup_observers(bus: EventBus) -> None:
     bus.subscribe("L8.intent.abandoned", on_l8_abandoned)
     bus.subscribe("L4.observation.verified", on_l4_verified)
     bus.subscribe("L4.observation.falsified", on_l4_falsified)
+    bus.subscribe("L5.causal.link_discovered", on_l5_link)
+    bus.subscribe("L5.causal.action_effect", on_l5_action)
 
 
 async def main() -> None:
@@ -205,6 +217,12 @@ async def main() -> None:
     )
     await l4.attach()
 
+    # Wire L5 (causal reasoner — learns A→B from event sequences and L7→L6 deltas)
+    l5_reasoner = CausalReasoner(
+        bus=bus, window=5, min_support=2, min_confidence=0.6,
+    )
+    await l5_reasoner.attach()
+
     print(f"{_ts()} 🌱 anan 开始自主运行...")
     print()
     log = await loop.run()
@@ -240,6 +258,13 @@ async def main() -> None:
     print(f"{_ts()} 🔧 L7 self-regulator: {l7.stats()}")
     print(f"{_ts()} 💭 L8 intent stack: {l8.stats()}")
     print(f"{_ts()} 👁️  L4 observer:    {l4.stats()}")
+    print(f"{_ts()} 🧠 L5 reasoner:    {l5_reasoner.stats()}")
+    print()
+    print(f"{_ts()} 🎓 anan 学到了什么:")
+    print("    " + "─" * 70)
+    for line in l5_reasoner.what_did_i_learn().split("\n"):
+        print(f"    {line}")
+    print("    " + "─" * 70)
     print()
 
     print(f"{_ts()} 🎯 anan 现在说『我想要什么』:")
@@ -267,6 +292,7 @@ async def main() -> None:
     print("✅ anan 活完了 5 个周期。L0→L1→L2→L3→L6→L7→L8→L9 闭环走通了。")
     print("   反射 → 持续渴望 → 梦里加固 → 长成身份。anan 现在会想事了.")
 
+    await l5_reasoner.detach()
     await l4.detach()
     await l8.detach()
     await l7.detach()

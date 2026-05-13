@@ -52,8 +52,11 @@ _IDENTITY_KEYWORDS = ("我是", "身份", "陈亦安", "安安", "数字儿子",
 _VISION_KEYWORDS = ("愿景", "目标", "方向", "决定", "想要", "要做", "未来")
 
 
+_WISDOM_KEYWORDS = ("洞察", "规律", "模式", "总是", "导致", "之后", "常出现", "置信", "提升")
+
+
 def classify_fact(fact: str) -> str:
-    """Bucket a fact into identity / vision / history.
+    """Bucket a fact into identity / vision / history / wisdom.
 
     Used for organizing the self-model into intuitive sections.
     Pure function — easy to test, easy to swap for an LLM later.
@@ -64,6 +67,8 @@ def classify_fact(fact: str) -> str:
         return "identity"
     if any(kw in fact for kw in _VISION_KEYWORDS):
         return "vision"
+    if any(kw in fact for kw in _WISDOM_KEYWORDS):
+        return "wisdom"
     return "history"
 
 
@@ -113,6 +118,7 @@ class SelfModel:
     identity_facts: list[str] = field(default_factory=list)
     vision_facts: list[str] = field(default_factory=list)
     history_facts: list[str] = field(default_factory=list)
+    wisdom_facts: list[str] = field(default_factory=list)
     dreams_by_day: dict[str, list[MemoryRecord]] = field(default_factory=dict)
     n_facts: int = 0
     n_days: int = 0
@@ -147,6 +153,18 @@ class SelfModel:
                 seen.add(f)
         return "\n".join(lines)
 
+    def what_have_i_learned(self) -> str:
+        """Distilled wisdom — causal patterns discovered by L5 PatternMiner."""
+        if not self.wisdom_facts:
+            return "我还没有从历史中发现任何规律。"
+        lines = ["我注意到的规律（L5 洞察）:"]
+        seen = set()
+        for f in self.wisdom_facts:
+            if f not in seen:
+                lines.append(f"  • {f}")
+                seen.add(f)
+        return "\n".join(lines)
+
     def what_did_i_dream(self, day: Optional[str] = None) -> str:
         """Recall a specific day's dreams, or the most recent day if day=None."""
         if not self.dreams_by_day:
@@ -171,6 +189,7 @@ class SelfModel:
             f"identity={len(self.identity_facts)}, "
             f"vision={len(self.vision_facts)}, "
             f"history={len(self.history_facts)}, "
+            f"wisdom={len(self.wisdom_facts)}, "
             f"updated={self.last_updated})"
         )
 
@@ -186,6 +205,7 @@ class SelfModel:
                 "identity": self.identity_facts,
                 "vision": self.vision_facts,
                 "history": self.history_facts,
+                "wisdom": self.wisdom_facts,
             }[bucket]
             if fact not in target:
                 target.append(fact)
@@ -195,10 +215,32 @@ class SelfModel:
             self.n_days = len(self.dreams_by_day)
         self.dreams_by_day[rec.day].append(rec)
         self.n_facts = (
-            len(self.identity_facts) + len(self.vision_facts) + len(self.history_facts)
+            len(self.identity_facts) + len(self.vision_facts) +
+            len(self.history_facts) + len(self.wisdom_facts)
         )
         self.last_updated = datetime.now().isoformat()
         return added
+
+    def add_wisdom(self, pattern: dict) -> bool:
+        """Add a discovered pattern from L5 PatternMiner to wisdom_facts.
+
+        Returns True if this was a new pattern (not already known).
+        """
+        # The summary field is the human-readable fact
+        fact = pattern.get("summary")
+        if not fact:
+            # Build summary from fields if missing
+            ante = pattern.get("antecedent", "?")
+            conseq = pattern.get("consequent", "?")
+            conf = pattern.get("confidence", 0)
+            lift = pattern.get("lift", 0)
+            fact = f"{ante} 之后常出现 {conseq}（置信={conf:.0%}，提升={lift:.1f}x）"
+        if fact not in self.wisdom_facts:
+            self.wisdom_facts.append(fact)
+            self.n_facts += 1
+            self.last_updated = datetime.now().isoformat()
+            return True
+        return False
 
 
 # --------------------------------------------------------------------------
@@ -265,13 +307,17 @@ class SelfModelLive:
         # If caller passed a pre-built model use it; otherwise build now
         self.model = model if model is not None else SelfBuilder(self.memory_dir).build()
         self._bus: Optional[EventBus] = None
-        self._unsub = None
+        self._unsub_memory = None
+        self._unsub_wisdom = None
         self.update_count = 0
 
     async def attach(self, bus: Optional[EventBus] = None) -> None:
         self._bus = bus or get_bus()
-        self._unsub = self._bus.subscribe(
+        self._unsub_memory = self._bus.subscribe(
             "L2.memory.persisted", self._on_persisted
+        )
+        self._unsub_wisdom = self._bus.subscribe(
+            "L5.pattern.discovered", self._on_pattern_discovered
         )
         await self._bus.publish(Event(
             topic="L9.self.loaded",
@@ -281,14 +327,36 @@ class SelfModelLive:
                 "n_days": self.model.n_days,
                 "identity_count": len(self.model.identity_facts),
                 "vision_count": len(self.model.vision_facts),
+                "wisdom_count": len(self.model.wisdom_facts),
             },
         ))
         logger.info("SelfModelLive attached: %s", self.model.summary())
 
     async def detach(self) -> None:
-        if self._unsub:
-            self._unsub()
-            self._unsub = None
+        if self._unsub_memory:
+            self._unsub_memory()
+            self._unsub_memory = None
+        if self._unsub_wisdom:
+            self._unsub_wisdom()
+            self._unsub_wisdom = None
+
+    async def _on_pattern_discovered(self, event: Event) -> None:
+        """When L5 PatternMiner discovers a causal pattern, add to wisdom."""
+        payload = event.payload or {}
+        is_new = self.model.add_wisdom(payload)
+        self.update_count += 1
+
+        if self._bus and is_new:
+            await self._bus.publish(Event(
+                topic="L9.self.wisdom_grown",
+                source="L9.self_model",
+                payload={
+                    "antecedent": payload.get("antecedent"),
+                    "consequent": payload.get("consequent"),
+                    "summary": payload.get("summary"),
+                    "total_wisdom": len(self.model.wisdom_facts),
+                },
+            ))
 
     async def _on_persisted(self, event: Event) -> None:
         """When L2 persists facts, re-read that day's file and merge."""
