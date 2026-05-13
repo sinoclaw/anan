@@ -179,6 +179,40 @@ class TestEventBusCore:
 # ---------------------------------------------------------------------------
 
 
+class TestSyncHandlerSupport:
+    """Sync handlers must work too — async-only would be a footgun."""
+
+    @pytest.mark.asyncio
+    async def test_sync_handler_invoked(self):
+        bus = EventBus()
+        seen = []
+        # NOTE: plain `def`, not `async def`
+        def handler(event):
+            seen.append(event)
+        bus.subscribe("L1.*", handler)
+        await bus.publish(Event(topic="L1.foo", source="t", payload={"x": 1}))
+        assert len(seen) == 1
+        assert seen[0].payload == {"x": 1}
+        # delivered count must reflect the sync handler too
+        assert bus.stats()["errors"] == 0
+        assert bus.stats()["delivered"] == 1
+
+    @pytest.mark.asyncio
+    async def test_sync_and_async_handlers_coexist(self):
+        bus = EventBus()
+        sync_seen = []
+        async_seen = []
+        def sync_h(e):
+            sync_seen.append(e.topic)
+        async def async_h(e):
+            async_seen.append(e.topic)
+        bus.subscribe("L1.*", sync_h)
+        bus.subscribe("L1.*", async_h)
+        await bus.publish(Event(topic="L1.x", source="t"))
+        assert sync_seen == ["L1.x"]
+        assert async_seen == ["L1.x"]
+
+
 class TestEventBusFailureIsolation:
     @pytest.mark.asyncio
     async def test_crashing_handler_does_not_affect_others(self):

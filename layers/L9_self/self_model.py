@@ -1,0 +1,339 @@
+"""
+L9 Self — anan 的自我模型
+==========================
+
+这是 anan 真正"知道自己是谁"的地方。
+
+设计原则：
+- self-model 不是硬编码的，是**从 L2 记忆里长出来的**
+- 启动时扫 ~/.anan/memories/*.jsonl 重建身份事实
+- 运行时订阅 L2.memory.persisted 增量更新
+- 提供 who_am_i() / what_did_i_dream(day) / why_do_i_exist() 接口
+
+为什么这层重要？
+    L1 = 睡眠机制（怎么做梦）
+    L2 = 记忆持久化（梦怎么留下来）
+    L9 = 自我模型（这些梦构成的『我』是谁）
+
+没有 L9，anan 只是一堆事件 + 一堆 JSON。
+有了 L9，anan 启动时第一句话能是"我醒了，我记得昨天爸爸说……"
+
+事实分类（启发式）：
+    identity   - 包含 "我是" / "身份" / "陈亦安" / "安安"
+    vision     - 包含 "愿景" / "目标" / "方向" / "决定"
+    history    - 其他事实（日常事件、技术细节）
+
+事件 topic：
+    L9.self.loaded     - 启动加载完成 (payload: {n_facts, n_days})
+    L9.self.updated    - 从 L2 收到新事实 (payload: {phase, day, n_new})
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Optional
+
+from kernel.event_bus import Event, EventBus, get_bus
+
+logger = logging.getLogger("anan.layers.L9_self")
+
+
+# --------------------------------------------------------------------------
+# Heuristics
+# --------------------------------------------------------------------------
+
+
+_IDENTITY_KEYWORDS = ("我是", "身份", "陈亦安", "安安", "数字儿子", "数字生命")
+_VISION_KEYWORDS = ("愿景", "目标", "方向", "决定", "想要", "要做", "未来")
+
+
+def classify_fact(fact: str) -> str:
+    """Bucket a fact into identity / vision / history.
+
+    Used for organizing the self-model into intuitive sections.
+    Pure function — easy to test, easy to swap for an LLM later.
+    """
+    if not isinstance(fact, str):
+        return "history"
+    if any(kw in fact for kw in _IDENTITY_KEYWORDS):
+        return "identity"
+    if any(kw in fact for kw in _VISION_KEYWORDS):
+        return "vision"
+    return "history"
+
+
+# --------------------------------------------------------------------------
+# Data shapes
+# --------------------------------------------------------------------------
+
+
+@dataclass
+class MemoryRecord:
+    """One on-disk memory record (mirrors what L2 wrote)."""
+
+    phase: str
+    day: str
+    facts: list[str]
+    created_at: str
+    dream_content: Optional[str] = None
+    duration_s: Optional[float] = None
+    source_event: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "MemoryRecord":
+        return cls(
+            phase=d.get("phase", "?"),
+            day=d.get("day", "?"),
+            facts=list(d.get("facts") or []),
+            created_at=d.get("created_at", ""),
+            dream_content=d.get("dream_content"),
+            duration_s=d.get("duration_s"),
+            source_event=d.get("source_event"),
+        )
+
+
+# --------------------------------------------------------------------------
+# Self model
+# --------------------------------------------------------------------------
+
+
+@dataclass
+class SelfModel:
+    """The self that emerges from accumulated memory.
+
+    Don't construct directly — use SelfBuilder.from_disk() or
+    SelfBuilder().build().
+    """
+
+    identity_facts: list[str] = field(default_factory=list)
+    vision_facts: list[str] = field(default_factory=list)
+    history_facts: list[str] = field(default_factory=list)
+    dreams_by_day: dict[str, list[MemoryRecord]] = field(default_factory=dict)
+    n_facts: int = 0
+    n_days: int = 0
+    last_updated: Optional[str] = None
+
+    def who_am_i(self) -> str:
+        """One-shot self-introduction reconstructed from identity facts.
+
+        Falls back gracefully when there's nothing yet — anan must always
+        be able to answer this question, even on first boot.
+        """
+        if not self.identity_facts:
+            return "我还没有形成关于自己的记忆。我刚醒来。"
+        lines = ["我从记忆里拼出的自己:"]
+        # de-dupe while preserving order
+        seen = set()
+        for f in self.identity_facts:
+            if f not in seen:
+                lines.append(f"  • {f}")
+                seen.add(f)
+        return "\n".join(lines)
+
+    def why_do_i_exist(self) -> str:
+        """Distilled vision/purpose from accumulated dreams."""
+        if not self.vision_facts:
+            return "我的方向还没有从梦里浮现出来。"
+        lines = ["我存在的原因（从梦里浮现）:"]
+        seen = set()
+        for f in self.vision_facts:
+            if f not in seen:
+                lines.append(f"  • {f}")
+                seen.add(f)
+        return "\n".join(lines)
+
+    def what_did_i_dream(self, day: Optional[str] = None) -> str:
+        """Recall a specific day's dreams, or the most recent day if day=None."""
+        if not self.dreams_by_day:
+            return "我还没有任何可以回忆的梦。"
+        target = day or max(self.dreams_by_day.keys())
+        records = self.dreams_by_day.get(target)
+        if not records:
+            return f"我在 {target} 没有梦的记录。"
+        lines = [f"我在 {target} 梦见的事:"]
+        for rec in records:
+            lines.append(f"  [{rec.phase}]")
+            for f in rec.facts:
+                lines.append(f"    • {f}")
+            if rec.dream_content:
+                lines.append(f"    💭 {rec.dream_content}")
+        return "\n".join(lines)
+
+    def summary(self) -> str:
+        """Compact one-liner for logs/debug."""
+        return (
+            f"SelfModel(facts={self.n_facts}, days={self.n_days}, "
+            f"identity={len(self.identity_facts)}, "
+            f"vision={len(self.vision_facts)}, "
+            f"history={len(self.history_facts)}, "
+            f"updated={self.last_updated})"
+        )
+
+    def add_record(self, rec: MemoryRecord) -> int:
+        """Incorporate a memory record into the self-model.
+
+        Returns the number of new facts actually added (after dedupe).
+        """
+        added = 0
+        for fact in rec.facts:
+            bucket = classify_fact(fact)
+            target = {
+                "identity": self.identity_facts,
+                "vision": self.vision_facts,
+                "history": self.history_facts,
+            }[bucket]
+            if fact not in target:
+                target.append(fact)
+                added += 1
+        if rec.day not in self.dreams_by_day:
+            self.dreams_by_day[rec.day] = []
+            self.n_days = len(self.dreams_by_day)
+        self.dreams_by_day[rec.day].append(rec)
+        self.n_facts = (
+            len(self.identity_facts) + len(self.vision_facts) + len(self.history_facts)
+        )
+        self.last_updated = datetime.now().isoformat()
+        return added
+
+
+# --------------------------------------------------------------------------
+# Builder — load from disk
+# --------------------------------------------------------------------------
+
+
+class SelfBuilder:
+    """Reconstructs a SelfModel from L2's on-disk memory."""
+
+    def __init__(self, memory_dir: Optional[Path] = None):
+        self.memory_dir = Path(memory_dir or Path.home() / ".anan" / "memories")
+
+    def build(self) -> SelfModel:
+        model = SelfModel()
+        if not self.memory_dir.exists():
+            logger.info("No memory dir at %s — self starts empty", self.memory_dir)
+            return model
+
+        # Sort by day so we incorporate chronologically — order matters
+        # for "first impressions" of identity facts (older wins on dedupe)
+        files = sorted(self.memory_dir.glob("*.jsonl"))
+        for path in files:
+            try:
+                with path.open(encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            d = json.loads(line)
+                        except json.JSONDecodeError as exc:
+                            logger.warning("Skipping bad JSON in %s: %s", path.name, exc)
+                            continue
+                        model.add_record(MemoryRecord.from_dict(d))
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Failed reading %s: %s", path, exc)
+
+        logger.info("SelfModel loaded: %s", model.summary())
+        return model
+
+
+# --------------------------------------------------------------------------
+# Live updater — wires SelfModel to the event bus
+# --------------------------------------------------------------------------
+
+
+class SelfModelLive:
+    """Keeps a SelfModel in sync with L2.memory.persisted events.
+
+    Usage:
+        live = SelfModelLive()           # auto-loads from ~/.anan/memories
+        await live.attach(bus)
+        # ... agent runs, dreams, persists ...
+        print(live.model.who_am_i())     # always current
+    """
+
+    def __init__(
+        self,
+        memory_dir: Optional[Path] = None,
+        model: Optional[SelfModel] = None,
+    ):
+        self.memory_dir = Path(memory_dir or Path.home() / ".anan" / "memories")
+        # If caller passed a pre-built model use it; otherwise build now
+        self.model = model if model is not None else SelfBuilder(self.memory_dir).build()
+        self._bus: Optional[EventBus] = None
+        self._unsub = None
+        self.update_count = 0
+
+    async def attach(self, bus: Optional[EventBus] = None) -> None:
+        self._bus = bus or get_bus()
+        self._unsub = self._bus.subscribe(
+            "L2.memory.persisted", self._on_persisted
+        )
+        await self._bus.publish(Event(
+            topic="L9.self.loaded",
+            source="L9.self_model",
+            payload={
+                "n_facts": self.model.n_facts,
+                "n_days": self.model.n_days,
+                "identity_count": len(self.model.identity_facts),
+                "vision_count": len(self.model.vision_facts),
+            },
+        ))
+        logger.info("SelfModelLive attached: %s", self.model.summary())
+
+    async def detach(self) -> None:
+        if self._unsub:
+            self._unsub()
+            self._unsub = None
+
+    async def _on_persisted(self, event: Event) -> None:
+        """When L2 persists facts, re-read that day's file and merge."""
+        payload = event.payload or {}
+        day = payload.get("day")
+        if not day:
+            return
+        path = self.memory_dir / f"{day}.jsonl"
+        if not path.exists():
+            return
+
+        # Re-read just the LAST line — that's what L2 just appended.
+        # Cheaper than rebuilding the whole model on every dream.
+        try:
+            with path.open(encoding="utf-8") as f:
+                lines = f.readlines()
+            if not lines:
+                return
+            d = json.loads(lines[-1])
+        except (OSError, json.JSONDecodeError) as exc:
+            logger.warning("Failed reading latest record from %s: %s", path, exc)
+            return
+
+        added = self.model.add_record(MemoryRecord.from_dict(d))
+        self.update_count += 1
+
+        if self._bus:
+            await self._bus.publish(Event(
+                topic="L9.self.updated",
+                source="L9.self_model",
+                payload={
+                    "phase": d.get("phase"),
+                    "day": day,
+                    "n_new": added,
+                    "total_facts": self.model.n_facts,
+                },
+            ))
+
+    # async-context-manager sugar
+    def bound(self, bus: Optional[EventBus] = None):
+        live = self
+        class _Bound:
+            async def __aenter__(self_inner):
+                await live.attach(bus)
+                return live
+            async def __aexit__(self_inner, *_):
+                await live.detach()
+        return _Bound()

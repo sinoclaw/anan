@@ -138,9 +138,17 @@ class EventBus:
         return delivered
 
     async def _safe_invoke(self, handler: EventHandler, event: Event) -> bool:
-        """Invoke a handler, catching and logging any exception."""
+        """Invoke a handler, catching and logging any exception.
+
+        Accepts both sync and async handlers — sync ones are called directly
+        and their (None) return is ignored. This keeps the API ergonomic so
+        callers don't have to remember `async def` for fire-and-forget logging.
+        """
+        import inspect
         try:
-            await handler(event)
+            result = handler(event)
+            if inspect.isawaitable(result):
+                await result
             return True
         except Exception as exc:
             self._stats["errors"] += 1
