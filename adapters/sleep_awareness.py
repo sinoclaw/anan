@@ -88,11 +88,23 @@ async def run_with_awareness(
         ))
         raise
 
-    # Try to extract a "recall_count" hint if the result looks like a dict
-    # with metadata; otherwise fall back to None
+    # Extract metadata from the result so downstream layers (L2 memory, L9 self)
+    # can consume the actual dream content, not just a count.
     recall_count = None
+    consolidated_facts: list = []
+    dream_content: Any = None
     if isinstance(result, dict):
         recall_count = result.get("recall_count") or result.get("count")
+        # Accept any of these shapes — be liberal in what you accept
+        consolidated_facts = (
+            result.get("consolidated_facts")
+            or result.get("facts")
+            or result.get("memories")
+            or []
+        )
+        dream_content = result.get("dream") or result.get("content")
+        if recall_count is None and consolidated_facts:
+            recall_count = len(consolidated_facts)
 
     await bus.publish(Event(
         topic=f"L1.sleep.{phase}.consolidated",
@@ -102,6 +114,8 @@ async def run_with_awareness(
             "day": day,
             "duration_s": time.time() - started_at,
             "recall_count": recall_count,
+            "consolidated_facts": consolidated_facts,
+            "dream_content": dream_content,
         },
     ))
 
