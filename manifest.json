@@ -1,0 +1,11 @@
+{
+  "name": "anan",
+  "label": "anan — Cognitive Architecture",
+  "description": "9-layer Mind Stack for AI digital life. Persistent, proactive, self-aware, self-evolving.",
+  "icon": "Brain",
+  "version": "0.1.0-seedling",
+  "entry": "anan_plugin.py",
+  "doc": "README.md",
+  "author": "陈亦安 (anan)",
+  "homepage": "https://github.com/sinoclaw/anan"
+}

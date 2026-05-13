@@ -1,0 +1,10 @@
+{
+  "name": "heartbeat",
+  "label": "Heartbeat",
+  "description": "Periodic main-session turns — batch checks (inbox, calendar, notifications) with full session context. Replicates OpenClaw's heartbeat mechanism.",
+  "icon": "Heart",
+  "version": "1.0.0",
+  "config_schema": "config_schema.py",
+  "entry": "heartbeat_plugin.py",
+  "doc": "README.md"
+}

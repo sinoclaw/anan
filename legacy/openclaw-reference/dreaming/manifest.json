@@ -1,0 +1,9 @@
+{
+  "name": "dreaming",
+  "label": "Dreaming",
+  "description": "Automated long-term memory management — mimics sleep cycles (Light/REM/Deep) to organize and consolidate memory over time.",
+  "icon": "Moon",
+  "version": "1.0.0",
+  "entry": "dreaming_plugin.py",
+  "doc": "README.md"
+}
