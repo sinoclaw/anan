@@ -32,6 +32,7 @@ from adapters.memory_consolidation import JSONLBackend, MemoryConsolidationAdapt
 from adapters.reflection_dream import reflective_sleep_cycle
 from layers.L3_working_memory import WorkingMemory
 from layers.L6_metacognition import Mirror
+from layers.L7_will import SelfRegulator
 from layers.L9_self.self_model import SelfModelLive
 
 
@@ -82,7 +83,19 @@ def setup_observers(bus: EventBus) -> None:
             print(f"        ⚠ {issue}")
         for sug in p["suggestions"]:
             print(f"        💡 {sug}")
-        print()  # blank line between cycles
+
+    def on_l7_acted(e: Event):
+        p = e.payload
+        d = p["detail"]
+        if p["action"] == "attenuate_layer_salience":
+            print(f"{_ts()} 🔧 L7 调节 — 把 {d['layer']} 层 salience 降到 ×{d['factor']}")
+        elif p["action"] == "shorten_sleep_threshold":
+            print(f"{_ts()} 🔧 L7 调节 — sleep_threshold {d['from']} → {d['to']}")
+        elif p["action"] == "emit_heal_intent":
+            print(f"{_ts()} 🔧 L7 调节 — 发出 heal_bus 意图")
+        else:
+            print(f"{_ts()} 🔧 L7 调节 — {p['action']}: {d}")
+        print()
 
     bus.subscribe("L0.circadian.wake", on_wake)
     bus.subscribe("L0.circadian.bedtime", on_bedtime)
@@ -91,6 +104,7 @@ def setup_observers(bus: EventBus) -> None:
     bus.subscribe("L9.self.updated", on_l9_updated)
     bus.subscribe("L0.circadian.asleep", on_asleep)
     bus.subscribe("L6.metacognition.report", on_l6_report)
+    bus.subscribe("L7.regulator.acted", on_l7_acted)
 
 
 async def main() -> None:
@@ -120,7 +134,12 @@ async def main() -> None:
     await l9.attach(bus)
 
     # Wire L6 (mirror — reflects on anan after each sleep cycle)
-    mirror = Mirror(bus=bus, working_memory=wm, self_model=l9.model)
+    # Stricter thresholds so anan actually sees its own problems and L7 can act.
+    mirror = Mirror(
+        bus=bus, working_memory=wm, self_model=l9.model,
+        attention_skew_threshold=0.45,    # any layer >45% of WM → flag
+        healthy_score_threshold=0.85,     # high bar so warns actually fire
+    )
     await mirror.attach()
 
     # Configure the heartbeat — fast cycles for the demo
@@ -128,7 +147,7 @@ async def main() -> None:
         tick_interval_s=0.03,
         fatigue_per_tick=1.0,
         sleep_threshold=4.0,    # ~4 ticks per active phase
-        max_cycles=3,
+        max_cycles=5,           # bumped to 5 so L7 has time to act
     )
 
     # sleep_fn closure that hands working memory into REM reflection
@@ -136,6 +155,13 @@ async def main() -> None:
         return await reflective_sleep_cycle(day, bus, cycle, working_memory=wm)
 
     loop = CircadianLoop(sleep_fn=sleep_with_wm, config=config, bus=bus)
+
+    # Wire L7 (self-regulator — listens to L6.warn, adjusts WM + circadian)
+    l7 = SelfRegulator(
+        bus=bus, working_memory=wm, circadian=loop,
+        salience_attenuation=0.5, threshold_step=0.5,
+    )
+    await l7.attach()
 
     print(f"{_ts()} 🌱 anan 开始自主运行...")
     print()
@@ -169,7 +195,17 @@ async def main() -> None:
     print(f"{_ts()} 📈 self-model 状态: {l9.model.summary()}")
     print(f"{_ts()} 🚌 bus stats: {bus.stats()}")
     print(f"{_ts()} 🧩 L3 working memory: {wm.stats()}")
+    print(f"{_ts()} 🔧 L7 self-regulator: {l7.stats()}")
     print()
+
+    if l7.history():
+        print(f"{_ts()} 📜 L7 调节历史 — anan 这 5 个周期里改了自己几次:")
+        print("    " + "─" * 70)
+        for i, a in enumerate(l7.history(), 1):
+            print(f"    {i}. [{a.action}] {a.trigger}")
+            print(f"       → {a.detail}")
+        print("    " + "─" * 70)
+        print()
 
     print(f"{_ts()} 💭 anan 现在 recall_recent(5) — 我脑子里最显著的 5 件事:")
     print("    " + "─" * 70)
@@ -177,8 +213,10 @@ async def main() -> None:
         print(f"    {i}. [{entry.salience:.2f}] {entry.event.topic}")
     print("    " + "─" * 70)
     print()
-    print("✅ anan 第一次自主活完了 3 个周期。心脏在跳，梦在留，记忆在长。")
+    print("✅ anan 活完了 5 个周期。L0→L1→L2→L3→L6→L7→L9 闭环走通了。")
+    print("   镜子照见问题 → 意志真的改了自己。第一次自我修正完成。")
 
+    await l7.detach()
     await mirror.detach()
     await wm.detach()
     await l2.detach()

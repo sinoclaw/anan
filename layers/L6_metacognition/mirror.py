@@ -87,12 +87,14 @@ class Mirror:
         # tunables
         attention_skew_threshold: float = 0.7,    # if any 1 layer > 70% of WM, flag
         identity_stagnation_cycles: int = 5,      # if no new identity facts in N reports, flag
+        healthy_score_threshold: float = 0.6,     # score >= this → healthy
     ):
         self._bus = bus or get_bus()
         self._wm = working_memory
         self._self = self_model
         self._attn_thresh = attention_skew_threshold
         self._stag_cycles = identity_stagnation_cycles
+        self._healthy_thresh = healthy_score_threshold
         self._unsub = None
         self._reports: list[HealthReport] = []
         self._last_identity_count: Optional[int] = None
@@ -219,7 +221,7 @@ class Mirror:
 
         # ---- 4. Composite score ----
         score = sum(sub_scores) / len(sub_scores) if sub_scores else 0.0
-        healthy = score >= 0.6
+        healthy = score >= self._healthy_thresh
 
         report = HealthReport(
             timestamp=datetime.now().isoformat(),
