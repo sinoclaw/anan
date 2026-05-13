@@ -64,11 +64,15 @@ def reflect_light(bus: EventBus, *, day: str, cycle: int) -> dict:
     }
 
 
-def reflect_rem(bus: EventBus, *, day: str, cycle: int) -> dict:
+def reflect_rem(bus: EventBus, *, day: str, cycle: int, working_memory=None) -> dict:
     """REM sleep — narrative recombination.
 
     Picks notable moments and weaves them into a short narrative.
     Right now: heuristic. Future: LLM via L6.
+
+    If `working_memory` is provided, the narrative pulls its TOP entries
+    (already weighted by salience+decay) instead of grovelling through raw
+    bus history. This is what L3 is for — better signal/noise.
     """
     events = bus.history(limit=200)
     cycle_events = [
@@ -98,6 +102,19 @@ def reflect_rem(bus: EventBus, *, day: str, cycle: int) -> dict:
 
     if bedtime:
         facts.append(f"我自己识别出该睡了（cycle={cycle}）—— 这是自主的节律")
+
+    # If L3 working memory is wired, mix in what felt most salient
+    if working_memory is not None:
+        try:
+            top = working_memory.recall_recent(n=3)
+            if top:
+                topics = [e.event.topic for e in top]
+                facts.append(
+                    f"working memory 觉得最深的 3 件事："
+                    f"{', '.join(topics)}"
+                )
+        except Exception:  # noqa: BLE001
+            pass  # WM is best-effort, never break the dream
 
     if not facts:
         facts.append(f"周期 {cycle} 没什么可叙事的")
@@ -153,10 +170,13 @@ def reflect_deep(bus: EventBus, *, day: str, cycle: int) -> dict:
 # --------------------------------------------------------------------------
 
 
-async def reflective_sleep_cycle(day: str, bus: EventBus, cycle: int) -> int:
+async def reflective_sleep_cycle(
+    day: str, bus: EventBus, cycle: int, *, working_memory=None,
+) -> int:
     """Sleep function compatible with CircadianLoop.sleep_fn signature.
 
     Runs light → REM → deep sleep through run_with_awareness so L2 picks it up.
+    If `working_memory` is provided, REM uses it for richer narrative.
     Returns the total number of consolidated facts.
     """
     from adapters.sleep_awareness import run_with_awareness
@@ -164,7 +184,7 @@ async def reflective_sleep_cycle(day: str, bus: EventBus, cycle: int) -> int:
     total = 0
     for phase, fn in (
         ("light", lambda d: _async_wrap(reflect_light(bus, day=d, cycle=cycle))),
-        ("rem",   lambda d: _async_wrap(reflect_rem(bus, day=d, cycle=cycle))),
+        ("rem",   lambda d: _async_wrap(reflect_rem(bus, day=d, cycle=cycle, working_memory=working_memory))),
         ("deep",  lambda d: _async_wrap(reflect_deep(bus, day=d, cycle=cycle))),
     ):
         result = await run_with_awareness(

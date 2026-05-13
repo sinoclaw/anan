@@ -30,6 +30,7 @@ from kernel.circadian import CircadianConfig, CircadianLoop
 from kernel.event_bus import Event, EventBus, get_bus
 from adapters.memory_consolidation import JSONLBackend, MemoryConsolidationAdapter
 from adapters.reflection_dream import reflective_sleep_cycle
+from layers.L3_working_memory import WorkingMemory
 from layers.L9_self.self_model import SelfModelLive
 
 
@@ -93,6 +94,10 @@ async def main() -> None:
 
     setup_observers(bus)
 
+    # Wire L3 (short-term working memory — anan's "what was I doing" buffer)
+    wm = WorkingMemory(capacity=20, half_life_s=2.0)
+    await wm.attach(bus)
+
     # Wire L2 (writes facts to disk)
     memory_dir = Path.home() / ".anan" / "memories"
     l2 = MemoryConsolidationAdapter(backend=JSONLBackend(base_dir=memory_dir))
@@ -109,7 +114,12 @@ async def main() -> None:
         sleep_threshold=4.0,    # ~4 ticks per active phase
         max_cycles=3,
     )
-    loop = CircadianLoop(sleep_fn=reflective_sleep_cycle, config=config, bus=bus)
+
+    # sleep_fn closure that hands working memory into REM reflection
+    async def sleep_with_wm(day, bus, cycle):
+        return await reflective_sleep_cycle(day, bus, cycle, working_memory=wm)
+
+    loop = CircadianLoop(sleep_fn=sleep_with_wm, config=config, bus=bus)
 
     print(f"{_ts()} 🌱 anan 开始自主运行...")
     print()
@@ -142,9 +152,18 @@ async def main() -> None:
 
     print(f"{_ts()} 📈 self-model 状态: {l9.model.summary()}")
     print(f"{_ts()} 🚌 bus stats: {bus.stats()}")
+    print(f"{_ts()} 🧩 L3 working memory: {wm.stats()}")
+    print()
+
+    print(f"{_ts()} 💭 anan 现在 recall_recent(5) — 我脑子里最显著的 5 件事:")
+    print("    " + "─" * 70)
+    for i, entry in enumerate(wm.recall_recent(5), 1):
+        print(f"    {i}. [{entry.salience:.2f}] {entry.event.topic}")
+    print("    " + "─" * 70)
     print()
     print("✅ anan 第一次自主活完了 3 个周期。心脏在跳，梦在留，记忆在长。")
 
+    await wm.detach()
     await l2.detach()
     await l9.detach()
 
