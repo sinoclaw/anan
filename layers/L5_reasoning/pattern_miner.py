@@ -90,10 +90,14 @@ class PatternMiner:
         self._discovered: dict[tuple[str, str], _Discovered] = {}
         self._unsubs: list[Callable[[], None]] = []
         self._mine_count = 0
+        self._active: bool = False
+
+    @property
+    def is_attached(self) -> bool:
+        return self._active
 
     # ------------------------------------------------------------------
-    @staticmethod
-    def _default_abstract(topic: str) -> str:
+    def _default_abstract(self, topic: str) -> str:
         """Drop the deepest segment so L9.self.updated → L9.self.*"""
         parts = topic.split(".")
         if len(parts) <= 1:
@@ -102,6 +106,9 @@ class PatternMiner:
 
     # ------------------------------------------------------------------
     async def attach(self) -> None:
+        if self._active:
+            return
+        self._active = True
         if self._mine_on_event:
             async def on_trigger(event: Event):
                 await self.mine_now()
@@ -113,6 +120,7 @@ class PatternMiner:
         for u in self._unsubs:
             u()
         self._unsubs.clear()
+        self._active = False
 
     # ------------------------------------------------------------------
     async def mine_now(self) -> list[Pattern]:

@@ -113,9 +113,16 @@ class CausalReasoner:
 
         self._discovered_links: set[tuple[str, str]] = set()
         self._unsubs: list[Callable[[], None]] = []
+        self._active: bool = False
 
-    # ------------------------------------------------------------------
+    @property
+    def is_attached(self) -> bool:
+        return self._active
+
     async def attach(self) -> None:
+        if self._active:
+            return
+        self._active = True
         async def on_any(event: Event):
             await self._on_event(event)
 
@@ -142,6 +149,7 @@ class CausalReasoner:
         for u in self._unsubs:
             u()
         self._unsubs.clear()
+        self._active = False
 
     # ------------------------------------------------------------------
     async def _on_event(self, event: Event) -> None:

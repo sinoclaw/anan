@@ -137,6 +137,43 @@ class EventBus:
         self._stats["delivered"] += delivered
         return delivered
 
+    def publish_sync(self, event: Event) -> int:
+        """Synchronous publish — for use outside async contexts (e.g. inside
+        synchronous test helpers or during __init__).
+
+        Runs handlers in the caller's thread; async handlers are scheduled
+        on the running loop if one exists, otherwise silently dropped.
+        Returns the number of handlers invoked.
+        """
+        self._history.append(event)
+        self._stats["published"] += 1
+
+        matching = [h for pat, h in self._subscribers if event.matches(pat)]
+        if not matching:
+            return 0
+
+        delivered = 0
+        for h in matching:
+            try:
+                result = h(event)
+                if asyncio.iscoroutine(result):
+                    try:
+                        loop = asyncio.get_running_loop()
+                        # Schedule and run the coroutine on the running loop
+                        loop.create_task(result)
+                    except RuntimeError:
+                        result.close()
+            except Exception as exc:
+                self._stats["errors"] += 1
+                logger.debug(
+                    "sync invoke %s failed on %s: %s",
+                    h.__name__, event.topic, exc,
+                )
+            else:
+                delivered += 1
+        self._stats["delivered"] += delivered
+        return delivered
+
     async def _safe_invoke(self, handler: EventHandler, event: Event) -> bool:
         """Invoke a handler, catching and logging any exception.
 

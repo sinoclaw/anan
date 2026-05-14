@@ -166,19 +166,40 @@ class PredictiveReasoner:
 
     async def _emit_predictions_for(self, cause: str) -> None:
         """Given a cause event, emit predictions for downstream effects."""
-        links = self._get_links()
+        # Collect links from both sources: initial causal_links_fn AND
+        # cached links from L5.causal.link_discovered events
+        links_from_fn = self._get_links()
+        links_from_cache = list(self._links.values())
 
-        for link in links:
-            if link.cause != cause:
+        seen: set[str] = set()  # deduplicate by effect string
+
+        for link in [*links_from_fn, *links_from_cache]:
+            # Normalise to (cause, effect, lift, confidence)
+            if hasattr(link, "cause"):
+                link_cause = link.cause
+                link_effect = link.effect
+                link_lift = getattr(link, "lift", 1.0)
+                link_confidence = getattr(link, "confidence", 0.5)
+            else:
+                link_cause, link_effect = link[0], link[1]
+                link_lift = link[2] if len(link) > 2 else 1.0
+                link_confidence = link[3] if len(link) > 3 else 0.5
+
+            key = f"{link_cause}:{link_effect}"
+            if key in seen:
                 continue
-            if link.lift < self._min_lift:
+            seen.add(key)
+
+            if link_cause != cause:
+                continue
+            if link_lift < self._min_lift:
                 continue
 
             pred = Prediction(
                 cause=cause,
-                effect=link.effect,
-                probability_boost=link.lift,
-                confidence=link.confidence,
+                effect=link_effect,
+                probability_boost=link_lift,
+                confidence=link_confidence,
                 issued_at=time.time(),
                 horizon_s=self._horizon_s,
             )
@@ -187,17 +208,17 @@ class PredictiveReasoner:
 
             await self._safe_publish("L5.prediction.upcoming", {
                 "cause": cause,
-                "predicted_effect": link.effect,
-                "probability_boost": round(link.lift, 2),
-                "confidence": round(link.confidence, 2),
+                "predicted_effect": link_effect,
+                "probability_boost": round(link_lift, 2),
+                "confidence": round(link_confidence, 2),
                 "horizon_s": self._horizon_s,
             })
 
             if self._sm is not None:
                 try:
                     self._sm.history_facts.append(
-                        f"我预测: {cause} 之后会出现 {link.effect} "
-                        f"(置信度 {link.confidence:.0%}, 窗口 {self._horizon_s}s)"
+                        f"我预测: {cause} 之后会出现 {link_effect} "
+                        f"(置信度 {link_confidence:.0%}, 窗口 {self._horizon_s}s)"
                     )
                 except Exception:
                     pass

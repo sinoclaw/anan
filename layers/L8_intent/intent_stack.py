@@ -119,6 +119,9 @@ class IntentStack:
         self._unsubs.append(self._bus.subscribe("L7.regulator.weaken_intent", on_weaken_intent))
         self._unsubs.append(self._bus.subscribe("L5.causal.action_effect", self._on_action_effect))
         self._unsubs.append(self._bus.subscribe("L5.pattern.discovered", self._on_pattern_discovered))
+        self._unsubs.append(self._bus.subscribe("L3.attention.shift", self._on_attention_shift))
+        self._unsubs.append(self._bus.subscribe("L8.drive.suggestion", self._on_drive_suggestion))
+        self._unsubs.append(self._bus.subscribe("L4.thought.pushed", self._on_thought_pushed))
 
     async def detach(self) -> None:
         for u in self._unsubs:
@@ -443,3 +446,107 @@ class IntentStack:
             existing.last_reinforced_at = datetime.now().isoformat()
             existing.strength = strength
             await self._safe_publish("L8.intent.reinforced", existing.to_dict())
+
+    # ------------------------------------------------------------------
+    # L3 Attention listener — 注意力长期集中在某类事件上 → 升格为持续意图
+    # ------------------------------------------------------------------
+    async def _on_attention_shift(self, event: Event) -> None:
+        """L3 注意力转移 → 如果同一 layer 持续被关注，强化为 L8 意图。"""
+        payload = event.payload or {}
+        layer = payload.get("layer", "")
+        duration_s = payload.get("duration_s", 0.0)
+        focus_score = payload.get("focus_score", 0.0)
+
+        if not layer or duration_s < 30.0:
+            return  # ignore fleeting attention
+
+        key = f"focus_on_{layer}"
+        existing = self._intents.get(key)
+        if existing is not None:
+            # reinforce existing
+            existing.strength = min(existing.strength + 0.05, 0.85)
+            existing.last_reinforced_at = datetime.now().isoformat()
+            await self._safe_publish("L8.intent.reinforced", existing.to_dict())
+        else:
+            intent = Intent(
+                key=key,
+                description=f"持续关注 {layer} 层（已专注 {duration_s:.0f}s，关注度 {focus_score:.2f}）",
+                source="L3.attention",
+                strength=0.3,
+                proposed_at=datetime.now().isoformat(),
+                last_reinforced_at=datetime.now().isoformat(),
+                detail={"layer": layer, "duration_s": duration_s, "focus_score": focus_score},
+            )
+            self._intents[key] = intent
+            await self._safe_publish("L8.intent.proposed", intent.to_dict())
+
+    # ------------------------------------------------------------------
+    # L8 Drive listener — 驱动力建议 → 直接升格为 L8 意图
+    # ------------------------------------------------------------------
+    async def _on_drive_suggestion(self, event: Event) -> None:
+        """L8 Drive 发出了驱动力建议 → 升格为持续意图。"""
+        payload = event.payload or {}
+        content = payload.get("content", "")
+        drive_type = payload.get("drive_type", "unknown")
+        importance = payload.get("importance", "medium")
+
+        if not content:
+            return
+
+        # Map drive importance to intent strength
+        imp_map = {"low": 0.25, "medium": 0.4, "high": 0.6, "critical": 0.8}
+        strength = imp_map.get(importance, 0.35)
+
+        key = f"drive_{drive_type}"
+        existing = self._intents.get(key)
+        if existing is not None:
+            existing.strength = min(existing.strength + strength * 0.3, 0.85)
+            existing.last_reinforced_at = datetime.now().isoformat()
+            await self._safe_publish("L8.intent.reinforced", existing.to_dict())
+        else:
+            intent = Intent(
+                key=key,
+                description=content,
+                source=f"L8.drive.{drive_type}",
+                strength=strength,
+                proposed_at=datetime.now().isoformat(),
+                last_reinforced_at=datetime.now().isoformat(),
+                detail={"drive_type": drive_type, "importance": importance},
+            )
+            self._intents[key] = intent
+            await self._safe_publish("L8.intent.proposed", intent.to_dict())
+
+    # ------------------------------------------------------------------
+    # L4 Thought listener — 被推给用户的想法 → 升格为 L8 意图
+    # ------------------------------------------------------------------
+    async def _on_thought_pushed(self, event: Event) -> None:
+        """L4 推送了一个想法给用户 → 说明这个想法足够重要，升格为持续意图。"""
+        payload = event.payload or {}
+        content = payload.get("content", "")
+        thought_type = payload.get("thought_type", "")
+        importance = payload.get("importance", "medium")
+
+        if not content:
+            return
+
+        imp_map = {"low": 0.3, "medium": 0.45, "high": 0.65, "critical": 0.85}
+        strength = imp_map.get(importance, 0.4)
+
+        key = f"thought_{thought_type}"
+        existing = self._intents.get(key)
+        if existing is not None:
+            existing.strength = min(existing.strength + 0.1, 0.9)
+            existing.last_reinforced_at = datetime.now().isoformat()
+            await self._safe_publish("L8.intent.reinforced", existing.to_dict())
+        else:
+            intent = Intent(
+                key=key,
+                description=f"主动思考：{content[:80]}",
+                source="L4.thought.pushed",
+                strength=strength,
+                proposed_at=datetime.now().isoformat(),
+                last_reinforced_at=datetime.now().isoformat(),
+                detail={"thought_type": thought_type, "importance": importance},
+            )
+            self._intents[key] = intent
+            await self._safe_publish("L8.intent.proposed", intent.to_dict())

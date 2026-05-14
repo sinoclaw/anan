@@ -99,6 +99,8 @@ class SelfRegulator:
             await self._on_causal_pattern(event)
         self._unsub = self._bus.subscribe("L6.metacognition.warn", on_warn)
         self._unsub_l5 = self._bus.subscribe("L5.pattern.discovered", on_pattern_discovered)
+        self._unsub_goal_achieved = self._bus.subscribe("L7.goal.achieved", self._on_goal_achieved)
+        self._unsub_goal_abandoned = self._bus.subscribe("L7.goal.abandoned", self._on_goal_abandoned)
         self._learned_risky_patterns = set()  # (antecedent, consequent) we already acted on
 
         # If WM is wired, swap in our wrapping salience_fn (preserves original)
@@ -119,6 +121,12 @@ class SelfRegulator:
         if hasattr(self, '_unsub_l5') and self._unsub_l5:
             self._unsub_l5()
             self._unsub_l5 = None
+        if hasattr(self, '_unsub_goal_achieved') and self._unsub_goal_achieved:
+            self._unsub_goal_achieved()
+            self._unsub_goal_achieved = None
+        if hasattr(self, '_unsub_goal_abandoned') and self._unsub_goal_abandoned:
+            self._unsub_goal_abandoned()
+            self._unsub_goal_abandoned = None
         # Restore original salience fn so we don't leak state
         if self._wm is not None and self._original_salience_fn is not None:
             self._wm.salience_fn = self._original_salience_fn
@@ -328,3 +336,37 @@ class SelfRegulator:
             "by_action": dict(actions),
             "layer_attenuations": dict(self._layer_atten),
         }
+
+    # ------------------------------------------------------------------
+    # L7 Goals listener — 目标达成/放弃 → 记录到 adaptation history
+    # ------------------------------------------------------------------
+    async def _on_goal_achieved(self, event: Event) -> None:
+        """L7.goal.achieved → 记录一次成功的自我调节，增强下次信心。"""
+        payload = event.payload or {}
+        goal_id = payload.get("goal_id", "unknown")
+        goal_text = payload.get("goal_text", "")
+        self._history.append(
+            Adaptation(
+                timestamp=datetime.now().isoformat(),
+                trigger="L7.goal.achieved",
+                action="goal_achieved",
+                detail={"goal_id": goal_id, "goal_text": goal_text},
+            )
+        )
+        logger.info(f"[L7] 目标达成记录: {goal_text[:50]}")
+
+    async def _on_goal_abandoned(self, event: Event) -> None:
+        """L7.goal.abandoned → 记录放弃，下次同类目标降低优先级。"""
+        payload = event.payload or {}
+        goal_id = payload.get("goal_id", "unknown")
+        goal_text = payload.get("goal_text", "")
+        reason = payload.get("reason", "unknown")
+        self._history.append(
+            Adaptation(
+                timestamp=datetime.now().isoformat(),
+                trigger="L7.goal.abandoned",
+                action="goal_abandoned",
+                detail={"goal_id": goal_id, "goal_text": goal_text, "reason": reason},
+            )
+        )
+        logger.info(f"[L7] 目标放弃记录: {goal_text[:50]}, reason={reason}")
