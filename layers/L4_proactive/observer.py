@@ -157,6 +157,42 @@ DEFAULT_PROBES: dict[str, Probe] = {
 }
 
 
+def probe_catchall(intent, ctx: ProbeContext) -> ProbeResult:
+    """Catch-all probe for intents with no dedicated probe.
+
+    Heuristic rules (no LLM needed):
+      - keep_triggering_X  → look for X in bus history — if seen recently → verified
+      - avoid_X            → look for X in bus history — if NOT seen recently → verified
+      - keep_doing_X       → look for X in bus history — if seen recently → verified
+    Falls back to inconclusive when the heuristic can't determine.
+    """
+    key = intent.key
+    history = ctx.bus.history(limit=30)
+
+    if key.startswith("keep_triggering_"):
+        target = key.replace("keep_triggering_", "").replace("_", ".")
+        found = any(target in e.event.topic or target in str(e.event.payload) for e in history)
+        if found:
+            return ProbeResult("verified", f"最近 30 事件中出现过 {target}", {"target": target})
+        return ProbeResult("inconclusive", f"最近 30 事件中未出现 {target}，需更多信息", {"target": target})
+
+    if key.startswith("avoid_"):
+        action = key.replace("avoid_", "")
+        found = any(action in e.event.topic or action in str(e.event.payload) for e in history)
+        if not found:
+            return ProbeResult("verified", f"{action} 未出现，避开了", {"action": action})
+        return ProbeResult("falsified", f"{action} 仍在发生", {"action": action})
+
+    if key.startswith("keep_doing_"):
+        action = key.replace("keep_doing_", "")
+        found = any(action in e.event.topic or action in str(e.event.payload) for e in history)
+        if found:
+            return ProbeResult("verified", f"{action} 仍在做", {"action": action})
+        return ProbeResult("inconclusive", f"{action} 最近未观察到", {"action": action})
+
+    return ProbeResult("inconclusive", "无法判断（无启发式规则匹配）")
+
+
 class ProactiveObserver:
     """L4 — listens to L8 intent snapshots, runs probes, emits observations.
 
@@ -181,6 +217,9 @@ class ProactiveObserver:
         probes: Optional[dict[str, Probe]] = None,
         auto_satisfy: bool = True,
         reinforce_on_falsify: bool = True,
+        # Optional LLM probe — async fn(intent_key, intent_description, context) -> ProbeResult
+        # Called when no built-in probe matches. If None, unmatched intents are skipped.
+        llm_probe_fn: Optional[Callable[..., Awaitable[ProbeResult]]] = None,
     ):
         self._bus = bus or get_bus()
         self._intent_stack = intent_stack
@@ -191,6 +230,7 @@ class ProactiveObserver:
             self._probes.update(probes)
         self._auto_satisfy = auto_satisfy
         self._reinforce_on_falsify = reinforce_on_falsify
+        self._llm_probe_fn = llm_probe_fn
         self._unsubs: list[Callable[[], None]] = []
         self._observations: list[dict] = []
 
@@ -224,13 +264,25 @@ class ProactiveObserver:
         )
         for intent in self._intent_stack.top(7):
             probe = self._probes.get(intent.key)
-            if probe is None:
+            result = None
+            if probe is not None:
+                try:
+                    result = probe(intent, ctx)
+                except Exception as exc:  # noqa: BLE001
+                    logger.debug("L4 probe %s failed: %s", intent.key, exc)
+                    result = ProbeResult("inconclusive", f"probe error: {exc}")
+            elif self._llm_probe_fn is not None:
+                # LLM probe for anything without a built-in probe
+                try:
+                    result = await self._llm_probe_fn(intent.key, intent.description, ctx)
+                except Exception as exc:  # noqa: BLE001
+                    logger.debug("L4 LLM probe %s failed: %s", intent.key, exc)
+                    result = ProbeResult("inconclusive", f"LLM probe error: {exc}")
+            else:
+                # No LLM configured — use catch-all heuristic
+                result = probe_catchall(intent, ctx)
+            if result is None:
                 continue
-            try:
-                result = probe(intent, ctx)
-            except Exception as exc:  # noqa: BLE001
-                logger.debug("L4 probe %s failed: %s", intent.key, exc)
-                result = ProbeResult("inconclusive", f"probe error: {exc}")
             obs = {
                 "timestamp": datetime.now().isoformat(),
                 "intent_key": intent.key,

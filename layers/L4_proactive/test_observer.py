@@ -214,11 +214,15 @@ class TestObserverWiring:
 
     @pytest.mark.asyncio
     async def test_no_probe_for_intent_skips(self, fresh_bus):
+        """Without LLM probe, catchall handles unmatched intents heuristically."""
         l8 = IntentStack(bus=fresh_bus, initial_strength=0.5)
         await l8.propose("custom_thing", "do something custom")
         l4 = ProactiveObserver(bus=fresh_bus, intent_stack=l8)
         results = await l4.observe_now()
-        assert results == []
+        # Catch-all probe runs for unmatched intents — returns inconclusive
+        assert len(results) == 1
+        assert results[0]["intent_key"] == "custom_thing"
+        assert results[0]["verdict"] == "inconclusive"
 
     @pytest.mark.asyncio
     async def test_custom_probe_registration(self, fresh_bus):
