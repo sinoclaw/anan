@@ -83,10 +83,12 @@ class AttentionItem:
     suppress_count: int = 0   # 被抢占次数
     max_suppress: int = 3     # 超过这个次数降为 background
 
+    boost: float = 0.0   # 外部加成（驱动力等），由 boost() 累加
+
     def total_score(self) -> float:
-        """最终得分 = 原始分 - 抢占惩罚"""
+        """最终得分 = 原始分 - 抢占惩罚 + 外部加成"""
         suppress_penalty = self.suppress_count * 0.05
-        return max(0.0, self.score.total() - suppress_penalty)
+        return max(0.0, self.score.total() - suppress_penalty + self.boost)
 
     def is_expired(self) -> bool:
         return time.time() - self.created_at > self.ttl_s
@@ -240,6 +242,25 @@ class AttentionQueue:
                     topic="L3.attention.suppressed",
                     source="L3.attention",
                     payload={"id": item_id, "count": item.suppress_count},
+                ))
+                return True
+        return False
+
+    def boost(self, item_id: str, extra_score: float = 0.1) -> bool:
+        """提高注意力项分数（由驱动力等外部信号触发）。返回是否找到。"""
+        self._sorted_cache = None
+        for item in self._items:
+            if item.id == item_id:
+                item.boost += extra_score
+                # 同时升级优先级
+                if item.priority == Priority.BACKGROUND:
+                    item.priority = Priority.MEDIUM
+                elif item.priority == Priority.MEDIUM:
+                    item.priority = Priority.HIGH
+                self._bus.publish_sync(Event(
+                    topic="L3.attention.boosted",
+                    source="L3.attention",
+                    payload={"id": item_id, "extra_score": extra_score, "total_boost": item.boost},
                 ))
                 return True
         return False
