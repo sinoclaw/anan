@@ -296,6 +296,28 @@ class PredictiveReasoner:
         total = confirmed + failed
         return confirmed / total if total > 0 else 0.0
 
+    def _decay_link(self, cause: str, effect: str, decay: float = 0.15) -> bool:
+        """Decay a causal link's lift after prediction failure.
+
+        Called by L6 PredictionMonitor when a prediction expires without confirmation.
+        Returns True if the link was found and decayed, False if not found.
+        """
+        key = (cause, effect)
+        if key not in self._links:
+            return False
+
+        link = self._links[key]
+        old_lift = link.probability_boost
+        link.probability_boost = max(0.1, old_lift - decay * old_lift)
+        link.confidence = max(0.0, link.confidence - 0.05)
+        logger.debug(
+            "Decayed link %s→%s: lift %.2f → %.2f, conf %.2f → %.2f",
+            cause, effect,
+            old_lift, link.probability_boost,
+            link.confidence + 0.05, link.confidence,
+        )
+        return True
+
     def stats(self) -> dict:
         pending = self.pending_predictions()
         return {

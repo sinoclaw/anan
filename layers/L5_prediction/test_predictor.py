@@ -331,3 +331,69 @@ class TestWhatDoIPredict:
         assert "L7" in result or "L6" in result
 
         await pr.detach()
+
+
+# --------------------------------------------------------------------------
+
+
+class TestDecayLink:
+    @pytest.mark.asyncio
+    async def test_decay_link_exists(self):
+        bus = EventBus()
+        pr = PredictiveReasoner(
+            bus=bus,
+            causal_links_fn=lambda: [],
+            min_lift=1.0,
+        )
+        # Manually add a link to the cache
+        pr._links[("A", "B")] = Prediction(
+            cause="A",
+            effect="B",
+            probability_boost=2.0,
+            confidence=0.8,
+            issued_at=0.0,
+            horizon_s=3.0,
+        )
+
+        result = pr._decay_link("A", "B")
+        assert result is True
+        assert pr._links[("A", "B")].probability_boost < 2.0
+        assert pr._links[("A", "B")].confidence < 0.8
+
+    @pytest.mark.asyncio
+    async def test_decay_link_unknown_returns_false(self):
+        bus = EventBus()
+        pr = PredictiveReasoner(bus=bus, causal_links_fn=lambda: [])
+        result = pr._decay_link("UNKNOWN", "LINK")
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_decay_link_floor_at_minimum(self):
+        bus = EventBus()
+        pr = PredictiveReasoner(bus=bus, causal_links_fn=lambda: [])
+        # Add link with very low lift
+        pr._links[("X", "Y")] = Prediction(
+            cause="X", effect="Y",
+            probability_boost=0.12,
+            confidence=0.05,
+            issued_at=0.0,
+            horizon_s=1.0,
+        )
+        result = pr._decay_link("X", "Y")
+        assert result is True
+        # Lift should not go below 0.1
+        assert pr._links[("X", "Y")].probability_boost >= 0.1
+
+    @pytest.mark.asyncio
+    async def test_decay_link_confidence_floor_at_zero(self):
+        bus = EventBus()
+        pr = PredictiveReasoner(bus=bus, causal_links_fn=lambda: [])
+        pr._links[("M", "N")] = Prediction(
+            cause="M", effect="N",
+            probability_boost=1.5,
+            confidence=0.03,  # very low
+            issued_at=0.0,
+            horizon_s=2.0,
+        )
+        pr._decay_link("M", "N")
+        assert pr._links[("M", "N")].confidence >= 0.0
