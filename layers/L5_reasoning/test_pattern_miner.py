@@ -251,3 +251,57 @@ class TestPatternMinerAttach:
         await pm.attach()
         await pm.detach()
         assert len(pm._unsubs) == 0
+
+
+# --------------------------------------------------------------------------
+
+
+class MockSelfModel:
+    def __init__(self):
+        self.history_facts = []
+
+
+class TestPatternMinerSelfModel:
+    @pytest.mark.asyncio
+    async def test_self_model_param_accepted(self):
+        bus = EventBus()
+        sm = MockSelfModel()
+        pm = PatternMiner(bus=bus, self_model=sm)
+        assert pm._sm is sm
+
+    @pytest.mark.asyncio
+    async def test_no_self_model_is_fine(self):
+        bus = EventBus()
+        pm = PatternMiner(bus=bus)
+        assert pm._sm is None
+
+    @pytest.mark.asyncio
+    async def test_pattern_writes_to_self_model(self):
+        """When a pattern is discovered, it should be written to self_model.history_facts."""
+        bus = EventBus()
+        sm = MockSelfModel()
+        pm = PatternMiner(
+            bus=bus,
+            self_model=sm,
+            window=5,
+            min_support=1,
+            min_confidence=0.5,
+            min_lift=0.5,
+            cooldown_s=0.0,
+        )
+        await pm.attach()
+
+        # Push events to create a pattern
+        await bus.publish(Event(topic="L3.attention.shift", source="test"))
+        await bus.publish(Event(topic="L3.attention.shift", source="test"))
+        await bus.publish(Event(topic="L8.intent.proposed", source="test"))
+
+        patterns = await pm.mine_now()
+
+        if patterns:
+            assert len(sm.history_facts) >= 1
+            fact = sm.history_facts[-1]
+            assert "模式" in fact or "pattern" in fact.lower()
+            assert "L3" in fact or "L8" in fact
+
+        await pm.detach()

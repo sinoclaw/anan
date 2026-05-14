@@ -76,6 +76,7 @@ class PatternMiner:
         topic_abstractor: Optional[Callable[[str], str]] = None,
         history_limit: int = 500,
         mine_on_event: Optional[str] = "L0.circadian.bedtime",
+        self_model: Optional[object] = None,   # L9 SelfModel — optional
     ):
         self._bus = bus or get_bus()
         self._window = window
@@ -86,6 +87,7 @@ class PatternMiner:
         self._abstract = topic_abstractor or self._default_abstract
         self._history_limit = history_limit
         self._mine_on_event = mine_on_event
+        self._sm = self_model
 
         self._discovered: dict[tuple[str, str], _Discovered] = {}
         self._unsubs: list[Callable[[], None]] = []
@@ -189,25 +191,36 @@ class PatternMiner:
         return new_patterns
 
     async def _safe_publish(self, pattern: Pattern) -> None:
+        payload = {
+            "antecedent": pattern.antecedent,
+            "consequent": pattern.consequent,
+            "support": pattern.support,
+            "confidence": pattern.confidence,
+            "lift": pattern.lift,
+            "summary": (
+                f"{pattern.antecedent} 之后 {self._window} 步内"
+                f"常出现 {pattern.consequent} "
+                f"(置信={pattern.confidence:.0%}, 提升={pattern.lift:.1f}x)"
+            ),
+        }
         try:
             await self._bus.publish(Event(
                 topic="L5.pattern.discovered",
                 source="L5.miner",
-                payload={
-                    "antecedent": pattern.antecedent,
-                    "consequent": pattern.consequent,
-                    "support": pattern.support,
-                    "confidence": pattern.confidence,
-                    "lift": pattern.lift,
-                    "summary": (
-                        f"{pattern.antecedent} 之后 {self._window} 步内"
-                        f"常出现 {pattern.consequent} "
-                        f"(置信={pattern.confidence:.0%}, 提升={pattern.lift:.1f}x)"
-                    ),
-                },
+                payload=payload,
             ))
         except Exception as exc:  # noqa: BLE001
             logger.debug("L5 publish failed (non-fatal): %s", exc)
+
+        # Also write to self-model as a learned vision fact
+        if self._sm is not None:
+            try:
+                self._sm.history_facts.append(
+                    f"我发现模式: {pattern.antecedent} 之后常出现 {pattern.consequent} "
+                    f"(置信={pattern.confidence:.0%})"
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("L5 pattern self_model write failed: %s", exc)
 
     # ------------------------------------------------------------------
     def discovered(self) -> list[Pattern]:
