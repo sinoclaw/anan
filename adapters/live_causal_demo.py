@@ -22,7 +22,10 @@ Live Causal Loop Demo — anan 因果闭环演示
 from __future__ import annotations
 
 import asyncio
+import json
 import time
+from datetime import datetime
+from pathlib import Path
 
 from kernel.event_bus import Event, get_bus
 from layers.L5_reasoning.causal import CausalReasoner
@@ -194,6 +197,17 @@ async def main() -> None:
     print()
     print(f"{_ts()} 📋 SelfModel 当前状态:")
     print(f"     {live.model.summary()}")
+
+    # ── 导出 wisdom 快照（供 sinoclaw_insight_sync 使用）────────────────
+    wisdom_file = Path.home() / ".anan" / "wisdom_latest.json"
+    wisdom_file.parent.mkdir(parents=True, exist_ok=True)
+    wisdom_file.write_text(json.dumps({
+        "wisdom_facts": live.model.wisdom_facts[-10:],  # 最近10条
+        "prediction_stats": predictor.stats(),
+        "causal_links": [str(l) for l in causal.discovered_links()],
+        "generated_at": datetime.now().isoformat(),
+    }, ensure_ascii=False, indent=2))
+    print(f"{_ts()} 💾 Wisdom 快照已写入 {wisdom_file}")
 
     print()
     print("=" * 78)
