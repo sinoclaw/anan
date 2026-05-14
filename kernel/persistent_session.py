@@ -37,6 +37,12 @@ from kernel.event_bus import Event, EventBus, get_bus
 logger = logging.getLogger("anan.kernel.persistent_session")
 
 
+def _expand_path(path: str) -> str:
+    """Expand ~ and environment variables in a path."""
+    import os
+    return os.path.expandvars(os.path.expanduser(path))
+
+
 @dataclass
 class SessionConfig:
     """Tunables for the persistent session."""
@@ -55,6 +61,8 @@ class SessionConfig:
     # Platform / session targeting
     platform: str = "cli"       # "cli" = terminal, "weixin" = WeChat, etc.
     session_id: Optional[str] = None  # None = create new session each time
+    # Directory for JSONL session logs (none = don't persist)
+    storage_dir: Optional[str] = "~/.anan/sessions"
 
 
 class PersistentSession:
@@ -95,6 +103,13 @@ class PersistentSession:
         self._max_memory = 20  # max turns to remember
         self._running = False
         self._unsubs: list[Any] = []
+        self._storage_path: Optional[str] = None
+        self._session_n: int = 0  # turn counter for ordering
+
+        # Load persisted history from JSONL
+        if self.config.storage_dir:
+            self._storage_path = _expand_path(self.config.storage_dir)
+            self._load()
 
     # ------------------------------------------------------------------
     # Public API
@@ -159,6 +174,9 @@ class PersistentSession:
             if len(self._short_term_memory) > self._max_memory:
                 self._short_term_memory.pop(0)
 
+            self._session_n += 1
+            self._save()
+
             await self.bus.publish(Event(
                 topic="L0.session.responded",
                 source="L0.persistent_session",
@@ -188,6 +206,64 @@ class PersistentSession:
             "provider": self.config.provider,
             "memory_turns": len(self._short_term_memory) // 2,
         }
+
+    # ------------------------------------------------------------------
+    # Persistence (JSONL)
+    # ------------------------------------------------------------------
+
+    def _load(self) -> None:
+        """Load conversation history from JSONL on disk."""
+        import json, os
+
+        os.makedirs(self._storage_path, exist_ok=True)
+        session_file = os.path.join(self._storage_path, "conversation.jsonl")
+        if not os.path.exists(session_file):
+            return
+
+        entries = []
+        with open(session_file) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        entries.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        pass
+
+        # Reconstruct memory from entries
+        self._short_term_memory.clear()
+        for entry in entries:
+            if entry.get("role") == "user":
+                self._short_term_memory.append(f"user: {entry['content']}")
+            elif entry.get("role") == "assistant":
+                self._short_term_memory.append(f"assistant: {entry['content']}")
+
+        self._session_n = len(entries) // 2
+        if self._short_term_memory:
+            logger.info(
+                "Loaded %d turns from session log (total=%d)",
+                self._session_n, len(self._short_term_memory)
+            )
+
+    def _save(self) -> None:
+        """Append the latest exchange to JSONL."""
+        import json, os
+
+        if not self._storage_path:
+            return
+
+        os.makedirs(self._storage_path, exist_ok=True)
+        session_file = os.path.join(self._storage_path, "conversation.jsonl")
+
+        # Append the last two entries (user + assistant)
+        entries = self._short_term_memory[-2:]
+        role_map = {"user: ": "user", "assistant: ": "assistant"}
+        with open(session_file, "a") as f:
+            for entry in entries:
+                for prefix, role in role_map.items():
+                    if entry.startswith(prefix):
+                        f.write(json.dumps({"role": role, "content": entry[len(prefix):]}) + "\n")
+                        break
 
     # ------------------------------------------------------------------
     # Internal
