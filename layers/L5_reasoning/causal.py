@@ -207,6 +207,18 @@ class CausalReasoner:
             "confidence": link.confidence,
             "observations": link.co_count,
         })
+        # Also emit L5.pattern.discovered so SelfRegulator._on_causal_pattern picks it up
+        await self._safe_publish("L5.pattern.discovered", {
+            "antecedent": link.cause,
+            "consequent": link.effect,
+            "support": link.co_count,
+            "confidence": link.confidence,
+            "lift": link.lift,
+            "summary": (
+                f"{link.cause} 之后更可能出现 {link.effect} "
+                f"(lift={link.lift:.2f}, 置信={link.confidence:.0%})"
+            ),
+        })
         # Bake into self-model as learning history
         if self._sm is not None:
             try:

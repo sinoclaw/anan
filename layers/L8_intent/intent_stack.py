@@ -117,6 +117,7 @@ class IntentStack:
         self._unsubs.append(self._bus.subscribe("L6.metacognition.report", on_l6))
         self._unsubs.append(self._bus.subscribe("L7.regulator.acted", on_l7))
         self._unsubs.append(self._bus.subscribe("L7.regulator.weaken_intent", on_weaken_intent))
+        self._unsubs.append(self._bus.subscribe("L5.causal.action_effect", self._on_action_effect))
 
     async def detach(self) -> None:
         for u in self._unsubs:
@@ -351,3 +352,46 @@ class IntentStack:
         if "错误率" in issue:
             return "保持事件总线健康"
         return f"应对: {issue[:30]}"
+
+    # ------------------------------------------------------------------
+    # L5 因果 listener — L5 发现行动效果，L8 把它升格为持续意图
+    # ------------------------------------------------------------------
+    async def _on_action_effect(self, event: Event) -> None:
+        """L5 评估了某个 L7 action 的效果 — 如果是正向的，升格为持续意图."""
+        payload = event.payload or {}
+        action = payload.get("action", "")
+        avg_delta = payload.get("avg_delta", 0.0)
+        samples = payload.get("samples", 0)
+
+        if not action or samples < 2:
+            return  # need at least 2 samples before trusting the signal
+
+        # If the action reliably improves health, make it a persistent want
+        if avg_delta > 0.05:
+            key = f"keep_doing_{action}"
+            await self.propose(
+                key=key,
+                description=f"继续 {action}（已证明平均提升 health +{avg_delta:.2f}）",
+                source="L5",
+                detail={
+                    "action": action,
+                    "avg_delta": avg_delta,
+                    "samples": samples,
+                },
+            )
+        elif avg_delta < -0.05:
+            # Action reliably hurts — avoid it (flag as negative pattern)
+            key = f"avoid_{action}"
+            existing = self._intents.get(key)
+            if existing is None:
+                intent = Intent(
+                    key=key,
+                    description=f"避免 {action}（已证明平均降低 health {avg_delta:.2f}）",
+                    source="L5",
+                    strength=0.3,  # low strength — we don't want to dwell on negatives
+                    proposed_at=datetime.now().isoformat(),
+                    last_reinforced_at=datetime.now().isoformat(),
+                    detail={"action": action, "avg_delta": avg_delta, "samples": samples},
+                )
+                self._intents[key] = intent
+                await self._safe_publish("L8.intent.proposed", intent.to_dict())

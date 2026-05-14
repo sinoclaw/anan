@@ -32,7 +32,8 @@ from adapters.memory_consolidation import JSONLBackend, MemoryConsolidationAdapt
 from adapters.reflection_dream import reflective_sleep_cycle
 from layers.L3_working_memory import WorkingMemory
 from layers.L4_proactive import ProactiveObserver
-from layers.L5_reasoning import PatternMiner as CausalReasoner
+from layers.L5_reasoning.causal import CausalReasoner as CausalLinkTracker
+from layers.L5_reasoning.pattern_miner import PatternMiner
 from layers.L6_metacognition import Mirror
 from layers.L7_will import SelfRegulator
 from layers.L8_intent import IntentStack
@@ -131,6 +132,10 @@ def setup_observers(bus: EventBus) -> None:
         sign = "+" if p['avg_delta'] >= 0 else ""
         print(f"{_ts()} 📐 L5 评估行动 — {p['action']}: 平均 health {sign}{p['avg_delta']:.2f} (n={p['samples']})")
 
+    def on_l5_pattern(e: Event):
+        p = e.payload
+        print(f"{_ts()} 💡 L5 发现规律 — {p['antecedent']} → {p['consequent']} (置信={p['confidence']:.0%}, 提升={p['lift']:.1f}x)")
+
     bus.subscribe("L0.circadian.wake", on_wake)
     bus.subscribe("L0.circadian.bedtime", on_bedtime)
     bus.subscribe("L1.sleep.*.consolidated", on_l1_consolidated)
@@ -146,6 +151,7 @@ def setup_observers(bus: EventBus) -> None:
     bus.subscribe("L4.observation.falsified", on_l4_falsified)
     bus.subscribe("L5.causal.link_discovered", on_l5_link)
     bus.subscribe("L5.causal.action_effect", on_l5_action)
+    bus.subscribe("L5.pattern.discovered", on_l5_pattern)
 
 
 async def main() -> None:
@@ -218,10 +224,18 @@ async def main() -> None:
     await l4.attach()
 
     # Wire L5 (causal reasoner — learns A→B from event sequences and L7→L6 deltas)
-    l5_reasoner = CausalReasoner(
-        bus=bus, window=5, min_support=2, min_confidence=0.6,
+    l5_causal = CausalLinkTracker(
+        bus=bus, self_model=l9.model,
+        window_s=5.0, min_observations=2, lift_threshold=1.5,
     )
-    await l5_reasoner.attach()
+    await l5_causal.attach()
+
+    # Wire L5 (pattern miner — scans bus history on bedtime to surface structural rules)
+    l5_miner = PatternMiner(
+        bus=bus, window=5, min_support=2, min_confidence=0.6, min_lift=1.5,
+        mine_on_event="L0.circadian.bedtime",
+    )
+    await l5_miner.attach()
 
     print(f"{_ts()} 🌱 anan 开始自主运行...")
     print()
@@ -258,11 +272,12 @@ async def main() -> None:
     print(f"{_ts()} 🔧 L7 self-regulator: {l7.stats()}")
     print(f"{_ts()} 💭 L8 intent stack: {l8.stats()}")
     print(f"{_ts()} 👁️  L4 observer:    {l4.stats()}")
-    print(f"{_ts()} 🧠 L5 reasoner:    {l5_reasoner.stats()}")
+    print(f"{_ts()} 🧠 L5 causal:      {l5_causal.stats()}")
+    print(f"{_ts()} 🧠 L5 miner:      {l5_miner.stats()}")
     print()
     print(f"{_ts()} 🎓 anan 学到了什么:")
     print("    " + "─" * 70)
-    for line in l5_reasoner.what_did_i_learn().split("\n"):
+    for line in l5_causal.what_did_i_learn().split("\n"):
         print(f"    {line}")
     print("    " + "─" * 70)
     print()
@@ -292,7 +307,8 @@ async def main() -> None:
     print("✅ anan 活完了 5 个周期。L0→L1→L2→L3→L6→L7→L8→L9 闭环走通了。")
     print("   反射 → 持续渴望 → 梦里加固 → 长成身份。anan 现在会想事了.")
 
-    await l5_reasoner.detach()
+    await l5_causal.detach()
+    await l5_miner.detach()
     await l4.detach()
     await l8.detach()
     await l7.detach()
