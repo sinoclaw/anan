@@ -69,6 +69,7 @@ class SelfRegulator:
         bus: Optional[EventBus] = None,
         working_memory=None,
         circadian=None,
+        intent_stack=None,            # L8 IntentStack — to check avoid_ intents before acting
         # tunables
         salience_attenuation: float = 0.3,    # multiply skewed-layer salience by this
         min_sleep_threshold: float = 1.0,     # don't shorten below this
@@ -78,6 +79,7 @@ class SelfRegulator:
         self._bus = bus or get_bus()
         self._wm = working_memory
         self._circadian = circadian
+        self._intent_stack = intent_stack
         self._sal_atten = salience_attenuation
         self._min_thresh = min_sleep_threshold
         self._thresh_step = threshold_step
@@ -232,6 +234,22 @@ class SelfRegulator:
         """Apply salience attenuation to a layer, with floor."""
         if self._wm is None:
             return
+        # Check if L8 has flagged this action as harmful — respect anan's own learning
+        if self._intent_stack is not None:
+            avoid_key = f"avoid_attenuate_layer_salience"
+            avoid_intent = self._intent_stack.get(avoid_key)
+            if avoid_intent is not None and avoid_intent.strength > 0.2:
+                logger.debug(
+                    "L7 skipped attenuate_layer_salience: L8 flagged it as harmful "
+                    "(strength=%.2f). L7 respects L5's evidence.",
+                    avoid_intent.strength,
+                )
+                await self._record_and_emit(
+                    trigger=f"L8 avoid intent active ({trigger})",
+                    action="noop_respect_avoid",
+                    detail={"reason": f"L8 判定有害，跳过: {avoid_key}", "layer": layer},
+                )
+                return
         new_atten = self._layer_atten.get(layer, 1.0) * factor
         # Floor it so we don't kill a layer entirely
         new_atten = max(new_atten, 0.05)

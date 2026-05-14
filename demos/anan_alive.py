@@ -205,16 +205,17 @@ async def main() -> None:
 
     loop = CircadianLoop(sleep_fn=sleep_with_wm, config=config, bus=bus)
 
+    # Wire L8 first (intent stack — turns reactions into persistent wants)
+    l8 = IntentStack(bus=bus, capacity=7, initial_strength=0.4, reinforce_alpha=0.35)
+    await l8.attach()
+
     # Wire L7 (self-regulator — listens to L6.warn, adjusts WM + circadian)
+    # Passes intent_stack so L7 respects L8's avoid_ intents before acting
     l7 = SelfRegulator(
-        bus=bus, working_memory=wm, circadian=loop,
+        bus=bus, working_memory=wm, circadian=loop, intent_stack=l8,
         salience_attenuation=0.5, threshold_step=0.5,
     )
     await l7.attach()
-
-    # Wire L8 (intent stack — turns reactions into persistent wants)
-    l8 = IntentStack(bus=bus, capacity=7, initial_strength=0.4, reinforce_alpha=0.35)
-    await l8.attach()
 
     # Wire L4 (proactive observer — runs probes when L8 snapshots, satisfies/reinforces intents)
     l4 = ProactiveObserver(
