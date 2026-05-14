@@ -118,6 +118,7 @@ class IntentStack:
         self._unsubs.append(self._bus.subscribe("L7.regulator.acted", on_l7))
         self._unsubs.append(self._bus.subscribe("L7.regulator.weaken_intent", on_weaken_intent))
         self._unsubs.append(self._bus.subscribe("L5.causal.action_effect", self._on_action_effect))
+        self._unsubs.append(self._bus.subscribe("L5.pattern.discovered", self._on_pattern_discovered))
 
     async def detach(self) -> None:
         for u in self._unsubs:
@@ -395,3 +396,50 @@ class IntentStack:
                 )
                 self._intents[key] = intent
                 await self._safe_publish("L8.intent.proposed", intent.to_dict())
+
+    # ------------------------------------------------------------------
+    # L5 PatternMiner listener — L5 发现了正向因果规则，L8 把它升格为持续渴望
+    # ------------------------------------------------------------------
+    async def _on_pattern_discovered(self, event: Event) -> None:
+        """L5 PatternMiner 发现了 A→B 高置信规则 — 如果 B 是有益的，让 L8 持续想要它."""
+        payload = event.payload or {}
+        antecedent = payload.get("antecedent", "")
+        consequent = payload.get("consequent", "")
+        confidence = payload.get("confidence", 0.0)
+        lift = payload.get("lift", 1.0)
+
+        if not antecedent or not consequent:
+            return
+        if confidence < 0.7 or lift < 2.0:
+            return  # only strong, surprising rules become wants
+
+        # Positive patterns: B leads to good things → make it a keep_ intent
+        # Map the consequent to a want key
+        key = f"keep_triggering_{consequent.replace('.', '_')}"
+        existing = self._intents.get(key)
+        strength = 0.35 if existing is None else min(existing.strength + 0.05, 0.85)
+        description = (
+            f"保持触发 {consequent}（规则 {antecedent}→{consequent} "
+            f"置信{confidence:.0%}，提升{lift:.1f}x）"
+        )
+        if existing is None:
+            intent = Intent(
+                key=key,
+                description=description,
+                source="L5.miner",
+                strength=strength,
+                proposed_at=datetime.now().isoformat(),
+                last_reinforced_at=datetime.now().isoformat(),
+                detail={
+                    "antecedent": antecedent,
+                    "consequent": consequent,
+                    "confidence": confidence,
+                    "lift": lift,
+                },
+            )
+            self._intents[key] = intent
+            await self._safe_publish("L8.intent.proposed", intent.to_dict())
+        else:
+            existing.last_reinforced_at = datetime.now().isoformat()
+            existing.strength = strength
+            await self._safe_publish("L8.intent.reinforced", existing.to_dict())
