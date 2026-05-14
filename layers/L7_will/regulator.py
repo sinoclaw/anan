@@ -147,10 +147,8 @@ class SelfRegulator:
         action = None
         detail = {}
 
-        # Pattern: X → L6.metacognition.* (X causes metacognition warnings)
-        # PatternMiner abstracts to prefix, so it's "L6.metacognition.*", not "L6.metacognition.warn"
+        # Pattern 1: X → L6.metacognition.* (X causes metacognition warnings)
         if "L6.metacognition" in consequent:
-            # Extract which layer is the antecedent (e.g. "L9.self.*" → "L9")
             layer = antecedent.split(".")[0]
             if layer in ("L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9"):
                 is_bad = True
@@ -161,9 +159,32 @@ class SelfRegulator:
                     "factor": self._sal_atten,
                 }
 
-        if is_bad and action and self._wm is not None:
-            self._learned_risky_patterns.add(pattern_key)
-            await self._apply_layer_attenuation(detail["layer"], detail["factor"])
+        # Pattern 2: L8.intent.* → L4.observation.* (intent leads to observation/verification)
+        # This means: every time we have an intent, we get observed/falsified
+        # That's the "try harder → fail → try harder" loop — L7 should intervene
+        elif "L8.intent" in antecedent and "L4.observation" in consequent:
+            is_bad = True
+            action = "weaken_intent"
+            # The pattern tells us failure leads to reinforce, but not which specific intent
+            # We'll emit a general weaken signal; L8 can decide which intent to weaken
+            detail = {
+                "rationale": f"[proactive from L5 insight] 发现『验证失败→意图加固』死循环，{antecedent} → {consequent} (置信={confidence:.0%}, 提升={lift:.1f}x) — 这是疯狂的定义，主动减弱",
+                "confidence": confidence,
+                "lift": lift,
+            }
+
+        if is_bad and action:
+            if action == "attenuate_layer_salience" and self._wm is not None:
+                self._learned_risky_patterns.add(pattern_key)
+                await self._apply_layer_attenuation(detail["layer"], detail["factor"], detail["rationale"])
+            elif action == "weaken_intent":
+                self._learned_risky_patterns.add(pattern_key)
+                # Publish intent weaken signal for L8 to consume
+                await self._bus.publish(Event(
+                    topic="L7.regulator.weaken_intent",
+                    source="L7",
+                    payload=detail,
+                ))
             await self._record_and_emit(
                 trigger=f"L5 insight: {antecedent} → {consequent}",
                 action=action,

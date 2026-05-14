@@ -111,8 +111,12 @@ class IntentStack:
         async def on_l7(event: Event):
             await self._learn_from_l7(event)
 
+        async def on_weaken_intent(event: Event):
+            await self._weaken_most_failing(event)
+
         self._unsubs.append(self._bus.subscribe("L6.metacognition.report", on_l6))
         self._unsubs.append(self._bus.subscribe("L7.regulator.acted", on_l7))
+        self._unsubs.append(self._bus.subscribe("L7.regulator.weaken_intent", on_weaken_intent))
 
     async def detach(self) -> None:
         for u in self._unsubs:
@@ -281,6 +285,37 @@ class IntentStack:
                 source="L7",
                 detail=detail,
             )
+
+    async def _weaken_most_failing(self, event: Event) -> None:
+        """L5 discovered 'failure → reinforce' loop — weaken the most reinforced failing intent.
+        
+        This is anan learning 'if it's not working, stop trying harder':
+        - Pick the intent with highest reinforce_count (being tried the most)
+        - Halve its strength; if below floor, abandon it
+        """
+        if not self._intents:
+            return
+        # Find most-reinforced intent (we've been trying this the hardest)
+        most_tried = max(self._intents.values(), key=lambda i: i.reinforce_count)
+        if most_tried.reinforce_count < 2:
+            return  # only act on intents we've actually tried multiple times
+
+        # Halve it — "insanity is doing the same thing expecting different results"
+        old_strength = most_tried.strength
+        most_tried.strength *= 0.5
+        logger.debug(
+            "L5→L7 insight weakened intent '%s': %.2f → %.2f (reinforced %d times)",
+            most_tried.key, old_strength, most_tried.strength, most_tried.reinforce_count,
+        )
+
+        if most_tried.strength < self._floor:
+            await self._abandon(most_tried, reason="L5_insight_failing_pattern")
+        else:
+            await self._safe_publish("L8.intent.weakened", {
+                **most_tried.to_dict(),
+                "old_strength": round(old_strength, 4),
+                "reason": event.payload.get("rationale", "L5 insight"),
+            })
 
     async def _learn_from_l6(self, event: Event) -> None:
         """L6 reported — repeated issues become persistent intents."""
