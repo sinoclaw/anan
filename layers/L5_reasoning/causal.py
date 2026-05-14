@@ -96,6 +96,7 @@ class CausalReasoner:
         self._lookahead = action_eval_lookahead
         # Don't reason about own emissions or ticks (would dominate)
         self._ignore = ignore_topics or set()
+        self._ignore.add("L9.self.wisdom_grown")  # prevent feedback loop
 
         self._recent: deque[tuple[float, str]] = deque(maxlen=history_capacity)
         self._cause_count: dict[str, int] = defaultdict(int)

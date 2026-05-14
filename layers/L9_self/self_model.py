@@ -309,6 +309,7 @@ class SelfModelLive:
         self._bus: Optional[EventBus] = None
         self._unsub_memory = None
         self._unsub_wisdom = None
+        self._unsub_causal = None
         self.update_count = 0
 
     async def attach(self, bus: Optional[EventBus] = None) -> None:
@@ -318,6 +319,9 @@ class SelfModelLive:
         )
         self._unsub_wisdom = self._bus.subscribe(
             "L5.pattern.discovered", self._on_pattern_discovered
+        )
+        self._unsub_causal = self._bus.subscribe(
+            "L5.causal.link_discovered", self._on_causal_link
         )
         await self._bus.publish(Event(
             topic="L9.self.loaded",
@@ -339,6 +343,38 @@ class SelfModelLive:
         if self._unsub_wisdom:
             self._unsub_wisdom()
             self._unsub_wisdom = None
+        if self._unsub_causal:
+            self._unsub_causal()
+            self._unsub_causal = None
+
+    async def _on_causal_link(self, event: Event) -> None:
+        """When CausalReasoner discovers a causal link, add to wisdom_facts."""
+        payload = event.payload or {}
+        # Build a summary compatible with add_wisdom()
+        cause = payload.get("cause", "?")
+        effect = payload.get("effect", "?")
+        lift = payload.get("lift", 0.0)
+        confidence = payload.get("confidence", 0.0)
+        summary = (
+            f"{cause} 之后常出现 {effect} "
+            f"(lift={lift:.1f}x, 置信={confidence:.0%})"
+        )
+        pattern = dict(payload, summary=summary)
+        is_new = self.model.add_wisdom(pattern)
+        self.update_count += 1
+
+        if self._bus and is_new:
+            await self._bus.publish(Event(
+                topic="L9.self.wisdom_grown",
+                source="L9.self_model",
+                payload={
+                    "cause": cause,
+                    "effect": effect,
+                    "lift": lift,
+                    "summary": summary,
+                    "total_wisdom": len(self.model.wisdom_facts),
+                },
+            ))
 
     async def _on_pattern_discovered(self, event: Event) -> None:
         """When L5 PatternMiner discovers a causal pattern, add to wisdom."""
