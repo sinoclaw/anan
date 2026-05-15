@@ -1,8 +1,8 @@
 # anan 九层进度报告
 
-> 更新时间：2026-05-15 16:30
+> 更新时间：2026-05-15 16:45
 > 调研范围：`layers/` 全部源文件 + `kernel/mind_stack_runner.py`
-> 最新提交：P3 完成 — Daydreaming/Lucid Dream + L2 memory.persisted + L7 消费 Mirror
+> 最新提交：L5→L6→L7→L8 预测验证闭环 + Daydreaming/Lucid Dream 触发链全接通
 
 ---
 
@@ -11,8 +11,8 @@
 | 层 | 组件 | 状态 | 启动 | attach | 核心功能 |
 |---|---|---|---|---|---|
 | L0 | CircadianLoop | ✅ | ✅ | — | 30s/次 tick |
-| L1 | DreamingPlugin | 🟡 | ✅ | ✅ | 框架在，Daydreaming/Lucid Dream 未完成 |
-| L2 | MemoryTier | 🟡 | ✅ | ✅ | 三层存储在，promote 链路未与 L1 联动 |
+| L1 | DreamingPlugin | ✅ | ✅ | ✅ | Daydreaming（L4.idle.started 触发）+ Lucid Dream 框架完整 |
+| L2 | MemoryTier | ✅ | ✅ | ✅ | 三层存储在，promote 链路已联动（publishes L2.memory.persisted） |
 | L3 | VigilanceMonitor | 🟡 | ✅ | ✅ | 走神检测框架在，未与 L4 联动 |
 | L3 | AttentionQueue | 🟡 | ✅ | ✅ | 三维评分在，未被其他层调用 |
 | L4 | ConsciousnessEngine | ✅ | ✅ | ✅ | idle 检测 + 对话上下文注入 + L8 驱动消费 |
@@ -49,6 +49,7 @@
 - `AnanSessionDB` 读 anan state.db 的 session 数据
 - Narrative dream 生成（NARRATIVE_SYSTEM_PROMPT）
 - Recall signal system（短时记忆信号）
+- `attach()` 订阅 L4.idle.started，`start()` 调用 `attach()` 使 Daydreaming 触发链生效
 
 **缺失**：
 - `DreamingPlugin` 的 `run_dreaming_sweep()` 需要 `workspace_dir` + `phase` 参数，MindStackRunner 传了空 `{}`
@@ -67,6 +68,7 @@
 - MemoryStore（JSON 文件存储）
 - 三层：short-term(recall-store.json) / mid-term(周月记) / long-term(MEMORY.md)
 - promote 链路：`promote_short_to_mid()` / `promote_all_short_to_mid()` / `promote_mid_to_long()`
+- `promote_all_short_to_mid()` / `promote_mid_to_long()` 发布 `L2.memory.persisted` 事件供 L9 消费
 
 **缺失**：
 - `promote_all_short_to_mid()` 被 L1 Deep Sleep 调用，但 L1 的 sleep_fn 传空参数导致调用失败
@@ -132,9 +134,9 @@
 **文件**：`layers/L6_metacognition/`
 
 **已有**：
-- PredictionMonitor：订阅 `L5.prediction.confirmed/failed`，衰减链路 lift
-- SelfTuner：订阅 `L6.metacognition.warn`，调整 min_lift / horizon_s
-- Mirror（`mirror.py`）：HealthReport 元认知报告，但**未启动**
+- PredictionMonitor：订阅 `L5.prediction.confirmed/failed`，衰减链路 lift，发出 `L6.metacognition.warn`
+- SelfTuner：订阅 `L6.metacognition.warn` + `L6.metacognition.report`，调整 min_lift / horizon_s，写回 PatternMiner + PredictiveReasoner
+- Mirror（`mirror.py`）：订阅 `L0.circadian.asleep`，发出 `L6.metacognition.report` + `L6.metacognition.warn`，L7 Goals 消费 report
 
 **2026-05-15 修复**：
 - ✅ SelfTuner 调参闭环接通：`_apply()` 同时写回 `PatternMiner.set_min_lift()` + `PredictiveReasoner._min_lift`
