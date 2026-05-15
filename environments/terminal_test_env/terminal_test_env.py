@@ -45,7 +45,7 @@ from atroposlib.envs.server_handling.server_manager import APIServerConfig
 from atroposlib.type_definitions import Item
 
 from environments.agent_loop import AgentResult
-from environments.sinoclaw_base_env import SinoclawAgentBaseEnv, SinoclawAgentEnvConfig
+from environments.anan_base_env import AnanAgentBaseEnv, AnanAgentEnvConfig
 from environments.tool_context import ToolContext
 
 logger = logging.getLogger(__name__)
@@ -82,13 +82,13 @@ EVAL_TASKS = [
 ]
 
 
-class TerminalTestEnvConfig(SinoclawAgentEnvConfig):
+class TerminalTestEnvConfig(AnanAgentEnvConfig):
     """Config with defaults suitable for terminal testing."""
 
     pass  # Inherits all fields, overrides defaults in config_init
 
 
-class TerminalTestEnv(SinoclawAgentBaseEnv):
+class TerminalTestEnv(AnanAgentBaseEnv):
     """
     Simple test environment with inline file-creation tasks.
 

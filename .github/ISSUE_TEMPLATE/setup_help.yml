@@ -12,8 +12,8 @@ body:
         - Run `anan debug share` and paste the links in the Debug Report section below
         - If you're in a chat session, you can use `/debug` instead — it does the same thing
         - Try `anan update` to get the latest version
-        - Check the [README troubleshooting section](https://github.com/anan/anan#troubleshooting)
-        - For general questions, consider the [Sinoclaw Community](https://github.com/anan/anan) for faster help
+        - Check the [README troubleshooting section](https://github.com/sinoclaw/anan#troubleshooting)
+        - For general questions, consider the [Sinoclaw Community](https://github.com/sinoclaw/anan) for faster help
 
   - type: textarea
     id: description

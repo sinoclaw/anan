@@ -119,7 +119,7 @@ body:
       placeholder: "3.11.9"
 
   - type: input
-    id: sinoclaw-version
+    id: anan-version
     attributes:
       label: Hermes Version
       description: Output of `anan ` version`

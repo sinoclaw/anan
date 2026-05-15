@@ -5,7 +5,7 @@
 #
 # Usage:
 #   python environments/anan_swe_env/anan_swe_env.py serve \
-#       --config environments/sinoclaw_swe_env/default.yaml
+#       --config environments/anan_swe_env/default.yaml
 
 env:
   enabled_toolsets: ["terminal", "file", "web"]

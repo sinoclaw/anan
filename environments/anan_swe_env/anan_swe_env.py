@@ -13,7 +13,7 @@ Usage:
     # Phase 1: OpenAI server type
     vllm serve YourModel --tool-parser hermes
     run-api
-    python environments/sinoclaw_swe_env.py serve \\
+    python environments/anan_swe_env.py serve \\
         --openai.base_url http://localhost:8000/v1 \\
         --openai.model_name YourModel \\
         --openai.server_type openai \\
@@ -21,7 +21,7 @@ Usage:
         --env.terminal_backend modal
 
     # Phase 2: VLLM server type (full RL training)
-    python environments/sinoclaw_swe_env.py serve \\
+    python environments/anan_swe_env.py serve \\
         --openai.base_url http://localhost:8000/v1 \\
         --openai.model_name YourModel \\
         --openai.server_type vllm \\
@@ -47,19 +47,19 @@ from atroposlib.envs.server_handling.server_manager import APIServerConfig
 from atroposlib.type_definitions import Item
 
 from environments.agent_loop import AgentResult
-from environments.sinoclaw_base_env import SinoclawAgentBaseEnv, SinoclawAgentEnvConfig
+from environments.anan_base_env import AnanAgentBaseEnv, AnanAgentEnvConfig
 from environments.tool_context import ToolContext
 
 logger = logging.getLogger(__name__)
 
 
-class HermesSweEnvConfig(SinoclawAgentEnvConfig):
+class HermesSweEnvConfig(AnanAgentEnvConfig):
     """Config with defaults for SWE-bench style tasks."""
 
     pass  # Inherits all fields, overrides defaults in config_init
 
 
-class HermesSweEnv(SinoclawAgentBaseEnv):
+class HermesSweEnv(AnanAgentBaseEnv):
     """
     SWE-bench style environment using Modal terminal backend.
 
