@@ -89,7 +89,7 @@ class TestL6ToL8:
         await ds.attach()
 
         # reflect_and_emit generates a HealthReport and publishes events
-        mirror.reflect_and_emit()
+        await mirror.reflect_and_emit()
         await asyncio.sleep(0.05)
 
         print(f"Drive events fired: {len(drive_events)}")
