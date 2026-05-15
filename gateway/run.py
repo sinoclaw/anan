@@ -6912,7 +6912,7 @@ class GatewayRunner:
         )
 
         try:
-            # Emit agent:start hook
+            # Emit agent:start hook (九层注入在此之前已完成)
             hook_ctx = {
                 "platform": source.platform.value if source.platform else "",
                 "user_id": source.user_id,
@@ -6920,6 +6920,15 @@ class GatewayRunner:
                 "message": message_text[:500],
             }
             await self.hooks.emit("agent:start", hook_ctx)
+
+            # 追加九层认知产出到 context_prompt（由 agent:start 钩子填充）
+            try:
+                from gateway.builtin_hooks.mind_stack import get_mind_stack_context
+                _mind_ctx = get_mind_stack_context()
+                if _mind_ctx:
+                    context_prompt = context_prompt + "\n\n" + _mind_ctx if context_prompt else _mind_ctx
+            except Exception:
+                pass  # non-fatal, mind stack may not be running
 
             # Run the agent
             agent_result = await self._run_agent(

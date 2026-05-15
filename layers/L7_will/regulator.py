@@ -227,6 +227,12 @@ class SelfRegulator:
         action = "emit_heal_intent"
         detail = {"intent": "请上层定位并 detach 抛错的 handler"}
         await self._record_and_emit(trigger, action, detail)
+        # 真正发布 heal_bus 事件，让上层有机会处理
+        await self._bus.publish(Event(
+            topic="L7.intent.heal_bus",
+            source="L7.regulator",
+            payload={"trigger": trigger, "detail": detail},
+        ))
 
     async def _rebalance_attention(self, trigger: str) -> None:
         """Skewed attention — attenuate the dominant layer's salience."""

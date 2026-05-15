@@ -1393,6 +1393,7 @@ class DreamingPlugin:
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = DreamingConfig(**(config or {}))
         self.running = False
+        self._bus = None  # set by attach(bus), enables shared EventBus with MindStackRunner
 
         self._last_runtime_reconcile_at_ms = 0
         self._startup_cron_retry_attempts = 0
@@ -1430,6 +1431,15 @@ class DreamingPlugin:
     def set_cron_service(self, cron_service) -> None:
         """Set the cron service for managing dreaming cron jobs."""
         self._cron_service = cron_service
+
+    async def attach(self, bus=None) -> None:
+        """Receive the EventBus from MindStackRunner.
+
+        After attach(), this plugin publishes L1.sleep.* events to the shared bus
+        so MindStackRunner's subscriptions actually receive them.
+        """
+        self._bus = bus
+        logger.info("DreamingPlugin attached to shared EventBus")
 
     async def run_dreaming_sweep(
         self,
@@ -1521,7 +1531,7 @@ class DreamingPlugin:
 
         try:
             from kernel.event_bus import Event, get_bus
-            bus = get_bus()
+            bus = self._bus if getattr(self, '_bus', None) is not None else get_bus()
             await bus.publish(Event(
                 topic="L1.daydream.started",
                 payload={"workspace_dir": workspace_dir, "now_ms": now_ms},
@@ -1593,7 +1603,7 @@ Output ONLY the reflection, no preamble."""
 
         try:
             from kernel.event_bus import Event, get_bus
-            bus = get_bus()
+            bus = self._bus if getattr(self, '_bus', None) is not None else get_bus()
             await bus.publish(Event(
                 topic="L1.daydream.ended",
                 payload={"workspace_dir": workspace_dir, "now_ms": now_ms, "lines": len(body_lines)},
@@ -1633,7 +1643,7 @@ Output ONLY the reflection, no preamble."""
 
         try:
             from kernel.event_bus import Event, get_bus
-            bus = get_bus()
+            bus = self._bus if getattr(self, '_bus', None) is not None else get_bus()
             await bus.publish(Event(
                 topic="L1.lucid_dream.started",
                 payload={"workspace_dir": workspace_dir, "now_ms": now_ms},
@@ -1648,7 +1658,7 @@ Output ONLY the reflection, no preamble."""
         top_intents = []
         try:
             from kernel.event_bus import Event, get_bus
-            bus = get_bus()
+            bus = self._bus if getattr(self, '_bus', None) is not None else get_bus()
 
             async def collect_snapshot(event: Event):
                 payload = event.payload or {}
@@ -1715,7 +1725,7 @@ Be specific and actionable. Output ONLY the action items, no preamble."""
 
         try:
             from kernel.event_bus import Event, get_bus
-            bus = get_bus()
+            bus = self._bus if getattr(self, '_bus', None) is not None else get_bus()
             await bus.publish(Event(
                 topic="L1.lucid_dream.ended",
                 payload={"workspace_dir": workspace_dir, "now_ms": now_ms, "lines": len(body_lines)},
@@ -1864,7 +1874,7 @@ Be specific and actionable. Output ONLY the action items, no preamble."""
         from datetime import datetime
         from kernel.event_bus import Event, get_bus
 
-        bus = get_bus()
+        bus = self._bus if getattr(self, '_bus', None) is not None else get_bus()
         unsub_idle = bus.subscribe("L4.idle.started", self._on_idle_started)
         self._idle_unsub = unsub_idle
 

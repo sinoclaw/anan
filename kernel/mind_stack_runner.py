@@ -31,13 +31,182 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from kernel.event_bus import Event, EventBus, get_bus
 from kernel.circadian import CircadianConfig, CircadianLoop
 from kernel.idle_detector import IdleDetector
 
-logger = logging.getLogger("anan.kernel.mind_stack")
+logger = logging.getLogger("gateway.builtin.mind_stack")
+
+
+# --------------------------------------------------------------------------
+# 全局心智输出（agent:start 时被 run.py 读取）
+# --------------------------------------------------------------------------
+# 每次 gateway.message.sent 后，各层产出汇总到这里
+# agent:start 读它，注入 LLM 的 context_prompt
+_last_cognition: Dict[str, Any] = {}
+
+
+def get_last_cognition() -> Dict[str, Any]:
+    """返回最近一次九层处理的产出。供 gateway hook 调用。"""
+    return _last_cognition
+
+
+# --------------------------------------------------------------------------
+# MindStackCognition — 九层产出收集器
+# --------------------------------------------------------------------------
+
+
+class MindStackCognition:
+    """
+    收集九层产出，在 gateway.message.sent 后汇总，发 L0.cognition.ready。
+
+    收集内容：
+    - L5: PatternMiner 新发现的规律
+    - L6: Mirror 最新健康报告
+    - L8: DriveSystem 当前活跃驱动
+    - L9: SelfModel 最新洞察
+    - Memory: 最近记忆
+
+    发出的事件：
+    - L0.cognition.ready — payload 含所有产出，供外部注入 LLM
+    """
+
+    def __init__(self, runner: "MindStackRunner"):
+        self._runner = runner
+        self._bus = runner._bus
+        self._pending_task: Optional[asyncio.Task] = None
+        self._pending_mine_task: Optional[asyncio.Task] = None
+        # 注册到 bus：每次 gateway 消息发完 + 每次 circadian tick 都触发挖掘
+        self._bus.subscribe("gateway.message.sent", self._on_message_sent)
+        self._bus.subscribe("L0.circadian.tick", self._on_circadian_tick)
+
+    async def _on_circadian_tick(self, event: Event) -> None:
+        """每次心跳都触发 PatternMiner 挖掘，保持规律发现实时更新。"""
+        if self._pending_mine_task is not None and not self._pending_mine_task.done():
+            return
+        self._pending_mine_task = asyncio.create_task(self._trigger_mine())
+
+    async def _trigger_mine(self) -> None:
+        """触发各层处理，特别是 PatternMiner 挖掘。"""
+        try:
+            await asyncio.sleep(0.5)  # 给各层一点处理时间
+            # 触发 PatternMiner.mine_now()（如果已连接）
+            pm = getattr(self._runner, '_pattern_miner', None)
+            if pm is not None and hasattr(pm, 'mine_now'):
+                try:
+                    patterns = await pm.mine_now()
+                    if patterns:
+                        logger.debug("PatternMiner found %d new patterns on circadian tick", len(patterns))
+                except Exception as exc:
+                    logger.warning("PatternMiner.mine_now() failed: %s", exc)
+        except Exception as exc:
+            logger.warning("_trigger_mine failed: %s", exc)
+
+    async def _on_message_sent(self, event: Event) -> None:
+        """收到 gateway.message.sent，异步收集各层产出并发布。"""
+        # 如果上次的还没跑完，跳过
+        if self._pending_task is not None and not self._pending_task.done():
+            return
+        self._pending_task = asyncio.create_task(self._collect_and_publish())
+
+    async def _collect_and_publish(self) -> None:
+        """收集各层产出，写入 _last_cognition，并发 L0.cognition.ready。"""
+        try:
+            await asyncio.sleep(0.3)  # 给各层一点处理时间
+
+            cognition = await self._gather_layer_outputs()
+
+            global _last_cognition
+            _last_cognition = cognition
+
+            await self._bus.publish(Event(
+                topic="L0.cognition.ready",
+                source="L0.mind_stack_cognition",
+                payload=cognition,
+            ))
+        except Exception as exc:
+            logger.warning("MindStackCognition _collect_and_publish failed: %s", exc)
+
+    async def _gather_layer_outputs(self) -> Dict[str, Any]:
+        """从各层收集产出，组装成 dict。"""
+        outputs = {
+            "has_thought": True,
+            "insights": [],
+            "drives": [],
+            "self_model": {},
+            "memory": {},
+            "metacognition": {},
+        }
+
+        # L5 PatternMiner
+        pm = getattr(self._runner, '_pattern_miner', None)
+        if pm is not None:
+            try:
+                discovered = list(pm.discovered or [])[-3:]
+                outputs["insights"] = [
+                    p.get("abstract", str(p)) if isinstance(p, dict) else str(p)
+                    for p in discovered
+                ]
+            except Exception:
+                pass
+
+        # L9 SelfModel
+        sm = None
+        for layer in self._runner._layers:
+            from layers.L9_self.self_model import SelfModel
+            if isinstance(layer, SelfModel):
+                sm = layer
+                break
+        if sm is not None:
+            try:
+                outputs["self_model"] = {
+                    "who": sm.who_am_i() if hasattr(sm, 'who_am_i') else "",
+                    "learned": sm.what_have_i_learned() if hasattr(sm, 'what_have_i_learned') else "",
+                }
+            except Exception:
+                pass
+
+        # L8 DriveSystem
+        ds = getattr(self._runner, '_drive_system', None)
+        if ds is not None:
+            try:
+                top = ds.top_drives() if hasattr(ds, 'top_drives') else []
+                outputs["drives"] = [
+                    {"drive": d.get("drive", str(d)), "strength": d.get("strength", 0)}
+                    for d in top[:3]
+                ]
+            except Exception:
+                pass
+
+        # Memory short-term
+        mt = None
+        for layer in self._runner._layers:
+            from layers.L2_memory.memory_tier import MemoryTier
+            if isinstance(layer, MemoryTier):
+                mt = layer
+                break
+        if mt is not None:
+            try:
+                short_mem = mt.short() if hasattr(mt, 'short') else []
+                outputs["memory"]["recent"] = short_mem[-3:] if short_mem else []
+            except Exception:
+                pass
+
+        # L6 Mirror
+        for layer in self._runner._layers:
+            from layers.L6_metacognition.mirror import Mirror
+            if isinstance(layer, Mirror):
+                try:
+                    latest = layer.latest() if hasattr(layer, 'latest') else None
+                    if latest:
+                        outputs["metacognition"]["latest_report"] = str(latest)[:200]
+                except Exception:
+                    pass
+                break
+
+        return outputs
 
 
 # ---------------------------------------------------------------------------
@@ -116,6 +285,9 @@ class MindStackRunner:
         self._pattern_miner = None
         # L1 DreamingPlugin 实例（供 sleep_fn 调用）
         self._dreaming_plugin = None
+        # L2 MemoryTier 和 L3 WorkingMemory 实例（供 promotion 使用）
+        self._memory_tier: Optional["MemoryTier"] = None
+        self._working_memory: Optional["WorkingMemory"] = None
 
     # ------------------------------------------------------------------
     # Public API
@@ -140,9 +312,19 @@ class MindStackRunner:
 
         logger.info("🚼 启动九层 Mind Stack...")
 
-        # 1. EventBus
-        self._bus = EventBus()
-        logger.info("  ✓ EventBus 就绪")
+        # 1. EventBus — 复用全局单例，这样 DreamingPlugin 等外部模块通过 get_bus() 发的事件才能送达
+        self._bus = get_bus()
+        logger.info("  ✓ EventBus 就绪 (全局单例)")
+
+        # 1.5 SessionReplay — 从 state.db 回放历史消息，生成第一批内部事件
+        # 这样 PatternMiner 启动后立刻有历史可挖，不依赖 gateway 积累
+        try:
+            from kernel.session_replay import SessionReplay
+            replay = SessionReplay(lookback_days=7, max_sessions=20, max_messages_per_session=100)
+            replayed = await replay.replay(self._bus, max_events=300)
+            logger.info("  ✓ SessionReplay 完成 (回放了 %d 个事件)", replayed)
+        except Exception as exc:
+            logger.warning("  ✗ SessionReplay 失败: %s", exc)
 
         # 2. CircadianLoop（L0 节律）
         sleep_fn = self._make_sleep_fn()
@@ -159,6 +341,10 @@ class MindStackRunner:
         await self._start_layers()
         logger.info("  ✓ %d 个层启动完成", len(self._layers))
 
+        # 3b. 回填 state.db 历史对话 → EventBus（让 PatternMiner 有数据可挖）
+        await self._bridge_history()
+        logger.info("  ✓ StateDB 历史 Bridge 完成")
+
         # 4. 统一调用所有层的 attach()（订阅事件总线）
         for layer in self._layers:
             if hasattr(layer, 'attach') and callable(getattr(layer, 'attach')):
@@ -167,10 +353,31 @@ class MindStackRunner:
                 except Exception as exc:
                     logger.warning("  层 %s.attach() 失败: %s", type(layer).__name__, exc)
 
+        # 4.6 订阅睡眠结束事件 → 触发 WorkingMemory → L2 Memory promotion
+        self._bus.subscribe("L1.lucid_dream.ended", self._on_sleep_ended)
+        self._bus.subscribe("L1.daydream.ended", self._on_sleep_ended)
+        logger.info("  ✓ WorkingMemory → L2 promotion 已连接")
+
+        # 4.7 启动九层产出收集器
+        self._cognition = MindStackCognition(self)
+        logger.info("  ✓ MindStackCognition 就绪（九层产出 → LLM 注入）")
+
         # 5. Gateway 事件 → EventBus
         if self._gateway_events:
             self._wire_gateway_events()
             logger.info("  ✓ Gateway 事件注入就绪")
+
+        # 5.5 回填历史会话到 EventBus（一次性，让 PatternMiner 有历史可挖）
+        try:
+            from kernel.state_db_event_bridge import replay_recent_sessions
+            bridge_task = asyncio.create_task(
+                replay_recent_sessions(self._bus, days=7, max_sessions=30)
+            )
+            # 等待完成（历史回填必须在开始 tick 前完成）
+            stats = await bridge_task
+            logger.info("  ✓ StateDB 历史回填完成: %s", stats)
+        except Exception as exc:
+            logger.warning("  ⚠ StateDB 回填失败: %s", exc)
 
         # 6. 启动 CircadianLoop（非阻塞，在后台运转）
         loop_task = asyncio.create_task(self._circadian_loop.run())
@@ -208,6 +415,58 @@ class MindStackRunner:
 
         self._bus = None
         logger.info("🛑 九层 Mind Stack 已停止")
+
+    # ------------------------------------------------------------------
+    # WorkingMemory → L2 Memory promotion
+    # ------------------------------------------------------------------
+
+    async def _on_sleep_ended(self, event: Event) -> None:
+        """睡眠/白日梦结束时，将 WorkingMemory 高权重条目 promotion 到 L2 MemoryTier。"""
+        if self._working_memory is None or self._memory_tier is None:
+            return
+        try:
+            entries = self._working_memory.recall_recent(n=20)
+            if not entries:
+                return
+
+            threshold = 0.3
+            now = time.time()
+            promoted = 0
+            for entry in entries:
+                weight = entry.weight(now=now, half_life_s=self._working_memory.half_life_s)
+                if weight < threshold:
+                    continue
+                self._memory_tier.memorize(
+                    key=f"wm:{entry.event.topic}:{int(entry.captured_at)}",
+                    content=entry.event.topic if not entry.event.payload else f"{entry.event.topic}: {str(entry.event.payload)[:100]}",
+                    importance=min(1.0, entry.salience * 1.5),
+                    tags=["working_memory_promotion"],
+                    source="working_memory",
+                )
+                promoted += 1
+
+            if promoted > 0:
+                logger.info("WorkingMemory → L2 promotion: %d items promoted", promoted)
+                await self._bus.publish(Event(
+                    topic="L2.memory.promoted",
+                    source="MindStackRunner",
+                    payload={"count": promoted, "from": "working_memory"},
+                ))
+        except Exception as exc:
+            logger.warning("_on_sleep_ended promotion failed: %s", exc)
+
+    # ------------------------------------------------------------------
+    # StateDB 历史 Bridge
+    # ------------------------------------------------------------------
+
+    async def _bridge_history(self) -> None:
+        """把 state.db 的历史对话回填到 EventBus，供 PatternMiner 挖掘。"""
+        try:
+            from kernel.state_db_bridge import bridge_state_db_to_event_bus
+            count = await bridge_state_db_to_event_bus(self._bus)
+            logger.info("  StateDB Bridge: 注入了 %s 个事件", count)
+        except Exception as exc:
+            logger.warning("  StateDB Bridge 失败: %s", exc)
 
     # ------------------------------------------------------------------
     # 内部
@@ -270,7 +529,8 @@ class MindStackRunner:
         # L2 Memory
         try:
             from layers.L2_memory.memory_tier import MemoryTier
-            self._layers.append(MemoryTier(bus=self._bus))
+            self._memory_tier = MemoryTier(bus=self._bus)
+            self._layers.append(self._memory_tier)
             logger.info("  ✓ L2 Memory 就绪")
         except Exception as exc:
             logger.warning("  ✗ L2 Memory 启动失败: %s", exc)
@@ -286,6 +546,16 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ L3 Attention 启动失败: %s", exc)
             self._attention_queue = None
+
+        # L3 Working Memory（短时记忆缓冲，供睡眠时 promotion 到 L2 用）
+        try:
+            from layers.L3_working_memory.working_memory import WorkingMemory
+            self._working_memory = WorkingMemory(capacity=64, half_life_s=120.0)
+            self._layers.append(self._working_memory)
+            logger.info("  ✓ L3 WorkingMemory 就绪")
+        except Exception as exc:
+            logger.warning("  ✗ L3 WorkingMemory 启动失败: %s", exc)
+            self._working_memory = None
 
         # L4 Consciousness — 用 ConsciousnessEngine（完整引擎），不是 ThoughtStream（数据容器）
         try:
@@ -457,7 +727,7 @@ class MindStackRunner:
             if intent_stack is not None:
                 await intent_stack.decay_tick()
             if drive_system is not None:
-                drive_system.decay()
+                drive_system.decay_all()
 
         self._bus.subscribe("L0.circadian.tick", _on_tick_for_decay)
         logger.info("  ✓ L0.tick → L8 IntentStack/DriveSystem decay 已连接")

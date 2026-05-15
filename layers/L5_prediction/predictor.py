@@ -113,12 +113,14 @@ class PredictiveReasoner:
             await self._on_event(event)
 
         async def on_link_discovered(event: Event):
-            # 实时接收 CausalReasoner 发现的新链路
-            cause = event.payload.get("cause", "")
-            effect = event.payload.get("effect", "")
-            lift = event.payload.get("lift", 0.0)
-            confidence = event.payload.get("confidence", 0.0)
-            if lift >= self._min_lift:
+            # 实时接收 CausalReasoner / PatternMiner 发现的新链路
+            # CausalReasoner 发 cause/effect，PatternMiner 发 antecedent/consequent
+            payload = event.payload or {}
+            cause = payload.get("cause") or payload.get("antecedent", "")
+            effect = payload.get("effect") or payload.get("consequent", "")
+            lift = payload.get("lift", 0.0)
+            confidence = payload.get("confidence", 0.0)
+            if lift >= self._min_lift and cause and effect:
                 key = (cause, effect)
                 self._links[key] = Prediction(
                     cause=cause,
@@ -133,7 +135,10 @@ class PredictiveReasoner:
         # Subscribe to ALL events so we can detect when predicted effects occur.
         # _on_event filters out L5.* and L0.circadian.tick internally.
         self._unsubs.append(self._bus.subscribe("*", on_any))
+        # 同时订阅 L5.causal.link_discovered 和 L5.pattern.discovered
+        # PatternMiner 发 pattern，CausalReasoner 发 causal link，两者都可能是因果来源
         self._unsubs.append(self._bus.subscribe("L5.causal.link_discovered", on_link_discovered))
+        self._unsubs.append(self._bus.subscribe("L5.pattern.discovered", on_link_discovered))
 
     async def detach(self) -> None:
         for u in self._unsubs:

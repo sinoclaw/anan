@@ -458,7 +458,38 @@ class VigilanceMonitor:
         self._unsubs.append(
             self._bus.subscribe("L1.sleep.start", self._on_sleep)
         )
+        # 每次心跳都自动检查是否走神（不再被动等待外部调用）
+        self._unsubs.append(
+            self._bus.subscribe("L0.circadian.tick", self._on_tick)
+        )
+        # 监听注意力焦点切换，自动记录 focus 时长
+        self._unsubs.append(
+            self._bus.subscribe("L3.attention.focus", self._on_focus_changed)
+        )
+        self._unsubs.append(
+            self._bus.subscribe("L3.attention.completed", self._on_focus_ended)
+        )
+        self._unsubs.append(
+            self._bus.subscribe("L3.attention.dropped", self._on_focus_ended)
+        )
         logger.info("VigilanceMonitor attached (threshold=%.1fs)", self._threshold)
+
+    async def _on_tick(self, event: Event) -> None:
+        """每次心跳自动检查走神状态。"""
+        self.check()
+
+    async def _on_focus_changed(self, event: Event) -> None:
+        """注意力焦点切换：结束上一个焦点的计时，开始新的。"""
+        # 结束上一个焦点
+        if self._focus_start is not None:
+            self.record_focus_end()
+        # 开始新的焦点计时
+        self.record_focus_start()
+
+    async def _on_focus_ended(self, event: Event) -> None:
+        """焦点任务完成/被丢弃：结束计时。"""
+        if self._focus_start is not None:
+            self.record_focus_end()
 
     async def detach(self) -> None:
         for u in self._unsubs:
