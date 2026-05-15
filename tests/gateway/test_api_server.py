@@ -594,7 +594,7 @@ class TestCapabilitiesEndpoint:
             assert data["features"]["chat_completions"] is True
             assert data["features"]["run_status"] is True
             assert data["features"]["run_events_sse"] is True
-            assert data["features"]["session_continuity_header"] == "X-anan-Session-Id"
+            assert data["features"]["session_continuity_header"] == "X-Anan-Session-Id"
             assert data["endpoints"]["run_status"]["path"] == "/v1/runs/{run_id}"
 
     @pytest.mark.asyncio
@@ -2673,14 +2673,14 @@ class TestConversationParameter:
 
 
 # ---------------------------------------------------------------------------
-# X-anan-Session-Id header (session continuity)
+# X-Anan-Session-Id header (session continuity)
 # ---------------------------------------------------------------------------
 
 
 class TestSessionIdHeader:
     @pytest.mark.asyncio
     async def test_new_session_response_includes_session_id_header(self, adapter):
-        """Without X-anan-Session-Id, a new session is created and returned in the header."""
+        """Without X-Anan-Session-Id, a new session is created and returned in the header."""
         mock_result = {"final_response": "Hello!", "messages": [], "api_calls": 1}
         app = _create_app(adapter)
         async with TestClient(TestServer(app)) as cli:
@@ -2691,11 +2691,11 @@ class TestSessionIdHeader:
                     json={"model": "anan", "messages": [{"role": "user", "content": "Hi"}]},
                 )
             assert resp.status == 200
-            assert resp.headers.get("X-anan-Session-Id") is not None
+            assert resp.headers.get("X-Anan-Session-Id") is not None
 
     @pytest.mark.asyncio
     async def test_provided_session_id_is_used_and_echoed(self, auth_adapter):
-        """When X-anan-Session-Id is provided, it's passed to the agent and echoed in the response."""
+        """When X-Anan-Session-Id is provided, it's passed to the agent and echoed in the response."""
         mock_result = {"final_response": "Continuing!", "messages": [], "api_calls": 1}
         mock_db = MagicMock()
         mock_db.get_messages_as_conversation.return_value = [
@@ -2710,18 +2710,18 @@ class TestSessionIdHeader:
 
                 resp = await cli.post(
                     "/v1/chat/completions",
-                    headers={"X-anan-Session-Id": "my-session-123", "Authorization": "Bearer sk-secret"},
+                    headers={"X-Anan-Session-Id": "my-session-123", "Authorization": "Bearer sk-secret"},
                     json={"model": "anan", "messages": [{"role": "user", "content": "Continue"}]},
                 )
 
             assert resp.status == 200
-            assert resp.headers.get("X-anan-Session-Id") == "my-session-123"
+            assert resp.headers.get("X-Anan-Session-Id") == "my-session-123"
             call_kwargs = mock_run.call_args.kwargs
             assert call_kwargs["session_id"] == "my-session-123"
 
     @pytest.mark.asyncio
     async def test_provided_session_id_loads_history_from_db(self, auth_adapter):
-        """When X-anan-Session-Id is provided, history comes from SessionDB not request body."""
+        """When X-Anan-Session-Id is provided, history comes from SessionDB not request body."""
         mock_result = {"final_response": "OK", "messages": [], "api_calls": 1}
         db_history = [
             {"role": "user", "content": "stored message 1"},
@@ -2737,7 +2737,7 @@ class TestSessionIdHeader:
 
                 resp = await cli.post(
                     "/v1/chat/completions",
-                    headers={"X-anan-Session-Id": "existing-session", "Authorization": "Bearer sk-secret"},
+                    headers={"X-Anan-Session-Id": "existing-session", "Authorization": "Bearer sk-secret"},
                     # Request body has different history — should be ignored
                     json={
                         "model": "anan",
@@ -2769,7 +2769,7 @@ class TestSessionIdHeader:
 
                 resp = await cli.post(
                     "/v1/chat/completions",
-                    headers={"X-anan-Session-Id": "some-session", "Authorization": "Bearer sk-secret"},
+                    headers={"X-Anan-Session-Id": "some-session", "Authorization": "Bearer sk-secret"},
                     json={"model": "anan", "messages": [{"role": "user", "content": "Hi"}]},
                 )
 
@@ -2780,7 +2780,7 @@ class TestSessionIdHeader:
 
 
 # ---------------------------------------------------------------------------
-# X-anan-Session-Key header (long-term memory scoping)
+# X-Anan-Session-Key header (long-term memory scoping)
 # ---------------------------------------------------------------------------
 
 
@@ -2794,7 +2794,7 @@ class TestSessionKeyHeader:
 
     @pytest.mark.asyncio
     async def test_session_key_passed_to_agent_and_echoed(self, auth_adapter):
-        """X-anan-Session-Key reaches _run_agent as gateway_session_key and is echoed back."""
+        """X-Anan-Session-Key reaches _run_agent as gateway_session_key and is echoed back."""
         mock_result = {"final_response": "ok", "messages": [], "api_calls": 1}
         app = _create_app(auth_adapter)
         async with TestClient(TestServer(app)) as cli:
@@ -2803,13 +2803,13 @@ class TestSessionKeyHeader:
                 resp = await cli.post(
                     "/v1/chat/completions",
                     headers={
-                        "X-anan-Session-Key": "webui:user-42",
+                        "X-Anan-Session-Key": "webui:user-42",
                         "Authorization": "Bearer sk-secret",
                     },
                     json={"model": "anan", "messages": [{"role": "user", "content": "hi"}]},
                 )
             assert resp.status == 200
-            assert resp.headers.get("X-anan-Session-Key") == "webui:user-42"
+            assert resp.headers.get("X-Anan-Session-Key") == "webui:user-42"
             call_kwargs = mock_run.call_args.kwargs
             assert call_kwargs["gateway_session_key"] == "webui:user-42"
 
@@ -2827,15 +2827,15 @@ class TestSessionKeyHeader:
                 resp = await cli.post(
                     "/v1/chat/completions",
                     headers={
-                        "X-anan-Session-Key": "channel-abc",
-                        "X-anan-Session-Id": "transcript-xyz",
+                        "X-Anan-Session-Key": "channel-abc",
+                        "X-Anan-Session-Id": "transcript-xyz",
                         "Authorization": "Bearer sk-secret",
                     },
                     json={"model": "anan", "messages": [{"role": "user", "content": "hi"}]},
                 )
             assert resp.status == 200
-            assert resp.headers.get("X-anan-Session-Key") == "channel-abc"
-            assert resp.headers.get("X-anan-Session-Id") == "transcript-xyz"
+            assert resp.headers.get("X-Anan-Session-Key") == "channel-abc"
+            assert resp.headers.get("X-Anan-Session-Id") == "transcript-xyz"
             call_kwargs = mock_run.call_args.kwargs
             assert call_kwargs["gateway_session_key"] == "channel-abc"
             assert call_kwargs["session_id"] == "transcript-xyz"
@@ -2854,7 +2854,7 @@ class TestSessionKeyHeader:
                     json={"model": "anan", "messages": [{"role": "user", "content": "hi"}]},
                 )
             assert resp.status == 200
-            assert "X-anan-Session-Key" not in resp.headers
+            assert "X-Anan-Session-Key" not in resp.headers
             call_kwargs = mock_run.call_args.kwargs
             assert call_kwargs["gateway_session_key"] is None
 
@@ -2865,7 +2865,7 @@ class TestSessionKeyHeader:
         async with TestClient(TestServer(app)) as cli:
             resp = await cli.post(
                 "/v1/chat/completions",
-                headers={"X-anan-Session-Key": "whatever"},
+                headers={"X-Anan-Session-Key": "whatever"},
                 json={"model": "anan", "messages": [{"role": "user", "content": "hi"}]},
             )
             assert resp.status == 403
@@ -2881,7 +2881,7 @@ class TestSessionKeyHeader:
         validation.
         """
         mock_request = MagicMock()
-        mock_request.headers = {"X-anan-Session-Key": "bad\rvalue"}
+        mock_request.headers = {"X-Anan-Session-Key": "bad\rvalue"}
         key, err = auth_adapter._parse_session_key_header(mock_request)
         assert key is None
         assert err is not None
@@ -2894,7 +2894,7 @@ class TestSessionKeyHeader:
         async with TestClient(TestServer(app)) as cli:
             resp = await cli.post(
                 "/v1/chat/completions",
-                headers={"X-anan-Session-Key": "x" * 1000, "Authorization": "Bearer sk-secret"},
+                headers={"X-Anan-Session-Key": "x" * 1000, "Authorization": "Bearer sk-secret"},
                 json={"model": "anan", "messages": [{"role": "user", "content": "hi"}]},
             )
             assert resp.status == 400
@@ -2919,7 +2919,7 @@ class TestSessionKeyHeader:
                 resp = await cli.post(
                     "/v1/chat/completions",
                     headers={
-                        "X-anan-Session-Key": "agent:main:webui:dm:user-7",
+                        "X-Anan-Session-Key": "agent:main:webui:dm:user-7",
                         "Authorization": "Bearer sk-secret",
                     },
                     json={"model": "anan", "messages": [{"role": "user", "content": "hi"}]},
@@ -2930,7 +2930,7 @@ class TestSessionKeyHeader:
 
     @pytest.mark.asyncio
     async def test_responses_endpoint_accepts_session_key(self, auth_adapter):
-        """Responses API honors the same X-anan-Session-Key contract."""
+        """Responses API honors the same X-Anan-Session-Key contract."""
         mock_result = {"final_response": "ok", "messages": [], "api_calls": 1}
         app = _create_app(auth_adapter)
         async with TestClient(TestServer(app)) as cli:
@@ -2939,13 +2939,13 @@ class TestSessionKeyHeader:
                 resp = await cli.post(
                     "/v1/responses",
                     headers={
-                        "X-anan-Session-Key": "webui:chan-1",
+                        "X-Anan-Session-Key": "webui:chan-1",
                         "Authorization": "Bearer sk-secret",
                     },
                     json={"model": "anan", "input": "hello", "store": False},
                 )
             assert resp.status == 200
-            assert resp.headers.get("X-anan-Session-Key") == "webui:chan-1"
+            assert resp.headers.get("X-Anan-Session-Key") == "webui:chan-1"
             call_kwargs = mock_run.call_args.kwargs
             assert call_kwargs["gateway_session_key"] == "webui:chan-1"
 
@@ -2957,5 +2957,5 @@ class TestSessionKeyHeader:
             resp = await cli.get("/v1/capabilities")
             assert resp.status == 200
             data = await resp.json()
-            assert data["features"]["session_key_header"] == "X-anan-Session-Key"
+            assert data["features"]["session_key_header"] == "X-Anan-Session-Key"
 

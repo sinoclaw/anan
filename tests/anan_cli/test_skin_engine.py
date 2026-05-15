@@ -37,7 +37,7 @@ class TestSkinConfig:
     def test_get_branding_with_fallback(self):
         from anan_cli.skin_engine import load_skin
         skin = load_skin("default")
-        assert skin.get_branding("agent_name") == "anan Agent"
+        assert skin.get_branding("agent_name") == "Anan Agent"
         assert skin.get_branding("nonexistent", "fallback") == "fallback"
 
     def test_get_spinner_wings_empty_for_default(self):

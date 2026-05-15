@@ -551,7 +551,7 @@ async def test_auto_create_thread_falls_back_to_anan_when_only_mentions(adapter)
     await adapter._auto_create_thread(message)
 
     name = message.create_thread.await_args[1]["name"]
-    assert name == "anan"
+    assert name == "Anan"
 
 
 @pytest.mark.asyncio
@@ -586,7 +586,7 @@ async def test_auto_create_thread_falls_back_to_seed_message(adapter):
 
     result = await adapter._auto_create_thread(message)
     assert result is thread
-    message.channel.send.assert_awaited_once_with("🧵 Thread created by anan: **Hello**")
+    message.channel.send.assert_awaited_once_with("🧵 Thread created by Anan: **Hello**")
     seed_message.create_thread.assert_awaited_once_with(
         name="Hello",
         auto_archive_duration=1440,

@@ -1292,7 +1292,7 @@ class TestCmdUpdateLegacyGatewayWarning:
             cmd_update(mock_args)
 
         captured = capsys.readouterr().out
-        assert "Legacy anan gateway unit(s) detected" in captured
+        assert "Legacy Anan gateway unit(s) detected" in captured
         assert "anan.service" in captured
         assert "anan gateway migrate-legacy" in captured
         assert "(user scope)" in captured
@@ -1424,7 +1424,7 @@ class TestCmdUpdateLegacyGatewayWarning:
             cmd_update(mock_args)
 
         captured = capsys.readouterr().out
-        assert "Legacy anan gateway" in captured
+        assert "Legacy Anan gateway" in captured
         assert "(system scope)" in captured
         assert "sudo" in captured
 
