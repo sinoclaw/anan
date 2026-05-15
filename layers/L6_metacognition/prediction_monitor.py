@@ -81,6 +81,11 @@ class PredictionMonitor:
         self._unsub_failed = self._bus.subscribe(
             "L5.prediction.failed", on_failed,
         )
+        # DIAGNOSTIC: catch L5.prediction.upcoming to confirm events arrive
+        async def on_upcoming_diag(event: Event):
+            logger = logging.getLogger("anan.L6.prediction_monitor")
+            logger.info("[DIAG] L5.prediction.upcoming ARRIVED: %s", event.payload)
+        self._unsub_upcoming_diag = self._bus.subscribe("L5.prediction.upcoming", on_upcoming_diag)
 
     async def detach(self) -> None:
         if self._unsub_confirmed:

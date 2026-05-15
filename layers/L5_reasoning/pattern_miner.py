@@ -29,6 +29,7 @@ from typing import Callable, Optional
 from kernel.event_bus import Event, EventBus, get_bus
 
 logger = logging.getLogger("anan.L5.miner")
+_gateway_logger = logging.getLogger("gateway.builtin.mind_stack")
 
 
 # ---------------------------------------------------------------------------
@@ -159,6 +160,9 @@ class PatternMiner:
                     continue
                 seen_in_window.add(y)
                 co_counts[(x, y)] += 1
+            # Yield event loop every N iterations to prevent blocking
+            if i % 100 == 0:
+                await asyncio.sleep(0)
 
         new_patterns: list[Pattern] = []
         now = datetime.now()
@@ -204,12 +208,15 @@ class PatternMiner:
                 f"(置信={pattern.confidence:.0%}, 提升={pattern.lift:.1f}x)"
             ),
         }
+        # Also emit a gateway-visible log for diagnostics
+        _gateway_logger.info("MINER → publishing L5.pattern.discovered: %s → %s (lift=%.2f)", payload["antecedent"], payload["consequent"], payload["lift"])
         try:
             await self._bus.publish(Event(
                 topic="L5.pattern.discovered",
                 source="L5.miner",
                 payload=payload,
             ))
+            logger.info("L5.pattern.discovered published: %s → %s (lift=%.2f, conf=%.2f)", payload["antecedent"], payload["consequent"], payload["lift"], payload["confidence"])
         except Exception as exc:  # noqa: BLE001
             logger.debug("L5 publish failed (non-fatal): %s", exc)
 

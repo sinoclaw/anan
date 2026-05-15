@@ -29,7 +29,7 @@ def _load_terminalbench_module(monkeypatch):
     class _AgentResult:
         pass
 
-    class _SinoclawAgentLoop:
+    class _AnanAgentLoop:
         pass
 
     class _SinoclawAgentBaseEnv:
@@ -56,7 +56,7 @@ def _load_terminalbench_module(monkeypatch):
         "environments.agent_loop": _stub_module(
             "environments.agent_loop",
             AgentResult=_AgentResult,
-            SinoclawAgentLoop=_SinoclawAgentLoop,
+            AnanAgentLoop=_AnanAgentLoop,
         ),
         "environments.anan_base_env": _stub_module(
             "environments.anan_base_env",

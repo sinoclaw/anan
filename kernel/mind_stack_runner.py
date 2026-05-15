@@ -96,9 +96,12 @@ class MindStackCognition:
             pm = getattr(self._runner, '_pattern_miner', None)
             if pm is not None and hasattr(pm, 'mine_now'):
                 try:
+                    history = pm._bus.history(limit=100)
                     patterns = await pm.mine_now()
+                    logger.info("PatternMiner tick: bus_history=%d events, patterns_found=%d", len(history), len(patterns))
                     if patterns:
-                        logger.debug("PatternMiner found %d new patterns on circadian tick", len(patterns))
+                        for p in patterns[:3]:
+                            logger.info("  Pattern: %s -> %s (support=%d, conf=%.2f)", p.antecedent, p.consequent, p.support, p.confidence)
                 except Exception as exc:
                     logger.warning("PatternMiner.mine_now() failed: %s", exc)
         except Exception as exc:

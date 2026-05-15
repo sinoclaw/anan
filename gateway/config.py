@@ -1559,7 +1559,10 @@ def _apply_env_overrides(config: GatewayConfig) -> None:
     if weixin_token or weixin_account_id:
         if Platform.WEIXIN not in config.platforms:
             config.platforms[Platform.WEIXIN] = PlatformConfig()
-        config.platforms[Platform.WEIXIN].enabled = True
+        # Respect existing enabled setting if explicitly False; otherwise enable
+        current = config.platforms[Platform.WEIXIN].enabled
+        if current is not False:
+            config.platforms[Platform.WEIXIN].enabled = True
         if weixin_token:
             config.platforms[Platform.WEIXIN].token = weixin_token
         extra = config.platforms[Platform.WEIXIN].extra

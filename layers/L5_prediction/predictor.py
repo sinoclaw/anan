@@ -24,6 +24,7 @@ L5 PredictiveReasoner — 预测未来
 from __future__ import annotations
 
 import asyncio
+import fnmatch
 import logging
 import time
 from collections import deque
@@ -81,7 +82,7 @@ class PredictiveReasoner:
         causal_links_fn: Optional[Callable[[], list]] = None,
         self_model=None,
         horizon_s: float = 3.0,
-        min_lift: float = 1.5,
+        min_lift: float = 1.0,
         max_pending: int = 50,
     ):
         self._bus = bus or get_bus()
@@ -100,6 +101,14 @@ class PredictiveReasoner:
         # 因果链路缓存（从 CausalReasoner 实时同步）
         self._links: dict[tuple[str, str], Prediction] = {}
 
+        # 最近发出的预测去重：同 (cause, effect) 在 1 秒内不重复发
+        self._emitted_recently: deque[tuple[float, str, str]] = deque(maxlen=500)
+        self._dedup_window_s: float = 1.0
+
+        # Per-cause throttle: 同 cause 至少隔 0.5s 才能再发预测
+        self._last_emit_by_cause: dict[str, float] = {}
+        self._cause_throttle_s: float = 0.5
+
         self._unsubs: list[Callable[[], None]] = []
 
     # ------------------------------------------------------------------
@@ -115,12 +124,14 @@ class PredictiveReasoner:
         async def on_link_discovered(event: Event):
             # 实时接收 CausalReasoner / PatternMiner 发现的新链路
             # CausalReasoner 发 cause/effect，PatternMiner 发 antecedent/consequent
+            # 注意：这里不过滤 lift，PatternMiner 发来的 pattern lift 常 < 1.5，
+            # 但仍可能是有效因果链。缓存所有 link，预测时再过滤。
             payload = event.payload or {}
             cause = payload.get("cause") or payload.get("antecedent", "")
             effect = payload.get("effect") or payload.get("consequent", "")
             lift = payload.get("lift", 0.0)
             confidence = payload.get("confidence", 0.0)
-            if lift >= self._min_lift and cause and effect:
+            if cause and effect:
                 key = (cause, effect)
                 self._links[key] = Prediction(
                     cause=cause,
@@ -130,7 +141,8 @@ class PredictiveReasoner:
                     issued_at=time.time(),
                     horizon_s=self._horizon_s,
                 )
-                logger.debug("Cached new link: %s → %s (lift=%.2f)", cause, effect, lift)
+                logger.info("[PRED-DEBUG] Cached link: %s → %s (lift=%.2f, conf=%.2f)", cause, effect, lift, confidence)
+                logger.info("🔍 PredictiveReasoner on_link_discovered: %s → %s (lift=%.2f, conf=%.2f)", cause, effect, lift, confidence)
 
         # Subscribe to ALL events so we can detect when predicted effects occur.
         # _on_event filters out L5.* and L0.circadian.tick internally.
@@ -153,7 +165,9 @@ class PredictiveReasoner:
         topic = event.topic
         now = time.time()
 
-        # Skip predictions about our own emissions
+        # Skip ALL L5 events — they are internal reasoning signals,
+        # not external causes we should predict from. Links from PatternMiner
+        # and CausalReasoner are already cached via on_link_discovered.
         if topic.startswith("L5."):
             return
         # Skip tick noise
@@ -183,7 +197,7 @@ class PredictiveReasoner:
             if hasattr(link, "cause"):
                 link_cause = link.cause
                 link_effect = link.effect
-                link_lift = getattr(link, "lift", 1.0)
+                link_lift = getattr(link, "probability_boost", 1.0)
                 link_confidence = getattr(link, "confidence", 0.5)
             else:
                 link_cause, link_effect = link[0], link[1]
@@ -195,10 +209,26 @@ class PredictiveReasoner:
                 continue
             seen.add(key)
 
-            if link_cause != cause:
+            if not fnmatch.fnmatch(cause, link_cause):
                 continue
             if link_lift < self._min_lift:
                 continue
+
+            # Deduplicate: same (cause, effect) within dedup window
+            cutoff = now - self._dedup_window_s
+            self._emitted_recently = deque(
+                (t, c, e) for t, c, e in self._emitted_recently if t > cutoff
+            )
+            if any(c == link_cause and e == link_effect for _, c, e in self._emitted_recently):
+                continue
+
+            # Per-cause throttle
+            last = self._last_emit_by_cause.get(link_cause, 0.0)
+            if now - last < self._cause_throttle_s:
+                continue
+            self._last_emit_by_cause[link_cause] = now
+
+            logger.info("[PRED-DEBUG] EMIT prediction: %s → %s (lift=%.2f)", link_cause, link_effect, link_lift)
 
             pred = Prediction(
                 cause=cause,
@@ -210,8 +240,9 @@ class PredictiveReasoner:
             )
 
             self._pending.append(pred)
+            self._emitted_recently.append((now, link_cause, link_effect))
 
-            await self._safe_publish("L5.prediction.upcoming", {
+            await self._async_publish("L5.prediction.upcoming", {
                 "cause": cause,
                 "predicted_effect": link_effect,
                 "probability_boost": round(link_lift, 2),
@@ -244,11 +275,11 @@ class PredictiveReasoner:
 
             age = now - pred.issued_at
 
-            if pred.effect == topic:
+            if fnmatch.fnmatch(topic, pred.effect):
                 # Effect confirmed!
                 pred.outcome = "confirmed"
                 new_pending.append(pred)
-                await self._safe_publish("L5.prediction.confirmed", {
+                await self._async_publish("L5.prediction.confirmed", {
                     "cause": pred.cause,
                     "effect": pred.effect,
                     "prediction_horizon_s": round(age, 2),
@@ -258,7 +289,7 @@ class PredictiveReasoner:
                 # Expired without effect appearing
                 pred.outcome = "failed"
                 new_pending.append(pred)
-                await self._safe_publish("L5.prediction.failed", {
+                await self._async_publish("L5.prediction.failed", {
                     "cause": pred.cause,
                     "predicted_effect": pred.effect,
                     "age_s": round(age, 2),
@@ -273,11 +304,12 @@ class PredictiveReasoner:
         if resolved > 0:
             logger.debug("Resolved %d predictions (confirmed/failed)", resolved)
 
-    async def _safe_publish(self, topic: str, payload: dict) -> None:
+    async def _async_publish(self, topic: str, payload: dict) -> None:
+        """Publish asynchronously to avoid blocking the event loop."""
         try:
-            asyncio.create_task(self._bus.publish(Event(
+            await self._bus.publish(Event(
                 topic=topic, source="L5.prediction", payload=payload,
-            )))
+            ))
         except Exception as exc:
             logger.debug("L5.prediction publish failed (non-fatal): %s", exc)
 
