@@ -64,6 +64,10 @@ class AttentionBridge:
         )
         logger.info("AttentionBridge attached (drive→attention)")
 
+    async def stop(self) -> None:
+        """供 MindStackRunner 调用。"""
+        await self.detach()
+
     async def detach(self) -> None:
         for u in self._unsubs:
             u()

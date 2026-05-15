@@ -149,6 +149,16 @@ class DriveSystem:
                 "reason": reason,
             },
         ))
+        # L8.drive.updated — 供 AttentionBridge (attention_bridge.py) 消费
+        self._bus.publish_sync(Event(
+            topic="L8.drive.updated",
+            source="L8.drives",
+            payload={
+                **drive.to_dict(),
+                "active": True,
+                "reason": reason,
+            },
+        ))
         logger.debug("Drive triggered: %s (strength=%.2f, reason=%s)",
                      drive_type.value, drive.strength, reason)
         return drive

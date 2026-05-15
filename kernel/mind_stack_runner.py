@@ -350,7 +350,8 @@ class MindStackRunner:
         # L8 Drives
         try:
             from layers.L8_drives.drive_system import DriveSystem
-            self._layers.append(DriveSystem())
+            self._drive_system = DriveSystem()
+            self._layers.append(self._drive_system)
             logger.info("  ✓ L8 Drives 就绪")
         except Exception as exc:
             logger.warning("  ✗ L8 Drives 启动失败: %s", exc)
@@ -362,6 +363,18 @@ class MindStackRunner:
             logger.info("  ✓ L8 Intent 就绪")
         except Exception as exc:
             logger.warning("  ✗ L8 Intent 启动失败: %s", exc)
+
+        # AttentionBridge — 连接 DriveSystem 和 AttentionQueue
+        try:
+            from layers.L8_drives.attention_bridge import AttentionBridge
+            bridge = AttentionBridge(
+                bus=self._bus,
+                drive_system=self._drive_system if hasattr(self, '_drive_system') else None,
+            )
+            self._layers.append(bridge)
+            logger.info("  ✓ AttentionBridge 就绪")
+        except Exception as exc:
+            logger.warning("  ✗ AttentionBridge 启动失败: %s", exc)
 
     def _wire_gateway_events(self) -> None:
         """
