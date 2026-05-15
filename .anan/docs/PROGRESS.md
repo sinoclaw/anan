@@ -1,8 +1,8 @@
 # anan 九层进度报告
 
-> 更新时间：2026-05-15 15:20
+> 更新时间：2026-05-15 15:35
 > 调研范围：`layers/` 全部源文件 + `kernel/mind_stack_runner.py`
-> 最新提交：3b56dd9 — feat: P1 完成 — Mirror加入+IntentStack stop+L1 sleep_fn传参
+> 最新提交：b7696a3 — feat: P2完成 — DriveSystem发updated事件+AttentionBridge接入
 
 ---
 
@@ -22,9 +22,10 @@
 | L6 | SelfTuner | ✅ | ✅ | ✅ | 调参闭环接通 PatternMiner + PredictiveReasoner |
 | L6 | Mirror | ✅ | ✅ | ✅ | 发 HealthReport 事件，L7 Goals 消费 |
 | L7 | GoalGenerator | ✅ | ✅ | ✅ | L8驱动触发 + L0.tick周期生成目标 |
-| L7 | SelfRegulator | 🟡 | ✅ | ✅ | 框架在，未连接 L7 Goals |
+| L7 | SelfRegulator | 🟡 | ✅ | ✅ | 订阅 L6.warn + L7.goal.achieved/abandoned，自动调节 |
 | L8 | DriveSystem | ✅ | ✅ | ✅ | L0.tick 周期性触发 CURIOSITY |
-| L8 | IntentStack | 🟡 | ✅ | ✅ | 框架在，未被启动 |
+| L8 | IntentStack | 🟡 | ✅ | ✅ | 订阅 L6.report/L7.goal.*，未被主动触发 |
+| L8 | AttentionBridge | ✅ | ✅ | ✅ | DriveSystem → AttentionQueue boost 桥接 |
 | L9 | SelfModel | ✅ | ✅ | ✅ | 自我意识完成 |
 
 ---
@@ -260,9 +261,9 @@ gateway.message.sent
 8. ✅ **Mirror 加入 MindStackRunner**：启动 L6 元认知报告 → L7 Goals
 9. ✅ **IntentStack 确认启动**：stop() 方法已加
 
-### P2 — 完善
-10. **L7 Goals → SelfRegulator 连接**：目标状态变化触发自我调节
-11. **AttentionQueue boost() 被 L8 调用**：通过 attention_bridge.py
+### P2 — 完善 ✅ 全部完成
+10. ✅ **L7 Goals → SelfRegulator 连接**：SelfRegulator 已订阅 L7.goal.achieved/abandoned，GoalGenerator 发事件后自动消费
+11. ✅ **AttentionQueue boost() 被 L8 调用**：DriveSystem 发 L8.drive.updated + AttentionBridge 已接入
 12. **L4 思考质量提升**：`_generate_one_thought()` 从问句改为反思性思考
 
 ---
