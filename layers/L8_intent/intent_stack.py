@@ -123,6 +123,10 @@ class IntentStack:
         self._unsubs.append(self._bus.subscribe("L8.drive.suggestion", self._on_drive_suggestion))
         self._unsubs.append(self._bus.subscribe("L4.thought.pushed", self._on_thought_pushed))
 
+    async def stop(self) -> None:
+        """供 MindStackRunner 调用，等价于 detach()。"""
+        await self.detach()
+
     async def detach(self) -> None:
         for u in self._unsubs:
             u()

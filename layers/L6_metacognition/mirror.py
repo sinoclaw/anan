@@ -107,6 +107,10 @@ class Mirror:
             await self.reflect_and_emit()
         self._unsub = self._bus.subscribe("L0.circadian.asleep", on_asleep)
 
+    async def stop(self) -> None:
+        """供 MindStackRunner 调用。"""
+        await self.detach()
+
     async def detach(self) -> None:
         if self._unsub:
             self._unsub()

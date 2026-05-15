@@ -114,6 +114,8 @@ class MindStackRunner:
 
         # L5 PatternMiner 实例
         self._pattern_miner = None
+        # L1 DreamingPlugin 实例（供 sleep_fn 调用）
+        self._dreaming_plugin = None
 
     # ------------------------------------------------------------------
     # Public API
@@ -172,7 +174,7 @@ class MindStackRunner:
 
         # 6. 启动 CircadianLoop（非阻塞，在后台运转）
         loop_task = asyncio.create_task(self._circadian_loop.run())
-        loop_task.add_done_callback(self._tasks.remove)
+        loop_task.add_done_callback(lambda t: self._tasks.remove(loop_task) if loop_task in self._tasks else None)
         self._tasks.append(loop_task)
 
         self._running = True
@@ -259,7 +261,8 @@ class MindStackRunner:
         # L1 Sleep
         try:
             from layers.L1_sleep.sleep_plugin import DreamingPlugin
-            self._layers.append(DreamingPlugin(config={}))
+            self._dreaming_plugin = DreamingPlugin(config={})
+            self._layers.append(self._dreaming_plugin)
             logger.info("  ✓ L1 Sleep 就绪")
         except Exception as exc:
             logger.warning("  ✗ L1 Sleep 启动失败: %s", exc)
@@ -288,7 +291,7 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ L4 Consciousness 启动失败: %s", exc)
 
-        # L6 Metacognition：PredictionMonitor + SelfTuner
+        # L6 Metacognition：PredictionMonitor + SelfTuner + Mirror
         # PredictionMonitor 监控 L5 预测准确率并触发链路衰减
         try:
             from layers.L6_metacognition.prediction_monitor import PredictionMonitor
@@ -296,8 +299,9 @@ class MindStackRunner:
                 bus=self._bus,
                 predictor=self._predictor if hasattr(self, '_predictor') else None,
             )
-            await pm.attach()
+            # 注意：不手动 attach()，由下面的统一 attach() 循环处理
             self._layers.append(pm)
+            logger.info("  ✓ L6 PredictionMonitor 就绪")
         except Exception as exc:
             logger.warning("  ✗ L6 PredictionMonitor 启动失败: %s", exc)
 
@@ -312,6 +316,20 @@ class MindStackRunner:
             logger.info("  ✓ L6 SelfTuner 就绪")
         except Exception as exc:
             logger.warning("  ✗ L6 SelfTuner 启动失败: %s", exc)
+
+        # Mirror — L6 元认知镜子，发 HealthReport 事件供 L7 Goals 消费
+        # 依赖 self_model (L9)，所以在 L9 启动后加入
+        try:
+            from layers.L6_metacognition.mirror import Mirror
+            mirror = Mirror(
+                bus=self._bus,
+                self_model=self_model if hasattr(self, 'self_model') else None,
+                # working_memory 暂不传，Mirror 会跳过该项指标
+            )
+            self._layers.append(mirror)
+            logger.info("  ✓ L6 Mirror 就绪")
+        except Exception as exc:
+            logger.warning("  ✗ L6 Mirror 启动失败: %s", exc)
 
         # L7 Goals
         try:
@@ -397,8 +415,20 @@ class MindStackRunner:
         async def sleep_fn(day: str, bus: EventBus, cycle: int) -> int:
             logger.info("🌙 [Cycle %d] 进入睡眠阶段...", cycle)
             try:
-                # DreamingPlugin.run_dreaming_sweep 需要 workspace_dir 和 phase，
-                # 完整实现后再接入。这里先记录一次 tick 事件作为占位。
+                # 触发 L1 DreamingPlugin 进行睡眠阶段处理
+                if self._dreaming_plugin is not None:
+                    try:
+                        # workspace_dir 使用 ~/.anan
+                        import os
+                        workspace = os.path.expanduser("~/.anan")
+                        os.makedirs(workspace, exist_ok=True)
+                        await self._dreaming_plugin.run_dreaming_sweep(
+                            workspace_dir=workspace,
+                            phase="sleep",
+                        )
+                    except Exception as exc:
+                        logger.warning("  L1 DreamingPlugin 执行失败: %s", exc)
+                # 发 bedtime 事件（PatternMiner 订阅了这个）
                 await bus.publish(Event(
                     topic="L0.circadian.bedtime",
                     source="circadian",
