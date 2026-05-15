@@ -8,11 +8,11 @@ description: "Background maintenance for agent-created skills — usage tracking
 
 The curator is a background maintenance pass for **agent-created skills**. It tracks how often each skill is viewed, used, and patched, moves long-unused skills through `active → stale → archived` states, and periodically spawns a short auxiliary-model review that proposes consolidations or patches drift.
 
-It exists so that skills created via the [self-improvement loop](/docs/user-guide/features/skills#agent-managed-skills-skill_manage-tool) don't pile up forever. Every time the agent solves a novel problem and saves a skill, that skill lands in `~/.sinoclaw/skills/`. Without maintenance, you end up with dozens of narrow near-duplicates that pollute the catalog and waste tokens.
+It exists so that skills created via the [self-improvement loop](/docs/user-guide/features/skills#agent-managed-skills-skill_manage-tool) don't pile up forever. Every time the agent solves a novel problem and saves a skill, that skill lands in `~/.anan/skills/`. Without maintenance, you end up with dozens of narrow near-duplicates that pollute the catalog and waste tokens.
 
-The curator **never touches** bundled skills (shipped with the repo) or hub-installed skills (from [agentskills.io](https://agentskills.io)). It only reviews skills the agent itself authored. It also **never auto-deletes** — the worst outcome is archival into `~/.sinoclaw/skills/.archive/`, which is recoverable.
+The curator **never touches** bundled skills (shipped with the repo) or hub-installed skills (from [agentskills.io](https://agentskills.io)). It only reviews skills the agent itself authored. It also **never auto-deletes** — the worst outcome is archival into `~/.anan/skills/.archive/`, which is recoverable.
 
-Tracks [issue #7816](https://github.com/sinoclaw/sinoclaw-agent/issues/7816).
+Tracks [issue #7816](https://github.com/sinoclaw/anan/issues/7816).
 
 ## How it runs
 
@@ -24,14 +24,14 @@ The curator is triggered by an inactivity check, not a cron daemon. On CLI sessi
 If both are true, it spawns a background fork of `AIAgent` — the same pattern used by the memory/skill self-improvement nudges. The fork runs in its own prompt cache and never touches the active conversation.
 
 :::info First-run behavior
-On a brand-new install (or the first time a pre-curator install ticks after `sinoclaw update`), the curator **does not run immediately**. The first observation seeds `last_run_at` to "now" and defers the first real pass by one full `interval_hours`. This gives you a full interval to review your skill library, pin anything important, or opt out entirely before the curator ever touches it.
+On a brand-new install (or the first time a pre-curator install ticks after `anan update`), the curator **does not run immediately**. The first observation seeds `last_run_at` to "now" and defers the first real pass by one full `interval_hours`. This gives you a full interval to review your skill library, pin anything important, or opt out entirely before the curator ever touches it.
 
 If you want to see what the curator *would* do before it runs for real, run `sinoclaw curator run --dry-run` — it produces the same review report without mutating the library.
 :::
 
 A run has two phases:
 
-1. **Automatic transitions** (deterministic, no LLM). Skills unused for `stale_after_days` (30) become `stale`; skills unused for `archive_after_days` (90) are moved to `~/.sinoclaw/skills/.archive/`.
+1. **Automatic transitions** (deterministic, no LLM). Skills unused for `stale_after_days` (30) become `stale`; skills unused for `archive_after_days` (90) are moved to `~/.anan/skills/.archive/`.
 2. **LLM review** (single aux-model pass, `max_iterations=8`). The forked agent surveys the agent-created skills, can read any of them with `skill_view`, and decides per-skill whether to keep, patch (via `skill_manage`), consolidate overlapping ones, or archive via the terminal tool.
 
 Pinned skills are off-limits to both the curator's auto-transitions and the agent's own `skill_manage` tool. See [Pinning a skill](#pinning-a-skill) below.
@@ -87,7 +87,7 @@ sinoclaw curator status         # last run, counts, pinned list, LRU top 5
 sinoclaw curator run            # trigger a review now (blocks until the LLM pass finishes)
 sinoclaw curator run --background  # fire-and-forget: start the LLM pass in a background thread
 sinoclaw curator run --dry-run  # preview only — report without any mutations
-sinoclaw curator backup         # take a manual snapshot of ~/.sinoclaw/skills/
+sinoclaw curator backup         # take a manual snapshot of ~/.anan/skills/
 sinoclaw curator rollback       # restore from the newest snapshot
 sinoclaw curator rollback --list     # list available snapshots
 sinoclaw curator rollback --id <ts>  # restore a specific snapshot
@@ -101,7 +101,7 @@ sinoclaw curator restore <skill>  # move an archived skill back to active
 
 ## Backups and rollback
 
-Before every real curator pass, Hermes takes a tar.gz snapshot of `~/.sinoclaw/skills/` at `~/.sinoclaw/skills/.curator_backups/<utc-iso>/skills.tar.gz`. If a pass archives or consolidates something you didn't want touched, you can undo the whole run with one command:
+Before every real curator pass, Hermes takes a tar.gz snapshot of `~/.anan/skills/` at `~/.anan/skills/.curator_backups/<utc-iso>/skills.tar.gz`. If a pass archives or consolidates something you didn't want touched, you can undo the whole run with one command:
 
 ```bash
 sinoclaw curator rollback        # restore newest snapshot (with confirmation)
@@ -132,10 +132,10 @@ The same subcommands are available as the `/curator` slash command inside a runn
 
 A skill is considered agent-created if its name is **not** in:
 
-- `~/.sinoclaw/skills/.bundled_manifest` (skills copied from the repo on install), and
-- `~/.sinoclaw/skills/.hub/lock.json` (skills installed via `sinoclaw skills install`).
+- `~/.anan/skills/.bundled_manifest` (skills copied from the repo on install), and
+- `~/.anan/skills/.hub/lock.json` (skills installed via `sinoclaw skills install`).
 
-Everything else in `~/.sinoclaw/skills/` is fair game for the curator. This includes:
+Everything else in `~/.anan/skills/` is fair game for the curator. This includes:
 
 - Skills the agent saved via `skill_manage(action="create")` during a conversation.
 - Skills you created manually with a hand-written `SKILL.md`.
@@ -169,15 +169,15 @@ sinoclaw curator pin <skill>
 sinoclaw curator unpin <skill>
 ```
 
-The flag is stored as `"pinned": true` on the skill's entry in `~/.sinoclaw/skills/.usage.json`, so it survives across sessions.
+The flag is stored as `"pinned": true` on the skill's entry in `~/.anan/skills/.usage.json`, so it survives across sessions.
 
 Only **agent-created** skills can be pinned — bundled and hub-installed skills are never subject to curator mutation in the first place, and `sinoclaw curator pin` will refuse with an explanatory message if you try.
 
-If you want a stronger guarantee than "no deletion" — for instance, freezing a skill's content entirely while the agent still reads it — edit `~/.sinoclaw/skills/<name>/SKILL.md` directly with your editor. The pin guards tool-driven deletion, not your own filesystem access.
+If you want a stronger guarantee than "no deletion" — for instance, freezing a skill's content entirely while the agent still reads it — edit `~/.anan/skills/<name>/SKILL.md` directly with your editor. The pin guards tool-driven deletion, not your own filesystem access.
 
 ## Usage telemetry
 
-The curator maintains a sidecar at `~/.sinoclaw/skills/.usage.json` with one entry per skill:
+The curator maintains a sidecar at `~/.anan/skills/.usage.json` with one entry per skill:
 
 ```json
 {
@@ -206,10 +206,10 @@ Bundled and hub-installed skills are explicitly excluded from telemetry writes.
 
 ## Per-run reports
 
-Every curator run writes a timestamped directory under `~/.sinoclaw/logs/curator/`:
+Every curator run writes a timestamped directory under `~/.anan/logs/curator/`:
 
 ```
-~/.sinoclaw/logs/curator/
+~/.anan/logs/curator/
 └── 20260429-111512/
     ├── run.json      # machine-readable: full fidelity, stats, LLM output
     └── REPORT.md     # human-readable summary
@@ -225,13 +225,13 @@ If the curator archived something you still want:
 sinoclaw curator restore <skill-name>
 ```
 
-This moves the skill back from `~/.sinoclaw/skills/.archive/` to the active tree and resets its state to `active`. The restore refuses if a bundled or hub-installed skill has since been installed under the same name (would shadow upstream).
+This moves the skill back from `~/.anan/skills/.archive/` to the active tree and resets its state to `active`. The restore refuses if a bundled or hub-installed skill has since been installed under the same name (would shadow upstream).
 
 ## Disabling per environment
 
 The curator is on by default. To turn it off:
 
-- **For one profile only:** edit `~/.sinoclaw/config.yaml` (or the active profile's config) and set `curator.enabled: false`.
+- **For one profile only:** edit `~/.anan/config.yaml` (or the active profile's config) and set `curator.enabled: false`.
 - **For just one run:** `sinoclaw curator pause` — the pause persists across sessions; use `resume` to re-enable.
 
 The curator also refuses to run if `min_idle_hours` hasn't elapsed, so on an active dev machine it naturally only runs during quiet stretches.
@@ -241,4 +241,4 @@ The curator also refuses to run if `min_idle_hours` hasn't elapsed, so on an act
 - [Skills System](/docs/user-guide/features/skills) — how skills work in general and the self-improvement loop that creates them
 - [Memory](/docs/user-guide/features/memory) — a parallel background review that maintains long-term memory
 - [Bundled Skills Catalog](/docs/reference/skills-catalog)
-- [Issue #7816](https://github.com/sinoclaw/sinoclaw-agent/issues/7816) — original proposal and design discussion
+- [Issue #7816](https://github.com/sinoclaw/anan/issues/7816) — original proposal and design discussion

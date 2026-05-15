@@ -81,12 +81,12 @@
         devShellHook = pkgs.writeShellScript "npm-dev-hook-${pname}" ''
           REPO_ROOT=$(git rev-parse --show-toplevel)
 
-          _sinoclaw_npm_stamp() {
+          _anan_npm_stamp() {
             sha256sum "${folder}/package.json" "${folder}/package-lock.json" \
               2>/dev/null | sha256sum | awk '{print $1}'
           }
           STAMP=".nix-stamps/${pname}"
-          STAMP_VALUE="$(_sinoclaw_npm_stamp)"
+          STAMP_VALUE="$(_anan_npm_stamp)"
           if [ ! -f "$STAMP" ] || [ "$(cat "$STAMP")" != "$STAMP_VALUE" ]; then
             echo "${pname}: installing npm dependencies..."
             ( cd ${folder} && CI=true ${pkgs.lib.getExe' nodejs "npm"} install --silent --no-fund --no-audit 2>/dev/null )
@@ -102,9 +102,9 @@
             fi
 
             mkdir -p .nix-stamps
-            _sinoclaw_npm_stamp > "$STAMP"
+            _anan_npm_stamp > "$STAMP"
           fi
-          unset -f _sinoclaw_npm_stamp
+          unset -f _anan_npm_stamp
         '';
 
         npmLockfile = {

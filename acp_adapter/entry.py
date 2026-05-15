@@ -1,6 +1,6 @@
-"""CLI entry point for the sinoclaw-agent ACP adapter.
+"""CLI entry point for the anan ACP adapter.
 
-Loads environment variables from ``~/.sinoclaw/.env``, configures logging
+Loads environment variables from ``~/.anan/.env``, configures logging
 to write to stderr (so stdout is reserved for ACP JSON-RPC transport),
 and starts the ACP agent server.
 
@@ -8,18 +8,18 @@ Usage::
 
     python -m acp_adapter.entry
     # or
-    sinoclaw acp
+    anan acp
     # or
     sinoclaw-acp
 """
 
-# IMPORTANT: sinoclaw_bootstrap must be the very first import — UTF-8 stdio
-# on Windows.  No-op on POSIX.  See sinoclaw_bootstrap.py for full rationale.
+# IMPORTANT: anan_bootstrap must be the very first import — UTF-8 stdio
+# on Windows.  No-op on POSIX.  See anan_bootstrap.py for full rationale.
 try:
-    import sinoclaw_bootstrap  # noqa: F401
+    import anan_bootstrap  # noqa: F401
 except ModuleNotFoundError:
-    # Graceful fallback when sinoclaw_bootstrap isn't registered in the venv
-    # yet — happens during partial ``sinoclaw update`` where git-reset landed
+    # Graceful fallback when anan_bootstrap isn't registered in the venv
+    # yet — happens during partial ``anan update`` where git-reset landed
     # new code but ``uv pip install -e .`` didn't finish.  Missing bootstrap
     # means UTF-8 stdio setup is skipped on Windows; POSIX is unaffected.
     pass
@@ -28,7 +28,7 @@ import asyncio
 import logging
 import sys
 from pathlib import Path
-from sinoclaw_constants import get_sinoclaw_home
+from anan_constants import get_anan_home
 
 
 # Methods clients send as periodic liveness probes. They are not part of the
@@ -93,17 +93,17 @@ def _setup_logging() -> None:
 
 
 def _load_env() -> None:
-    """Load .env from SINOCLAW_HOME (default ``~/.sinoclaw``)."""
-    from sinoclaw_cli.env_loader import load_sinoclaw_dotenv
+    """Load .env from ANAN_HOME (default ``~/.anan``)."""
+    from anan_cli.env_loader import load_anan_dotenv
 
-    sinoclaw_home = get_sinoclaw_home()
-    loaded = load_sinoclaw_dotenv(sinoclaw_home=sinoclaw_home)
+    anan_home = get_anan_home()
+    loaded = load_anan_dotenv(anan_home=anan_home)
     if loaded:
         for env_file in loaded:
             logging.getLogger(__name__).info("Loaded env from %s", env_file)
     else:
         logging.getLogger(__name__).info(
-            "No .env found at %s, using system env", sinoclaw_home / ".env"
+            "No .env found at %s, using system env", anan_home / ".env"
         )
 
 
@@ -113,7 +113,7 @@ def main() -> None:
     _load_env()
 
     logger = logging.getLogger(__name__)
-    logger.info("Starting sinoclaw-agent ACP adapter")
+    logger.info("Starting anan ACP adapter")
 
     # Ensure the project root is on sys.path so ``from run_agent import AIAgent`` works
     project_root = str(Path(__file__).resolve().parent.parent)
@@ -121,7 +121,7 @@ def main() -> None:
         sys.path.insert(0, project_root)
 
     import acp
-    from .server import SinoclawACPAgent
+    from .server import AnanACPAgent
 
     # MCP tool discovery from config.yaml — run before asyncio.run() so
     # it's safe to use blocking waits.  (ACP also registers per-session
@@ -134,7 +134,7 @@ def main() -> None:
     except Exception:
         logger.debug("MCP tool discovery failed at ACP startup", exc_info=True)
 
-    agent = SinoclawACPAgent()
+    agent = AnanACPAgent()
     try:
         asyncio.run(acp.run_agent(agent, use_unstable_protocol=True))
     except KeyboardInterrupt:

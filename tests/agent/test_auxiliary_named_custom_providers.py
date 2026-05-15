@@ -8,16 +8,16 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate(tmp_path, monkeypatch):
-    """Redirect SINOCLAW_HOME and clear module caches."""
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+    """Redirect ANAN_HOME and clear module caches."""
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
     # Write a minimal config so load_config doesn't fail
-    (sinoclaw_home / "config.yaml").write_text("model:\n  default: test-model\n")
+    (anan_home / "config.yaml").write_text("model:\n  default: test-model\n")
 
 
 def _write_config(tmp_path, config_dict):
-    """Write a config.yaml to the test SINOCLAW_HOME."""
+    """Write a config.yaml to the test ANAN_HOME."""
     import yaml
     config_path = tmp_path / ".sinoclaw" / "config.yaml"
     config_path.write_text(yaml.dump(config_dict))
@@ -105,7 +105,7 @@ class TestResolveProviderClientMainAlias:
             "model": {"default": "gpt-5.4", "provider": "github-copilot"},
         })
         with (
-            patch("sinoclaw_cli.auth.resolve_api_key_provider_credentials", return_value={
+            patch("anan_cli.auth.resolve_api_key_provider_credentials", return_value={
                 "api_key": "ghu_test_token",
                 "base_url": "https://api.githubcopilot.com",
             }),
@@ -183,7 +183,7 @@ class TestResolveProviderClientModelNormalization:
             "model": {"default": "zai/glm-5.1", "provider": "zai"},
         })
         with (
-            patch("sinoclaw_cli.auth.resolve_api_key_provider_credentials", return_value={
+            patch("anan_cli.auth.resolve_api_key_provider_credentials", return_value={
                 "api_key": "glm-key",
                 "base_url": "https://api.z.ai/api/paas/v4",
             }),
@@ -202,7 +202,7 @@ class TestResolveProviderClientModelNormalization:
             "model": {"default": "zai/glm-5.1", "provider": "zai"},
         })
         with (
-            patch("sinoclaw_cli.auth.resolve_api_key_provider_credentials", return_value={
+            patch("anan_cli.auth.resolve_api_key_provider_credentials", return_value={
                 "api_key": "glm-key",
                 "base_url": "https://api.z.ai/api/paas/v4",
             }),
@@ -239,7 +239,7 @@ class TestResolveVisionProviderClientModelNormalization:
         })
         with (
             patch("agent.auxiliary_client._read_nous_auth", return_value=None),
-            patch("sinoclaw_cli.auth.resolve_api_key_provider_credentials", return_value={
+            patch("anan_cli.auth.resolve_api_key_provider_credentials", return_value={
                 "api_key": "glm-key",
                 "base_url": "https://api.z.ai/api/paas/v4",
             }),
@@ -300,7 +300,7 @@ class TestProvidersDictApiModeAnthropicMessages:
                 },
             },
         })
-        from sinoclaw_cli.runtime_provider import _get_named_custom_provider
+        from anan_cli.runtime_provider import _get_named_custom_provider
         entry = _get_named_custom_provider("myrelay")
         assert entry is not None
         assert entry.get("api_mode") == "anthropic_messages"
@@ -318,7 +318,7 @@ class TestProvidersDictApiModeAnthropicMessages:
                 },
             },
         })
-        from sinoclaw_cli.runtime_provider import _get_named_custom_provider
+        from anan_cli.runtime_provider import _get_named_custom_provider
         entry = _get_named_custom_provider("weird")
         assert entry is not None
         assert "api_mode" not in entry
@@ -334,7 +334,7 @@ class TestProvidersDictApiModeAnthropicMessages:
                 },
             },
         })
-        from sinoclaw_cli.runtime_provider import _get_named_custom_provider
+        from anan_cli.runtime_provider import _get_named_custom_provider
         entry = _get_named_custom_provider("localchat")
         assert entry is not None
         assert "api_mode" not in entry

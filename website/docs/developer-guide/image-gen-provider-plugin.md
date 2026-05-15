@@ -17,7 +17,7 @@ Image-gen is one of several **backend plugins** Hermes supports. The others (wit
 Hermes scans for image-gen backends in three places:
 
 1. **Bundled** — `<repo>/plugins/image_gen/<name>/` (auto-loaded with `kind: backend`, always available)
-2. **User** — `~/.sinoclaw/plugins/image_gen/<name>/` (opt-in via `plugins.enabled`)
+2. **User** — `~/.anan/plugins/image_gen/<name>/` (opt-in via `plugins.enabled`)
 3. **Pip** — packages declaring a `sinoclaw_agent.plugins` entry point
 
 Each plugin's `register(ctx)` function calls `ctx.register_image_gen_provider(...)` — that puts it into the registry in `agent/image_gen_registry.py`. The active provider is picked by `image_gen.provider` in `config.yaml`; `sinoclaw tools` walks users through selection.
@@ -32,7 +32,7 @@ plugins/image_gen/my-backend/
 └── plugin.yaml      # Manifest with kind: backend
 ```
 
-A bundled plugin is complete at this point. User plugins at `~/.sinoclaw/plugins/image_gen/<name>/` need to be added to `plugins.enabled` in `config.yaml` (or run `sinoclaw plugins enable <name>`).
+A bundled plugin is complete at this point. User plugins at `~/.anan/plugins/image_gen/<name>/` need to be added to `plugins.enabled` in `config.yaml` (or run `sinoclaw plugins enable <name>`).
 
 ## The ImageGenProvider ABC
 
@@ -145,7 +145,7 @@ class MyBackendImageGenProvider(ImageGenProvider):
 
             # Two shapes supported:
             #   - URL string: return it as `image`
-            #   - base64 data: save under $SINOCLAW_HOME/cache/images/ via save_b64_image()
+            #   - base64 data: save under $ANAN_HOME/cache/images/ via save_b64_image()
             if result.get("image_b64"):
                 path = save_b64_image(
                     result["image_b64"],
@@ -239,25 +239,25 @@ The tool wrapper JSON-serializes the dict and hands it to the LLM. Errors are su
 
 ## Handling base64 vs URL output
 
-Some backends return image URLs (fal, Replicate); others return base64 payloads (OpenAI gpt-image-2). For the base64 case, use `save_b64_image()` — it writes to `$SINOCLAW_HOME/cache/images/<prefix>_<timestamp>_<uuid>.<ext>` and returns the absolute `Path`. Pass that path (as `str`) as `image=` in `success_response()`. Gateway delivery (Telegram photo bubble, Discord attachment) recognizes both URLs and absolute paths.
+Some backends return image URLs (fal, Replicate); others return base64 payloads (OpenAI gpt-image-2). For the base64 case, use `save_b64_image()` — it writes to `$ANAN_HOME/cache/images/<prefix>_<timestamp>_<uuid>.<ext>` and returns the absolute `Path`. Pass that path (as `str`) as `image=` in `success_response()`. Gateway delivery (Telegram photo bubble, Discord attachment) recognizes both URLs and absolute paths.
 
 ## User overrides
 
-Drop a user plugin at `~/.sinoclaw/plugins/image_gen/<name>/` with the same `name` property as a bundled one and enable it via `sinoclaw plugins enable <name>` — the registry is last-writer-wins, so your version replaces the built-in. Useful for pointing an `openai` plugin at a private proxy, or swapping in a custom model catalog.
+Drop a user plugin at `~/.anan/plugins/image_gen/<name>/` with the same `name` property as a bundled one and enable it via `sinoclaw plugins enable <name>` — the registry is last-writer-wins, so your version replaces the built-in. Useful for pointing an `openai` plugin at a private proxy, or swapping in a custom model catalog.
 
 ## Testing
 
 ```bash
-export SINOCLAW_HOME=/tmp/sinoclaw-imggen-test
-mkdir -p $SINOCLAW_HOME/plugins/image_gen/my-backend
+export ANAN_HOME=/tmp/anan-imggen-test
+mkdir -p $ANAN_HOME/plugins/image_gen/my-backend
 # …copy __init__.py + plugin.yaml into that dir…
 
 export MY_BACKEND_API_KEY=your-test-key
 hermes plugins enable my-backend
 
 # Pick it as the active provider
-echo "image_gen:" >> $SINOCLAW_HOME/config.yaml
-echo "  provider: my-backend" >> $SINOCLAW_HOME/config.yaml
+echo "image_gen:" >> $ANAN_HOME/config.yaml
+echo "  provider: my-backend" >> $ANAN_HOME/config.yaml
 
 # Exercise it
 hermes -z "Generate an image of a corgi in a spacesuit"

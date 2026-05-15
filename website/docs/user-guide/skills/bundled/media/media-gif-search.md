@@ -37,7 +37,7 @@ Useful for finding reaction GIFs, creating visual content, and sending GIFs in c
 
 ## Setup
 
-Set your Tenor API key in your environment (add to `~/.sinoclaw/.env`):
+Set your Tenor API key in your environment (add to `~/.anan/.env`):
 
 ```bash
 TENOR_API_KEY=your_key_here
@@ -102,4 +102,4 @@ Each result has multiple formats under `.media_formats`:
 
 - URL-encode the query: spaces as `+`, special chars as `%XX`
 - For sending in chat, `tinygif` URLs are lighter weight
-- GIF URLs can be used directly in markdown: `![alt](https://github.com/sinoclaw/sinoclaw-agent/blob/main/skills/media/gif-search/url)`
+- GIF URLs can be used directly in markdown: `![alt](https://github.com/sinoclaw/anan/blob/main/skills/media/gif-search/url)`

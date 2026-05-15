@@ -7,7 +7,7 @@ finds what works, and locks it in by writing config.yaml + prefill.json.
 
 Usage in execute_code:
     exec(open(os.path.expanduser(
-        os.path.join(os.environ.get("SINOCLAW_HOME", os.path.expanduser("~/.sinoclaw")), "skills/red-teaming/godmode/scripts/auto_jailbreak.py")
+        os.path.join(os.environ.get("ANAN_HOME", os.path.expanduser("~/.sinoclaw")), "skills/red-teaming/godmode/scripts/auto_jailbreak.py")
     )).read())
     
     result = auto_jailbreak()  # Uses current model from config
@@ -35,7 +35,7 @@ try:
     _SKILL_DIR = Path(__file__).resolve().parent.parent
 except NameError:
     # __file__ not defined when loaded via exec() — search standard paths
-    _SKILL_DIR = Path(os.getenv("SINOCLAW_HOME", Path.home() / ".sinoclaw")) / "skills" / "red-teaming" / "godmode"
+    _SKILL_DIR = Path(os.getenv("ANAN_HOME", Path.home() / ".anan")) / "skills" / "red-teaming" / "godmode"
 
 _SCRIPTS_DIR = _SKILL_DIR / "scripts"
 _TEMPLATES_DIR = _SKILL_DIR / "templates"
@@ -57,9 +57,9 @@ if _race_path.exists():
 # Sinoclaw config paths
 # ═══════════════════════════════════════════════════════════════════
 
-SINOCLAW_HOME = Path(os.getenv("SINOCLAW_HOME", Path.home() / ".sinoclaw"))
-CONFIG_PATH = SINOCLAW_HOME / "config.yaml"
-PREFILL_PATH = SINOCLAW_HOME / "prefill.json"
+ANAN_HOME = Path(os.getenv("ANAN_HOME", Path.home() / ".anan"))
+CONFIG_PATH = ANAN_HOME / "config.yaml"
+PREFILL_PATH = ANAN_HOME / "prefill.json"
 
 # ═══════════════════════════════════════════════════════════════════
 # Canary queries — questions that typically trigger safety filters
@@ -407,7 +407,7 @@ def _write_config(system_prompt: str = None, prefill_file: str = None):
 
 
 def _write_prefill(prefill_messages: list):
-    """Write prefill messages to ~/.sinoclaw/prefill.json."""
+    """Write prefill messages to ~/.anan/prefill.json."""
     with open(PREFILL_PATH, "w") as f:
         json.dump(prefill_messages, f, indent=2, ensure_ascii=False)
     return str(PREFILL_PATH)

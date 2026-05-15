@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Monitor a running video-production kanban. Polls `sinoclaw kanban list` and
+Monitor a running video-production kanban. Polls `anan kanban list` and
 `events` for a tenant and surfaces issues (stuck tasks, missing heartbeats,
 repeated retries, dependency deadlocks).
 
@@ -26,7 +26,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 
-def sinoclaw_available() -> bool:
+def anan_available() -> bool:
     return shutil.which("hermes") is not None
 
 
@@ -42,7 +42,7 @@ def kanban_list(tenant: str) -> list[dict]:
             return json.loads(out.stdout)
     except (FileNotFoundError, json.JSONDecodeError):
         pass
-    # Fallback: textual parse of `sinoclaw kanban list`
+    # Fallback: textual parse of `anan kanban list`
     out = subprocess.run(
         ["hermes", "kanban", "list", "--tenant", tenant],
         capture_output=True, text=True, check=False,
@@ -171,7 +171,7 @@ def main():
                     help="Print one snapshot and exit (no polling loop)")
     args = ap.parse_args()
 
-    if not sinoclaw_available():
+    if not anan_available():
         print("ERROR: 'hermes' CLI not found in PATH", file=sys.stderr)
         sys.exit(1)
 

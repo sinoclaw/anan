@@ -14,7 +14,7 @@ import time
 
 import pytest
 
-from sinoclaw_state import SessionDB
+from anan_state import SessionDB
 
 
 @pytest.fixture

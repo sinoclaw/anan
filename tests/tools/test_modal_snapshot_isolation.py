@@ -29,25 +29,25 @@ def _reset_modules(prefixes: tuple[str, ...]):
 
 @pytest.fixture(autouse=True)
 def _restore_tool_modules():
-    original_sinoclaw_home = os.environ.get("SINOCLAW_HOME")
+    original_anan_home = os.environ.get("ANAN_HOME")
     original_modules = {
         name: module
         for name, module in sys.modules.items()
         if name == "tools"
         or name.startswith("tools.")
-        or name == "sinoclaw_cli"
-        or name.startswith("sinoclaw_cli.")
+        or name == "anan_cli"
+        or name.startswith("anan_cli.")
         or name == "modal"
         or name.startswith("modal.")
     }
     try:
         yield
     finally:
-        if original_sinoclaw_home is None:
-            os.environ.pop("SINOCLAW_HOME", None)
+        if original_anan_home is None:
+            os.environ.pop("ANAN_HOME", None)
         else:
-            os.environ["SINOCLAW_HOME"] = original_sinoclaw_home
-        _reset_modules(("tools", "sinoclaw_cli", "modal"))
+            os.environ["ANAN_HOME"] = original_anan_home
+        _reset_modules(("tools", "anan_cli", "modal"))
         sys.modules.update(original_modules)
 
 
@@ -57,15 +57,15 @@ def _install_modal_test_modules(
     fail_on_snapshot_ids: set[str] | None = None,
     snapshot_id: str = "im-fresh",
 ):
-    _reset_modules(("tools", "sinoclaw_cli", "modal"))
+    _reset_modules(("tools", "anan_cli", "modal"))
 
-    sinoclaw_cli = types.ModuleType("sinoclaw_cli")
-    sinoclaw_cli.__path__ = []  # type: ignore[attr-defined]
-    sys.modules["sinoclaw_cli"] = sinoclaw_cli
-    sinoclaw_home = tmp_path / "sinoclaw-home"
-    os.environ["SINOCLAW_HOME"] = str(sinoclaw_home)
-    sys.modules["sinoclaw_cli.config"] = types.SimpleNamespace(
-        get_sinoclaw_home=lambda: sinoclaw_home,
+    anan_cli = types.ModuleType("anan_cli")
+    anan_cli.__path__ = []  # type: ignore[attr-defined]
+    sys.modules["anan_cli"] = anan_cli
+    anan_home = tmp_path / "anan-home"
+    os.environ["ANAN_HOME"] = str(anan_home)
+    sys.modules["anan_cli.config"] = types.SimpleNamespace(
+        get_anan_home=lambda: anan_home,
     )
 
     tools_package = types.ModuleType("tools")
@@ -144,7 +144,7 @@ def _install_modal_test_modules(
             return {"kind": "registry", "image": image}
 
     async def _lookup_aio(_name: str, create_if_missing: bool = False):
-        return types.SimpleNamespace(name="sinoclaw-agent", create_if_missing=create_if_missing)
+        return types.SimpleNamespace(name="anan", create_if_missing=create_if_missing)
 
     class _FakeSandboxInstance:
         def __init__(self, image):
@@ -190,7 +190,7 @@ def _install_modal_test_modules(
     )
 
     return {
-        "snapshot_store": sinoclaw_home / "modal_snapshots.json",
+        "snapshot_store": anan_home / "modal_snapshots.json",
         "create_calls": create_calls,
         "from_id_calls": from_id_calls,
         "registry_calls": registry_calls,

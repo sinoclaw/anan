@@ -73,11 +73,11 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "skills": {
         "label": "User skills",
-        "description": "Copy OpenClaw skills into ~/.sinoclaw/skills/openclaw-imports/.",
+        "description": "Copy OpenClaw skills into ~/.anan/skills/openclaw-imports/.",
     },
     "tts-assets": {
         "label": "TTS assets",
-        "description": "Copy compatible workspace TTS assets into ~/.sinoclaw/tts/.",
+        "description": "Copy compatible workspace TTS assets into ~/.anan/tts/.",
     },
     "discord-settings": {
         "label": "Discord settings",
@@ -109,7 +109,7 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "shared-skills": {
         "label": "Shared skills",
-        "description": "Copy shared OpenClaw skills from ~/.openclaw/skills/ into Sinoclaw.",
+        "description": "Copy shared OpenClaw skills from ~/.anan/skills/ into Sinoclaw.",
     },
     "daily-memory": {
         "label": "Daily memory files",
@@ -401,7 +401,7 @@ def backup_existing(path: Path, backup_root: Path) -> Optional[Path]:
 # read as self-referential to the new agent identity.
 #
 # Case-preserving: ``OpenClaw`` → ``Sinoclaw`` (prose), but lowercase matches
-# like ``openclaw`` → ``hermes`` (so filesystem paths like ``~/.openclaw``
+# like ``openclaw`` → ``hermes`` (so filesystem paths like ``~/.anan``
 # become ``~/.sinoclaw`` — the real Sinoclaw home — not the broken ``~/.Sinoclaw``).
 _REBRAND_PATTERNS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'\bOpen[\s-]?Claw\b', re.IGNORECASE), 'Sinoclaw'),
@@ -415,8 +415,8 @@ def _case_preserving_replacement(replacement: str):
     matched text was all-lowercase.
 
     Keeps ``OpenClaw`` → ``Sinoclaw`` but maps ``openclaw`` → ``hermes`` so a
-    filesystem path like ``~/.openclaw/config.yaml`` rewrites to
-    ``~/.sinoclaw/config.yaml`` (the real Sinoclaw home) instead of the broken
+    filesystem path like ``~/.anan/config.yaml`` rewrites to
+    ``~/.anan/config.yaml`` (the real Sinoclaw home) instead of the broken
     ``~/.Sinoclaw/config.yaml``.
     """
     def _sub(match: "re.Match[str]") -> str:
@@ -749,7 +749,7 @@ class Migrator:
         # Resolve the configured workspace directory from openclaw.json.
         # Many users (especially those who started before the OpenClaw rebrand)
         # have a custom workspace path (e.g. ~/clawd/) that differs from the
-        # default ~/.openclaw/workspace/.  Reading agents.defaults.workspace
+        # default ~/.anan/workspace/.  Reading agents.defaults.workspace
         # lets source_candidate() find files in the actual workspace.
         self._custom_workspace: Optional[Path] = None
         oc_config = self.load_openclaw_config()
@@ -858,7 +858,7 @@ class Migrator:
         # Final fallback: check the configured workspace directory from
         # agents.defaults.workspace in openclaw.json.  Users who started
         # before the OpenClaw rebrand (when the project was named clawd /
-        # clawdbot) often have a custom workspace path outside ~/.openclaw/.
+        # clawdbot) often have a custom workspace path outside ~/.anan/.
         if self._custom_workspace:
             for rel in relative_paths:
                 # Strip the leading "workspace/" or "workspace.default/"
@@ -1533,7 +1533,7 @@ class Migrator:
                             None,
                             "skipped",
                             f"Provider '{provider_name}' uses a {raw_key['source']}-backed SecretRef "
-                            f"that cannot be auto-migrated. Add this key manually via: sinoclaw config set",
+                            f"that cannot be auto-migrated. Add this key manually via: anan config set",
                         )
                     continue
 
@@ -1698,8 +1698,8 @@ class Migrator:
             self.record("model-config", source_path, destination, "error", "PyYAML is not available")
             return
 
-        sinoclaw_config = load_yaml_file(destination)
-        current_model = sinoclaw_config.get("model")
+        anan_config = load_yaml_file(destination)
+        current_model = anan_config.get("model")
         if current_model == model_str:
             self.record("model-config", source_path, destination, "skipped", "Model already set to the same value")
             return
@@ -1709,12 +1709,12 @@ class Migrator:
 
         if self.execute:
             backup_path = self.maybe_backup(destination)
-            existing_model = sinoclaw_config.get("model")
+            existing_model = anan_config.get("model")
             if isinstance(existing_model, dict):
                 existing_model["default"] = model_str
             else:
-                sinoclaw_config["model"] = {"default": model_str}
-            dump_yaml_file(destination, sinoclaw_config)
+                anan_config["model"] = {"default": model_str}
+            dump_yaml_file(destination, anan_config)
             self.record("model-config", source_path, destination, "migrated", backup=str(backup_path) if backup_path else "", model=model_str)
         else:
             self.record("model-config", source_path, destination, "migrated", "Would set model", model=model_str)
@@ -1800,8 +1800,8 @@ class Migrator:
             self.record("tts-config", source_path, destination, "skipped", "No compatible TTS settings found")
             return
 
-        sinoclaw_config = load_yaml_file(destination)
-        existing_tts = sinoclaw_config.get("tts", {})
+        anan_config = load_yaml_file(destination)
+        existing_tts = anan_config.get("tts", {})
         if not isinstance(existing_tts, dict):
             existing_tts = {}
 
@@ -1813,8 +1813,8 @@ class Migrator:
                     merged_tts[key] = {**merged_tts[key], **value}
                 else:
                     merged_tts[key] = value
-            sinoclaw_config["tts"] = merged_tts
-            dump_yaml_file(destination, sinoclaw_config)
+            anan_config["tts"] = merged_tts
+            dump_yaml_file(destination, anan_config)
             self.record("tts-config", source_path, destination, "migrated", backup=str(backup_path) if backup_path else "", settings=list(tts_data.keys()))
         else:
             self.record("tts-config", source_path, destination, "migrated", "Would set TTS config", settings=list(tts_data.keys()))
@@ -2109,7 +2109,7 @@ class Migrator:
 
         sinoclaw_cfg_path = self.target_root / "config.yaml"
         sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
-        existing_mcp = sinoclaw_cfg.get("mcp_servers") or {}
+        existing_mcp = anan_cfg.get("mcp_servers") or {}
         added = 0
 
         for name, srv in mcp_raw.items():
@@ -2291,7 +2291,7 @@ class Migrator:
         changes = False
 
         # Map agent defaults
-        agent_cfg = sinoclaw_cfg.get("agent") or {}
+        agent_cfg = anan_cfg.get("agent") or {}
         if defaults.get("contextTokens"):
             # No direct mapping but useful context
             pass
@@ -2315,7 +2315,7 @@ class Migrator:
         # Map compaction -> compression
         compaction = defaults.get("compaction") or {}
         if compaction:
-            compression = sinoclaw_cfg.get("compression") or {}
+            compression = anan_cfg.get("compression") or {}
             if compaction.get("mode") == "off":
                 compression["enabled"] = False
             else:
@@ -2323,7 +2323,7 @@ class Migrator:
             if compaction.get("timeout"):
                 pass  # No direct mapping
             if compaction.get("model"):
-                aux = sinoclaw_cfg.setdefault("auxiliary", {})
+                aux = anan_cfg.setdefault("auxiliary", {})
                 aux_comp = aux.setdefault("compression", {})
                 aux_comp["model"] = compaction["model"]
             sinoclaw_cfg["compression"] = compression
@@ -2332,7 +2332,7 @@ class Migrator:
         # Map humanDelay
         human_delay = defaults.get("humanDelay") or {}
         if human_delay:
-            hd = sinoclaw_cfg.get("human_delay") or {}
+            hd = anan_cfg.get("human_delay") or {}
             hd_mode = human_delay.get("mode") or ("natural" if human_delay.get("enabled") else None)
             if hd_mode and hd_mode != "off":
                 hd["mode"] = hd_mode
@@ -2351,7 +2351,7 @@ class Migrator:
         # Map terminal/exec settings
         exec_cfg = (config.get("tools") or {}).get("exec") or {}
         if exec_cfg:
-            terminal_cfg = sinoclaw_cfg.get("terminal") or {}
+            terminal_cfg = anan_cfg.get("terminal") or {}
             if exec_cfg.get("timeoutSec") or exec_cfg.get("timeout"):
                 terminal_cfg["timeout"] = exec_cfg.get("timeoutSec") or exec_cfg.get("timeout")
                 changes = True
@@ -2360,7 +2360,7 @@ class Migrator:
         # Map sandbox -> terminal docker settings
         sandbox = defaults.get("sandbox") or {}
         if sandbox and sandbox.get("backend") == "docker":
-            terminal_cfg = sinoclaw_cfg.get("terminal") or {}
+            terminal_cfg = anan_cfg.get("terminal") or {}
             terminal_cfg["backend"] = "docker"
             if sandbox.get("docker", {}).get("image"):
                 terminal_cfg["docker_image"] = sandbox["docker"]["image"]
@@ -2425,7 +2425,7 @@ class Migrator:
 
         sinoclaw_cfg_path = self.target_root / "config.yaml"
         sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
-        sr = sinoclaw_cfg.get("session_reset") or {}
+        sr = anan_cfg.get("session_reset") or {}
         changes = False
 
         # OpenClaw uses session.reset (structured) and session.resetTriggers (string array)
@@ -2489,7 +2489,7 @@ class Migrator:
 
         sinoclaw_cfg_path = self.target_root / "config.yaml"
         sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
-        custom_providers = sinoclaw_cfg.get("custom_providers") or []
+        custom_providers = anan_cfg.get("custom_providers") or []
         added = 0
 
         # Well-known providers: just extract API keys
@@ -2608,7 +2608,7 @@ class Migrator:
         if discord_cfg:
             sinoclaw_cfg_path = self.target_root / "config.yaml"
             sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
-            discord_hermes = sinoclaw_cfg.get("discord") or {}
+            discord_hermes = anan_cfg.get("discord") or {}
             changed = False
             if "requireMention" in discord_cfg:
                 discord_hermes["require_mention"] = discord_cfg["requireMention"]
@@ -2650,7 +2650,7 @@ class Migrator:
 
         sinoclaw_cfg_path = self.target_root / "config.yaml"
         sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
-        browser_hermes = sinoclaw_cfg.get("browser") or {}
+        browser_hermes = anan_cfg.get("browser") or {}
         changed = False
 
         # Map fields that have Sinoclaw equivalents
@@ -2696,7 +2696,7 @@ class Migrator:
         exec_cfg = tools.get("exec") or {}
         timeout_val = exec_cfg.get("timeoutSec") or exec_cfg.get("timeout")
         if timeout_val:
-            terminal_cfg = sinoclaw_cfg.get("terminal") or {}
+            terminal_cfg = anan_cfg.get("terminal") or {}
             terminal_cfg["timeout"] = timeout_val
             sinoclaw_cfg["terminal"] = terminal_cfg
             changed = True
@@ -2741,7 +2741,7 @@ class Migrator:
         if mode:
             mode_map = {"auto": "off", "always": "manual", "smart": "smart", "manual": "manual"}
             sinoclaw_mode = mode_map.get(mode, "manual")
-            sinoclaw_cfg.setdefault("approvals", {})["mode"] = sinoclaw_mode
+            anan_cfg.setdefault("approvals", {})["mode"] = sinoclaw_mode
             if self.execute:
                 self.maybe_backup(sinoclaw_cfg_path)
                 dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
@@ -2946,7 +2946,7 @@ class Migrator:
 
         notes.extend([
             "- Run `sinoclaw gateway install` if you need the gateway service",
-            "- Review `~/.sinoclaw/config.yaml` for any adjustments",
+            "- Review `~/.anan/config.yaml` for any adjustments",
             "",
         ])
 
@@ -2960,7 +2960,7 @@ class Migrator:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Migrate OpenClaw user state into Sinoclaw Agent.")
     parser.add_argument("--source", default=str(Path.home() / ".openclaw"), help="OpenClaw home directory")
-    parser.add_argument("--target", default=os.environ.get("SINOCLAW_HOME") or str(Path.home() / ".sinoclaw"), help="Sinoclaw home directory")
+    parser.add_argument("--target", default=os.environ.get("ANAN_HOME") or str(Path.home() / ".anan"), help="Sinoclaw home directory")
     parser.add_argument(
         "--workspace-target",
         help="Optional workspace root where the workspace instructions file should be copied",
@@ -3067,7 +3067,7 @@ def main() -> int:
             seen_kinds.add(label)
             dest = item.get("destination") or ""
             if dest.startswith(str(report["target_root"])):
-                dest = "~/.sinoclaw/" + dest[len(str(report["target_root"])) + 1:]
+                dest = "~/.anan/" + dest[len(str(report["target_root"])) + 1:]
             meta = MIGRATION_OPTION_METADATA.get(label, {})
             display = meta.get("label", label)
             print(f"    ✔ {display:<35s} -> {dest}")
@@ -3113,8 +3113,8 @@ def main() -> int:
     if args.execute:
         print()
         print("  Next steps:")
-        print("    1. Review ~/.sinoclaw/config.yaml")
-        print("    2. Run: sinoclaw mcp list")
+        print("    1. Review ~/.anan/config.yaml")
+        print("    2. Run: anan mcp list")
         if any(i["kind"] == "cron-jobs" and i["status"] == "archived" for i in items):
             print("    3. Recreate cron jobs: sinoclaw cron")
         if report.get("output_dir"):

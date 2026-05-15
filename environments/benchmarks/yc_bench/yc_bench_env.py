@@ -34,7 +34,7 @@ Key features:
   - Per-preset difficulty breakdown in results
   - Isolated SQLite DB per run (no cross-run state leakage)
 
-Requires: pip install sinoclaw-agent[yc-bench]
+Requires: pip install anan[yc-bench]
 """
 
 import asyncio
@@ -400,7 +400,7 @@ class YCBenchEvalEnv(SinoclawAgentBaseEnv):
         except (FileNotFoundError, subprocess.TimeoutExpired):
             raise RuntimeError(
                 "yc-bench CLI not found. Install with:\n"
-                '  pip install "sinoclaw-agent[yc-bench]"\n'
+                '  pip install "anan[yc-bench]"\n'
                 "Or: git clone https://github.com/collinear-ai/yc-bench "
                 "&& cd yc-bench && pip install -e ."
             )

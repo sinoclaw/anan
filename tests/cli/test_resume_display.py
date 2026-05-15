@@ -17,9 +17,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 def _make_cli(config_overrides=None, env_overrides=None, **kwargs):
-    """Create a SinoclawCLI instance with minimal mocking."""
+    """Create a AnanCLI instance with minimal mocking."""
     import cli as _cli_mod
-    from cli import SinoclawCLI
+    from cli import AnanCLI
 
     _clean_config = {
         "model": {
@@ -46,7 +46,7 @@ def _make_cli(config_overrides=None, env_overrides=None, **kwargs):
         patch.dict("os.environ", clean_env, clear=False),
         patch.dict(_cli_mod.__dict__, {"CLI_CONFIG": _clean_config}),
     ):
-        return SinoclawCLI(**kwargs)
+        return AnanCLI(**kwargs)
 
 
 # ── Sample conversation histories for tests ──────────────────────────
@@ -642,8 +642,8 @@ class TestResumeDisplayConfig:
     """resume_display config option defaults and behavior."""
 
     def test_default_config_has_resume_display(self):
-        """DEFAULT_CONFIG in sinoclaw_cli/config.py includes resume_display."""
-        from sinoclaw_cli.config import DEFAULT_CONFIG
+        """DEFAULT_CONFIG in anan_cli/config.py includes resume_display."""
+        from anan_cli.config import DEFAULT_CONFIG
         display = DEFAULT_CONFIG.get("display", {})
         assert "resume_display" in display
         assert display["resume_display"] == "full"

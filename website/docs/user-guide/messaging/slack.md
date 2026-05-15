@@ -40,7 +40,7 @@ Mode — all at once.
    ```bash
    sinoclaw slack manifest --write
    ```
-   This writes `~/.sinoclaw/slack-manifest.json` and prints paste-in
+   This writes `~/.anan/slack-manifest.json` and prints paste-in
    instructions.
 2. Go to [https://api.slack.com/apps](https://api.slack.com/apps) →
    **Create New App** → **From an app manifest**
@@ -186,7 +186,7 @@ Member IDs look like `U01ABC2DEF3`. You need your own Member ID at minimum.
 
 ## Step 8: Configure Hermes
 
-Add the following to your `~/.sinoclaw/.env` file:
+Add the following to your `~/.anan/.env` file:
 
 ```bash
 # Required
@@ -236,13 +236,13 @@ Hermes command with its description.
 
 Under the hood: Hermes ships with a generated Slack app manifest (see
 Step 1, Option A) that declares every command in
-[`COMMAND_REGISTRY`](https://github.com/sinoclaw/sinoclaw-agent/blob/main/sinoclaw_cli/commands.py)
+[`COMMAND_REGISTRY`](https://github.com/sinoclaw/anan/blob/main/anan_cli/commands.py)
 as a slash command. In Socket Mode, Slack routes the command event
 through the WebSocket regardless of the manifest's `url` field.
 
 ### Refreshing slash commands after updates
 
-When Hermes adds new commands (e.g. after `sinoclaw update`), regenerate
+When Hermes adds new commands (e.g. after `anan update`), regenerate
 the manifest and update your Slack app:
 
 ```bash
@@ -253,7 +253,7 @@ Then in Slack:
 1. Open [https://api.slack.com/apps](https://api.slack.com/apps) →
    your Hermes app
 2. **Features → App Manifest → Edit**
-3. Paste the new contents of `~/.sinoclaw/slack-manifest.json`
+3. Paste the new contents of `~/.anan/slack-manifest.json`
 4. **Save**. Slack will prompt to reinstall the app if scopes or slash
    commands changed.
 
@@ -296,7 +296,7 @@ In channels, always @mention the bot to start a conversation. Once the bot is ac
 
 ## Configuration Options
 
-Beyond the required environment variables from Step 8, you can customize Slack bot behavior through `~/.sinoclaw/config.yaml`.
+Beyond the required environment variables from Step 8, you can customize Slack bot behavior through `~/.anan/config.yaml`.
 
 ### Thread & Reply Behavior
 
@@ -458,7 +458,7 @@ SLACK_BOT_TOKEN=xoxb-workspace1-token,xoxb-workspace2-token,xoxb-workspace3-toke
 SLACK_APP_TOKEN=xapp-your-app-token
 ```
 
-Or in `~/.sinoclaw/config.yaml`:
+Or in `~/.anan/config.yaml`:
 
 ```yaml
 platforms:
@@ -471,7 +471,7 @@ platforms:
 In addition to tokens in the environment or config, Hermes also loads tokens from an **OAuth token file** at:
 
 ```
-~/.sinoclaw/slack_tokens.json
+~/.anan/slack_tokens.json
 ```
 
 This file is a JSON object mapping team IDs to token entries:
@@ -589,7 +589,7 @@ the gateway will **deny all messages** by default as a safety measure. Never sha
 treat them like passwords.
 :::
 
-- Tokens should be stored in `~/.sinoclaw/.env` (file permissions `600`)
+- Tokens should be stored in `~/.anan/.env` (file permissions `600`)
 - Rotate tokens periodically via the Slack app settings
 - Audit who has access to your Hermes config directory
 - Socket Mode means no public endpoint is exposed — one less attack surface

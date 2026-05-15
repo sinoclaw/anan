@@ -306,9 +306,9 @@ class TestReasoningCallback(unittest.TestCase):
 
 class TestReasoningPreviewBuffering(unittest.TestCase):
     def _make_cli(self):
-        from cli import SinoclawCLI
+        from cli import AnanCLI
 
-        cli = SinoclawCLI.__new__(SinoclawCLI)
+        cli = AnanCLI.__new__(AnanCLI)
         cli.verbose = True
         cli._spinner_text = ""
         cli._reasoning_preview_buf = ""
@@ -376,9 +376,9 @@ class TestReasoningPreviewBuffering(unittest.TestCase):
 
 class TestReasoningDisplayModeSelection(unittest.TestCase):
     def _make_cli(self, *, show_reasoning=False, streaming_enabled=False, verbose=False):
-        from cli import SinoclawCLI
+        from cli import AnanCLI
 
-        cli = SinoclawCLI.__new__(SinoclawCLI)
+        cli = AnanCLI.__new__(AnanCLI)
         cli.show_reasoning = show_reasoning
         cli.streaming_enabled = streaming_enabled
         cli.verbose = verbose
@@ -547,7 +547,7 @@ class TestConfigDefault(unittest.TestCase):
     """Verify config default for show_reasoning."""
 
     def test_default_config_has_show_reasoning(self):
-        from sinoclaw_cli.config import DEFAULT_CONFIG
+        from anan_cli.config import DEFAULT_CONFIG
         display = DEFAULT_CONFIG.get("display", {})
         self.assertIn("show_reasoning", display)
         self.assertFalse(display["show_reasoning"])
@@ -557,7 +557,7 @@ class TestCommandRegistered(unittest.TestCase):
     """Verify /reasoning is in the COMMANDS dict."""
 
     def test_reasoning_in_commands(self):
-        from sinoclaw_cli.commands import COMMANDS
+        from anan_cli.commands import COMMANDS
         self.assertIn("/reasoning", COMMANDS)
 
 
@@ -714,8 +714,8 @@ class TestReasoningShownThisTurnFlag(unittest.TestCase):
     was already shown during streaming in a tool-calling loop."""
 
     def _make_cli(self):
-        from cli import SinoclawCLI
-        cli = SinoclawCLI.__new__(SinoclawCLI)
+        from cli import AnanCLI
+        cli = AnanCLI.__new__(AnanCLI)
         cli.show_reasoning = True
         cli.streaming_enabled = True
         cli._stream_box_opened = False

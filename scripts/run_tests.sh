@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Canonical test runner for sinoclaw-agent. Run this instead of calling
+# Canonical test runner for anan. Run this instead of calling
 # `pytest` directly to guarantee your local run matches CI behavior.
 #
 # What this script enforces:
@@ -27,7 +27,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # Prefer a .venv in the current tree, fall back to the main checkout's venv
 # (useful for worktrees where we don't always duplicate the venv).
 VENV=""
-for candidate in "$REPO_ROOT/.venv" "$REPO_ROOT/venv" "$HOME/.sinoclaw/sinoclaw-agent/venv"; do
+for candidate in "$REPO_ROOT/.venv" "$REPO_ROOT/venv" "$HOME/.anan/anan/venv"; do
   if [ -f "$candidate/bin/activate" ]; then
     VENV="$candidate"
     break
@@ -70,7 +70,7 @@ unset SINOCLAW_YOLO_MODE SINOCLAW_INTERACTIVE SINOCLAW_QUIET SINOCLAW_TOOL_PROGR
       SINOCLAW_PLATFORM SINOCLAW_INFERENCE_PROVIDER SINOCLAW_MANAGED SINOCLAW_DEV \
       SINOCLAW_CONTAINER SINOCLAW_EPHEMERAL_SYSTEM_PROMPT SINOCLAW_TIMEZONE \
       SINOCLAW_REDACT_SECRETS SINOCLAW_BACKGROUND_NOTIFICATIONS SINOCLAW_EXEC_ASK \
-      SINOCLAW_HOME_MODE 2>/dev/null || true
+      ANAN_HOME_MODE 2>/dev/null || true
 
 # Pin deterministic runtime.
 export TZ=UTC

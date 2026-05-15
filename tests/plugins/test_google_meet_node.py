@@ -19,10 +19,10 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate_home(tmp_path, monkeypatch):
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
-    yield sinoclaw_home
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
+    yield anan_home
 
 
 # ---------------------------------------------------------------------------
@@ -212,10 +212,10 @@ def test_registry_resolve_by_name(tmp_path):
     assert r.resolve("ghost") is None
 
 
-def test_registry_defaults_to_sinoclaw_home(tmp_path, monkeypatch):
+def test_registry_defaults_to_anan_home(tmp_path, monkeypatch):
     from plugins.google_meet.node.registry import NodeRegistry
 
-    # _isolate_home already set SINOCLAW_HOME to tmp_path/.sinoclaw; the
+    # _isolate_home already set ANAN_HOME to tmp_path/.sinoclaw; the
     # registry default path must live inside that tree.
     r = NodeRegistry()
     r.add("x", "ws://x", "t")
@@ -630,7 +630,7 @@ def test_cli_status_pings_via_node_client(capsys, monkeypatch):
             assert token == "tok"
 
         def ping(self):
-            return {"type": "pong", "display_name": "sinoclaw-meet-node"}
+            return {"type": "pong", "display_name": "anan-meet-node"}
 
     monkeypatch.setattr(node_cli, "NodeClient", _FakeClient)
 

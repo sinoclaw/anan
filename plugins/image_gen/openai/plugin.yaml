@@ -1,7 +1,7 @@
 name: openai
 version: 1.0.0
-description: "OpenAI image generation backend (gpt-image-2). Saves generated images to $SINOCLAW_HOME/cache/images/."
-author: Sinoclaw Team
+description: "OpenAI image generation backend (gpt-image-2). Saves generated images to $ANAN_HOME/cache/images/."
+author: Anan Team
 kind: backend
 requires_env:
   - OPENAI_API_KEY

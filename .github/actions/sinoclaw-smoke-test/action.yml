@@ -8,29 +8,29 @@ description: >
 
 inputs:
   image:
-    description: Fully-qualified image tag (e.g. sinoclaw/sinoclaw-agent:test)
+    description: Fully-qualified image tag (e.g. sinoclaw/anan:test)
     required: true
 
 runs:
   using: composite
   steps:
-    - name: Ensure /tmp/sinoclaw-test is sinoclaw-writable
+    - name: Ensure /tmp/anan-test is sinoclaw-writable
       shell: bash
       run: |
         # The image runs as the sinoclaw user (UID 10000).  GitHub Actions
-        # creates /tmp/sinoclaw-test root-owned by default, which sinoclaw
+        # creates /tmp/anan-test root-owned by default, which sinoclaw
         # can't write to — chown it to match the in-container UID before
         # bind-mounting.  Real users doing `docker run -v ~/.sinoclaw:...`
         # with their own UID hit the same issue and have their own
         # remediations (SINOCLAW_UID env var, or chown locally).
-        mkdir -p /tmp/sinoclaw-test
-        sudo chown -R 10000:10000 /tmp/sinoclaw-test
+        mkdir -p /tmp/anan-test
+        sudo chown -R 10000:10000 /tmp/anan-test
 
     - name: sinoclaw --help
       shell: bash
       run: |
         docker run --rm \
-          -v /tmp/sinoclaw-test:/opt/data \
+          -v /tmp/anan-test:/opt/data \
           --entrypoint /opt/sinoclaw/docker/entrypoint.sh \
           "${{ inputs.image }}" --help
 
@@ -42,6 +42,6 @@ runs:
         # the Dockerfile is excluding the dashboard subcommand from the
         # installed package.
         docker run --rm \
-          -v /tmp/sinoclaw-test:/opt/data \
+          -v /tmp/anan-test:/opt/data \
           --entrypoint /opt/sinoclaw/docker/entrypoint.sh \
           "${{ inputs.image }}" dashboard --help

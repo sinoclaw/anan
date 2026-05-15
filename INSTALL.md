@@ -1,6 +1,6 @@
-# Sinoclaw Agent — Installation Guide
+# Anan Agent — Installation Guide
 
-This document covers every supported way to install Sinoclaw Agent. For the **fastest path**, see the one-liners in [README.md](README.md). This guide is for users who want more control: choosing between pip / Docker / source, running on specific operating systems, or deploying as a long-running service.
+This document covers every supported way to install Anan Agent. For the **fastest path**, see the one-liners in [README.md](README.md). This guide is for users who want more control: choosing between pip / Docker / source, running on specific operating systems, or deploying as a long-running service.
 
 ## Table of Contents
 
@@ -33,8 +33,8 @@ This document covers every supported way to install Sinoclaw Agent. For the **fa
 Quick rule of thumb:
 - **Personal laptop** → one-liner
 - **VPS / home server** → Docker (or one-liner + systemd)
-- **Existing Python project** → `pip install sinoclaw-agent`
-- **Hacking on Sinoclaw itself** → from source
+- **Existing Python project** → `pip install anan`
+- **Hacking on Anan itself** → from source
 
 ---
 
@@ -43,30 +43,30 @@ Quick rule of thumb:
 ### Linux / macOS / WSL2 / Termux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
 What it does:
 1. Installs [`uv`](https://docs.astral.sh/uv/) (fast Python package manager)
 2. Installs Python 3.11 (isolated, doesn't touch system Python)
 3. Installs Node.js, ripgrep, ffmpeg via your OS package manager
-4. Creates `~/.sinoclaw/` data directory
-5. Symlinks `sinoclaw` into `~/.local/bin/`
+4. Creates `~/.anan/` data directory
+5. Symlinks `anan` into `~/.local/bin/`
 6. Adds `~/.local/bin` to your `PATH` if needed
 
 After install:
 ```bash
 source ~/.bashrc        # or ~/.zshrc
-sinoclaw                # start chatting
+anan                # start chatting
 ```
 
 ### Windows (PowerShell, native)
 
 ```powershell
-irm https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/anan/anan/main/scripts/install.ps1 | iex
 ```
 
-The Windows installer additionally bundles **MinGit** (~45 MB portable Git Bash, no admin rights needed) under `%LOCALAPPDATA%\sinoclaw\git`. Sinoclaw uses this isolated bash to run shell commands without depending on or interfering with any system Git you may have.
+The Windows installer additionally bundles **MinGit** (~45 MB portable Git Bash, no admin rights needed) under `%LOCALAPPDATA%\anan\git`. Anan uses this isolated bash to run shell commands without depending on or interfering with any system Git you may have.
 
 > Native Windows is **early beta**. The most battle-tested Windows path is to run the Linux one-liner inside **WSL2** instead.
 
@@ -74,7 +74,7 @@ The Windows installer additionally bundles **MinGit** (~45 MB portable Git Bash,
 
 ## Method 2 — pip / pipx (PyPI)
 
-The package is published on PyPI as **`sinoclaw-agent`**.
+The package is published on PyPI as **`anan`**.
 
 ### With pipx (recommended for CLI tools)
 
@@ -83,8 +83,8 @@ The package is published on PyPI as **`sinoclaw-agent`**.
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 
-# Install Sinoclaw with all optional features
-pipx install "sinoclaw-agent[all]" --python python3.11
+# Install Anan with all optional features
+pipx install "anan[all]" --python python3.11
 ```
 
 ### With pip (in a virtualenv)
@@ -92,8 +92,8 @@ pipx install "sinoclaw-agent[all]" --python python3.11
 ```bash
 python3.11 -m venv ~/sinoclaw-venv
 source ~/sinoclaw-venv/bin/activate
-pip install "sinoclaw-agent[all]"
-sinoclaw --help
+pip install "anan[all]"
+anan --help
 ```
 
 ### Available extras
@@ -110,21 +110,21 @@ sinoclaw --help
 ### Verify the install
 
 ```bash
-sinoclaw --version
-sinoclaw doctor          # diagnoses missing system deps
+anan --version
+anan doctor          # diagnoses missing system deps
 ```
 
 ---
 
 ## Method 3 — Docker / docker-compose
 
-Docker is the easiest way to run Sinoclaw on a **VPS or home server** without touching the host system.
+Docker is the easiest way to run Anan on a **VPS or home server** without touching the host system.
 
 ### Quick start with docker-compose
 
 ```bash
-git clone https://github.com/sinoclaw/sinoclaw-agent.git
-cd sinoclaw-agent
+git clone https://github.com/anan/anan.git
+cd anan
 SINOCLAW_UID=$(id -u) SINOCLAW_GID=$(id -g) docker compose up -d --build
 ```
 
@@ -132,16 +132,16 @@ This brings up two services:
 - **gateway** — messaging gateway (Telegram, Discord, Slack, etc.) on host network
 - **dashboard** — browser dashboard on `127.0.0.1:9119` (localhost only by default for security)
 
-Configuration lives in `~/.sinoclaw/` on the host (mounted into the container at `/opt/data`).
+Configuration lives in `~/.anan/` on the host (mounted into the container at `/opt/data`).
 
 ### First-time configuration
 
 ```bash
 # Open a shell inside the running container
-docker exec -it -u sinoclaw $(docker ps -qf name=gateway) bash
+docker exec -it -u anan $(docker ps -qf name=gateway) bash
 
 # Then run the setup wizard
-sinoclaw setup
+anan setup
 ```
 
 Or set credentials via environment variables in `docker-compose.yml` (see the comments in that file for Telegram, Discord, Teams, etc.).
@@ -149,14 +149,14 @@ Or set credentials via environment variables in `docker-compose.yml` (see the co
 ### Build the image manually
 
 ```bash
-docker build -t sinoclaw-agent:latest .
+docker build -t anan:latest .
 docker run -d \
-  --name sinoclaw \
+  --name anan \
   --network host \
-  -v ~/.sinoclaw:/opt/data \
+  -v ~/.anan:/opt/data \
   -e SINOCLAW_UID=$(id -u) \
   -e SINOCLAW_GID=$(id -g) \
-  sinoclaw-agent:latest gateway run
+  anan:latest gateway run
 ```
 
 ### Useful commands
@@ -172,7 +172,7 @@ docker compose pull && docker compose up -d --build   # update
 
 - The dashboard binds to `127.0.0.1` only — it stores API keys, exposing it on LAN without auth is unsafe. For remote access, use SSH tunnel: `ssh -L 9119:localhost:9119 your-server`.
 - The OpenAI-compatible API server is **off** by default. To enable it, uncomment `API_SERVER_HOST` and `API_SERVER_KEY` in `docker-compose.yml` — the key is mandatory.
-- `SINOCLAW_UID` / `SINOCLAW_GID` should match the host user that owns `~/.sinoclaw` so files stay readable on the host.
+- `SINOCLAW_UID` / `SINOCLAW_GID` should match the host user that owns `~/.anan` so files stay readable on the host.
 
 ---
 
@@ -181,17 +181,17 @@ docker compose pull && docker compose up -d --build   # update
 For contributors and plugin developers who want an editable install.
 
 ```bash
-git clone https://github.com/sinoclaw/sinoclaw-agent.git
-cd sinoclaw-agent
+git clone https://github.com/anan/anan.git
+cd anan
 
 # Easy path — uses the bundled bootstrap script
-./setup-sinoclaw.sh
+./setup-anan.sh
 
 # Then run directly from the checkout
-./sinoclaw
+./anan
 ```
 
-`setup-sinoclaw.sh` handles: installing uv, creating `.venv` with Python 3.11, installing `.[all]` editable, and symlinking `~/.local/bin/sinoclaw` to the checkout.
+`setup-anan.sh` handles: installing uv, creating `.venv` with Python 3.11, installing `.[all]` editable, and symlinking `~/.local/bin/anan` to the checkout.
 
 Manual equivalent:
 
@@ -205,9 +205,9 @@ scripts/run_tests.sh        # run the test suite
 
 > **国内用户镜像加速：** GitHub clone 慢可以走 GitCode 镜像：
 > ```bash
-> git clone --recurse-submodules https://gitcode.com/GitHub_Trending/si/sinoclaw-agent.git
+> git clone --recurse-submodules https://gitcode.com/GitHub_Trending/si/anan.git
 > ```
-> 或者 Gitee：`git clone https://gitee.com/sinoclaw/sinoclaw-agent.git`
+> 或者 Gitee：`git clone https://gitee.com/anan/anan.git`
 
 ---
 
@@ -248,7 +248,7 @@ Then run the install script. Apple Silicon (M1/M2/M3) is fully supported — uv 
 For pip-based install:
 ```bash
 brew install python@3.11 node ripgrep ffmpeg git
-pipx install "sinoclaw-agent[all]" --python python3.11
+pipx install "anan[all]" --python python3.11
 ```
 
 ### Windows
@@ -257,9 +257,9 @@ pipx install "sinoclaw-agent[all]" --python python3.11
 ```powershell
 wsl --install -d Ubuntu-22.04
 ```
-Then inside WSL: `curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash`
+Then inside WSL: `curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash`
 
-**Native Windows (early beta):** Use the PowerShell one-liner from the README. Sinoclaw lives under `%LOCALAPPDATA%\sinoclaw`.
+**Native Windows (early beta):** Use the PowerShell one-liner from the README. Anan lives under `%LOCALAPPDATA%\anan`.
 
 Known native-Windows limitations (use WSL2 if you need these):
 - Browser dashboard chat pane (requires POSIX PTY)
@@ -270,10 +270,10 @@ Known native-Windows limitations (use WSL2 if you need these):
 ```bash
 pkg update && pkg upgrade
 pkg install python rust nodejs ripgrep ffmpeg git
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
-The installer auto-detects Termux and installs the `[termux]` extra (skips voice dependencies that don't compile on Android). Full guide: [Termux quickstart](https://sinoclaw-agent.nousresearch.com/docs/getting-started/termux).
+The installer auto-detects Termux and installs the `[termux]` extra (skips voice dependencies that don't compile on Android). Full guide: [Termux quickstart](https://anan.nousresearch.com/docs/getting-started/termux).
 
 ---
 
@@ -282,9 +282,9 @@ The installer auto-detects Termux and installs the `[termux]` extra (skips voice
 To run the messaging gateway as a long-lived background service on Linux:
 
 ```bash
-sudo tee /etc/systemd/system/sinoclaw-gateway.service > /dev/null <<'EOF'
+sudo tee /etc/systemd/system/anan-gateway.service > /dev/null <<'EOF'
 [Unit]
-Description=Sinoclaw Agent — Messaging Gateway
+Description=Anan Agent — Messaging Gateway
 After=network-online.target
 Wants=network-online.target
 
@@ -292,7 +292,7 @@ Wants=network-online.target
 Type=simple
 User=YOUR_USER
 Environment=HOME=/home/YOUR_USER
-ExecStart=/home/YOUR_USER/.local/bin/sinoclaw gateway run
+ExecStart=/home/YOUR_USER/.local/bin/anan gateway run
 Restart=on-failure
 RestartSec=5
 
@@ -301,9 +301,9 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable --now sinoclaw-gateway
-sudo systemctl status sinoclaw-gateway
-journalctl -u sinoclaw-gateway -f       # tail logs
+sudo systemctl enable --now anan-gateway
+sudo systemctl status anan-gateway
+journalctl -u anan-gateway -f       # tail logs
 ```
 
 Replace `YOUR_USER` with your actual username.
@@ -316,9 +316,9 @@ Replace `YOUR_USER` with your actual username.
 
 | Install method | How to upgrade |
 |----------------|----------------|
-| One-liner | `sinoclaw update` |
-| pipx | `pipx upgrade sinoclaw-agent` |
-| pip | `pip install -U "sinoclaw-agent[all]"` |
+| One-liner | `anan update` |
+| pipx | `pipx upgrade anan` |
+| pip | `pip install -U "anan[all]"` |
 | Docker | `docker compose pull && docker compose up -d --build` |
 | From source | `git pull && uv pip install -e ".[all,dev]"` |
 
@@ -328,35 +328,35 @@ Replace `YOUR_USER` with your actual username.
 
 ```bash
 # Remove the binary symlink and venv
-rm -rf ~/.local/bin/sinoclaw ~/.local/share/sinoclaw
+rm -rf ~/.local/bin/anan ~/.local/share/anan
 
 # Remove user data (config, sessions, skills) — IRREVERSIBLE
-rm -rf ~/.sinoclaw
+rm -rf ~/.anan
 
 # pip / pipx
-pipx uninstall sinoclaw-agent
-# or: pip uninstall sinoclaw-agent
+pipx uninstall anan
+# or: pip uninstall anan
 
 # Docker
 docker compose down -v
-docker rmi sinoclaw-agent
+docker rmi anan
 
 # systemd
-sudo systemctl disable --now sinoclaw-gateway
-sudo rm /etc/systemd/system/sinoclaw-gateway.service
+sudo systemctl disable --now anan-gateway
+sudo rm /etc/systemd/system/anan-gateway.service
 ```
 
 ---
 
 ## Troubleshooting
 
-### `sinoclaw: command not found` after install
+### `anan: command not found` after install
 ```bash
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### `sinoclaw doctor` reports missing dependencies
+### `anan doctor` reports missing dependencies
 Install them via your OS package manager (see [OS notes](#operating-system-notes)).
 
 ### Python version errors (`requires Python >=3.11`)
@@ -367,7 +367,7 @@ uv python install 3.11
 # Or use your OS package manager — see OS notes above
 ```
 
-### Docker: permission denied on `~/.sinoclaw`
+### Docker: permission denied on `~/.anan`
 Make sure `SINOCLAW_UID` and `SINOCLAW_GID` match your host user:
 ```bash
 SINOCLAW_UID=$(id -u) SINOCLAW_GID=$(id -g) docker compose up -d
@@ -377,10 +377,10 @@ SINOCLAW_UID=$(id -u) SINOCLAW_GID=$(id -g) docker compose up -d
 
 ```bash
 # Git: use GitCode mirror
-git clone https://gitcode.com/GitHub_Trending/si/sinoclaw-agent.git
+git clone https://gitcode.com/GitHub_Trending/si/anan.git
 
 # pip: use Tsinghua mirror
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple "sinoclaw-agent[all]"
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple "anan[all]"
 
 # npm: use npmmirror
 npm config set registry https://registry.npmmirror.com
@@ -388,11 +388,11 @@ npm config set registry https://registry.npmmirror.com
 
 ### Still stuck?
 
-- Run `sinoclaw doctor` — diagnoses 30+ common issues
-- Browse logs: `sinoclaw logs --follow`
-- Open an issue: https://github.com/sinoclaw/sinoclaw-agent/issues
-- Discord: https://github.com/sinoclaw/sinoclaw-agent
+- Run `anan doctor` — diagnoses 30+ common issues
+- Browse logs: `anan logs --follow`
+- Open an issue: https://github.com/anan/anan/issues
+- Discord: https://github.com/anan/anan
 
 ---
 
-📖 **Full documentation:** https://sinoclaw-agent.nousresearch.com/docs/
+📖 **Full documentation:** https://anan.nousresearch.com/docs/

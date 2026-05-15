@@ -59,15 +59,15 @@ Delivery targets are case-sensitive and require the correct platform to be confi
 
 | Target | Requires |
 |--------|----------|
-| `telegram` | `TELEGRAM_BOT_TOKEN` in `~/.sinoclaw/.env` |
-| `discord` | `DISCORD_BOT_TOKEN` in `~/.sinoclaw/.env` |
-| `slack` | `SLACK_BOT_TOKEN` in `~/.sinoclaw/.env` |
+| `telegram` | `TELEGRAM_BOT_TOKEN` in `~/.anan/.env` |
+| `discord` | `DISCORD_BOT_TOKEN` in `~/.anan/.env` |
+| `slack` | `SLACK_BOT_TOKEN` in `~/.anan/.env` |
 | `whatsapp` | WhatsApp gateway configured |
 | `signal` | Signal gateway configured |
 | `matrix` | Matrix homeserver configured |
 | `email` | SMTP configured in `config.yaml` |
 | `sms` | SMS provider configured |
-| `local` | Write access to `~/.sinoclaw/cron/output/` |
+| `local` | Write access to `~/.anan/cron/output/` |
 | `origin` | Delivers to the chat where the job was created |
 
 Other supported platforms include `mattermost`, `homeassistant`, `dingtalk`, `feishu`, `wecom`, `weixin`, `bluebubbles`, `qqbot`, and `webhook`. You can also target a specific chat with `platform:chat_id` syntax (e.g., `telegram:-1001234567890`).
@@ -138,7 +138,7 @@ In this example, `context-skill` loads before `target-skill`.
 If a job ran and failed, you may see error context in:
 
 1. The chat where the job delivers (if delivery succeeded)
-2. `~/.sinoclaw/logs/agent.log` for scheduler messages (or `errors.log` for warnings)
+2. `~/.anan/logs/agent.log` for scheduler messages (or `errors.log` for warnings)
 3. The job's `last_run` metadata via `sinoclaw cron list`
 
 ### Check 2: Common error patterns
@@ -146,8 +146,8 @@ If a job ran and failed, you may see error context in:
 **"No such file or directory" for scripts**
 The `script` path must be an absolute path (or relative to the Hermes config directory). Verify:
 ```bash
-ls ~/.sinoclaw/scripts/your-script.py   # Must exist
-hermes cron edit <job_id> --script ~/.sinoclaw/scripts/your-script.py
+ls ~/.anan/scripts/your-script.py   # Must exist
+hermes cron edit <job_id> --script ~/.anan/scripts/your-script.py
 ```
 
 **"Skill not found" at job execution**
@@ -171,11 +171,11 @@ ps aux | grep hermes
 
 ### Check 4: Permissions on jobs.json
 
-Jobs are stored in `~/.sinoclaw/cron/jobs.json`. If this file is not readable/writable by your user, the scheduler will fail silently:
+Jobs are stored in `~/.anan/cron/jobs.json`. If this file is not readable/writable by your user, the scheduler will fail silently:
 
 ```bash
-ls -la ~/.sinoclaw/cron/jobs.json
-chmod 600 ~/.sinoclaw/cron/jobs.json   # Your user should own it
+ls -la ~/.anan/cron/jobs.json
+chmod 600 ~/.anan/cron/jobs.json   # Your user should own it
 ```
 
 ---
@@ -213,8 +213,8 @@ sinoclaw skills list                  # Verify installed skills
 If you've worked through this guide and the issue persists:
 
 1. Run the job with `sinoclaw cron run <job_id>` (fires on next gateway tick) and watch for errors in the chat output
-2. Check `~/.sinoclaw/logs/agent.log` for scheduler messages and `~/.sinoclaw/logs/errors.log` for warnings
-3. Open an issue at [github.com/sinoclaw/sinoclaw-agent](https://github.com/sinoclaw/sinoclaw-agent) with:
+2. Check `~/.anan/logs/agent.log` for scheduler messages and `~/.anan/logs/errors.log` for warnings
+3. Open an issue at [github.com/sinoclaw/anan](https://github.com/sinoclaw/anan) with:
    - The job ID and schedule
    - The delivery target
    - What you expected vs. what happened

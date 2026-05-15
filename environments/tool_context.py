@@ -2,7 +2,7 @@
 ToolContext -- Unrestricted Tool Access for Reward Functions
 
 A per-rollout handle that gives reward/verification functions direct access to
-ALL sinoclaw-agent tools, scoped to the rollout's task_id. The same task_id means
+ALL anan tools, scoped to the rollout's task_id. The same task_id means
 the terminal/browser session is the SAME one the model used during its rollout --
 all state (files, processes, browser tabs) is preserved.
 
@@ -65,7 +65,7 @@ def _run_tool_in_thread(tool_name: str, arguments: Dict[str, Any], task_id: str)
 
 class ToolContext:
     """
-    Open-ended access to all sinoclaw-agent tools for a specific rollout.
+    Open-ended access to all anan tools for a specific rollout.
 
     Passed to compute_reward() so verifiers can use any tool they need:
     terminal commands, file reads/writes, web searches, browser automation, etc.
@@ -191,7 +191,7 @@ class ToolContext:
             )
         else:
             # For larger files, write base64 in chunks then decode
-            tmp_b64 = "/tmp/_sinoclaw_upload.b64"
+            tmp_b64 = "/tmp/_anan_upload.b64"
             self.terminal(f": > {tmp_b64}", timeout=5)  # truncate
             for i in range(0, len(b64), chunk_size):
                 chunk = b64[i : i + chunk_size]
@@ -418,7 +418,7 @@ class ToolContext:
 
     def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:
         """
-        Call any sinoclaw-agent tool by name.
+        Call any anan tool by name.
 
         This is the generic escape hatch -- if a tool doesn't have a convenience
         wrapper above, you can call it directly here.

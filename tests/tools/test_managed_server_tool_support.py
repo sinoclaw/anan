@@ -6,7 +6,7 @@ Validates that:
 2. Sinoclaw's parser registry remains compatible with ManagedServer parsing
 3. SinoclawAgentBaseEnv wires the selected parser into ServerManager correctly
 
-These tests verify the contract between sinoclaw-agent's environments/ code
+These tests verify the contract between anan's environments/ code
 and atroposlib's ManagedServer. They detect API incompatibilities early.
 """
 
@@ -25,7 +25,7 @@ except ImportError:
 
 
 class TestManagedServerAPI:
-    """Test that ManagedServer's API matches what sinoclaw-agent expects."""
+    """Test that ManagedServer's API matches what anan expects."""
 
     def test_managed_server_init_signature(self):
         """ManagedServer should accept tool_call_parser parameter."""
@@ -93,7 +93,7 @@ class TestManagedServerAPI:
 
 
 class TestParserCompatibility:
-    """Test that sinoclaw-agent's parsers match ManagedServer's expectations."""
+    """Test that anan's parsers match ManagedServer's expectations."""
 
     def test_parser_parse_returns_correct_format(self):
         """

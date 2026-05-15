@@ -1,8 +1,8 @@
 """Vercel Sandbox execution environment.
 
-Uses the Vercel Python SDK to run commands in cloud sandboxes through Sinoclaw'
+Uses the Vercel Python SDK to run commands in cloud sandboxes through Anan'
 shared ``BaseEnvironment`` shell contract. When persistence is enabled, the
-backend stores task-scoped snapshot metadata under ``SINOCLAW_HOME`` and restores
+backend stores task-scoped snapshot metadata under ``ANAN_HOME`` and restores
 new sandboxes from those snapshots on later task reuse.
 """
 
@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 
-from sinoclaw_constants import get_sinoclaw_home
+from anan_constants import get_anan_home
 from tools.environments.base import (
     BaseEnvironment,
     _ThreadedProcessHandle,
@@ -140,7 +140,7 @@ def _extract_result_returncode(result: Any) -> int:
 
 
 def _snapshot_store_path() -> Path:
-    return get_sinoclaw_home() / _SNAPSHOT_STORE_NAME
+    return get_anan_home() / _SNAPSHOT_STORE_NAME
 
 
 def _load_snapshots() -> dict:
@@ -323,9 +323,9 @@ class VercelSandboxEnvironment(BaseEnvironment):
         self._remote_home = self._detect_remote_home()
 
         if self._remote_home == "/":
-            container_base = "/.sinoclaw"
+            container_base = "/.anan"
         else:
-            container_base = f"{self._remote_home.rstrip('/')}/.sinoclaw"
+            container_base = f"{self._remote_home.rstrip('/')}/.anan"
         self._sync_manager = FileSyncManager(
             get_files_fn=lambda: iter_sync_files(container_base),
             upload_fn=self._vercel_upload,
@@ -528,13 +528,13 @@ class VercelSandboxEnvironment(BaseEnvironment):
             )
 
     def _vercel_bulk_download(self, dest_tar_path: Path) -> None:
-        remote_sinoclaw = (
-            "/.sinoclaw"
+        remote_anan = (
+            "/.anan"
             if self._remote_home == "/"
-            else f"{self._remote_home.rstrip('/')}/.sinoclaw"
+            else f"{self._remote_home.rstrip('/')}/.anan"
         )
-        archive_member = remote_sinoclaw.lstrip("/")
-        remote_tar = f"/tmp/.sinoclaw_sync.{os.getpid()}.tar"
+        archive_member = remote_anan.lstrip("/")
+        remote_tar = f"/tmp/.anan_sync.{os.getpid()}.tar"
         sandbox = self._sandbox
         if sandbox is None:
             raise RuntimeError("Vercel sandbox is not attached")

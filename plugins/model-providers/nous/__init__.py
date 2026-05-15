@@ -12,7 +12,7 @@ class NousProfile(ProviderProfile):
     def build_extra_body(
         self, *, session_id: str | None = None, **context
     ) -> dict[str, Any]:
-        return {"tags": ["product=sinoclaw-agent"]}
+        return {"tags": ["product=anan"]}
 
     def build_api_kwargs_extras(
         self,
@@ -43,8 +43,8 @@ nous = NousProfile(
     description="Nous Research — Sinoclaw model family",
     signup_url="https://nousresearch.com/",
     fallback_models=(
-        "sinoclaw-3-405b",
-        "sinoclaw-3-70b",
+        "anan-3-405b",
+        "anan-3-70b",
     ),
     base_url="https://inference.nousresearch.com/v1",
     auth_type="oauth_device_code",

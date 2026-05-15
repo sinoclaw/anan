@@ -4,7 +4,7 @@ Provides the agent with the ability to interact with Discord servers
 when running on the Discord gateway. Uses Discord REST API directly
 with the bot token — no dependency on the gateway adapter's client.
 
-Only included in the sinoclaw-discord toolset, so it has zero cost
+Only included in the anan-discord toolset, so it has zero cost
 for users on other platforms.
 
 The schema exposed to the model is filtered by two gates:
@@ -79,7 +79,7 @@ def _discord_request(
         headers={
             "Authorization": f"Bot {token}",
             "Content-Type": "application/json",
-            "User-Agent": "Sinoclaw-Agent (https://github.com/NousResearch/sinoclaw-agent)",
+            "User-Agent": "Anan-Agent (https://github.com/NousResearch/anan)",
         },
     )
 
@@ -551,7 +551,7 @@ def _load_allowed_actions_config() -> Optional[List[str]]:
     Unknown action names are dropped with a log warning.
     """
     try:
-        from sinoclaw_cli.config import load_config
+        from anan_cli.config import load_config
         cfg = load_config()
     except Exception as exc:
         logger.debug("discord: could not load config (%s); allowing all actions.", exc)

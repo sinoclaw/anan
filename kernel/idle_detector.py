@@ -3,7 +3,7 @@ Idle Detector — 检测用户沉默，触发意识流
 ==========================================
 
 原理：
-    轮询 sinoclaw session DB 的 messages 表，找用户最近一条消息的时间。
+    轮询 anan session DB 的 messages 表，找用户最近一条消息的时间。
     超过 idle_threshold_s 没动静 → 发 L0.circadian.idle 事件。
     L4/L5/L8 订阅此事件，触发 Daydreaming / 主动思考。
 
@@ -44,9 +44,9 @@ logger = logging.getLogger("anan.kernel.idle_detector")
 class IdleConfig:
     """Tunables for idle detection."""
 
-    # Path to sinoclaw session DB
+    # Path to anan session DB
     state_db_path: Path = field(
-        default_factory=lambda: Path.home() / ".sinoclaw" / "state.db"
+        default_factory=lambda: Path.home() / ".anan" / "state.db"
     )
     # How long (seconds) the user must be silent before we call it "idle"
     idle_threshold_s: float = 90.0

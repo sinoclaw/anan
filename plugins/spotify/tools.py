@@ -1,10 +1,10 @@
-"""Native Spotify tools for Sinoclaw (registered via plugins/spotify)."""
+"""Native Spotify tools for Anan (registered via plugins/spotify)."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, List
 
-from sinoclaw_cli.auth import get_auth_status
+from anan_cli.auth import get_auth_status
 from plugins.spotify.client import (
     SpotifyAPIError,
     SpotifyAuthRequiredError,

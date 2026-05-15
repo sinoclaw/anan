@@ -33,26 +33,26 @@ def _restore_tool_and_agent_modules():
     original_modules = {
         name: module
         for name, module in sys.modules.items()
-        if name in ("tools", "agent", "sinoclaw_cli")
+        if name in ("tools", "agent", "anan_cli")
         or name.startswith("tools.")
         or name.startswith("agent.")
-        or name.startswith("sinoclaw_cli.")
+        or name.startswith("anan_cli.")
     }
     try:
         yield
     finally:
-        _reset_modules(("tools", "agent", "sinoclaw_cli"))
+        _reset_modules(("tools", "agent", "anan_cli"))
         sys.modules.update(original_modules)
 
 
 def _install_fake_tools_package(*, credential_mounts=None):
-    _reset_modules(("tools", "agent", "sinoclaw_cli"))
+    _reset_modules(("tools", "agent", "anan_cli"))
 
-    sinoclaw_cli = types.ModuleType("sinoclaw_cli")
-    sinoclaw_cli.__path__ = []  # type: ignore[attr-defined]
-    sys.modules["sinoclaw_cli"] = sinoclaw_cli
-    sys.modules["sinoclaw_cli.config"] = types.SimpleNamespace(
-        get_sinoclaw_home=lambda: Path(tempfile.gettempdir()) / "sinoclaw-home",
+    anan_cli = types.ModuleType("anan_cli")
+    anan_cli.__path__ = []  # type: ignore[attr-defined]
+    sys.modules["anan_cli"] = anan_cli
+    sys.modules["anan_cli.config"] = types.SimpleNamespace(
+        get_anan_home=lambda: Path(tempfile.gettempdir()) / "anan-home",
     )
 
     tools_package = types.ModuleType("tools")
@@ -281,7 +281,7 @@ def test_managed_modal_rejects_host_credential_passthrough():
     _install_fake_tools_package(
         credential_mounts=[{
             "host_path": "/tmp/token.json",
-            "container_path": "/root/.sinoclaw/token.json",
+            "container_path": "/root/.anan/token.json",
         }]
     )
     managed_modal = _load_tool_module("tools.environments.managed_modal", "environments/managed_modal.py")

@@ -59,7 +59,7 @@ class CopilotACPClientSafetyTests(unittest.TestCase):
 
             with patch.dict(
                 os.environ,
-                {"HOME": str(home), "SINOCLAW_HOME": str(home / ".sinoclaw")},
+                {"HOME": str(home), "ANAN_HOME": str(home / ".sinoclaw")},
                 clear=False,
             ):
                 response = self._dispatch(
@@ -175,12 +175,12 @@ def _fake_popen_capture(captured):
 
 
 def test_run_prompt_prefers_profile_home_when_available(monkeypatch, tmp_path):
-    sinoclaw_home = tmp_path / "hermes"
-    profile_home = sinoclaw_home / "home"
+    anan_home = tmp_path / "hermes"
+    profile_home = anan_home / "home"
     profile_home.mkdir(parents=True)
 
     monkeypatch.delenv("HOME", raising=False)
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
     captured = {}
     client = _make_home_client(tmp_path)
@@ -194,7 +194,7 @@ def test_run_prompt_prefers_profile_home_when_available(monkeypatch, tmp_path):
 
 def test_run_prompt_passes_home_when_parent_env_is_clean(monkeypatch, tmp_path):
     monkeypatch.delenv("HOME", raising=False)
-    monkeypatch.delenv("SINOCLAW_HOME", raising=False)
+    monkeypatch.delenv("ANAN_HOME", raising=False)
 
     captured = {}
     client = _make_home_client(tmp_path)

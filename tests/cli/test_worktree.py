@@ -66,7 +66,7 @@ def _setup_worktree(repo_root):
     """Test version of _setup_worktree — creates a worktree."""
     import uuid
     short_id = uuid.uuid4().hex[:8]
-    wt_name = f"sinoclaw-{short_id}"
+    wt_name = f"anan-{short_id}"
     branch_name = f"hermes/{wt_name}"
 
     worktrees_dir = Path(repo_root) / ".worktrees"
@@ -472,7 +472,7 @@ class TestStaleWorktreePruning:
         cutoff = time.time() - (24 * 3600)
 
         for entry in worktrees_dir.iterdir():
-            if not entry.is_dir() or not entry.name.startswith("sinoclaw-"):
+            if not entry.is_dir() or not entry.name.startswith("anan-"):
                 continue
             try:
                 mtime = entry.stat().st_mtime
@@ -518,7 +518,7 @@ class TestStaleWorktreePruning:
 
         pruned = False
         for entry in worktrees_dir.iterdir():
-            if not entry.is_dir() or not entry.name.startswith("sinoclaw-"):
+            if not entry.is_dir() or not entry.name.startswith("anan-"):
                 continue
             mtime = entry.stat().st_mtime
             if mtime > cutoff:

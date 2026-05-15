@@ -88,10 +88,10 @@ def _normalize_env_dict(env: dict | None) -> dict[str, str]:
     return normalized
 
 
-def _load_sinoclaw_env_vars() -> dict[str, str]:
-    """Load ~/.sinoclaw/.env values without failing Docker command execution."""
+def _load_anan_env_vars() -> dict[str, str]:
+    """Load ~/.anan/.env values without failing Docker command execution."""
     try:
-        from sinoclaw_cli.config import load_env
+        from anan_cli.config import load_env
 
         return load_env() or {}
     except Exception:
@@ -336,7 +336,7 @@ class DockerEnvironment(BaseEnvironment):
             resource_args.append("--network=none")
 
         # Persistent workspace via bind mounts from a configurable host directory
-        # (TERMINAL_SANDBOX_DIR, default ~/.sinoclaw/sandboxes/). Non-persistent
+        # (TERMINAL_SANDBOX_DIR, default ~/.anan/sandboxes/). Non-persistent
         # mode uses tmpfs (ephemeral, fast, gone on cleanup).
         from tools.environments.base import get_sandbox_dir
 
@@ -491,7 +491,7 @@ class DockerEnvironment(BaseEnvironment):
         self._docker_exe = find_docker() or "docker"
 
         # Start the container directly via `docker run -d`.
-        container_name = f"sinoclaw-{uuid.uuid4().hex[:8]}"
+        container_name = f"anan-{uuid.uuid4().hex[:8]}"
         run_cmd = [
             self._docker_exe, "run", "-d",
             "--init",           # tini/catatonit as PID 1 — reaps zombie children
@@ -536,14 +536,14 @@ class DockerEnvironment(BaseEnvironment):
         except Exception:
             pass
         # Explicit docker_forward_env entries are an intentional opt-in and must
-        # win over the generic Sinoclaw secret blocklist. Only implicit passthrough
+        # win over the generic Anan secret blocklist. Only implicit passthrough
         # keys are filtered.
         forward_keys = explicit_forward_keys | (passthrough_keys - _SINOCLAW_PROVIDER_ENV_BLOCKLIST)
-        sinoclaw_env = _load_sinoclaw_env_vars() if forward_keys else {}
+        anan_env = _load_anan_env_vars() if forward_keys else {}
         for key in sorted(forward_keys):
             value = os.getenv(key)
             if value is None:
-                value = sinoclaw_env.get(key)
+                value = anan_env.get(key)
             if value is not None:
                 exec_env[key] = value
 

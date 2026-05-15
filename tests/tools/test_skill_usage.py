@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 
 
-def _bump_view_many(sinoclaw_home: str, skill_name: str, iterations: int) -> None:
-    os.environ["SINOCLAW_HOME"] = sinoclaw_home
+def _bump_view_many(anan_home: str, skill_name: str, iterations: int) -> None:
+    os.environ["ANAN_HOME"] = anan_home
     from tools.skill_usage import bump_view
 
     for _ in range(iterations):
@@ -18,12 +18,12 @@ def _bump_view_many(sinoclaw_home: str, skill_name: str, iterations: int) -> Non
 
 @pytest.fixture
 def skills_home(tmp_path, monkeypatch):
-    """Isolated SINOCLAW_HOME with a clean skills/ dir for each test."""
+    """Isolated ANAN_HOME with a clean skills/ dir for each test."""
     home = tmp_path / ".sinoclaw"
     home.mkdir()
     (home / "skills").mkdir()
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    monkeypatch.setenv("SINOCLAW_HOME", str(home))
+    monkeypatch.setenv("ANAN_HOME", str(home))
     # Force skill_usage module to re-resolve paths per test
     import importlib
     import tools.skill_usage as mod

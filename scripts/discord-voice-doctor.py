@@ -19,8 +19,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-SINOCLAW_HOME = Path(os.getenv("SINOCLAW_HOME", Path.home() / ".sinoclaw"))
-ENV_FILE = SINOCLAW_HOME / ".env"
+ANAN_HOME = Path(os.getenv("ANAN_HOME", Path.home() / ".anan"))
+ENV_FILE = ANAN_HOME / ".env"
 
 OK = "\033[92m\u2713\033[0m"
 FAIL = "\033[91m\u2717\033[0m"
@@ -176,10 +176,10 @@ def check_env_vars():
 
     # Load .env
     try:
-        from sinoclaw_cli.env_loader import load_sinoclaw_dotenv
+        from anan_cli.env_loader import load_anan_dotenv
 
-        load_sinoclaw_dotenv(
-            sinoclaw_home=ENV_FILE.parent,
+        load_anan_dotenv(
+            anan_home=ENV_FILE.parent,
             project_env=PROJECT_ROOT / ".env",
         )
     except ImportError:
@@ -235,10 +235,10 @@ def check_env_vars():
 
 
 def check_config(groq_key, eleven_key):
-    """Check sinoclaw config.yaml."""
+    """Check anan config.yaml."""
     section("Configuration")
 
-    config_path = SINOCLAW_HOME / "config.yaml"
+    config_path = ANAN_HOME / "config.yaml"
     if config_path.exists():
         try:
             import yaml
@@ -264,7 +264,7 @@ def check_config(groq_key, eleven_key):
         warn("config.yaml", "not found — using defaults")
 
     # Voice mode state
-    voice_mode_path = SINOCLAW_HOME / "gateway_voice_mode.json"
+    voice_mode_path = ANAN_HOME / "gateway_voice_mode.json"
     if voice_mode_path.exists():
         try:
             import json

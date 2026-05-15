@@ -20,15 +20,15 @@ If the provider is just "another OpenAI-compatible base URL and API key", a name
 
 A built-in provider has to line up across a few layers:
 
-1. `sinoclaw_cli/auth.py` decides how credentials are found.
-2. `sinoclaw_cli/runtime_provider.py` turns that into runtime data:
+1. `anan_cli/auth.py` decides how credentials are found.
+2. `anan_cli/runtime_provider.py` turns that into runtime data:
    - `provider`
    - `api_mode`
    - `base_url`
    - `api_key`
    - `source`
 3. `run_agent.py` uses `api_mode` to decide how requests are built and sent.
-4. `sinoclaw_cli/models.py` and `sinoclaw_cli/main.py` make the provider show up in the CLI. (`sinoclaw_cli/setup.py` delegates to `main.py` automatically — no changes needed there.)
+4. `anan_cli/models.py` and `anan_cli/main.py` make the provider show up in the CLI. (`anan_cli/setup.py` delegates to `main.py` automatically — no changes needed there.)
 5. `agent/auxiliary_client.py` and `agent/model_metadata.py` keep side tasks and token budgeting working.
 
 The important abstraction is `api_mode`.
@@ -74,17 +74,17 @@ This path includes everything from Path A plus:
 
 ### Required for every built-in provider
 
-1. `sinoclaw_cli/auth.py`
-2. `sinoclaw_cli/models.py`
-3. `sinoclaw_cli/runtime_provider.py`
-4. `sinoclaw_cli/main.py`
+1. `anan_cli/auth.py`
+2. `anan_cli/models.py`
+3. `anan_cli/runtime_provider.py`
+4. `anan_cli/main.py`
 5. `agent/auxiliary_client.py`
 6. `agent/model_metadata.py`
 7. tests
 8. user-facing docs under `website/docs/`
 
 :::tip
-`sinoclaw_cli/setup.py` does **not** need changes. The setup wizard delegates provider/model selection to `select_provider_and_model()` in `main.py` — any provider added there is automatically available in `sinoclaw setup`.
+`anan_cli/setup.py` does **not** need changes. The setup wizard delegates provider/model selection to `select_provider_and_model()` in `main.py` — any provider added there is automatically available in `sinoclaw setup`.
 :::
 
 ### Additional for native / non-OpenAI providers
@@ -102,7 +102,7 @@ All you need is:
 1. A plugin directory under `plugins/model-providers/<your-provider>/` containing:
    - `__init__.py` — calls `register_provider(profile)` at module-level
    - `plugin.yaml` — manifest (name, kind: model-provider, version, description)
-2. That's it. Provider plugins auto-load the first time anything calls `get_provider_profile()` or `list_providers()` — bundled plugins (this repo) and user plugins at `$SINOCLAW_HOME/plugins/model-providers/` both get picked up.
+2. That's it. Provider plugins auto-load the first time anything calls `get_provider_profile()` or `list_providers()` — bundled plugins (this repo) and user plugins at `$ANAN_HOME/plugins/model-providers/` both get picked up.
 
 When you add a plugin and it calls `register_provider()`, the following wire up automatically:
 
@@ -119,7 +119,7 @@ When you add a plugin and it calls `register_provider()`, the following wire up 
 11. `SINOCLAW_INFERENCE_PROVIDER` env-var override accepts the provider id
 12. Fallback model activation can switch into the provider cleanly
 
-User plugins at `$SINOCLAW_HOME/plugins/model-providers/<name>/` override bundled plugins of the same name (last-writer-wins in `register_provider()`) — so third parties can monkey-patch or replace any built-in profile without editing the repo.
+User plugins at `$ANAN_HOME/plugins/model-providers/<name>/` override bundled plugins of the same name (last-writer-wins in `register_provider()`) — so third parties can monkey-patch or replace any built-in profile without editing the repo.
 
 See `plugins/model-providers/nvidia/` or `plugins/model-providers/gmi/` as a template, and the full [Model Provider Plugin guide](/docs/developer-guide/model-provider-plugin) for field reference, hook idioms, and end-to-end examples.
 
@@ -145,17 +145,17 @@ Examples from the repo:
 
 That same id should appear in:
 
-- `PROVIDER_REGISTRY` in `sinoclaw_cli/auth.py`
-- `_PROVIDER_LABELS` in `sinoclaw_cli/models.py`
-- `_PROVIDER_ALIASES` in both `sinoclaw_cli/auth.py` and `sinoclaw_cli/models.py`
-- CLI `--provider` choices in `sinoclaw_cli/main.py`
+- `PROVIDER_REGISTRY` in `anan_cli/auth.py`
+- `_PROVIDER_LABELS` in `anan_cli/models.py`
+- `_PROVIDER_ALIASES` in both `anan_cli/auth.py` and `anan_cli/models.py`
+- CLI `--provider` choices in `anan_cli/main.py`
 - setup / model selection branches
 - auxiliary-model defaults
 - tests
 
 If the id differs between those files, the provider will feel half-wired: auth may work while `/model`, setup, or runtime resolution silently misses it.
 
-## Step 2: Add auth metadata in `sinoclaw_cli/auth.py`
+## Step 2: Add auth metadata in `anan_cli/auth.py`
 
 For API-key providers, add a `ProviderConfig` entry to `PROVIDER_REGISTRY` with:
 
@@ -184,7 +184,7 @@ Questions to answer here:
 
 If the provider needs something more than "look up an API key", add a dedicated credential resolver instead of shoving logic into unrelated branches.
 
-## Step 3: Add model catalog and aliases in `sinoclaw_cli/models.py`
+## Step 3: Add model catalog and aliases in `anan_cli/models.py`
 
 Update the provider catalog so the provider works in menus and in `provider:model` syntax.
 
@@ -207,7 +207,7 @@ kimi:model-name
 
 If aliases are missing here, the provider may authenticate correctly but still fail in `/model` parsing.
 
-## Step 4: Resolve runtime data in `sinoclaw_cli/runtime_provider.py`
+## Step 4: Resolve runtime data in `anan_cli/runtime_provider.py`
 
 `resolve_runtime_provider()` is the shared path used by CLI, gateway, cron, ACP, and helper clients.
 
@@ -228,11 +228,11 @@ If the provider is OpenAI-compatible, `api_mode` should usually stay `chat_compl
 
 Be careful with API-key precedence. Hermes already contains logic to avoid leaking an OpenRouter key to unrelated endpoints. A new provider should be equally explicit about which key goes to which base URL.
 
-## Step 5: Wire the CLI in `sinoclaw_cli/main.py`
+## Step 5: Wire the CLI in `anan_cli/main.py`
 
 A provider is not discoverable until it shows up in the interactive `sinoclaw model` flow.
 
-Update these in `sinoclaw_cli/main.py`:
+Update these in `anan_cli/main.py`:
 
 - `provider_labels` dict
 - `providers` list in `select_provider_and_model()`
@@ -242,7 +242,7 @@ Update these in `sinoclaw_cli/main.py`:
 - a `_model_flow_<provider>()` function, or reuse `_model_flow_api_key_provider()` if it fits
 
 :::tip
-`sinoclaw_cli/setup.py` does not need changes — it calls `select_provider_and_model()` from `main.py`, so your new provider appears in both `sinoclaw model` and `sinoclaw setup` automatically.
+`anan_cli/setup.py` does not need changes — it calls `select_provider_and_model()` from `main.py`, so your new provider appears in both `sinoclaw model` and `sinoclaw setup` automatically.
 :::
 
 ## Step 6: Keep auxiliary calls working
@@ -358,15 +358,15 @@ After tests, run a real smoke test.
 
 ```bash
 source venv/bin/activate
-python -m sinoclaw_cli.main chat -q "Say hello" --provider your-provider --model your-model
+python -m anan_cli.main chat -q "Say hello" --provider your-provider --model your-model
 ```
 
 Also test the interactive flows if you changed menus:
 
 ```bash
 source venv/bin/activate
-python -m sinoclaw_cli.main model
-python -m sinoclaw_cli.main setup
+python -m anan_cli.main model
+python -m anan_cli.main setup
 ```
 
 For native providers, verify at least one tool call too, not just a plain text response.
@@ -385,11 +385,11 @@ A developer can wire the provider perfectly and still leave users unable to disc
 
 Use this if the provider is standard chat completions.
 
-- [ ] `ProviderConfig` added in `sinoclaw_cli/auth.py`
-- [ ] aliases added in `sinoclaw_cli/auth.py` and `sinoclaw_cli/models.py`
-- [ ] model catalog added in `sinoclaw_cli/models.py`
-- [ ] runtime branch added in `sinoclaw_cli/runtime_provider.py`
-- [ ] CLI wiring added in `sinoclaw_cli/main.py` (setup.py inherits automatically)
+- [ ] `ProviderConfig` added in `anan_cli/auth.py`
+- [ ] aliases added in `anan_cli/auth.py` and `anan_cli/models.py`
+- [ ] model catalog added in `anan_cli/models.py`
+- [ ] runtime branch added in `anan_cli/runtime_provider.py`
+- [ ] CLI wiring added in `anan_cli/main.py` (setup.py inherits automatically)
 - [ ] aux model added in `agent/auxiliary_client.py`
 - [ ] context lengths added in `agent/model_metadata.py`
 - [ ] runtime / CLI tests updated

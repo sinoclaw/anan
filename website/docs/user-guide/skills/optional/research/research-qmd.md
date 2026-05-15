@@ -244,7 +244,7 @@ without needing to load this skill.
 
 ### Option A: Stdio Mode (Simple)
 
-Add to `~/.sinoclaw/config.yaml`:
+Add to `~/.anan/config.yaml`:
 
 ```yaml
 mcp_servers:

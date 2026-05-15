@@ -1,4 +1,4 @@
-# Sinoclaw Agent — 安装指南
+# Anan Agent — 安装指南
 
 本文档涵盖所有支持的安装方式。**最快路径**请直接看 [README.zh-CN.md](README.zh-CN.md) 里的一键脚本。本指南面向需要更多控制的用户：选择 pip / Docker / 源码、在特定操作系统上运行、或部署为长期运行的服务。
 
@@ -33,8 +33,8 @@
 经验法则：
 - **个人笔记本** → 一键脚本
 - **VPS / 家庭服务器** → Docker（或 一键脚本 + systemd）
-- **已有 Python 项目** → `pip install sinoclaw-agent`
-- **二次开发 Sinoclaw 本身** → 源码安装
+- **已有 Python 项目** → `pip install anan`
+- **二次开发 Anan 本身** → 源码安装
 
 ---
 
@@ -43,30 +43,30 @@
 ### Linux / macOS / WSL2 / Termux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
 执行内容：
 1. 安装 [`uv`](https://docs.astral.sh/uv/)（高性能 Python 包管理器）
 2. 安装 Python 3.11（隔离的，不影响系统 Python）
 3. 通过系统包管理器安装 Node.js、ripgrep、ffmpeg
-4. 创建 `~/.sinoclaw/` 数据目录
-5. 创建 `~/.local/bin/sinoclaw` 软链接
+4. 创建 `~/.anan/` 数据目录
+5. 创建 `~/.local/bin/anan` 软链接
 6. 必要时把 `~/.local/bin` 加入 `PATH`
 
 安装完成后：
 ```bash
 source ~/.bashrc        # 或 ~/.zshrc
-sinoclaw                # 开始对话
+anan                # 开始对话
 ```
 
 ### Windows（PowerShell，原生）
 
 ```powershell
-irm https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/anan/anan/main/scripts/install.ps1 | iex
 ```
 
-Windows 安装程序额外打包 **MinGit**（约 45 MB 便携版 Git Bash，无需管理员权限），解压到 `%LOCALAPPDATA%\sinoclaw\git`。Sinoclaw 用这个隔离的 bash 执行 shell 命令，不依赖、不影响系统已有的 Git。
+Windows 安装程序额外打包 **MinGit**（约 45 MB 便携版 Git Bash，无需管理员权限），解压到 `%LOCALAPPDATA%\anan\git`。Anan 用这个隔离的 bash 执行 shell 命令，不依赖、不影响系统已有的 Git。
 
 > 原生 Windows 是**早期 Beta**。最稳定的 Windows 路径是在 **WSL2** 里跑 Linux 一键脚本。
 
@@ -74,7 +74,7 @@ Windows 安装程序额外打包 **MinGit**（约 45 MB 便携版 Git Bash，无
 
 ## 方式 2 — pip / pipx（PyPI）
 
-PyPI 包名为 **`sinoclaw-agent`**。
+PyPI 包名为 **`anan`**。
 
 ### pipx（CLI 工具推荐方式）
 
@@ -83,8 +83,8 @@ PyPI 包名为 **`sinoclaw-agent`**。
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 
-# 安装 Sinoclaw（含全部可选功能）
-pipx install "sinoclaw-agent[all]" --python python3.11
+# 安装 Anan（含全部可选功能）
+pipx install "anan[all]" --python python3.11
 ```
 
 ### pip（在 venv 里）
@@ -92,8 +92,8 @@ pipx install "sinoclaw-agent[all]" --python python3.11
 ```bash
 python3.11 -m venv ~/sinoclaw-venv
 source ~/sinoclaw-venv/bin/activate
-pip install "sinoclaw-agent[all]"
-sinoclaw --help
+pip install "anan[all]"
+anan --help
 ```
 
 ### 可用 extras
@@ -110,21 +110,21 @@ sinoclaw --help
 ### 验证安装
 
 ```bash
-sinoclaw --version
-sinoclaw doctor          # 诊断缺失的系统依赖
+anan --version
+anan doctor          # 诊断缺失的系统依赖
 ```
 
 ---
 
 ## 方式 3 — Docker / docker-compose
 
-Docker 是在 **VPS 或家庭服务器**上运行 Sinoclaw 而不污染宿主系统的最简单方式。
+Docker 是在 **VPS 或家庭服务器**上运行 Anan 而不污染宿主系统的最简单方式。
 
 ### docker-compose 快速启动
 
 ```bash
-git clone https://github.com/sinoclaw/sinoclaw-agent.git
-cd sinoclaw-agent
+git clone https://github.com/anan/anan.git
+cd anan
 SINOCLAW_UID=$(id -u) SINOCLAW_GID=$(id -g) docker compose up -d --build
 ```
 
@@ -132,16 +132,16 @@ SINOCLAW_UID=$(id -u) SINOCLAW_GID=$(id -g) docker compose up -d --build
 - **gateway** — 消息网关（Telegram、Discord、Slack 等），使用宿主网络
 - **dashboard** — 浏览器仪表盘，监听 `127.0.0.1:9119`（默认仅 localhost，安全考虑）
 
-配置数据保存在宿主 `~/.sinoclaw/`，挂载到容器内 `/opt/data`。
+配置数据保存在宿主 `~/.anan/`，挂载到容器内 `/opt/data`。
 
 ### 首次配置
 
 ```bash
 # 进入运行中的容器
-docker exec -it -u sinoclaw $(docker ps -qf name=gateway) bash
+docker exec -it -u anan $(docker ps -qf name=gateway) bash
 
 # 运行配置向导
-sinoclaw setup
+anan setup
 ```
 
 或者直接在 `docker-compose.yml` 里通过环境变量配置凭据（文件里有 Telegram、Discord、Teams 等的注释示例）。
@@ -149,14 +149,14 @@ sinoclaw setup
 ### 手动构建镜像
 
 ```bash
-docker build -t sinoclaw-agent:latest .
+docker build -t anan:latest .
 docker run -d \
-  --name sinoclaw \
+  --name anan \
   --network host \
-  -v ~/.sinoclaw:/opt/data \
+  -v ~/.anan:/opt/data \
   -e SINOCLAW_UID=$(id -u) \
   -e SINOCLAW_GID=$(id -g) \
-  sinoclaw-agent:latest gateway run
+  anan:latest gateway run
 ```
 
 ### 常用命令
@@ -172,7 +172,7 @@ docker compose pull && docker compose up -d --build   # 升级
 
 - Dashboard 仅绑定 `127.0.0.1` — 它存储 API 密钥，没有认证就暴露到 LAN 是不安全的。远程访问请用 SSH 隧道：`ssh -L 9119:localhost:9119 your-server`。
 - OpenAI 兼容 API server 默认**关闭**。要启用，请在 `docker-compose.yml` 里取消注释 `API_SERVER_HOST` 和 `API_SERVER_KEY` —— **key 是必填**。
-- `SINOCLAW_UID` / `SINOCLAW_GID` 应该与拥有 `~/.sinoclaw` 的宿主用户一致，否则文件在宿主端无法读写。
+- `SINOCLAW_UID` / `SINOCLAW_GID` 应该与拥有 `~/.anan` 的宿主用户一致，否则文件在宿主端无法读写。
 
 ---
 
@@ -181,17 +181,17 @@ docker compose pull && docker compose up -d --build   # 升级
 适合贡献者和插件开发者，编辑代码立即生效。
 
 ```bash
-git clone https://github.com/sinoclaw/sinoclaw-agent.git
-cd sinoclaw-agent
+git clone https://github.com/anan/anan.git
+cd anan
 
 # 简单路径 — 用自带的引导脚本
-./setup-sinoclaw.sh
+./setup-anan.sh
 
 # 直接从 checkout 运行
-./sinoclaw
+./anan
 ```
 
-`setup-sinoclaw.sh` 会自动：安装 uv、用 Python 3.11 创建 `.venv`、可编辑安装 `.[all]`、把 `~/.local/bin/sinoclaw` 软链到 checkout。
+`setup-anan.sh` 会自动：安装 uv、用 Python 3.11 创建 `.venv`、可编辑安装 `.[all]`、把 `~/.local/bin/anan` 软链到 checkout。
 
 手动等价命令：
 
@@ -205,9 +205,9 @@ scripts/run_tests.sh        # 跑测试
 
 > **国内用户镜像加速：** GitHub clone 慢可以走 GitCode 镜像：
 > ```bash
-> git clone --recurse-submodules https://gitcode.com/GitHub_Trending/si/sinoclaw-agent.git
+> git clone --recurse-submodules https://gitcode.com/GitHub_Trending/si/anan.git
 > ```
-> 或者 Gitee：`git clone https://gitee.com/sinoclaw/sinoclaw-agent.git`
+> 或者 Gitee：`git clone https://gitee.com/anan/anan.git`
 
 ---
 
@@ -248,7 +248,7 @@ sudo pacman -S python nodejs npm ripgrep ffmpeg git
 走 pip 路径：
 ```bash
 brew install python@3.11 node ripgrep ffmpeg git
-pipx install "sinoclaw-agent[all]" --python python3.11
+pipx install "anan[all]" --python python3.11
 ```
 
 ### Windows
@@ -257,9 +257,9 @@ pipx install "sinoclaw-agent[all]" --python python3.11
 ```powershell
 wsl --install -d Ubuntu-22.04
 ```
-然后在 WSL 里：`curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash`
+然后在 WSL 里：`curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash`
 
-**原生 Windows（早期 Beta）：** 用 README 里的 PowerShell 一键命令。Sinoclaw 安装在 `%LOCALAPPDATA%\sinoclaw`。
+**原生 Windows（早期 Beta）：** 用 README 里的 PowerShell 一键命令。Anan 安装在 `%LOCALAPPDATA%\anan`。
 
 原生 Windows 已知限制（需要这些功能请用 WSL2）：
 - 浏览器仪表盘聊天面板（需要 POSIX PTY）
@@ -270,10 +270,10 @@ wsl --install -d Ubuntu-22.04
 ```bash
 pkg update && pkg upgrade
 pkg install python rust nodejs ripgrep ffmpeg git
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
-安装脚本会自动检测 Termux 并安装 `[termux]` extra（跳过在 Android 上无法编译的语音依赖）。完整指南：[Termux 快速开始](https://sinoclaw-agent.nousresearch.com/docs/getting-started/termux)。
+安装脚本会自动检测 Termux 并安装 `[termux]` extra（跳过在 Android 上无法编译的语音依赖）。完整指南：[Termux 快速开始](https://anan.nousresearch.com/docs/getting-started/termux)。
 
 ---
 
@@ -282,9 +282,9 @@ curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/script
 把消息网关作为长期后台服务跑在 Linux 上：
 
 ```bash
-sudo tee /etc/systemd/system/sinoclaw-gateway.service > /dev/null <<'EOF'
+sudo tee /etc/systemd/system/anan-gateway.service > /dev/null <<'EOF'
 [Unit]
-Description=Sinoclaw Agent — Messaging Gateway
+Description=Anan Agent — Messaging Gateway
 After=network-online.target
 Wants=network-online.target
 
@@ -292,7 +292,7 @@ Wants=network-online.target
 Type=simple
 User=YOUR_USER
 Environment=HOME=/home/YOUR_USER
-ExecStart=/home/YOUR_USER/.local/bin/sinoclaw gateway run
+ExecStart=/home/YOUR_USER/.local/bin/anan gateway run
 Restart=on-failure
 RestartSec=5
 
@@ -301,9 +301,9 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable --now sinoclaw-gateway
-sudo systemctl status sinoclaw-gateway
-journalctl -u sinoclaw-gateway -f       # 实时查看日志
+sudo systemctl enable --now anan-gateway
+sudo systemctl status anan-gateway
+journalctl -u anan-gateway -f       # 实时查看日志
 ```
 
 把 `YOUR_USER` 替换成你的实际用户名。
@@ -316,9 +316,9 @@ journalctl -u sinoclaw-gateway -f       # 实时查看日志
 
 | 安装方式 | 升级命令 |
 |----------|---------|
-| 一键脚本 | `sinoclaw update` |
-| pipx | `pipx upgrade sinoclaw-agent` |
-| pip | `pip install -U "sinoclaw-agent[all]"` |
+| 一键脚本 | `anan update` |
+| pipx | `pipx upgrade anan` |
+| pip | `pip install -U "anan[all]"` |
 | Docker | `docker compose pull && docker compose up -d --build` |
 | 源码 | `git pull && uv pip install -e ".[all,dev]"` |
 
@@ -328,35 +328,35 @@ journalctl -u sinoclaw-gateway -f       # 实时查看日志
 
 ```bash
 # 删除二进制软链和 venv
-rm -rf ~/.local/bin/sinoclaw ~/.local/share/sinoclaw
+rm -rf ~/.local/bin/anan ~/.local/share/anan
 
 # 删除用户数据（配置、会话、技能）— 不可恢复
-rm -rf ~/.sinoclaw
+rm -rf ~/.anan
 
 # pip / pipx
-pipx uninstall sinoclaw-agent
-# 或: pip uninstall sinoclaw-agent
+pipx uninstall anan
+# 或: pip uninstall anan
 
 # Docker
 docker compose down -v
-docker rmi sinoclaw-agent
+docker rmi anan
 
 # systemd
-sudo systemctl disable --now sinoclaw-gateway
-sudo rm /etc/systemd/system/sinoclaw-gateway.service
+sudo systemctl disable --now anan-gateway
+sudo rm /etc/systemd/system/anan-gateway.service
 ```
 
 ---
 
 ## 故障排查
 
-### 安装后 `sinoclaw: command not found`
+### 安装后 `anan: command not found`
 ```bash
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### `sinoclaw doctor` 报告依赖缺失
+### `anan doctor` 报告依赖缺失
 用系统包管理器装上（见上方[操作系统说明](#操作系统说明)）。
 
 ### Python 版本错误（`requires Python >=3.11`）
@@ -367,7 +367,7 @@ uv python install 3.11
 # 或者用系统包管理器 — 见上方操作系统说明
 ```
 
-### Docker：`~/.sinoclaw` 权限被拒绝
+### Docker：`~/.anan` 权限被拒绝
 确保 `SINOCLAW_UID` 和 `SINOCLAW_GID` 与宿主用户一致：
 ```bash
 SINOCLAW_UID=$(id -u) SINOCLAW_GID=$(id -g) docker compose up -d
@@ -377,10 +377,10 @@ SINOCLAW_UID=$(id -u) SINOCLAW_GID=$(id -g) docker compose up -d
 
 ```bash
 # Git：用 GitCode 镜像
-git clone https://gitcode.com/GitHub_Trending/si/sinoclaw-agent.git
+git clone https://gitcode.com/GitHub_Trending/si/anan.git
 
 # pip：用清华源
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple "sinoclaw-agent[all]"
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple "anan[all]"
 
 # npm：用 npmmirror
 npm config set registry https://registry.npmmirror.com
@@ -388,11 +388,11 @@ npm config set registry https://registry.npmmirror.com
 
 ### 还是不行？
 
-- 跑 `sinoclaw doctor` — 诊断 30+ 种常见问题
-- 查看日志：`sinoclaw logs --follow`
-- 提 issue：https://github.com/sinoclaw/sinoclaw-agent/issues
-- Discord：https://github.com/sinoclaw/sinoclaw-agent
+- 跑 `anan doctor` — 诊断 30+ 种常见问题
+- 查看日志：`anan logs --follow`
+- 提 issue：https://github.com/anan/anan/issues
+- Discord：https://github.com/anan/anan
 
 ---
 
-📖 **完整文档：** https://sinoclaw-agent.nousresearch.com/docs/
+📖 **完整文档：** https://anan.nousresearch.com/docs/

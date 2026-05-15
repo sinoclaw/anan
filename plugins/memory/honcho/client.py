@@ -1,7 +1,7 @@
 """Honcho client initialization and configuration.
 
 Resolution order for config file:
-  1. $SINOCLAW_HOME/honcho.json  (instance-local, enables isolated Sinoclaw instances)
+  1. $ANAN_HOME/honcho.json  (instance-local, enables isolated Sinoclaw instances)
   2. ~/.honcho/config.json     (global, shared across all Honcho-enabled apps)
   3. Environment variables     (HONCHO_API_KEY, HONCHO_ENVIRONMENT)
 
@@ -20,7 +20,7 @@ import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from sinoclaw_constants import get_sinoclaw_home
+from anan_constants import get_anan_home
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-HOST = "sinoclaw"
+HOST = "anan"
 
 
 def resolve_active_host() -> str:
@@ -36,15 +36,15 @@ def resolve_active_host() -> str:
 
     Resolution order:
       1. SINOCLAW_HONCHO_HOST env var (explicit override)
-      2. Active profile name via profiles system -> ``sinoclaw.<profile>``
-      3. Fallback: ``"sinoclaw"`` (default profile)
+      2. Active profile name via profiles system -> ``anan.<profile>``
+      3. Fallback: ``"anan"`` (default profile)
     """
     explicit = os.environ.get("SINOCLAW_HONCHO_HOST", "").strip()
     if explicit:
         return explicit
 
     try:
-        from sinoclaw_cli.profiles import get_active_profile_name
+        from anan_cli.profiles import get_active_profile_name
         profile = get_active_profile_name()
         if profile and profile not in ("default", "custom"):
             return f"{HOST}.{profile}"
@@ -62,18 +62,18 @@ def resolve_config_path() -> Path:
     """Return the active Honcho config path.
 
     Resolution order:
-      1. $SINOCLAW_HOME/honcho.json      (profile-local, if it exists)
-      2. ~/.sinoclaw/honcho.json          (default profile — shared host blocks live here)
+      1. $ANAN_HOME/honcho.json      (profile-local, if it exists)
+      2. ~/.anan/honcho.json          (default profile — shared host blocks live here)
       3. ~/.honcho/config.json          (global, cross-app interop)
 
     Returns the global path if none exist (for first-time setup writes).
     """
-    local_path = get_sinoclaw_home() / "honcho.json"
+    local_path = get_anan_home() / "honcho.json"
     if local_path.exists():
         return local_path
 
     # Default profile's config — host blocks accumulate here via setup/clone
-    default_path = Path.home() / ".sinoclaw" / "honcho.json"
+    default_path = Path.home() / ".anan" / "honcho.json"
     if default_path != local_path and default_path.exists():
         return default_path
 
@@ -241,7 +241,7 @@ class HonchoClientConfig:
     """Configuration for Honcho client, resolved for a specific host."""
 
     host: str = HOST
-    workspace_id: str = "sinoclaw"
+    workspace_id: str = "anan"
     api_key: str | None = None
     environment: str = "production"
     # Optional base URL for self-hosted Honcho (overrides environment mapping)
@@ -250,7 +250,7 @@ class HonchoClientConfig:
     timeout: float | None = None
     # Identity
     peer_name: str | None = None
-    ai_peer: str = "sinoclaw"
+    ai_peer: str = "anan"
     # When True, ``peer_name`` wins over any gateway-supplied runtime
     # identity (Telegram UID, Discord ID, …) when resolving the user peer.
     # This keeps memory unified across platforms for single-user deployments
@@ -324,7 +324,7 @@ class HonchoClientConfig:
     @classmethod
     def from_env(
         cls,
-        workspace_id: str = "sinoclaw",
+        workspace_id: str = "anan",
         host: str | None = None,
     ) -> HonchoClientConfig:
         """Create config from environment variables (fallback)."""
@@ -351,7 +351,7 @@ class HonchoClientConfig:
     ) -> HonchoClientConfig:
         """Create config from the resolved Honcho config path.
 
-        Resolution: $SINOCLAW_HOME/honcho.json -> ~/.honcho/config.json -> env vars.
+        Resolution: $ANAN_HOME/honcho.json -> ~/.honcho/config.json -> env vars.
         When host is None, derives it from the active Sinoclaw profile.
         """
         resolved_host = host or resolve_active_host()
@@ -702,9 +702,9 @@ def get_honcho_client(config: HonchoClientConfig | None = None) -> Honcho:
     resolved_timeout = config.timeout
     if not resolved_base_url or resolved_timeout is None:
         try:
-            from sinoclaw_cli.config import load_config
-            sinoclaw_cfg = load_config()
-            honcho_cfg = sinoclaw_cfg.get("honcho", {})
+            from anan_cli.config import load_config
+            anan_cfg = load_config()
+            honcho_cfg = anan_cfg.get("honcho", {})
             if isinstance(honcho_cfg, dict):
                 if not resolved_base_url:
                     resolved_base_url = honcho_cfg.get("base_url", "").strip() or None

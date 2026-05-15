@@ -7,7 +7,7 @@ Reads a plan.json describing the team + brief, expands templates from
 initial kanban task.
 
 Profile-config patching, SOUL.md-per-profile, TEAM.md task-graph convention,
-and the `sinoclaw kanban create --workspace dir:` initial-task pattern are
+and the `anan kanban create --workspace dir:` initial-task pattern are
 adapted from alt-glitch's NousResearch/kanban-video-pipeline.
 
 Usage:

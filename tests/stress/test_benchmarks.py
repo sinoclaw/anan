@@ -55,10 +55,10 @@ def seed_tasks(conn, kb, n, assignee="bench-worker", with_parents=False):
 
 def main():
     home = tempfile.mkdtemp(prefix="sinoclaw_bench_")
-    os.environ["SINOCLAW_HOME"] = home
+    os.environ["ANAN_HOME"] = home
     os.environ["HOME"] = home
     sys.path.insert(0, WT)
-    from sinoclaw_cli import kanban_db as kb
+    from anan_cli import kanban_db as kb
 
     kb.init_db()
 

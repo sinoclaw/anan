@@ -312,5 +312,5 @@ class TestSysPathOrdering:
 
     def test_sinoclaw_constants_importable(self):
         """sinoclaw_constants should be importable from cron context."""
-        from sinoclaw_constants import get_sinoclaw_home
-        assert callable(get_sinoclaw_home)
+        from anan_constants import get_anan_home
+        assert callable(get_anan_home)

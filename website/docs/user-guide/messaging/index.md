@@ -167,7 +167,7 @@ Sessions reset based on configurable policies:
 | Idle | 1440 min | Reset after N minutes of inactivity |
 | Both | (combined) | Whichever triggers first |
 
-Configure per-platform overrides in `~/.sinoclaw/gateway.json`:
+Configure per-platform overrides in `~/.anan/gateway.json`:
 
 ```json
 {
@@ -248,7 +248,7 @@ If you find the busy-ack noisy — especially with voice input or rapid-fire mes
 
 ## Tool Progress Notifications
 
-Control how much tool activity is displayed in `~/.sinoclaw/config.yaml`:
+Control how much tool activity is displayed in `~/.anan/config.yaml`:
 
 ```yaml
 display:
@@ -291,7 +291,7 @@ Each `/background` prompt spawns a **separate agent instance** that runs asynchr
 
 ### Background Process Notifications
 
-When the agent running a background session uses `terminal(background=true)` to start long-running processes (servers, builds, etc.), the gateway can push status updates to your chat. Control this with `display.background_process_notifications` in `~/.sinoclaw/config.yaml`:
+When the agent running a background session uses `terminal(background=true)` to start long-running processes (servers, builds, etc.), the gateway can push status updates to your chat. Control this with `display.background_process_notifications` in `~/.anan/config.yaml`:
 
 ```yaml
 display:
@@ -331,7 +331,7 @@ sinoclaw gateway install               # Install as user service
 sinoclaw gateway start                 # Start the service
 sinoclaw gateway stop                  # Stop the service
 sinoclaw gateway status                # Check status
-journalctl --user -u sinoclaw-gateway -f  # View logs
+journalctl --user -u anan-gateway -f  # View logs
 
 # Enable lingering (keeps running after logout)
 sudo loginctl enable-linger $USER
@@ -340,7 +340,7 @@ sudo loginctl enable-linger $USER
 sudo sinoclaw gateway install --system
 sudo sinoclaw gateway start --system
 sudo sinoclaw gateway status --system
-journalctl -u sinoclaw-gateway -f
+journalctl -u anan-gateway -f
 ```
 
 Use the user service on laptops and dev boxes. Use the system service on VPS or headless hosts that should come back at boot without relying on systemd linger.
@@ -348,7 +348,7 @@ Use the user service on laptops and dev boxes. Use the system service on VPS or 
 Avoid keeping both the user and system gateway units installed at once unless you really mean to. Hermes will warn if it detects both because start/stop/status behavior gets ambiguous.
 
 :::info Multiple installations
-If you run multiple Hermes installations on the same machine (with different `SINOCLAW_HOME` directories), each gets its own systemd service name. The default `~/.sinoclaw` uses `sinoclaw-gateway`; other installations use `sinoclaw-gateway-<hash>`. The `sinoclaw gateway` commands automatically target the correct service for your current `SINOCLAW_HOME`.
+If you run multiple Hermes installations on the same machine (with different `ANAN_HOME` directories), each gets its own systemd service name. The default `~/.sinoclaw` uses `anan-gateway`; other installations use `anan-gateway-<hash>`. The `sinoclaw gateway` commands automatically target the correct service for your current `ANAN_HOME`.
 :::
 
 ### macOS (launchd)
@@ -358,21 +358,21 @@ sinoclaw gateway install               # Install as launchd agent
 sinoclaw gateway start                 # Start the service
 sinoclaw gateway stop                  # Stop the service
 sinoclaw gateway status                # Check status
-tail -f ~/.sinoclaw/logs/gateway.log   # View logs
+tail -f ~/.anan/logs/gateway.log   # View logs
 ```
 
 The generated plist lives at `~/Library/LaunchAgents/ai.hermes.gateway.plist`. It includes three environment variables:
 
 - **PATH** — your full shell PATH at install time, with the venv `bin/` and `node_modules/.bin` prepended. This ensures user-installed tools (Node.js, ffmpeg, etc.) are available to gateway subprocesses like the WhatsApp bridge.
 - **VIRTUAL_ENV** — points to the Python virtualenv so tools can resolve packages correctly.
-- **SINOCLAW_HOME** — scopes the gateway to your Hermes installation.
+- **ANAN_HOME** — scopes the gateway to your Hermes installation.
 
 :::tip PATH changes after install
 launchd plists are static — if you install new tools (e.g. a new Node.js version via nvm, or ffmpeg via Homebrew) after setting up the gateway, run `sinoclaw gateway install` again to capture the updated PATH. The gateway will detect the stale plist and reload automatically.
 :::
 
 :::info Multiple installations
-Like the Linux systemd service, each `SINOCLAW_HOME` directory gets its own launchd label. The default `~/.sinoclaw` uses `ai.hermes.gateway`; other installations use `ai.hermes.gateway-<suffix>`.
+Like the Linux systemd service, each `ANAN_HOME` directory gets its own launchd label. The default `~/.sinoclaw` uses `ai.hermes.gateway`; other installations use `ai.hermes.gateway-<suffix>`.
 :::
 
 ## Platform-Specific Toolsets
@@ -381,9 +381,9 @@ Each platform has its own toolset:
 
 | Platform | Toolset | Capabilities |
 |----------|---------|--------------|
-| CLI | `sinoclaw-cli` | Full access |
+| CLI | `anan-cli` | Full access |
 | Telegram | `sinoclaw-telegram` | Full tools including terminal |
-| Discord | `sinoclaw-discord` | Full tools including terminal |
+| Discord | `anan-discord` | Full tools including terminal |
 | WhatsApp | `sinoclaw-whatsapp` | Full tools including terminal |
 | Slack | `sinoclaw-slack` | Full tools including terminal |
 | Google Chat | `sinoclaw-google-chat` | Full tools including terminal |
@@ -400,10 +400,10 @@ Each platform has its own toolset:
 | Weixin | `sinoclaw-weixin` | Full tools including terminal |
 | BlueBubbles | `sinoclaw-bluebubbles` | Full tools including terminal |
 | QQBot | `sinoclaw-qqbot` | Full tools including terminal |
-| Yuanbao | `sinoclaw-yuanbao` | Full tools including terminal |
+| Yuanbao | `anan-yuanbao` | Full tools including terminal |
 | Microsoft Teams | `sinoclaw-teams` | Full tools including terminal |
 | API Server | `hermes` (default) | Full tools including terminal |
-| Webhooks | `sinoclaw-webhook` | Full tools including terminal |
+| Webhooks | `anan-webhook` | Full tools including terminal |
 
 ## Next Steps
 

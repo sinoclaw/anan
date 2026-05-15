@@ -33,7 +33,7 @@ def _isolate_env(monkeypatch, tmp_path):
     home = tmp_path / ".sinoclaw"
     home.mkdir(parents=True)
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    monkeypatch.setenv("SINOCLAW_HOME", str(home))
+    monkeypatch.setenv("ANAN_HOME", str(home))
     for key in (
         "SINOCLAW_GEMINI_CLIENT_ID",
         "SINOCLAW_GEMINI_CLIENT_SECRET",
@@ -1085,20 +1085,20 @@ class TestGeminiHttpErrorParsing:
 
 class TestProviderRegistration:
     def test_registry_entry(self):
-        from sinoclaw_cli.auth import PROVIDER_REGISTRY
+        from anan_cli.auth import PROVIDER_REGISTRY
 
         assert "google-gemini-cli" in PROVIDER_REGISTRY
         assert PROVIDER_REGISTRY["google-gemini-cli"].auth_type == "oauth_external"
 
     def test_google_gemini_alias_still_goes_to_api_key_gemini(self):
         """Regression guard: don't shadow the existing google-gemini → gemini alias."""
-        from sinoclaw_cli.auth import resolve_provider
+        from anan_cli.auth import resolve_provider
 
         assert resolve_provider("google-gemini") == "gemini"
 
     def test_runtime_provider_raises_when_not_logged_in(self):
-        from sinoclaw_cli.auth import AuthError
-        from sinoclaw_cli.runtime_provider import resolve_runtime_provider
+        from anan_cli.auth import AuthError
+        from anan_cli.runtime_provider import resolve_runtime_provider
 
         with pytest.raises(AuthError) as exc_info:
             resolve_runtime_provider(requested="google-gemini-cli")
@@ -1106,7 +1106,7 @@ class TestProviderRegistration:
 
     def test_runtime_provider_returns_correct_shape_when_logged_in(self):
         from agent.google_oauth import GoogleCredentials, save_credentials
-        from sinoclaw_cli.runtime_provider import resolve_runtime_provider
+        from anan_cli.runtime_provider import resolve_runtime_provider
 
         save_credentials(GoogleCredentials(
             access_token="live-tok",
@@ -1125,18 +1125,18 @@ class TestProviderRegistration:
         assert result["email"] == "t@e.com"
 
     def test_determine_api_mode(self):
-        from sinoclaw_cli.providers import determine_api_mode
+        from anan_cli.providers import determine_api_mode
 
         assert determine_api_mode("google-gemini-cli", "cloudcode-pa://google") == "chat_completions"
 
     def test_oauth_capable_set_preserves_existing(self):
-        from sinoclaw_cli.auth_commands import _OAUTH_CAPABLE_PROVIDERS
+        from anan_cli.auth_commands import _OAUTH_CAPABLE_PROVIDERS
 
         for required in ("anthropic", "nous", "openai-codex", "qwen-oauth", "google-gemini-cli"):
             assert required in _OAUTH_CAPABLE_PROVIDERS
 
     def test_config_env_vars_registered(self):
-        from sinoclaw_cli.config import OPTIONAL_ENV_VARS
+        from anan_cli.config import OPTIONAL_ENV_VARS
 
         for key in (
             "SINOCLAW_GEMINI_CLIENT_ID",
@@ -1148,14 +1148,14 @@ class TestProviderRegistration:
 
 class TestAuthStatus:
     def test_not_logged_in(self):
-        from sinoclaw_cli.auth import get_auth_status
+        from anan_cli.auth import get_auth_status
 
         s = get_auth_status("google-gemini-cli")
         assert s["logged_in"] is False
 
     def test_logged_in_reports_email_and_project(self):
         from agent.google_oauth import GoogleCredentials, save_credentials
-        from sinoclaw_cli.auth import get_auth_status
+        from anan_cli.auth import get_auth_status
 
         save_credentials(GoogleCredentials(
             access_token="tok", refresh_token="rt",
@@ -1172,7 +1172,7 @@ class TestAuthStatus:
 
 class TestGquotaCommand:
     def test_gquota_registered(self):
-        from sinoclaw_cli.commands import COMMANDS
+        from anan_cli.commands import COMMANDS
 
         assert "/gquota" in COMMANDS
 

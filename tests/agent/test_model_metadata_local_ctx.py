@@ -100,7 +100,7 @@ class TestQueryLocalContextLengthOllama:
         with patch("agent.model_metadata.detect_local_server_type", return_value="ollama"), \
              patch("httpx.Client", return_value=client_mock):
             result = _query_local_context_length(
-                "sinoclaw-brain:qwen3-14b-ctx32k", "http://100.77.243.5:11434/v1"
+                "anan-brain:qwen3-14b-ctx32k", "http://100.77.243.5:11434/v1"
             )
 
         assert result == 32768, (

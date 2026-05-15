@@ -2,7 +2,7 @@
 """
 Skills Sync -- Manifest-based seeding and updating of bundled skills.
 
-Copies bundled skills from the repo's skills/ directory into ~/.sinoclaw/skills/
+Copies bundled skills from the repo's skills/ directory into ~/.anan/skills/
 and uses a manifest to track which skills have been synced and their origin hash.
 
 Manifest format (v2): each line is "skill_name:origin_hash" where origin_hash
@@ -18,7 +18,7 @@ Update logic:
   - DELETED by user (in manifest, absent from user dir): respected, not re-added.
   - REMOVED from bundled (in manifest, gone from repo): cleaned from manifest.
 
-The manifest lives at ~/.sinoclaw/skills/.bundled_manifest.
+The manifest lives at ~/.anan/skills/.bundled_manifest.
 """
 
 import hashlib
@@ -26,15 +26,15 @@ import logging
 import os
 import shutil
 from pathlib import Path
-from sinoclaw_constants import get_sinoclaw_home
+from anan_constants import get_anan_home
 from typing import Dict, List, Tuple
 from utils import atomic_replace
 
 logger = logging.getLogger(__name__)
 
 
-SINOCLAW_HOME = get_sinoclaw_home()
-SKILLS_DIR = SINOCLAW_HOME / "skills"
+ANAN_HOME = get_anan_home()
+SKILLS_DIR = ANAN_HOME / "skills"
 MANIFEST_FILE = SKILLS_DIR / ".bundled_manifest"
 
 
@@ -154,7 +154,7 @@ def _discover_bundled_skills(bundled_dir: Path) -> List[Tuple[str, Path]]:
 def _compute_relative_dest(skill_dir: Path, bundled_dir: Path) -> Path:
     """
     Compute the destination path in SKILLS_DIR preserving the category structure.
-    e.g., bundled/skills/mlops/axolotl -> ~/.sinoclaw/skills/mlops/axolotl
+    e.g., bundled/skills/mlops/axolotl -> ~/.anan/skills/mlops/axolotl
     """
     rel = skill_dir.relative_to(bundled_dir)
     return SKILLS_DIR / rel
@@ -176,7 +176,7 @@ def _dir_hash(directory: Path) -> str:
 
 def sync_skills(quiet: bool = False) -> dict:
     """
-    Sync bundled skills into ~/.sinoclaw/skills/ using the manifest.
+    Sync bundled skills into ~/.anan/skills/ using the manifest.
 
     Returns:
         dict with keys: copied (list), updated (list), skipped (int),
@@ -223,7 +223,7 @@ def sync_skills(quiet: bool = False) -> dict:
                         print(
                             f"  ⚠ {skill_name}: bundled version shipped but you "
                             f"already have a local skill by this name — yours "
-                            f"was kept. Run `sinoclaw skills reset {skill_name}` "
+                            f"was kept. Run `anan skills reset {skill_name}` "
                             f"to replace it with the bundled version."
                         )
                 else:
@@ -356,7 +356,7 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
             "action": "not_in_manifest",
             "message": (
                 f"'{name}' is not a tracked bundled skill. Nothing to reset. "
-                f"(Hub-installed skills use `sinoclaw skills uninstall`.)"
+                f"(Hub-installed skills use `anan skills uninstall`.)"
             ),
             "synced": None,
         }
@@ -409,7 +409,7 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
     else:
         action = "manifest_cleared"
         message = (
-            f"Cleared manifest entry for '{name}'. Future `sinoclaw update` runs "
+            f"Cleared manifest entry for '{name}'. Future `anan update` runs "
             f"will re-baseline against your current copy and accept upstream changes."
         )
 
@@ -417,7 +417,7 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
 
 
 if __name__ == "__main__":
-    print("Syncing bundled skills into ~/.sinoclaw/skills/ ...")
+    print("Syncing bundled skills into ~/.anan/skills/ ...")
     result = sync_skills(quiet=False)
     parts = [
         f"{len(result['copied'])} new",

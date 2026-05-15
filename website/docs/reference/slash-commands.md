@@ -6,7 +6,7 @@ description: "Complete reference for interactive CLI and messaging slash command
 
 # Slash Commands Reference
 
-Hermes has two slash-command surfaces, both driven by a central `COMMAND_REGISTRY` in `sinoclaw_cli/commands.py`:
+Hermes has two slash-command surfaces, both driven by a central `COMMAND_REGISTRY` in `anan_cli/commands.py`:
 
 - **Interactive CLI slash commands** — dispatched by `cli.py`, with autocomplete from the registry
 - **Messaging slash commands** — dispatched by `gateway/run.py`, with help text and platform menus generated from the registry
@@ -70,7 +70,7 @@ Type `/` in the CLI to open the autocomplete menu. Built-in commands are case-in
 | `/skills` | Search, install, inspect, or manage skills from online registries |
 | `/cron` | Manage scheduled tasks (list, add/create, edit, pause, resume, run, remove) |
 | `/curator` | Background skill maintenance — `status`, `run`, `pin`, `archive`. See [Curator](/docs/user-guide/features/curator). |
-| `/kanban <action>` | Drive the multi-profile, multi-project collaboration board without leaving chat. Full `sinoclaw kanban` surface is available: `/kanban list`, `/kanban show t_abc`, `/kanban create "title" --assignee X`, `/kanban comment t_abc "text"`, `/kanban unblock t_abc`, `/kanban dispatch`, etc. Multi-board support included: `/kanban boards list`, `/kanban boards create <slug>`, `/kanban boards switch <slug>`, `/kanban --board <slug> <action>`. See [Kanban slash command](/docs/user-guide/features/kanban#kanban-slash-command). |
+| `/kanban <action>` | Drive the multi-profile, multi-project collaboration board without leaving chat. Full `anan kanban` surface is available: `/kanban list`, `/kanban show t_abc`, `/kanban create "title" --assignee X`, `/kanban comment t_abc "text"`, `/kanban unblock t_abc`, `/kanban dispatch`, etc. Multi-board support included: `/kanban boards list`, `/kanban boards create <slug>`, `/kanban boards switch <slug>`, `/kanban --board <slug> <action>`. See [Kanban slash command](/docs/user-guide/features/kanban#kanban-slash-command). |
 | `/reload-mcp` (alias: `/reload_mcp`) | Reload MCP servers from config.yaml |
 | `/reload` | Reload `.env` variables into the running session (picks up new API keys without restarting) |
 | `/plugins` | List installed plugins and their status |
@@ -105,13 +105,13 @@ Type `/` in the CLI to open the autocomplete menu. Built-in commands are case-in
 
 ### Quick Commands
 
-User-defined quick commands map a short slash command to either a shell command or another slash command. Configure them in `~/.sinoclaw/config.yaml`:
+User-defined quick commands map a short slash command to either a shell command or another slash command. Configure them in `~/.anan/config.yaml`:
 
 ```yaml
 quick_commands:
   status:
     type: exec
-    command: systemctl status sinoclaw-agent
+    command: systemctl status anan
   deploy:
     type: exec
     command: scripts/deploy.sh
@@ -130,7 +130,7 @@ Define your own short names for models you use often, then reach them with `/mod
 
 Two config formats are supported:
 
-**Full form** — pin an exact model, provider, and optionally a base URL. Put this in `~/.sinoclaw/config.yaml`:
+**Full form** — pin an exact model, provider, and optionally a base URL. Put this in `~/.anan/config.yaml`:
 
 ```yaml
 model_aliases:
@@ -149,8 +149,8 @@ model_aliases:
 **Short form** — `provider/model` in one string. Set from the shell without editing YAML:
 
 ```bash
-sinoclaw config set model.aliases.fav anthropic/claude-opus-4.6
-sinoclaw config set model.aliases.grok x-ai/grok-4
+anan config set model.aliases.fav anthropic/claude-opus-4.6
+anan config set model.aliases.grok x-ai/grok-4
 ```
 
 Then in chat:

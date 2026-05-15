@@ -1,10 +1,10 @@
 """
-adapters/sinoclaw_insight_sync.py 测试套件
+adapters/anan_insight_sync.py 测试套件
 ==========================================
 
 覆盖:
   - load_latest_wisdom() — 文件不存在/存在/格式错误
-  - write_to_sinoclaw_session() — mock SQLite DB
+  - write_to_anan_session() — mock SQLite DB
   - main() — 端到端流程
 """
 
@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 # 直接 import 测试函数
-import adapters.sinoclaw_insight_sync as sync_mod
+import adapters.anan_insight_sync as sync_mod
 
 
 class TestLoadLatestWisdom:
@@ -62,7 +62,7 @@ class TestLoadLatestWisdom:
             sync_mod.WISDOM_FILE = original
 
 
-class TestWriteToSinoclawSession:
+class TestWriteToAnanSession:
     def test_no_sessions_returns_none(self, tmp_path):
         """sessions 表为空时返回 None。"""
         db_path = tmp_path / "state.db"
@@ -75,13 +75,13 @@ class TestWriteToSinoclawSession:
         original = sync_mod.SINOCLAW_DB
         sync_mod.SINOCLAW_DB = db_path
         try:
-            result = sync_mod.write_to_sinoclaw_session({"wisdom_facts": [], "prediction_stats": {}, "causal_links": []})
+            result = sync_mod.write_to_anan_session({"wisdom_facts": [], "prediction_stats": {}, "causal_links": []})
             assert result is None
         finally:
             sync_mod.SINOCLAW_DB = original
 
     def test_inserts_system_message_into_session(self, tmp_path):
-        """向 sinoclaw sessions 表写入 system 消息，内容包含 anan 洞察。"""
+        """向 anan sessions 表写入 system 消息，内容包含 anan 洞察。"""
         db_path = tmp_path / "state.db"
         conn = sqlite3.connect(db_path)
         conn.execute("CREATE TABLE sessions (id TEXT PRIMARY KEY, started_at REAL, ended_at REAL)")
@@ -99,7 +99,7 @@ class TestWriteToSinoclawSession:
         original = sync_mod.SINOCLAW_DB
         sync_mod.SINOCLAW_DB = db_path
         try:
-            result = sync_mod.write_to_sinoclaw_session(wisdom)
+            result = sync_mod.write_to_anan_session(wisdom)
         finally:
             sync_mod.SINOCLAW_DB = original
 
@@ -121,7 +121,7 @@ class TestWriteToSinoclawSession:
         original = sync_mod.SINOCLAW_DB
         sync_mod.SINOCLAW_DB = nonexistent
         try:
-            result = sync_mod.write_to_sinoclaw_session({"wisdom_facts": [], "prediction_stats": {}, "causal_links": []})
+            result = sync_mod.write_to_anan_session({"wisdom_facts": [], "prediction_stats": {}, "causal_links": []})
             assert result is None
         finally:
             sync_mod.SINOCLAW_DB = original

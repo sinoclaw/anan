@@ -26,14 +26,14 @@ Sinoclaw Agent works with any OpenAI-compatible API. Supported providers include
 - **MiniMax** — global and China endpoints
 - **Local models** — via [Ollama](https://ollama.com/), [vLLM](https://docs.vllm.ai/), [llama.cpp](https://github.com/ggerganov/llama.cpp), [SGLang](https://github.com/sgl-project/sglang), or any OpenAI-compatible server
 
-Set your provider with `sinoclaw model` or by editing `~/.sinoclaw/.env`. See the [Environment Variables](./environment-variables.md) reference for all provider keys.
+Set your provider with `sinoclaw model` or by editing `~/.anan/.env`. See the [Environment Variables](./environment-variables.md) reference for all provider keys.
 
 ### Does it work on Windows?
 
 **Not natively.** Sinoclaw Agent requires a Unix-like environment. On Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run Hermes from inside it. The standard install command works perfectly in WSL2:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
 ```
 
 ### I run Hermes in WSL2. What's the best way to control my normal Windows Chrome?
@@ -61,7 +61,7 @@ Yes — Hermes now has a tested Termux install path for Android phones.
 Quick install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
 ```
 
 For the fully explicit manual steps, supported extras, and current limitations, see the [Termux guide](../getting-started/termux.md).
@@ -70,7 +70,7 @@ Important caveat: the full `.[all]` extra is not currently available on Android 
 
 ### Is my data sent anywhere?
 
-API calls go **only to the LLM provider you configure** (e.g., OpenRouter, your local Ollama instance). Sinoclaw Agent does not collect telemetry, usage data, or analytics. Your conversations, memory, and skills are stored locally in `~/.sinoclaw/`.
+API calls go **only to the LLM provider you configure** (e.g., OpenRouter, your local Ollama instance). Sinoclaw Agent does not collect telemetry, usage data, or analytics. Your conversations, memory, and skills are stored locally in `~/.anan/`.
 
 ### Can I use it offline / with local models?
 
@@ -182,7 +182,7 @@ The installer handles this automatically — if you see this error during manual
 
 **Cause:** Hermes builds a per-session environment snapshot by running `bash -l` once at startup. A bash login shell reads `/etc/profile`, `~/.bash_profile`, and `~/.profile`, but **does not source `~/.bashrc`** — so tools that install themselves there (`nvm`, `asdf`, `pyenv`, `cargo`, custom `PATH` exports) stay invisible to the snapshot. This most commonly happens when Hermes runs under systemd or in a minimal shell where nothing has pre-loaded the interactive shell profile.
 
-**Solution:** Hermes auto-sources `~/.bashrc` by default. If that's not enough — e.g. you're a zsh user whose PATH lives in `~/.zshrc`, or you init `nvm` from a standalone file — list the extra files to source in `~/.sinoclaw/config.yaml`:
+**Solution:** Hermes auto-sources `~/.bashrc` by default. If that's not enough — e.g. you're a zsh user whose PATH lives in `~/.zshrc`, or you init `nvm` from a standalone file — list the extra files to source in `~/.anan/config.yaml`:
 
 ```yaml
 terminal:
@@ -225,7 +225,7 @@ source ~/.bashrc
 # If you previously installed with sudo, clean up:
 sudo rm /usr/local/bin/hermes
 # Then re-run the standard installer
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
 ```
 
 ---
@@ -271,11 +271,11 @@ sinoclaw config show
 hermes model
 
 # Or set directly
-sinoclaw config set OPENROUTER_API_KEY sk-or-v1-xxxxxxxxxxxx
+anan config set OPENROUTER_API_KEY sk-or-v1-xxxxxxxxxxxx
 ```
 
 :::warning
-Make sure the key matches the provider. An OpenAI key won't work with OpenRouter and vice versa. Check `~/.sinoclaw/.env` for conflicting entries.
+Make sure the key matches the provider. An OpenAI key won't work with OpenRouter and vice versa. Check `~/.anan/.env` for conflicting entries.
 :::
 
 #### Model not available / model not found
@@ -288,7 +288,7 @@ Make sure the key matches the provider. An OpenAI key won't work with OpenRouter
 hermes model
 
 # Set a valid model
-sinoclaw config set SINOCLAW_MODEL anthropic/claude-opus-4.7
+anan config set SINOCLAW_MODEL anthropic/claude-opus-4.7
 
 # Or specify per-session
 hermes chat --model openrouter/meta-llama/llama-3.1-70b-instruct
@@ -326,7 +326,7 @@ Look at the CLI startup line — it shows the detected context length (e.g., `�
 To fix context detection, set it explicitly:
 
 ```yaml
-# In ~/.sinoclaw/config.yaml
+# In ~/.anan/config.yaml
 model:
   default: your-model-name
   context_length: 131072  # your model's actual context window
@@ -404,7 +404,7 @@ sinoclaw gateway status
 sinoclaw gateway start
 
 # Check logs for errors
-cat ~/.sinoclaw/logs/gateway.log | tail -50
+cat ~/.anan/logs/gateway.log | tail -50
 ```
 
 #### Messages not delivering
@@ -413,7 +413,7 @@ cat ~/.sinoclaw/logs/gateway.log | tail -50
 
 **Solution:**
 - Verify your bot token is valid with `sinoclaw gateway setup`
-- Check gateway logs: `cat ~/.sinoclaw/logs/gateway.log | tail -50`
+- Check gateway logs: `cat ~/.anan/logs/gateway.log | tail -50`
 - For webhook-based platforms (Slack, WhatsApp), ensure your server is publicly accessible
 
 #### Allowlist confusion — who can talk to the bot?
@@ -428,7 +428,7 @@ cat ~/.sinoclaw/logs/gateway.log | tail -50
 | **DM pairing** | First user to message in DM claims exclusive access |
 | **Open** | Anyone can interact (not recommended for production) |
 
-Configure in `~/.sinoclaw/config.yaml` under your gateway's settings. See the [Messaging docs](../user-guide/messaging/index.md).
+Configure in `~/.anan/config.yaml` under your gateway's settings. See the [Messaging docs](../user-guide/messaging/index.md).
 
 #### Gateway won't start
 
@@ -437,7 +437,7 @@ Configure in `~/.sinoclaw/config.yaml` under your gateway's settings. See the [M
 **Solution:**
 ```bash
 # Install core messaging gateway dependencies
-pip install "sinoclaw-agent[messaging]"  # Telegram, Discord, Slack, and shared gateway deps
+pip install "anan[messaging]"  # Telegram, Discord, Slack, and shared gateway deps
 
 # Check for port conflicts
 lsof -i :8080
@@ -461,7 +461,7 @@ tmux new -s sinoclaw 'sinoclaw gateway run'
 # Reattach later: tmux attach -t hermes
 
 # Option 3: Background via nohup
-nohup sinoclaw gateway run > ~/.sinoclaw/logs/gateway.log 2>&1 &
+nohup sinoclaw gateway run > ~/.anan/logs/gateway.log 2>&1 &
 ```
 
 If you want to try systemd anyway, make sure it's enabled:
@@ -557,7 +557,7 @@ hermes chat --continue
 **Solution:**
 ```bash
 # Ensure MCP dependencies are installed (already included in standard install)
-cd ~/.sinoclaw/sinoclaw-agent && uv pip install -e ".[mcp]"
+cd ~/.anan/anan && uv pip install -e ".[mcp]"
 
 # For npm-based servers, ensure Node.js is available
 node --version
@@ -567,7 +567,7 @@ npx --version
 npx -y @modelcontextprotocol/server-filesystem /tmp
 ```
 
-Verify your `~/.sinoclaw/config.yaml` MCP configuration:
+Verify your `~/.anan/config.yaml` MCP configuration:
 ```yaml
 mcp_servers:
   filesystem:
@@ -616,9 +616,9 @@ If an MCP server crashes mid-request, Hermes will report a timeout. Check the se
 
 ## Profiles
 
-### How do profiles differ from just setting SINOCLAW_HOME?
+### How do profiles differ from just setting ANAN_HOME?
 
-Profiles are a managed layer on top of `SINOCLAW_HOME`. You *could* manually set `SINOCLAW_HOME=/some/path` before every command, but profiles handle all the plumbing for you: creating the directory structure, generating shell aliases (`sinoclaw-work`), tracking the active profile in `~/.sinoclaw/active_profile`, and syncing skill updates across all profiles automatically. They also integrate with tab completion so you don't have to remember paths.
+Profiles are a managed layer on top of `ANAN_HOME`. You *could* manually set `ANAN_HOME=/some/path` before every command, but profiles handle all the plumbing for you: creating the directory structure, generating shell aliases (`sinoclaw-work`), tracking the active profile in `~/.anan/active_profile`, and syncing skill updates across all profiles automatically. They also integrate with tab completion so you don't have to remember paths.
 
 ### Can two profiles share the same bot token?
 
@@ -628,14 +628,14 @@ No. Each messaging platform (Telegram, Discord, etc.) requires exclusive access 
 
 No. Each profile has its own memory store, session database, and skills directory. They are completely isolated. If you want to start a new profile with existing memories and sessions, use `sinoclaw profile create newname --clone-all` to copy everything from the current profile.
 
-### What happens when I run `sinoclaw update`?
+### What happens when I run `anan update`?
 
-`sinoclaw update` pulls the latest code and reinstalls dependencies **once** (not per-profile). It then syncs updated skills to all profiles automatically. You only need to run `sinoclaw update` once — it covers every profile on the machine.
+`anan update` pulls the latest code and reinstalls dependencies **once** (not per-profile). It then syncs updated skills to all profiles automatically. You only need to run `anan update` once — it covers every profile on the machine.
 
 
 ### How many profiles can I run?
 
-There is no hard limit. Each profile is just a directory under `~/.sinoclaw/profiles/`. The practical limit depends on your disk space and how many concurrent gateways your system can handle (each gateway is a lightweight Python process). Running dozens of profiles is fine; each idle profile uses no resources.
+There is no hard limit. Each profile is just a directory under `~/.anan/profiles/`. The practical limit depends on your disk space and how many concurrent gateways your system can handle (each gateway is a lightweight Python process). Running dozens of profiles is fine; each idle profile uses no resources.
 
 ---
 
@@ -645,7 +645,7 @@ There is no hard limit. Each profile is just a directory under `~/.sinoclaw/prof
 
 **Scenario:** You use GPT-5.4 as your daily driver, but Gemini or Grok writes better social media content. Manually switching models every time is tedious.
 
-**Solution: Delegation config.** Hermes can route subagents to a different model automatically. Set this in `~/.sinoclaw/config.yaml`:
+**Solution: Delegation config.** Hermes can route subagents to a different model automatically. Set this in `~/.anan/config.yaml`:
 
 ```yaml
 delegation:
@@ -751,14 +751,14 @@ Skills with very long descriptions are truncated to 40 characters in the Telegra
 
 1. Install Sinoclaw Agent on the new machine:
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
    ```
 
 2. On the **source machine**, create a full backup:
    ```bash
    sinoclaw backup
    ```
-   This creates a zip of your entire `~/.sinoclaw/` directory — config, API keys, memories, skills, sessions, and profiles — saved to your home directory as `~/sinoclaw-backup-<timestamp>.zip`.
+   This creates a zip of your entire `~/.anan/` directory — config, API keys, memories, skills, sessions, and profiles — saved to your home directory as `~/sinoclaw-backup-<timestamp>.zip`.
 
 3. Copy the zip to the new machine and import it:
    ```bash
@@ -797,7 +797,7 @@ The imported profile will have all config, memories, sessions, and skills from t
 
 **Manual fallback (rsync):** If you prefer to copy files directly, exclude the code repo:
 ```bash
-rsync -av --exclude='sinoclaw-agent' ~/.sinoclaw/ newmachine:~/.sinoclaw/
+rsync -av --exclude='anan' ~/.anan/ newmachine:~/.anan/
 ```
 
 :::tip
@@ -855,6 +855,6 @@ If using OpenRouter, make sure your API key has credits. A 400 from OpenRouter o
 
 If your issue isn't covered here:
 
-1. **Search existing issues:** [GitHub Issues](https://github.com/sinoclaw/sinoclaw-agent/issues)
+1. **Search existing issues:** [GitHub Issues](https://github.com/sinoclaw/anan/issues)
 2. **Ask the community:** [Sinoclaw Team Discord](https://discord.gg/sinoclaw)
 3. **File a bug report:** Include your OS, Python version (`python3 --version`), Hermes version (`sinoclaw --version`), and the full error message

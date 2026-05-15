@@ -4,7 +4,7 @@ Cron job scheduler - executes due jobs.
 Provides tick() which checks for due jobs and runs them. The gateway
 calls this every 60 seconds from a background thread.
 
-Uses a file-based lock (~/.sinoclaw/cron/.tick.lock) so only one tick
+Uses a file-based lock (~/.anan/cron/.tick.lock) so only one tick
 runs at a time if multiple processes overlap.
 """
 
@@ -31,13 +31,13 @@ from pathlib import Path
 from typing import List, Optional
 
 # Add parent directory to path for imports BEFORE repo-level imports.
-# Without this, standalone invocations (e.g. after `sinoclaw update` reloads
-# the module) fail with ModuleNotFoundError for sinoclaw_time et al.
+# Without this, standalone invocations (e.g. after `anan update` reloads
+# the module) fail with ModuleNotFoundError for anan_time et al.
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sinoclaw_constants import get_sinoclaw_home
-from sinoclaw_cli.config import load_config, _expand_env_vars
-from sinoclaw_time import now as _sinoclaw_now
+from anan_constants import get_anan_home
+from anan_cli.config import load_config, _expand_env_vars
+from anan_time import now as _anan_now
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ def _resolve_cron_enabled_toolsets(job: dict, cfg: dict) -> list[str] | None:
     Precedence:
     1. Per-job ``enabled_toolsets`` (set via ``cronjob`` tool on create/update).
        Keeps the agent's job-scoped toolset override intact — #6130.
-    2. Per-platform ``sinoclaw tools`` config for the ``cron`` platform.
+    2. Per-platform ``anan tools`` config for the ``cron`` platform.
        Mirrors gateway behavior (``_get_platform_tools(cfg, platform_key)``)
        so users can gate cron toolsets globally without recreating every job.
     3. ``None`` on any lookup failure — AIAgent loads the full default set
@@ -76,7 +76,7 @@ def _resolve_cron_enabled_toolsets(job: dict, cfg: dict) -> list[str] | None:
     if per_job:
         return per_job
     try:
-        from sinoclaw_cli.tools_config import _get_platform_tools  # lazy: avoid heavy import at cron module load
+        from anan_cli.tools_config import _get_platform_tools  # lazy: avoid heavy import at cron module load
         return sorted(_get_platform_tools(cfg or {}, "cron"))
     except Exception as exc:
         logger.warning(
@@ -129,18 +129,18 @@ from cron.jobs import get_due_jobs, mark_job_run, save_job_output, advance_next_
 SILENT_MARKER = "[SILENT]"
 
 # Backward-compatible module override used by tests and emergency monkeypatches.
-_sinoclaw_home: Path | None = None
+_anan_home: Path | None = None
 
 
-def _get_sinoclaw_home() -> Path:
-    """Resolve Sinoclaw home dynamically while preserving test monkeypatch hooks."""
-    return _sinoclaw_home or get_sinoclaw_home()
+def _get_anan_home() -> Path:
+    """Resolve Anan home dynamically while preserving test monkeypatch hooks."""
+    return _anan_home or get_anan_home()
 
 
 def _get_lock_paths() -> tuple[Path, Path]:
     """Resolve cron lock paths at call time so profile/env changes are honored."""
-    sinoclaw_home = _get_sinoclaw_home()
-    lock_dir = sinoclaw_home / "cron"
+    anan_home = _get_anan_home()
+    lock_dir = anan_home / "cron"
     return lock_dir, lock_dir / ".tick.lock"
 
 
@@ -174,7 +174,7 @@ def _plugin_cron_env_var(platform_name: str) -> str:
     support without editing this module.
     """
     try:
-        from sinoclaw_cli.plugins import discover_plugins
+        from anan_cli.plugins import discover_plugins
         discover_plugins()  # idempotent
         from gateway.platform_registry import platform_registry
         entry = platform_registry.get(platform_name.lower())
@@ -245,7 +245,7 @@ def _iter_home_target_platforms():
     for name in _HOME_TARGET_ENV_VARS:
         yield name
     try:
-        from sinoclaw_cli.plugins import discover_plugins
+        from anan_cli.plugins import discover_plugins
         discover_plugins()  # idempotent
         from gateway.platform_registry import platform_registry
         for entry in platform_registry.plugin_entries():
@@ -696,7 +696,7 @@ def _get_script_timeout() -> int:
 def _run_job_script(script_path: str) -> tuple[bool, str]:
     """Execute a cron job's data-collection script and capture its output.
 
-    Scripts must reside within SINOCLAW_HOME/scripts/.  Both relative and
+    Scripts must reside within ANAN_HOME/scripts/.  Both relative and
     absolute paths are resolved and validated against this directory to
     prevent arbitrary script execution via path traversal or absolute
     path injection.
@@ -713,16 +713,16 @@ def _run_job_script(script_path: str) -> tuple[bool, str]:
 
     Args:
         script_path: Path to the script.  Relative paths are resolved
-            against SINOCLAW_HOME/scripts/.  Absolute and ~-prefixed paths
+            against ANAN_HOME/scripts/.  Absolute and ~-prefixed paths
             are also validated to ensure they stay within the scripts dir.
 
     Returns:
         (success, output) — on failure *output* contains the error message so the
         LLM can report the problem to the user.
     """
-    from sinoclaw_constants import get_sinoclaw_home
+    from anan_constants import get_anan_home
 
-    scripts_dir = _get_sinoclaw_home() / "scripts"
+    scripts_dir = _get_anan_home() / "scripts"
     scripts_dir.mkdir(parents=True, exist_ok=True)
     scripts_dir_resolved = scripts_dir.resolve()
 
@@ -733,7 +733,7 @@ def _run_job_script(script_path: str) -> tuple[bool, str]:
         path = (scripts_dir / raw).resolve()
 
     # Guard against path traversal, absolute path injection, and symlink
-    # escape — scripts MUST reside within SINOCLAW_HOME/scripts/.
+    # escape — scripts MUST reside within ANAN_HOME/scripts/.
     try:
         path.relative_to(scripts_dir_resolved)
     except ValueError:
@@ -1065,7 +1065,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
                 except OSError:
                     pass
 
-        now_iso = _sinoclaw_now().strftime("%Y-%m-%d %H:%M:%S")
+        now_iso = _anan_now().strftime("%Y-%m-%d %H:%M:%S")
 
         if not ok:
             # Script crashed / timed out / exited non-zero.  Deliver the
@@ -1134,7 +1134,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
     # and discoverable via session_search (same pattern as gateway/run.py).
     _session_db = None
     try:
-        from sinoclaw_state import SessionDB
+        from anan_state import SessionDB
         _session_db = SessionDB()
     except Exception as e:
         logger.debug("Job '%s': SQLite session store not available: %s", job.get("id", "?"), e)
@@ -1156,7 +1156,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
             silent_doc = (
                 f"# Cron Job: {job_name}\n\n"
                 f"**Job ID:** {job_id}\n"
-                f"**Run Time:** {_sinoclaw_now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                f"**Run Time:** {_anan_now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
                 "Script gate returned `wakeAgent=false` — agent skipped.\n"
             )
             return True, silent_doc, SILENT_MARKER, None
@@ -1175,7 +1175,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         blocked_doc = (
             f"# Cron Job: {job_name}\n\n"
             f"**Job ID:** {job_id}\n"
-            f"**Run Time:** {_sinoclaw_now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"**Run Time:** {_anan_now().strftime('%Y-%m-%d %H:%M:%S')}\n"
             f"**Status:** BLOCKED\n\n"
             "The assembled prompt (user prompt + loaded skill content) tripped "
             "the cron injection scanner and the agent was NOT run.\n\n"
@@ -1190,7 +1190,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         logger.info("Job '%s': script produced no output, skipping AI call.", job_name)
         return True, "", SILENT_MARKER, None
     origin = _resolve_origin(job)
-    _cron_session_id = f"cron_{job_id}_{_sinoclaw_now().strftime('%Y%m%d_%H%M%S')}"
+    _cron_session_id = f"cron_{job_id}_{_anan_now().strftime('%Y%m%d_%H%M%S')}"
 
     logger.info("Running job '%s' (ID: %s)", job_name, job_id)
     logger.info("Prompt: %s", prompt[:100])
@@ -1269,9 +1269,9 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         # changes take effect without a gateway restart.
         from dotenv import load_dotenv
         try:
-            load_dotenv(str(_get_sinoclaw_home() / ".env"), override=True, encoding="utf-8")
+            load_dotenv(str(_get_anan_home() / ".env"), override=True, encoding="utf-8")
         except UnicodeDecodeError:
-            load_dotenv(str(_get_sinoclaw_home() / ".env"), override=True, encoding="latin-1")
+            load_dotenv(str(_get_anan_home() / ".env"), override=True, encoding="latin-1")
 
         delivery_target = _resolve_delivery_target(job)
         if delivery_target:
@@ -1289,7 +1289,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         _cfg = {}
         try:
             import yaml
-            _cfg_path = str(_get_sinoclaw_home() / "config.yaml")
+            _cfg_path = str(_get_anan_home() / "config.yaml")
             if os.path.exists(_cfg_path):
                 with open(_cfg_path, encoding="utf-8") as _f:
                     _cfg = yaml.safe_load(_f) or {}
@@ -1305,7 +1305,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
 
         # Apply IPv4 preference if configured.
         try:
-            from sinoclaw_constants import apply_ipv4_preference
+            from anan_constants import apply_ipv4_preference
             _net_cfg = _cfg.get("network", {})
             if isinstance(_net_cfg, dict) and _net_cfg.get("force_ipv4"):
                 apply_ipv4_preference(force=True)
@@ -1313,7 +1313,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
             pass
 
         # Reasoning config from config.yaml
-        from sinoclaw_constants import parse_reasoning_effort
+        from anan_constants import parse_reasoning_effort
         effort = str(_cfg.get("agent", {}).get("reasoning_effort", "")).strip()
         reasoning_config = parse_reasoning_effort(effort)
 
@@ -1323,7 +1323,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         if prefill_file:
             pfpath = Path(prefill_file).expanduser()
             if not pfpath.is_absolute():
-                pfpath = _get_sinoclaw_home() / pfpath
+                pfpath = _get_anan_home() / pfpath
             if pfpath.exists():
                 try:
                     with open(pfpath, "r", encoding="utf-8") as _pf:
@@ -1340,11 +1340,11 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         # Provider routing
         pr = _cfg.get("provider_routing", {})
 
-        from sinoclaw_cli.runtime_provider import (
+        from anan_cli.runtime_provider import (
             resolve_runtime_provider,
             format_runtime_provider_error,
         )
-        from sinoclaw_cli.auth import AuthError
+        from anan_cli.auth import AuthError
         try:
             # Do not inject SINOCLAW_INFERENCE_PROVIDER here. resolve_runtime_provider()
             # already prefers persisted config over stale shell/env overrides when
@@ -1443,7 +1443,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
             disabled_toolsets=["cronjob", "messaging", "clarify"],
             quiet_mode=True,
             # Cron jobs should always inherit the user's SOUL.md identity from
-            # SINOCLAW_HOME. When a workdir is configured, also inject project
+            # ANAN_HOME. When a workdir is configured, also inject project
             # context files (AGENTS.md / CLAUDE.md / .cursorrules) from there.
             # Without a workdir, keep cwd context discovery disabled.
             skip_context_files=not bool(_job_workdir),
@@ -1574,7 +1574,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         output = f"""# Cron Job: {job_name}
 
 **Job ID:** {job_id}
-**Run Time:** {_sinoclaw_now().strftime('%Y-%m-%d %H:%M:%S')}
+**Run Time:** {_anan_now().strftime('%Y-%m-%d %H:%M:%S')}
 **Schedule:** {job.get('schedule_display', 'N/A')}
 
 ## Prompt
@@ -1596,7 +1596,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         output = f"""# Cron Job: {job_name} (FAILED)
 
 **Job ID:** {job_id}
-**Run Time:** {_sinoclaw_now().strftime('%Y-%m-%d %H:%M:%S')}
+**Run Time:** {_anan_now().strftime('%Y-%m-%d %H:%M:%S')}
 **Schedule:** {job.get('schedule_display', 'N/A')}
 
 ## Prompt
@@ -1689,11 +1689,11 @@ def tick(verbose: bool = True, adapters=None, loop=None) -> int:
         due_jobs = get_due_jobs()
 
         if verbose and not due_jobs:
-            logger.info("%s - No jobs due", _sinoclaw_now().strftime('%H:%M:%S'))
+            logger.info("%s - No jobs due", _anan_now().strftime('%H:%M:%S'))
             return 0
 
         if verbose:
-            logger.info("%s - %s job(s) due", _sinoclaw_now().strftime('%H:%M:%S'), len(due_jobs))
+            logger.info("%s - %s job(s) due", _anan_now().strftime('%H:%M:%S'), len(due_jobs))
 
         # Advance next_run_at for all recurring jobs FIRST, under the file lock,
         # before any execution begins.  This preserves at-most-once semantics.

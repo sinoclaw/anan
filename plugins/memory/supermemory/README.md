@@ -17,16 +17,16 @@ Or manually:
 
 ```bash
 hermes config set memory.provider supermemory
-echo 'SUPERMEMORY_API_KEY=***' >> ~/.sinoclaw/.env
+echo 'SUPERMEMORY_API_KEY=***' >> ~/.anan/.env
 ```
 
 ## Config
 
-Config file: `$SINOCLAW_HOME/supermemory.json`
+Config file: `$ANAN_HOME/supermemory.json`
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `container_tag` | `hermes` | Container tag used for search and writes. Supports `{identity}` template for profile-scoped tags (e.g. `sinoclaw-{identity}` → `sinoclaw-coder`). |
+| `container_tag` | `hermes` | Container tag used for search and writes. Supports `{identity}` template for profile-scoped tags (e.g. `anan-{identity}` → `anan-coder`). |
 | `auto_recall` | `true` | Inject relevant memory context before turns |
 | `auto_capture` | `true` | Store cleaned user-assistant turns after each response |
 | `max_recall_results` | `10` | Max recalled items to format into context |
@@ -67,11 +67,11 @@ Use `{identity}` in the `container_tag` to scope memories per Hermes profile:
 
 ```json
 {
-  "container_tag": "sinoclaw-{identity}"
+  "container_tag": "anan-{identity}"
 }
 ```
 
-For a profile named `coder`, this resolves to `sinoclaw-coder`. The default profile resolves to `sinoclaw-default`. Without `{identity}`, all profiles share the same container.
+For a profile named `coder`, this resolves to `anan-coder`. The default profile resolves to `anan-default`. Without `{identity}`, all profiles share the same container.
 
 ## Multi-Container Mode
 

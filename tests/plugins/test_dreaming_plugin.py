@@ -37,11 +37,11 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate_env(tmp_path, monkeypatch):
-    """Isolate SINOCLAW_HOME for each test."""
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
-    yield sinoclaw_home
+    """Isolate ANAN_HOME for each test."""
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
+    yield anan_home
 
 
 def _load_lib():
@@ -823,19 +823,19 @@ class TestTokenizeSnippet:
 # Sinoclaw SessionDB tests
 # ---------------------------------------------------------------------------
 
-class TestSinoclawSessionDB:
+class TestAnanSessionDB:
     def _lib(self):
         return _load_lib()
 
     def test_initializes_with_default_path(self):
         lib = self._lib()
-        db = lib.SinoclawSessionDB()
+        db = lib.AnanSessionDB()
         assert db.db_path == lib.DEFAULT_STATE_DB_PATH
 
     def test_initializes_with_custom_path(self, tmp_path):
         lib = self._lib()
         custom_path = tmp_path / "custom.db"
-        db = lib.SinoclawSessionDB(custom_path)
+        db = lib.AnanSessionDB(custom_path)
         assert db.db_path == custom_path
 
 
@@ -849,26 +849,26 @@ class TestSessionDBStructure:
         lib = self._lib()
         # Verify we know the schema: messages table has session_id, role, content, timestamp
         # This is tested via the get_session_messages method
-        assert hasattr(lib.SinoclawSessionDB, "get_session_messages")
-        assert hasattr(lib.SinoclawSessionDB, "list_recent_sessions")
+        assert hasattr(lib.AnanSessionDB, "get_session_messages")
+        assert hasattr(lib.AnanSessionDB, "list_recent_sessions")
 
     def test_list_recent_sessions_returns_list(self):
         lib = self._lib()
-        db = lib.SinoclawSessionDB()
+        db = lib.AnanSessionDB()
         # If DB doesn't exist, returns empty list
         result = db.list_recent_sessions(lookback_days=1, limit=10)
         assert isinstance(result, list)
 
     def test_get_session_messages_returns_list(self):
         lib = self._lib()
-        db = lib.SinoclawSessionDB()
+        db = lib.AnanSessionDB()
         result = db.get_session_messages("non-existent-session")
         assert isinstance(result, list)
         assert len(result) == 0
 
 
 class TestSessionIngestionIntegration:
-    """Integration tests for session ingestion via SinoclawSessionDB."""
+    """Integration tests for session ingestion via AnanSessionDB."""
 
     def _lib(self):
         return _load_lib()

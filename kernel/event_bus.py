@@ -11,7 +11,7 @@ Design principles:
 - **Decoupled**: layers never call each other directly, only via events
 - **Failsafe**: a crashing subscriber never kills others or the bus
 
-Why we need this (vs sinoclaw's gateway HTTP layer):
+Why we need this (vs anan's gateway HTTP layer):
 - gateway is for *external* I/O (TUI, web, IRC, etc.)
 - event bus is for *internal* cognitive coordination between layers
 - L1 Sleep emits "memory.consolidated" → L2 Memory listens → L9 Self updates

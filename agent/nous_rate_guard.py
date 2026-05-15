@@ -5,7 +5,7 @@ cron, auxiliary) can check whether Nous Portal is currently rate-limited
 before making requests.  Prevents retry amplification when RPH is tapped.
 
 Each 429 from Nous triggers up to 9 API calls per conversation turn
-(3 SDK retries x 3 Sinoclaw retries), and every one of those calls counts
+(3 SDK retries x 3 Anan retries), and every one of those calls counts
 against RPH.  By recording the rate limit state on first 429 and checking
 it before subsequent attempts, we eliminate the amplification effect.
 """
@@ -29,10 +29,10 @@ _STATE_FILENAME = "nous.json"
 def _state_path() -> str:
     """Return the path to the Nous rate limit state file."""
     try:
-        from sinoclaw_constants import get_sinoclaw_home
-        base = get_sinoclaw_home()
+        from anan_constants import get_anan_home
+        base = get_anan_home()
     except ImportError:
-        base = os.path.join(os.path.expanduser("~"), ".sinoclaw")
+        base = os.path.join(os.path.expanduser("~"), ".anan")
     return os.path.join(base, _STATE_SUBDIR, _STATE_FILENAME)
 
 
@@ -197,7 +197,7 @@ def is_genuine_nous_rate_limit(
     """Decide whether a 429 from Nous Portal is a real account rate limit.
 
     Nous Portal multiplexes multiple upstream providers (DeepSeek, Kimi,
-    MiMo, Sinoclaw, ...) behind one endpoint.  A 429 can mean either:
+    MiMo, Anan, ...) behind one endpoint.  A 429 can mean either:
 
       (a) The caller's own RPM / RPH / TPM / TPH bucket on Nous is
           exhausted — a genuine rate limit that will last until the

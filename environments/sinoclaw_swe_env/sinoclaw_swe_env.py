@@ -70,7 +70,7 @@ class HermesSweEnv(SinoclawAgentBaseEnv):
     and customize format_prompt() and compute_reward() as needed.
     """
 
-    name = "sinoclaw-swe"
+    name = "anan-swe"
     env_config_cls = HermesSweEnvConfig
 
     @classmethod
@@ -107,7 +107,7 @@ class HermesSweEnv(SinoclawAgentBaseEnv):
             steps_per_eval=50,
             total_steps=500,
             use_wandb=True,
-            wandb_name="sinoclaw-swe",
+            wandb_name="anan-swe",
         )
 
         server_configs = [

@@ -1,4 +1,4 @@
-"""Tests for the bundled sinoclaw-achievements dashboard plugin.
+"""Tests for the bundled anan-achievements dashboard plugin.
 
 These target the two behaviors that matter for official integration:
 
@@ -10,9 +10,9 @@ These target the two behaviors that matter for official integration:
   takes minutes.
 
 The upstream repo ships its own unittest suite under
-``plugins/sinoclaw-achievements/tests/`` covering the achievement engine
+``plugins/anan-achievements/tests/`` covering the achievement engine
 internals (tier math, secret-state handling, catalog invariants). These
-tests live at the sinoclaw-agent level and focus on the integration
+tests live at the anan level and focus on the integration
 contract: the plugin scans ALL of your sessions, not the first 200.
 """
 from __future__ import annotations
@@ -29,7 +29,7 @@ import pytest
 PLUGIN_MODULE_PATH = (
     Path(__file__).resolve().parents[2]
     / "plugins"
-    / "sinoclaw-achievements"
+    / "anan-achievements"
     / "dashboard"
     / "plugin_api.py"
 )
@@ -54,7 +54,7 @@ def plugin_api(tmp_path, monkeypatch):
     # swap ``sys.modules['sinoclaw_state']`` with auto-restoration. Without
     # this, a raw ``sys.modules[...] = fake`` assignment would leak the
     # fake into later tests in the same xdist worker — breaking every
-    # test that does ``from sinoclaw_state import SessionDB``.
+    # test that does ``from anan_state import SessionDB``.
     module._test_monkeypatch = monkeypatch
     yield module
 

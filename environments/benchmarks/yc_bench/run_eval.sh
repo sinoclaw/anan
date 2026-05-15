@@ -2,7 +2,7 @@
 
 # YC-Bench Evaluation
 #
-# Requires: pip install "sinoclaw-agent[yc-bench]"
+# Requires: pip install "anan[yc-bench]"
 #
 # Run from repo root:
 #   bash environments/benchmarks/yc_bench/run_eval.sh

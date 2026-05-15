@@ -2,15 +2,15 @@
 
 These tools are only registered into the model's schema when the agent is
 running under the dispatcher (env var ``SINOCLAW_KANBAN_TASK`` set). A
-normal ``sinoclaw chat`` session sees **zero** kanban tools in its schema.
+normal ``anan chat`` session sees **zero** kanban tools in its schema.
 
-Why tools instead of just shelling out to ``sinoclaw kanban``?
+Why tools instead of just shelling out to ``anan kanban``?
 
 1. **Backend portability.** A worker whose terminal tool points at Docker
-   / Modal / Singularity / SSH would run ``sinoclaw kanban complete …``
+   / Modal / Singularity / SSH would run ``anan kanban complete …``
    inside the container, where ``hermes`` isn't installed and the DB
    isn't mounted. Tools run in the agent's Python process, so they
-   always reach ``~/.sinoclaw/kanban.db`` regardless of terminal backend.
+   always reach ``~/.anan/kanban.db`` regardless of terminal backend.
 
 2. **No shell-quoting footguns.** Passing ``--metadata '{"x": [...]}'``
    through shlex+argparse is fragile. Structured tool args skip it.
@@ -18,8 +18,8 @@ Why tools instead of just shelling out to ``sinoclaw kanban``?
 3. **Better errors.** Tool-call failures return structured JSON the
    model can reason about, not stderr strings it has to parse.
 
-Humans continue to use the CLI (``sinoclaw kanban …``), the dashboard
-(``sinoclaw dashboard``), and the slash command (``/kanban …``) — all
+Humans continue to use the CLI (``anan kanban …``), the dashboard
+(``anan dashboard``), and the slash command (``/kanban …``) — all
 three bypass the agent entirely. The tools are ONLY for the worker
 agent's handoff back to the kernel.
 """
@@ -46,7 +46,7 @@ def _check_kanban_mode() -> bool:
     2. The current profile has ``kanban`` in its toolsets config
        (orchestrator profiles like techlead that route work via Kanban).
 
-    Humans running ``sinoclaw chat`` without the kanban toolset see zero
+    Humans running ``anan chat`` without the kanban toolset see zero
     kanban tools. Workers spawned by the kanban dispatcher (gateway-
     embedded by default) and orchestrator profiles with the kanban
     toolset enabled see all seven.
@@ -59,7 +59,7 @@ def _check_kanban_mode() -> bool:
     # negligible overhead. The check_fn results are further TTL-cached
     # (~30s) by the tool registry.
     try:
-        from sinoclaw_cli.config import load_config
+        from anan_cli.config import load_config
         cfg = load_config()
         toolsets = cfg.get("toolsets", [])
         return "kanban" in toolsets
@@ -127,7 +127,7 @@ def _enforce_worker_task_ownership(tid: str) -> Optional[str]:
 def _connect():
     """Import + connect lazily so the module imports cleanly in non-kanban
     contexts (e.g. test rigs that import every tool module)."""
-    from sinoclaw_cli import kanban_db as kb
+    from anan_cli import kanban_db as kb
     return kb, kb.connect()
 
 

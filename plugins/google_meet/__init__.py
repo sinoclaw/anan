@@ -95,8 +95,8 @@ def register(ctx) -> None:
         setup_fn=_register_meet_cli,
         handler_fn=_meet_command,
         description=(
-            "Let the sinoclaw agent join a Google Meet call and scrape live "
-            "captions into a transcript. See: sinoclaw meet setup"
+            "Let the anan agent join a Google Meet call and scrape live "
+            "captions into a transcript. See: anan meet setup"
         ),
     )
 

@@ -13,7 +13,7 @@ controlled by the ``checkpoints`` config flag or ``--checkpoints`` CLI flag.
 Storage layout (single shared store, git objects deduplicated across projects)
 -----------------------------------------------------------------------------
 
-    ~/.sinoclaw/checkpoints/
+    ~/.anan/checkpoints/
         store/                          — single bare-ish git repo
             HEAD, config, objects/      — standard git internals (shared)
             refs/hermes/<hash16>        — per-project branch tip
@@ -57,7 +57,7 @@ import shutil
 import subprocess
 import time
 from pathlib import Path
-from sinoclaw_constants import get_sinoclaw_home
+from anan_constants import get_anan_home
 from typing import Dict, List, Optional, Set, Tuple
 
 logger = logging.getLogger(__name__)
@@ -66,11 +66,11 @@ logger = logging.getLogger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 
-CHECKPOINT_BASE = get_sinoclaw_home() / "checkpoints"
+CHECKPOINT_BASE = get_anan_home() / "checkpoints"
 
 # Single shared store directory under CHECKPOINT_BASE.
 _STORE_DIRNAME = "store"
-_REFS_PREFIX = "refs/sinoclaw"
+_REFS_PREFIX = "refs/anan"
 _INDEXES_DIRNAME = "indexes"
 _PROJECTS_DIRNAME = "projects"
 _LEGACY_PREFIX = "legacy-"
@@ -102,7 +102,7 @@ DEFAULT_EXCLUDES = [
     ".git/",
     ".hg/",
     ".svn/",
-    # Worktrees (Sinoclaw convention — don't recursively snapshot siblings)
+    # Worktrees (Anan convention — don't recursively snapshot siblings)
     ".worktrees/",
     # Native / compiled binaries
     "*.so",
@@ -240,7 +240,7 @@ def _git_env(
 ) -> dict:
     """Build env dict that redirects git to the shared store.
 
-    The shared store is internal Sinoclaw infrastructure — it must NOT inherit
+    The shared store is internal Anan infrastructure — it must NOT inherit
     the user's global or system git config.  User-level settings like
     ``commit.gpgsign = true``, signing hooks, or credential helpers would
     either break background snapshots or, worse, spawn interactive prompts
@@ -344,7 +344,7 @@ def _migrate_legacy_store(base: Path) -> Optional[Path]:
     Rather than delete the old data (users might want to recover), rename
     everything except our own v2 entries into ``legacy-<timestamp>/``.  The
     legacy dir is subject to the same retention sweep and can be manually
-    cleared with ``sinoclaw checkpoints clear-legacy``.
+    cleared with ``anan checkpoints clear-legacy``.
 
     Returns the legacy-archive path, or None if nothing to migrate.
     """
@@ -378,7 +378,7 @@ def _migrate_legacy_store(base: Path) -> Optional[Path]:
     if legacy_root is not None:
         logger.info(
             "Migrated pre-v2 checkpoint repos to %s. "
-            "Clear with `sinoclaw checkpoints clear-legacy` when safe.",
+            "Clear with `anan checkpoints clear-legacy` when safe.",
             legacy_root,
         )
     return legacy_root
@@ -435,7 +435,7 @@ def _init_store(store: Path, working_dir: str) -> Optional[str]:
     # exists since we just created the store inside it.
     cfg_wd = str(base)
     _run_git(["config", "user.email", "hermes@local"], store, cfg_wd)
-    _run_git(["config", "user.name", "Sinoclaw Checkpoint"], store, cfg_wd)
+    _run_git(["config", "user.name", "Anan Checkpoint"], store, cfg_wd)
     _run_git(["config", "commit.gpgsign", "false"], store, cfg_wd)
     _run_git(["config", "tag.gpgSign", "false"], store, cfg_wd)
     _run_git(["config", "gc.auto", "0"], store, cfg_wd)
@@ -1527,7 +1527,7 @@ def maybe_auto_prune_checkpoints(
 
 
 # ---------------------------------------------------------------------------
-# Public helpers for `sinoclaw checkpoints` CLI
+# Public helpers for `anan checkpoints` CLI
 # ---------------------------------------------------------------------------
 
 def store_status(checkpoint_base: Optional[Path] = None) -> Dict:

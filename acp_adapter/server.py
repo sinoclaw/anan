@@ -1,4 +1,4 @@
-"""ACP agent server — exposes Sinoclaw Agent via the Agent Client Protocol."""
+"""ACP agent server — exposes Anan Agent via the Agent Client Protocol."""
 
 from __future__ import annotations
 
@@ -77,7 +77,7 @@ from acp_adapter.tools import build_tool_complete, build_tool_start
 logger = logging.getLogger(__name__)
 
 try:
-    from sinoclaw_cli import __version__ as SINOCLAW_VERSION
+    from anan_cli import __version__ as SINOCLAW_VERSION
 except Exception:
     SINOCLAW_VERSION = "0.0.0"
 
@@ -151,7 +151,7 @@ def _path_from_file_uri(uri: str) -> Path | None:
 
     Zed may send POSIX file URIs from Linux/WSL workspaces or Windows-ish paths
     when launched through wsl.exe. Translate the common Windows drive form to
-    /mnt/<drive>/... so Sinoclaw running in WSL can read it.
+    /mnt/<drive>/... so Anan running in WSL can read it.
     """
     raw = (uri or "").strip()
     if not raw:
@@ -232,7 +232,7 @@ def _resource_link_to_parts(block: ResourceContentBlock) -> list[dict[str, Any]]
                 uri=uri,
                 name=name,
                 title=title,
-                body="[Resource link only; Sinoclaw cannot read non-file ACP resource URIs directly.]",
+                body="[Resource link only; Anan cannot read non-file ACP resource URIs directly.]",
             ),
         }]
 
@@ -400,7 +400,7 @@ def _content_blocks_to_openai_user_content(
         | EmbeddedResourceContentBlock
     ],
 ) -> str | list[dict[str, Any]]:
-    """Convert ACP prompt blocks into a Sinoclaw/OpenAI-compatible user content payload."""
+    """Convert ACP prompt blocks into a Anan/OpenAI-compatible user content payload."""
     parts: list[dict[str, Any]] = []
     text_parts: list[str] = []
 
@@ -442,8 +442,8 @@ def _content_blocks_to_openai_user_content(
     return parts
 
 
-class SinoclawACPAgent(acp.Agent):
-    """ACP Agent implementation wrapping Sinoclaw AIAgent."""
+class AnanACPAgent(acp.Agent):
+    """ACP Agent implementation wrapping Anan AIAgent."""
 
     _SLASH_COMMANDS = {
         "help": "Show available commands",
@@ -454,7 +454,7 @@ class SinoclawACPAgent(acp.Agent):
         "compact": "Compress conversation context",
         "steer": "Inject guidance into the currently running agent turn",
         "queue": "Queue a prompt to run after the current turn finishes",
-        "version": "Show Sinoclaw version",
+        "version": "Show Anan version",
     }
 
     _ADVERTISED_COMMANDS = (
@@ -495,7 +495,7 @@ class SinoclawACPAgent(acp.Agent):
         },
         {
             "name": "version",
-            "description": "Show Sinoclaw version",
+            "description": "Show Anan version",
         },
     )
 
@@ -528,7 +528,7 @@ class SinoclawACPAgent(acp.Agent):
         provider = getattr(state.agent, "provider", None) or detect_provider() or "openrouter"
 
         try:
-            from sinoclaw_cli.models import curated_models_for_provider, normalize_provider, provider_label
+            from anan_cli.models import curated_models_for_provider, normalize_provider, provider_label
 
             normalized_provider = normalize_provider(provider)
             provider_name = provider_label(normalized_provider)
@@ -591,7 +591,7 @@ class SinoclawACPAgent(acp.Agent):
         new_model = raw_model.strip()
 
         try:
-            from sinoclaw_cli.models import detect_provider_for_model, parse_model_input
+            from anan_cli.models import detect_provider_for_model, parse_model_input
 
             target_provider, new_model = parse_model_input(new_model, current_provider)
             if target_provider == current_provider:
@@ -609,7 +609,7 @@ class SinoclawACPAgent(acp.Agent):
 
         Zed's circular context indicator is driven by ACP ``usage_update``
         session updates: ``size`` is the model context window and ``used`` is
-        the current request pressure.  Sinoclaw estimates ``used`` from the same
+        the current request pressure.  Anan estimates ``used`` from the same
         buckets it sends to providers: system prompt, conversation history, and
         tool schemas.
         """
@@ -704,7 +704,7 @@ class SinoclawACPAgent(acp.Agent):
             from model_tools import get_tool_definitions
 
             enabled_toolsets = _expand_acp_enabled_toolsets(
-                getattr(state.agent, "enabled_toolsets", None) or ["sinoclaw-acp"],
+                getattr(state.agent, "enabled_toolsets", None) or ["anan-acp"],
                 mcp_server_names=[server.name for server in mcp_servers],
             )
             state.agent.enabled_toolsets = enabled_toolsets
@@ -751,7 +751,7 @@ class SinoclawACPAgent(acp.Agent):
                 AuthMethodAgent(
                     id=provider,
                     name=f"{provider} runtime credentials",
-                    description=f"Authenticate Sinoclaw using the currently configured {provider} runtime credentials.",
+                    description=f"Authenticate Anan using the currently configured {provider} runtime credentials.",
                 )
             ]
 
@@ -764,7 +764,7 @@ class SinoclawACPAgent(acp.Agent):
 
         return InitializeResponse(
             protocol_version=acp.PROTOCOL_VERSION,
-            agent_info=Implementation(name="sinoclaw-agent", version=SINOCLAW_VERSION),
+            agent_info=Implementation(name="anan", version=SINOCLAW_VERSION),
             agent_capabilities=AgentCapabilities(
                 load_session=True,
                 prompt_capabilities=PromptCapabilities(image=True),
@@ -782,7 +782,7 @@ class SinoclawACPAgent(acp.Agent):
         # provider we advertised in initialize(). Without this check,
         # authenticate() would acknowledge any method_id as long as the
         # server has provider credentials configured — harmless under
-        # Sinoclaw' threat model (ACP is stdio-only, local-trust), but poor
+        # Anan' threat model (ACP is stdio-only, local-trust), but poor
         # API hygiene and confusing if ACP ever grows multi-method auth.
         provider = detect_provider()
         if not provider:
@@ -865,7 +865,7 @@ class SinoclawACPAgent(acp.Agent):
         Zed's ACP history UI calls ``session/load`` after the user picks an item
         from the Agents sidebar. The agent must then replay the full conversation
         as user/assistant chunks plus reconstructed tool-call start/completion
-        notifications; merely restoring server-side state makes Sinoclaw remember
+        notifications; merely restoring server-side state makes Anan remember
         context, but leaves the editor looking like a clean thread.
         """
         if not self._conn or not state.history:
@@ -1080,7 +1080,7 @@ class SinoclawACPAgent(acp.Agent):
         session_id: str,
         **kwargs: Any,
     ) -> PromptResponse:
-        """Run Sinoclaw on the user's prompt and stream events back to the editor."""
+        """Run Anan on the user's prompt and stream events back to the editor."""
         state = self.session_manager.get_session(session_id)
         if state is None:
             logger.error("prompt: session %s not found", session_id)
@@ -1195,7 +1195,7 @@ class SinoclawACPAgent(acp.Agent):
 
         agent = state.agent
         agent.tool_progress_callback = tool_progress_cb
-        # ACP thought panes should not receive Sinoclaw' local kawaii waiting/status
+        # ACP thought panes should not receive Anan' local kawaii waiting/status
         # updates. Route provider/model reasoning deltas instead; if the provider
         # emits no reasoning, Zed should not get a fake "thinking" accordion.
         agent.thinking_callback = None
@@ -1459,7 +1459,7 @@ class SinoclawACPAgent(acp.Agent):
         try:
             from model_tools import get_tool_definitions
             toolsets = _expand_acp_enabled_toolsets(
-                getattr(state.agent, "enabled_toolsets", None) or ["sinoclaw-acp"]
+                getattr(state.agent, "enabled_toolsets", None) or ["anan-acp"]
             )
             tools = get_tool_definitions(enabled_toolsets=toolsets, quiet_mode=True)
             if not tools:
@@ -1644,7 +1644,7 @@ class SinoclawACPAgent(acp.Agent):
         return f"Queued for the next turn. ({depth} queued)"
 
     def _cmd_version(self, args: str, state: SessionState) -> str:
-        return f"Sinoclaw Agent v{SINOCLAW_VERSION}"
+        return f"Anan Agent v{SINOCLAW_VERSION}"
 
     # ---- Model switching (ACP protocol method) -------------------------------
 
@@ -1698,7 +1698,7 @@ class SinoclawACPAgent(acp.Agent):
     async def set_config_option(
         self, config_id: str, session_id: str, value: str, **kwargs: Any
     ) -> SetSessionConfigOptionResponse | None:
-        """Accept ACP config option updates even when Sinoclaw has no typed ACP config surface yet."""
+        """Accept ACP config option updates even when Anan has no typed ACP config surface yet."""
         state = self.session_manager.get_session(session_id)
         if state is None:
             logger.warning("Session %s: config update requested for missing session", session_id)

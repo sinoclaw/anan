@@ -17,12 +17,12 @@ from trajectory_compressor import (
 )
 
 
-def test_import_loads_env_from_sinoclaw_home(tmp_path, monkeypatch):
-    home = tmp_path / ".sinoclaw"
+def test_import_loads_env_from_anan_home(tmp_path, monkeypatch):
+    home = tmp_path / ".anan"
     home.mkdir()
     (home / ".env").write_text("OPENROUTER_API_KEY=from-sinoclaw-home\n", encoding="utf-8")
 
-    monkeypatch.setenv("SINOCLAW_HOME", str(home))
+    monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
 
     sys.modules.pop("trajectory_compressor", None)

@@ -1,4 +1,4 @@
-"""Thin Spotify Web API helper used by Sinoclaw native tools."""
+"""Thin Spotify Web API helper used by Anan native tools."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 import httpx
 
-from sinoclaw_cli.auth import (
+from anan_cli.auth import (
     AuthError,
     resolve_spotify_runtime_credentials,
 )
@@ -348,7 +348,7 @@ def _friendly_spotify_error_message(
     is_playback_path = path.startswith("/me/player")
 
     if status_code == 401:
-        return "Spotify authentication failed or expired. Run `sinoclaw auth spotify` again."
+        return "Spotify authentication failed or expired. Run `anan auth spotify` again."
 
     if status_code == 403:
         if is_playback_path:
@@ -357,7 +357,7 @@ def _friendly_spotify_error_message(
                 "and an active Spotify Connect device."
             )
         if "scope" in normalized_detail or "permission" in normalized_detail:
-            return "Spotify rejected the request because the current auth scope is insufficient. Re-run `sinoclaw auth spotify` to refresh permissions."
+            return "Spotify rejected the request because the current auth scope is insufficient. Re-run `anan auth spotify` to refresh permissions."
         return "Spotify rejected the request. The account may not have permission for this action."
 
     if status_code == 404:

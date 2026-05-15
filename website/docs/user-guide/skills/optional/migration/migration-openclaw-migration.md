@@ -8,7 +8,7 @@ description: "Migrate a user's OpenClaw customization footprint into Sinoclaw Ag
 
 # Openclaw Migration
 
-Migrate a user's OpenClaw customization footprint into Sinoclaw Agent. Imports Sinoclaw-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.openclaw, then reports exactly what could not be migrated and why.
+Migrate a user's OpenClaw customization footprint into Sinoclaw Agent. Imports Sinoclaw-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.anan, then reports exactly what could not be migrated and why.
 
 ## Skill metadata
 
@@ -20,7 +20,7 @@ Migrate a user's OpenClaw customization footprint into Sinoclaw Agent. Imports S
 | Author | Sinoclaw Agent (Sinoclaw Team) |
 | License | MIT |
 | Tags | `Migration`, `OpenClaw`, `Hermes`, `Memory`, `Persona`, `Import` |
-| Related skills | [`sinoclaw-agent`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-sinoclaw-agent) |
+| Related skills | [`anan`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-anan) |
 
 ## Reference: full SKILL.md
 
@@ -46,7 +46,7 @@ hermes claw migrate --source /custom/path/.openclaw  # Custom source
 
 The CLI command runs the same migration script described below. Use this skill (via the agent) when you want an interactive, guided migration with dry-run previews and per-item conflict resolution.
 
-**First-time setup:** The `sinoclaw setup` wizard automatically detects `~/.openclaw` and offers migration before configuration begins.
+**First-time setup:** The `sinoclaw setup` wizard automatically detects `~/.anan` and offers migration before configuration begins.
 
 ## What this skill does
 
@@ -56,9 +56,9 @@ It uses `scripts/openclaw_to_hermes.py` to:
 - transform OpenClaw `MEMORY.md` and `USER.md` into Hermes memory entries
 - merge OpenClaw command approval patterns into Hermes `command_allowlist`
 - migrate Sinoclaw-compatible messaging settings such as `TELEGRAM_ALLOWED_USERS` and `MESSAGING_CWD`
-- copy OpenClaw skills into `~/.sinoclaw/skills/openclaw-imports/`
+- copy OpenClaw skills into `~/.anan/skills/openclaw-imports/`
 - optionally copy the OpenClaw workspace instructions file into a chosen Hermes workspace
-- mirror compatible workspace assets such as `workspace/tts/` into `~/.sinoclaw/tts/`
+- mirror compatible workspace assets such as `workspace/tts/` into `~/.anan/tts/`
 - archive non-secret docs that do not have a direct Hermes destination
 - produce a structured report listing migrated items, conflicts, skipped items, and reasons
 
@@ -70,13 +70,13 @@ The helper script lives in this skill directory at:
 
 When this skill is installed from the Skills Hub, the normal location is:
 
-- `~/.sinoclaw/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py`
+- `~/.anan/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py`
 
-Do not guess a shorter path like `~/.sinoclaw/skills/openclaw-migration/...`.
+Do not guess a shorter path like `~/.anan/skills/openclaw-migration/...`.
 
 Before running the helper:
 
-1. Prefer the installed path under `~/.sinoclaw/skills/migration/openclaw-migration/`.
+1. Prefer the installed path under `~/.anan/skills/migration/openclaw-migration/`.
 2. If that path fails, inspect the installed skill directory and resolve the script relative to the installed `SKILL.md`.
 3. Only use `find` as a fallback if the installed location is missing or the skill was moved manually.
 4. When calling the terminal tool, do not pass `workdir: "~"`. Use an absolute directory such as the user's home directory, or omit `workdir` entirely.
@@ -246,7 +246,7 @@ The helper script still supports category-level `--include` / `--exclude`, but t
 Dry run with full discovery:
 
 ```bash
-python3 ~/.sinoclaw/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py
+python3 ~/.anan/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py
 ```
 
 When using the terminal tool, prefer an absolute invocation pattern such as:
@@ -258,25 +258,25 @@ When using the terminal tool, prefer an absolute invocation pattern such as:
 Dry run with the user-data preset:
 
 ```bash
-python3 ~/.sinoclaw/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py --preset user-data
+python3 ~/.anan/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py --preset user-data
 ```
 
 Execute a user-data migration:
 
 ```bash
-python3 ~/.sinoclaw/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py --execute --preset user-data --skill-conflict skip
+python3 ~/.anan/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py --execute --preset user-data --skill-conflict skip
 ```
 
 Execute a full compatible migration:
 
 ```bash
-python3 ~/.sinoclaw/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py --execute --preset full --migrate-secrets --skill-conflict skip
+python3 ~/.anan/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py --execute --preset full --migrate-secrets --skill-conflict skip
 ```
 
 Execute with workspace instructions included:
 
 ```bash
-python3 ~/.sinoclaw/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py --execute --preset user-data --skill-conflict rename --workspace-target "/absolute/workspace/path"
+python3 ~/.anan/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py --execute --preset user-data --skill-conflict rename --workspace-target "/absolute/workspace/path"
 ```
 
 Do not use `$PWD` or the home directory as the workspace target by default. Ask for an explicit workspace path first.
@@ -287,7 +287,7 @@ Do not use `$PWD` or the home directory as the workspace target by default. Ask 
 2. Do not migrate secrets by default. Tokens, auth blobs, device credentials, and raw gateway config should stay out of Hermes unless the user explicitly asks for secret migration.
 3. Do not silently overwrite non-empty Hermes targets unless the user explicitly wants that. The helper script will preserve backups when overwriting is enabled.
 4. Always give the user the skipped-items report. That report is part of the migration, not an optional extra.
-5. Prefer the primary OpenClaw workspace (`~/.openclaw/workspace/`) over `workspace.default/`. Only use the default workspace as fallback when the primary files are missing.
+5. Prefer the primary OpenClaw workspace (`~/.anan/workspace/`) over `workspace.default/`. Only use the default workspace as fallback when the primary files are missing.
 6. Even in secret-migration mode, only migrate secrets with a clean Hermes destination. Unsupported auth blobs must still be reported as skipped.
 7. If the dry run shows a large asset copy, a conflicting `SOUL.md`, or overflowed memory entries, call those out separately before execution.
 8. Default to `user-data only` if the user is unsure.
@@ -311,5 +311,5 @@ After a successful run, the user should have:
 
 - Hermes persona state imported
 - Hermes memory files populated with converted OpenClaw knowledge
-- OpenClaw skills available under `~/.sinoclaw/skills/openclaw-imports/`
+- OpenClaw skills available under `~/.anan/skills/openclaw-imports/`
 - a migration report showing any conflicts, omissions, or unsupported data

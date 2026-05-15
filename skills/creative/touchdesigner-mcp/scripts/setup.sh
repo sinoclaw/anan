@@ -8,8 +8,8 @@ OK="${GREEN}✔${NC}"; FAIL="${RED}✘${NC}"; WARN="${YELLOW}⚠${NC}"
 
 TWOZERO_URL="https://www.404zero.com/pisang/twozero.tox"
 TOX_PATH="$HOME/Downloads/twozero.tox"
-SINOCLAW_HOME_DIR="${SINOCLAW_HOME:-$HOME/.hermes}"
-SINOCLAW_CFG="${SINOCLAW_HOME_DIR}/config.yaml"
+ANAN_HOME_DIR="${ANAN_HOME:-$HOME/.hermes}"
+SINOCLAW_CFG="${ANAN_HOME_DIR}/config.yaml"
 MCP_PORT=40404
 MCP_ENDPOINT="http://localhost:${MCP_PORT}/mcp"
 

@@ -45,7 +45,7 @@ def _resolve_safe_cwd(cwd: str) -> str:
     return tempfile.gettempdir()
 
 
-# Sinoclaw-internal env vars that should NOT leak into terminal subprocesses.
+# Anan-internal env vars that should NOT leak into terminal subprocesses.
 _SINOCLAW_PROVIDER_ENV_FORCE_PREFIX = "_SINOCLAW_FORCE_"
 
 
@@ -54,7 +54,7 @@ def _build_provider_env_blocklist() -> frozenset:
     blocked: set[str] = set()
 
     try:
-        from sinoclaw_cli.auth import PROVIDER_REGISTRY
+        from anan_cli.auth import PROVIDER_REGISTRY
         for pconfig in PROVIDER_REGISTRY.values():
             blocked.update(pconfig.api_key_env_vars)
             if pconfig.base_url_env_var:
@@ -63,7 +63,7 @@ def _build_provider_env_blocklist() -> frozenset:
         pass
 
     try:
-        from sinoclaw_cli.config import OPTIONAL_ENV_VARS
+        from anan_cli.config import OPTIONAL_ENV_VARS
         for name, metadata in OPTIONAL_ENV_VARS.items():
             category = metadata.get("category")
             if category in {"tool", "messaging"}:
@@ -145,7 +145,7 @@ _SINOCLAW_PROVIDER_ENV_BLOCKLIST = _build_provider_env_blocklist()
 
 
 def _sanitize_subprocess_env(base_env: dict | None, extra_env: dict | None = None) -> dict:
-    """Filter Sinoclaw-managed secrets from a subprocess environment."""
+    """Filter Anan-managed secrets from a subprocess environment."""
     try:
         from tools.env_passthrough import is_env_passthrough as _is_passthrough
     except Exception:
@@ -167,7 +167,7 @@ def _sanitize_subprocess_env(base_env: dict | None, extra_env: dict | None = Non
             sanitized[key] = value
 
     # Per-profile HOME isolation for background processes (same as _make_run_env).
-    from sinoclaw_constants import get_subprocess_home
+    from anan_constants import get_subprocess_home
     _profile_home = get_subprocess_home()
     if _profile_home:
         sanitized["HOME"] = _profile_home
@@ -200,11 +200,11 @@ def _find_bash() -> str:
     #   PortableGit: %LOCALAPPDATA%\hermes\git\bin\bash.exe   (primary)
     #   MinGit:      %LOCALAPPDATA%\hermes\git\usr\bin\bash.exe (legacy/32-bit fallback)
     _local_appdata = os.environ.get("LOCALAPPDATA", "")
-    _sinoclaw_portable_git = os.path.join(_local_appdata, "hermes", "git") if _local_appdata else ""
-    if _sinoclaw_portable_git:
+    _anan_portable_git = os.path.join(_local_appdata, "hermes", "git") if _local_appdata else ""
+    if _anan_portable_git:
         for candidate in (
-            os.path.join(_sinoclaw_portable_git, "bin", "bash.exe"),        # PortableGit (primary)
-            os.path.join(_sinoclaw_portable_git, "usr", "bin", "bash.exe"), # MinGit fallback
+            os.path.join(_anan_portable_git, "bin", "bash.exe"),        # PortableGit (primary)
+            os.path.join(_anan_portable_git, "usr", "bin", "bash.exe"), # MinGit fallback
         ):
             if os.path.isfile(candidate):
                 return candidate
@@ -222,7 +222,7 @@ def _find_bash() -> str:
             return candidate
 
     raise RuntimeError(
-        "Git Bash not found. Sinoclaw Agent requires Git for Windows on Windows.\n"
+        "Git Bash not found. Anan Agent requires Git for Windows on Windows.\n"
         "Install it from: https://git-scm.com/download/win\n"
         "Or set SINOCLAW_GIT_BASH_PATH to your bash.exe location."
     )
@@ -261,15 +261,15 @@ def _make_run_env(env: dict) -> dict:
     # unrecognisable chunk, which then triggers prepending POSIX paths
     # to a Windows PATH — completely wrong).  Skip the injection entirely
     # on Windows; the native PATH already points at whatever shell
-    # Sinoclaw is driving via _find_bash (Git Bash), and Git Bash itself
+    # Anan is driving via _find_bash (Git Bash), and Git Bash itself
     # prepends its MSYS2 /usr/bin equivalent via the shell-init files.
     if not _IS_WINDOWS and "/usr/bin" not in existing_path.split(":"):
         run_env["PATH"] = f"{existing_path}:{_SANE_PATH}" if existing_path else _SANE_PATH
 
     # Per-profile HOME isolation: redirect system tool configs (git, ssh, gh,
-    # npm …) into {SINOCLAW_HOME}/home/ when that directory exists.  Only the
+    # npm …) into {ANAN_HOME}/home/ when that directory exists.  Only the
     # subprocess sees the override — the Python process keeps the real HOME.
-    from sinoclaw_constants import get_subprocess_home
+    from anan_constants import get_subprocess_home
     _profile_home = get_subprocess_home()
     if _profile_home:
         run_env["HOME"] = _profile_home
@@ -284,7 +284,7 @@ def _read_terminal_shell_init_config() -> tuple[list[str], bool]:
     execution never breaks because the config file is unreadable.
     """
     try:
-        from sinoclaw_cli.config import load_config
+        from anan_cli.config import load_config
 
         cfg = load_config() or {}
         terminal_cfg = cfg.get("terminal") or {}
@@ -303,7 +303,7 @@ def _resolve_shell_init_files() -> list[str]:
     Expands ``~`` and ``${VAR}`` references and drops anything that doesn't
     exist on disk, so a missing ``~/.bashrc`` never breaks the snapshot.
     The ``auto_source_bashrc`` path runs only when the user hasn't supplied
-    an explicit list — once they have, Sinoclaw trusts them.
+    an explicit list — once they have, Anan trusts them.
     """
     explicit, auto_bashrc = _read_terminal_shell_init_config()
 
@@ -390,20 +390,20 @@ class LocalEnvironment(BaseEnvironment):
         can't open the path, and the Windows default temp (``%TEMP%``) often
         contains spaces (``C:\\Users\\Some Name\\AppData\\Local\\Temp``) that
         break unquoted bash interpolations.  Use a dedicated cache dir under
-        ``SINOCLAW_HOME`` instead — single-word path, guaranteed to exist, same
+        ``ANAN_HOME`` instead — single-word path, guaranteed to exist, same
         string resolves in both Git Bash and native Python.
         """
         if _IS_WINDOWS:
-            # Derive a Windows-safe temp dir under SINOCLAW_HOME.  Using
+            # Derive a Windows-safe temp dir under ANAN_HOME.  Using
             # forward slashes makes the same string work unchanged in bash
             # command interpolations AND in Python ``open()`` — Windows
             # accepts forward slashes in filesystem paths, and we control
             # the path so we can guarantee no spaces.
             try:
-                from sinoclaw_constants import get_sinoclaw_home
-                cache_dir = get_sinoclaw_home() / "cache" / "terminal"
+                from anan_constants import get_anan_home
+                cache_dir = get_anan_home() / "cache" / "terminal"
             except Exception:
-                cache_dir = Path(tempfile.gettempdir()) / "sinoclaw_terminal"
+                cache_dir = Path(tempfile.gettempdir()) / "anan_terminal"
             cache_dir.mkdir(parents=True, exist_ok=True)
             # Force forward slashes so the same string serves both contexts.
             return str(cache_dir).replace("\\", "/")
@@ -474,7 +474,7 @@ class LocalEnvironment(BaseEnvironment):
         )
         if not _IS_WINDOWS:
             try:
-                proc._sinoclaw_pgid = os.getpgid(proc.pid)
+                proc._anan_pgid = os.getpgid(proc.pid)
             except ProcessLookupError:
                 pass
 
@@ -522,7 +522,7 @@ class LocalEnvironment(BaseEnvironment):
                 try:
                     pgid = os.getpgid(proc.pid)
                 except ProcessLookupError:
-                    pgid = getattr(proc, "_sinoclaw_pgid", None)
+                    pgid = getattr(proc, "_anan_pgid", None)
                     if pgid is None:
                         raise
 

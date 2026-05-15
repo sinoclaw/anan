@@ -7,10 +7,10 @@ import pytest
 
 
 def _make_cli_stub():
-    """Create a minimal SinoclawCLI-like object with stream state."""
-    from cli import SinoclawCLI
+    """Create a minimal AnanCLI-like object with stream state."""
+    from cli import AnanCLI
 
-    cli = SinoclawCLI.__new__(SinoclawCLI)
+    cli = AnanCLI.__new__(AnanCLI)
     cli.show_reasoning = False
     cli._stream_buf = ""
     cli._stream_started = False

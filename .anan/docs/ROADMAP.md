@@ -2,7 +2,7 @@
 
 ## Phase 1: Foundation（地基）— 第 1-2 个月
 
-**目标**：让 anan 能跑起来，跟 sinoclaw 跑通基本通路。
+**目标**：让 anan 能跑起来，跟 anan 跑通基本通路。
 
 ### 1.1 Kernel 层（模拟内核能力）
 - [ ] `kernel/event_bus.py` — asyncio pub/sub 事件总线
@@ -11,10 +11,10 @@
 - [ ] `kernel/message_injector.py` — 用 send_message 注入消息
 - [ ] `kernel/sandbox.py` — git-based 自修改沙箱
 
-### 1.2 Adapters 层（对接 sinoclaw）
-- [ ] `adapters/sinoclaw_memory.py` — 对接 honcho/mem0/supermemory
-- [ ] `adapters/sinoclaw_cron.py` — 复用主仓 cron
-- [ ] `adapters/sinoclaw_gateway.py` — 通过插件 hook 接收事件
+### 1.2 Adapters 层（对接 anan）
+- [ ] `adapters/anan_memory.py` — 对接 honcho/mem0/supermemory
+- [ ] `adapters/anan_cron.py` — 复用主仓 cron
+- [ ] `adapters/anan_gateway.py` — 通过插件 hook 接收事件
 
 ### 1.3 L1 Sleep 完整实现
 - [ ] 修复 OpenClaw dreaming 的 14 个测试 bug
@@ -112,7 +112,7 @@
 ### 4.4 集成
 - [ ] 9 层完整联调
 - [ ] 长期稳定性测试（30 天连续运行）
-- [ ] 跟 sinoclaw 主仓的成熟功能 PR 回哺
+- [ ] 跟 anan 主仓的成熟功能 PR 回哺
 
 **Stage 4 通过标准**：能在跟用户对话中主动提出未被要求的、有价值的建议。
 
@@ -123,7 +123,7 @@
 - ✨ 真正自主的 cognitive entity
 - ✨ 跟人类持续 co-evolve
 - ✨ 跨越"工具 → 助手 → 伙伴"的鸿沟
-- ✨ anan 的成熟能力 PR 回 sinoclaw 主仓，成为标准 cognitive layer
+- ✨ anan 的成熟能力 PR 回 anan 主仓，成为标准 cognitive layer
 - ✨ 开源社区有更多 AI 用 anan 来"觉醒"
 
 ---

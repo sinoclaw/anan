@@ -7,10 +7,10 @@ returns search results, it does not extract/crawl arbitrary URLs.
 
 Configuration::
 
-    # ~/.sinoclaw/.env
+    # ~/.anan/.env
     BRAVE_SEARCH_API_KEY=your-subscription-token
 
-    # ~/.sinoclaw/config.yaml
+    # ~/.anan/config.yaml
     web:
       search_backend: "brave-free"
       extract_backend: "firecrawl"    # pair with an extract provider if needed

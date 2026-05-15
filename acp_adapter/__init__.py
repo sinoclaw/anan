@@ -1,1 +1,1 @@
-"""ACP (Agent Communication Protocol) adapter for sinoclaw-agent."""
+"""ACP (Agent Communication Protocol) adapter for anan."""

@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 from acp.schema import TextContentBlock
 
-from acp_adapter.server import SinoclawACPAgent
+from acp_adapter.server import AnanACPAgent
 from acp_adapter.session import SessionManager
 
 
@@ -11,7 +11,7 @@ class FakeAgent:
     def __init__(self):
         self.model = "fake-model"
         self.provider = "fake-provider"
-        self.enabled_toolsets = ["sinoclaw-acp"]
+        self.enabled_toolsets = ["anan-acp"]
         self.disabled_toolsets = []
         self.tools = []
         self.valid_tool_names = set()
@@ -59,7 +59,7 @@ class NoopDb:
 def make_agent_and_state():
     fake = FakeAgent()
     manager = SessionManager(agent_factory=lambda **kwargs: fake, db=NoopDb())
-    acp_agent = SinoclawACPAgent(session_manager=manager)
+    acp_agent = AnanACPAgent(session_manager=manager)
     state = manager.create_session(cwd=".")
     conn = CaptureConn()
     acp_agent.on_connect(conn)

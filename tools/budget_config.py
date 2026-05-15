@@ -1,6 +1,6 @@
 """Configurable budget constants for tool result persistence.
 
-Overridable at the RL environment level via SinoclawAgentEnvConfig fields.
+Overridable at the RL environment level via AnanAgentEnvConfig fields.
 Per-tool resolution: pinned > config overrides > registry > default.
 """
 

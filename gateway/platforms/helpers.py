@@ -227,8 +227,8 @@ class ThreadParticipationTracker:
         }
 
     def _state_path(self) -> Path:
-        from sinoclaw_constants import get_sinoclaw_home
-        return get_sinoclaw_home() / f"{self._platform}_threads.json"
+        from anan_constants import get_anan_home
+        return get_anan_home() / f"{self._platform}_threads.json"
 
     def _load(self) -> list[str]:
         path = self._state_path()

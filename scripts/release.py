@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sinoclaw Agent Release Script
+"""Anan Agent Release Script
 
 Generates changelogs and creates GitHub releases with CalVer tags.
 
@@ -30,7 +30,7 @@ from datetime import datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-VERSION_FILE = REPO_ROOT / "sinoclaw_cli" / "__init__.py"
+VERSION_FILE = REPO_ROOT / "anan_cli" / "__init__.py"
 PYPROJECT_FILE = REPO_ROOT / "pyproject.toml"
 
 # ──────────────────────────────────────────────────────────────────────
@@ -152,7 +152,7 @@ AUTHOR_MAP = {
     # Temporary tool-progress cleanup salvage (May 2026)
     "Mrcharlesiv@gmail.com": "mrcharlesiv",
     "nbot@liizfq.top": "liizfq",
-    "274096618+sinoclaw-agent-dhabibi@users.noreply.github.com": "dhabibi",
+    "274096618+anan-dhabibi@users.noreply.github.com": "dhabibi",
     "dejie.guo@gmail.com": "JayGwod",
     "133716830+0xKingBack@users.noreply.github.com": "0xKingBack",
     "daixin1204@gmail.com": "SimbaKingjoe",
@@ -883,7 +883,7 @@ AUTHOR_MAP = {
     "me+github7604@versun.org": "Versun",  # co-author only
     "my.vesper.nine@gmail.com": "kevin-ho",  # salvage: PR #15488 author @kevin-ho
     "noreply@paperclip.ing": "Paperclip",  # co-author only
-    "teknium@sinoclaw-agent": "teknium1",
+    "teknium@anan": "teknium1",
     "web3blind@gmail.com": "web3blind",
     "ztzheng@163.com": "chengoak",  # PR #17467
     "24110240104@m.fudan.edu.cn": "YuShu",  # co-author only
@@ -1204,7 +1204,7 @@ def get_pr_number(subject: str) -> str:
     return None
 
 
-def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/sinoclaw/sinoclaw-agent",
+def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/anan/anan",
                        prev_tag=None, first_release=False):
     """Generate markdown changelog from categorized commits."""
     lines = []
@@ -1212,14 +1212,14 @@ def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/s
     # Header
     now = datetime.now()
     date_str = now.strftime("%B %d, %Y")
-    lines.append(f"# Sinoclaw Agent v{semver} ({tag_name})")
+    lines.append(f"# Anan Agent v{semver} ({tag_name})")
     lines.append("")
     lines.append(f"**Release Date:** {date_str}")
     lines.append("")
 
     if first_release:
         lines.append("> 🎉 **First official release!** This marks the beginning of regular weekly releases")
-        lines.append("> for Sinoclaw Agent. See below for everything included in this initial release.")
+        lines.append("> for Anan Agent. See below for everything included in this initial release.")
         lines.append("")
 
     # Group commits by category
@@ -1309,7 +1309,7 @@ def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/s
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Sinoclaw Agent Release Tool")
+    parser = argparse.ArgumentParser(description="Anan Agent Release Tool")
     parser.add_argument("--bump", choices=["major", "minor", "patch"],
                         help="Which semver component to bump")
     parser.add_argument("--publish", action="store_true",
@@ -1356,7 +1356,7 @@ def main():
             return
 
     print(f"{'='*60}")
-    print(f"  Sinoclaw Agent Release Preview")
+    print(f"  Anan Agent Release Preview")
     print(f"{'='*60}")
     print(f"  CalVer tag:      {tag_name}")
     print(f"  SemVer:          v{current_version} → v{new_version}")
@@ -1407,7 +1407,7 @@ def main():
         # Create annotated tag
         tag_result = git_result(
             "tag", "-a", tag_name, "-m",
-            f"Sinoclaw Agent v{new_version} ({calver_date})\n\nWeekly release"
+            f"Anan Agent v{new_version} ({calver_date})\n\nWeekly release"
         )
         if tag_result.returncode != 0:
             print(f"  ✗ Failed to create tag {tag_name}: {tag_result.stderr.strip()}")
@@ -1437,7 +1437,7 @@ def main():
 
         gh_cmd = [
             "gh", "release", "create", tag_name,
-            "--title", f"Sinoclaw Agent v{new_version} ({calver_date})",
+            "--title", f"Anan Agent v{new_version} ({calver_date})",
             "--notes-file", str(changelog_file),
         ]
         gh_cmd.extend(str(path) for path in artifacts)
@@ -1464,7 +1464,7 @@ def main():
             print(f"    Release notes kept at: {changelog_file}")
             print(f"    Tag was created locally. Create the release manually:")
             print(
-                f"    gh release create {tag_name} --title 'Sinoclaw Agent v{new_version} ({calver_date})' "
+                f"    gh release create {tag_name} --title 'Anan Agent v{new_version} ({calver_date})' "
                 f"--notes-file .release_notes.md {' '.join(str(path) for path in artifacts)}"
             )
             print(f"\n  ✓ Release artifacts prepared for manual publish: v{new_version} ({tag_name})")

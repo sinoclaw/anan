@@ -1,7 +1,7 @@
-"""Lightweight internationalization (i18n) for Sinoclaw static user-facing messages.
+"""Lightweight internationalization (i18n) for Anan static user-facing messages.
 
 Scope (thin slice, by design): only the highest-impact static strings shown
-to the user by Sinoclaw itself -- approval prompts, a handful of gateway slash
+to the user by Anan itself -- approval prompts, a handful of gateway slash
 command replies, restart-drain notices.  Agent-generated output, log lines,
 error tracebacks, tool outputs, and slash-command descriptions all stay in
 English.
@@ -112,7 +112,7 @@ def _load_catalog(lang: str) -> dict[str, str]:
         return {}
 
     try:
-        import yaml  # PyYAML is already a sinoclaw dependency
+        import yaml  # PyYAML is already a anan dependency
         with path.open("r", encoding="utf-8") as f:
             raw = yaml.safe_load(f) or {}
     except Exception as exc:
@@ -148,7 +148,7 @@ def _config_language_cached() -> str | None:
     (e.g. after the setup wizard).
     """
     try:
-        from sinoclaw_cli.config import load_config
+        from anan_cli.config import load_config
         cfg = load_config()
         lang = (cfg.get("display") or {}).get("language")
         if lang:
@@ -161,7 +161,7 @@ def _config_language_cached() -> str | None:
 def reset_language_cache() -> None:
     """Invalidate cached language resolution and catalogs.
 
-    Call after :func:`sinoclaw_cli.config.save_config` if a running process
+    Call after :func:`anan_cli.config.save_config` if a running process
     needs to pick up a changed ``display.language`` without restart.
     """
     _config_language_cached.cache_clear()

@@ -12,7 +12,7 @@ Features:
 - Shared file store tools (upload, list, read, ingest, delete)
 - Explicit memory tools (profile, search, context, remember, forget)
 
-Config (env vars or sinoclaw config.yaml under retaindb:):
+Config (env vars or anan config.yaml under retaindb:):
   RETAINDB_API_KEY     — API key (required)
   RETAINDB_BASE_URL    — API endpoint (default: https://api.retaindb.com)
   RETAINDB_PROJECT     — Project identifier (optional — defaults to "default")
@@ -187,7 +187,7 @@ class _Client:
         h = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
-            "x-sdk-runtime": "sinoclaw-plugin",
+            "x-sdk-runtime": "anan-plugin",
         }
         if path.startswith(("/v1/memory", "/v1/context")):
             h["X-API-Key"] = token
@@ -286,7 +286,7 @@ class _Client:
         import requests
         url = f"{self.base_url}/v1/files"
         token = self.api_key.replace("Bearer ", "").strip()
-        headers = {"Authorization": f"Bearer {token}", "x-sdk-runtime": "sinoclaw-plugin"}
+        headers = {"Authorization": f"Bearer {token}", "x-sdk-runtime": "anan-plugin"}
         fields = {"path": remote_path, "scope": scope.upper()}
         if project_id:
             fields["project_id"] = project_id
@@ -307,7 +307,7 @@ class _Client:
         import requests
         token = self.api_key.replace("Bearer ", "").strip()
         url = f"{self.base_url}/v1/files/{quote(file_id, safe='')}/content"
-        resp = requests.get(url, headers={"Authorization": f"Bearer {token}", "x-sdk-runtime": "sinoclaw-plugin"}, timeout=30, allow_redirects=True)
+        resp = requests.get(url, headers={"Authorization": f"Bearer {token}", "x-sdk-runtime": "anan-plugin"}, timeout=30, allow_redirects=True)
         resp.raise_for_status()
         return resp.content
 
@@ -496,22 +496,22 @@ class RetainDBMemoryProvider(MemoryProvider):
         if explicit:
             project = explicit
         else:
-            sinoclaw_home = str(kwargs.get("sinoclaw_home", ""))
-            profile_name = os.path.basename(sinoclaw_home) if sinoclaw_home else ""
-            project = f"sinoclaw-{profile_name}" if (profile_name and profile_name not in {"", ".sinoclaw"}) else "default"
+            anan_home = str(kwargs.get("anan_home", ""))
+            profile_name = os.path.basename(anan_home) if anan_home else ""
+            project = f"anan-{profile_name}" if (profile_name and profile_name not in {"", ".sinoclaw"}) else "default"
 
         self._client = _Client(api_key, base_url, project)
         self._session_id = session_id
         self._user_id = kwargs.get("user_id", "default") or "default"
         self._agent_id = kwargs.get("agent_id", "hermes") or "hermes"
 
-        from sinoclaw_constants import get_sinoclaw_home
-        sinoclaw_home_path = get_sinoclaw_home()
-        db_path = sinoclaw_home_path / "retaindb_queue.db"
+        from anan_constants import get_anan_home
+        anan_home_path = get_anan_home()
+        db_path = anan_home_path / "retaindb_queue.db"
         self._queue = _WriteQueue(self._client, db_path)
 
         # Seed agent identity from SOUL.md in background
-        soul_path = sinoclaw_home_path / "SOUL.md"
+        soul_path = anan_home_path / "SOUL.md"
         if soul_path.exists():
             soul_content = soul_path.read_text(encoding="utf-8", errors="replace").strip()
             if soul_content:

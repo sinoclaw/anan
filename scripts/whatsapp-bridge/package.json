@@ -1,7 +1,7 @@
 {
-  "name": "sinoclaw-whatsapp-bridge",
+  "name": "anan-whatsapp-bridge",
   "version": "1.0.0",
-  "description": "WhatsApp bridge for Sinoclaw Agent using Baileys",
+  "description": "WhatsApp bridge for Anan Agent using Baileys",
   "private": true,
   "type": "module",
   "scripts": {

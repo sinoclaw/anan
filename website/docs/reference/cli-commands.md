@@ -27,7 +27,7 @@ hermes [global-options] <command> [subcommand/options]
 | `--worktree`, `-w` | Start in an isolated git worktree for parallel-agent workflows. |
 | `--yolo` | Bypass dangerous-command approval prompts. |
 | `--pass-session-id` | Include the session ID in the agent's system prompt. |
-| `--ignore-user-config` | Ignore `~/.sinoclaw/config.yaml` and fall back to built-in defaults. Credentials in `.env` are still loaded. |
+| `--ignore-user-config` | Ignore `~/.anan/config.yaml` and fall back to built-in defaults. Credentials in `.env` are still loaded. |
 | `--ignore-rules` | Skip auto-injection of `AGENTS.md`, `SOUL.md`, `.cursorrules`, memory, and preloaded skills. |
 | `--tui` | Launch the [TUI](../user-guide/tui.md) instead of the classic CLI. Equivalent to `SINOCLAW_TUI=1`. |
 | `--dev` | With `--tui`: run the TypeScript sources directly via `tsx` instead of the prebuilt bundle (for TUI contributors). |
@@ -47,21 +47,21 @@ hermes [global-options] <command> [subcommand/options]
 | `sinoclaw login` / `logout` | **Deprecated** — use `sinoclaw auth` instead. |
 | `sinoclaw status` | Show agent, auth, and platform status. |
 | `sinoclaw cron` | Inspect and tick the cron scheduler. |
-| `sinoclaw kanban` | Multi-profile collaboration board (tasks, links, dispatcher). |
+| `anan kanban` | Multi-profile collaboration board (tasks, links, dispatcher). |
 | `sinoclaw webhook` | Manage dynamic webhook subscriptions for event-driven activation. |
 | `sinoclaw hooks` | Inspect, approve, or remove shell-script hooks declared in `config.yaml`. |
 | `sinoclaw doctor` | Diagnose config and dependency issues. |
 | `sinoclaw dump` | Copy-pasteable setup summary for support/debugging. |
 | `sinoclaw debug` | Debug tools — upload logs and system info for support. |
 | `sinoclaw backup` | Back up Sinoclaw home directory to a zip file. |
-| `sinoclaw checkpoints` | Inspect / prune / clear `~/.sinoclaw/checkpoints/` (the shadow store used by `/rollback`). Run with no args for a status overview. |
+| `sinoclaw checkpoints` | Inspect / prune / clear `~/.anan/checkpoints/` (the shadow store used by `/rollback`). Run with no args for a status overview. |
 | `sinoclaw import` | Restore a Hermes backup from a zip file. |
 | `sinoclaw logs` | View, tail, and filter agent/gateway/error log files. |
 | `sinoclaw config` | Show, edit, migrate, and query configuration files. |
 | `sinoclaw pairing` | Approve or revoke messaging pairing codes. |
 | `sinoclaw skills` | Browse, install, publish, audit, and configure skills. |
 | `sinoclaw curator` | Background skill maintenance — status, run, pause, pin. See [Curator](../user-guide/features/curator.md). |
-| `sinoclaw memory` | Configure external memory provider. Plugin-specific subcommands (e.g. `sinoclaw honcho`) register automatically when their provider is active. |
+| `sinoclaw memory` | Configure external memory provider. Plugin-specific subcommands (e.g. `anan honcho`) register automatically when their provider is active. |
 | `sinoclaw acp` | Run Hermes as an ACP server for editor integration. |
 | `sinoclaw mcp` | Manage MCP server configurations and run Hermes as an MCP server. |
 | `sinoclaw plugins` | Manage Sinoclaw Agent plugins (install, enable, disable, remove). |
@@ -74,7 +74,7 @@ hermes [global-options] <command> [subcommand/options]
 | `sinoclaw profile` | Manage profiles — multiple isolated Hermes instances. |
 | `sinoclaw completion` | Print shell completion scripts (bash/zsh/fish). |
 | `sinoclaw version` | Show version information. |
-| `sinoclaw update` | Pull latest code and reinstall dependencies. `--check` prints commit diff without pulling; `--backup` takes a pre-pull `SINOCLAW_HOME` snapshot. |
+| `anan update` | Pull latest code and reinstall dependencies. `--check` prints commit diff without pulling; `--backup` takes a pre-pull `ANAN_HOME` snapshot. |
 | `sinoclaw uninstall` | Remove Hermes from the system. |
 
 ## `sinoclaw chat`
@@ -100,7 +100,7 @@ Common options:
 | `--checkpoints` | Enable filesystem checkpoints before destructive file changes. |
 | `--yolo` | Skip approval prompts. |
 | `--pass-session-id` | Pass the session ID into the system prompt. |
-| `--ignore-user-config` | Ignore `~/.sinoclaw/config.yaml` and use built-in defaults. Credentials in `.env` are still loaded. Useful for isolated CI runs, reproducible bug reports, and third-party integrations. |
+| `--ignore-user-config` | Ignore `~/.anan/config.yaml` and use built-in defaults. Credentials in `.env` are still loaded. Useful for isolated CI runs, reproducible bug reports, and third-party integrations. |
 | `--ignore-rules` | Skip auto-injection of `AGENTS.md`, `SOUL.md`, `.cursorrules`, persistent memory, and preloaded skills. Combine with `--ignore-user-config` for a fully isolated run. |
 | `--source <tag>` | Session source tag for filtering (default: `cli`). Use `tool` for third-party integrations that should not appear in user session lists. |
 | `--max-turns <N>` | Maximum tool-calling iterations per conversation turn (default: 90, or `agent.max_turns` in config). |
@@ -129,7 +129,7 @@ hermes -z "What's the capital of France?"
 answer=$(hermes -z "summarize this" < /path/to/file.txt)
 ```
 
-Per-run overrides (no mutation to `~/.sinoclaw/config.yaml`):
+Per-run overrides (no mutation to `~/.anan/config.yaml`):
 
 | Flag | Equivalent env var | Purpose |
 |---|---|---|
@@ -217,10 +217,10 @@ Options:
 
 | Option | Description |
 |--------|-------------|
-| `--all` | On `start` / `restart` / `stop`: act on **every profile's** gateway, not just the active `SINOCLAW_HOME`. Useful if you run multiple profiles side-by-side and want to restart them all after `sinoclaw update`. |
+| `--all` | On `start` / `restart` / `stop`: act on **every profile's** gateway, not just the active `ANAN_HOME`. Useful if you run multiple profiles side-by-side and want to restart them all after `anan update`. |
 
 :::tip WSL users
-Use `sinoclaw gateway run` instead of `sinoclaw gateway start` — WSL's systemd support is unreliable. Wrap it in tmux for persistence: `tmux new -s sinoclaw 'sinoclaw gateway run'`. See [WSL FAQ](/docs/reference/faq#wsl-gateway-keeps-disconnecting-or-sinoclaw-gateway-start-fails) for details.
+Use `sinoclaw gateway run` instead of `sinoclaw gateway start` — WSL's systemd support is unreliable. Wrap it in tmux for persistence: `tmux new -s sinoclaw 'sinoclaw gateway run'`. See [WSL FAQ](/docs/reference/faq#wsl-gateway-keeps-disconnecting-or-anan-gateway-start-fails) for details.
 :::
 
 ## `sinoclaw setup`
@@ -264,7 +264,7 @@ Runs the WhatsApp pairing/setup flow, including mode selection and QR-code pairi
 
 ```bash
 hermes slack manifest              # print manifest to stdout
-hermes slack manifest --write      # write to ~/.sinoclaw/slack-manifest.json
+hermes slack manifest --write      # write to ~/.anan/slack-manifest.json
 hermes slack manifest --slashes-only  # just the features.slash_commands array
 ```
 
@@ -278,12 +278,12 @@ reinstall if scopes or slash commands changed.
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--write [PATH]` | stdout | Write to a file instead of stdout. Bare `--write` writes `$SINOCLAW_HOME/slack-manifest.json`. |
+| `--write [PATH]` | stdout | Write to a file instead of stdout. Bare `--write` writes `$ANAN_HOME/slack-manifest.json`. |
 | `--name NAME` | `Hermes` | Bot display name in Slack. |
 | `--description DESC` | default blurb | Bot description shown in the Slack app directory. |
 | `--slashes-only` | off | Emit only `features.slash_commands` for merging into a manually-maintained manifest. |
 
-Run `sinoclaw slack manifest --write` again after `sinoclaw update` to pick
+Run `sinoclaw slack manifest --write` again after `anan update` to pick
 up any new commands.
 
 
@@ -338,28 +338,28 @@ hermes cron <list|create|edit|pause|resume|run|remove|status|tick>
 | `status` | Check whether the cron scheduler is running. |
 | `tick` | Run due jobs once and exit. |
 
-## `sinoclaw kanban`
+## `anan kanban`
 
 ```bash
 hermes kanban [--board <slug>] <action> [options]
 ```
 
-Multi-profile, multi-project collaboration board. Each install can host many boards (one per project, repo, or domain); each board is a standalone queue with its own SQLite DB and dispatcher scope. New installs start with one board called `default`, whose DB is `~/.sinoclaw/kanban.db` for back-compat; additional boards live at `~/.sinoclaw/kanban/boards/<slug>/kanban.db`. The gateway-embedded dispatcher sweeps every board per tick.
+Multi-profile, multi-project collaboration board. Each install can host many boards (one per project, repo, or domain); each board is a standalone queue with its own SQLite DB and dispatcher scope. New installs start with one board called `default`, whose DB is `~/.anan/kanban.db` for back-compat; additional boards live at `~/.anan/kanban/boards/<slug>/kanban.db`. The gateway-embedded dispatcher sweeps every board per tick.
 
 **Global flags (apply to every action below):**
 
 | Flag | Purpose |
 |------|---------|
-| `--board <slug>` | Operate on a specific board. Defaults to the current board (set via `sinoclaw kanban boards switch`, the `SINOCLAW_KANBAN_BOARD` env var, or `default`). |
+| `--board <slug>` | Operate on a specific board. Defaults to the current board (set via `anan kanban boards switch`, the `SINOCLAW_KANBAN_BOARD` env var, or `default`). |
 
-**This is the human / scripting surface.** Agent workers spawned by the dispatcher drive the board through a dedicated `kanban_*` [toolset](/docs/user-guide/features/kanban#how-workers-interact-with-the-board) (`kanban_show`, `kanban_complete`, `kanban_block`, `kanban_create`, `kanban_link`, `kanban_comment`, `kanban_heartbeat`) instead of shelling to `sinoclaw kanban`. Workers have `SINOCLAW_KANBAN_BOARD` pinned in their env so they physically cannot see other boards.
+**This is the human / scripting surface.** Agent workers spawned by the dispatcher drive the board through a dedicated `kanban_*` [toolset](/docs/user-guide/features/kanban#how-workers-interact-with-the-board) (`kanban_show`, `kanban_complete`, `kanban_block`, `kanban_create`, `kanban_link`, `kanban_comment`, `kanban_heartbeat`) instead of shelling to `anan kanban`. Workers have `SINOCLAW_KANBAN_BOARD` pinned in their env so they physically cannot see other boards.
 
 | Action | Purpose |
 |--------|---------|
 | `init` | Create `kanban.db` if missing. Idempotent. |
 | `boards list` / `boards ls` | List all boards with task counts. `--json`, `--all` (include archived). |
 | `boards create <slug>` | Create a new board. Flags: `--name`, `--description`, `--icon`, `--color`, `--switch` (make active). Slug is kebab-case, auto-downcased. |
-| `boards switch <slug>` / `boards use` | Persist `<slug>` as the active board (writes `~/.sinoclaw/kanban/current`). |
+| `boards switch <slug>` / `boards use` | Persist `<slug>` as the active board (writes `~/.anan/kanban/current`). |
 | `boards show` / `boards current` | Print the currently-active board's name, DB path, and task counts. |
 | `boards rename <slug> "<name>"` | Change a board's display name. Slug is immutable. |
 | `boards rm <slug>` | Archive (default) or hard-delete a board. `--delete` skips the archive step. Archived boards move to `boards/_archived/<slug>-<ts>/`. Refused for `default`. |
@@ -397,7 +397,7 @@ hermes kanban boards rm atm10-server
 hermes kanban boards rm atm10-server --delete
 ```
 
-Board resolution order (highest precedence first): `--board <slug>` flag → `SINOCLAW_KANBAN_BOARD` env var → `~/.sinoclaw/kanban/current` file → `default`.
+Board resolution order (highest precedence first): `--board <slug>` flag → `SINOCLAW_KANBAN_BOARD` env var → `~/.anan/kanban/current` file → `default`.
 
 All actions are also available as a slash command in the gateway (`/kanban …`), with the same argument surface — including `boards` subcommands and the `--board` flag.
 
@@ -435,7 +435,7 @@ hermes webhook subscribe <name> [options]
 | `--secret` | Custom HMAC secret. Auto-generated if omitted. |
 | `--deliver-only` | Skip the agent — deliver the rendered `--prompt` as the literal message. Zero LLM cost, sub-second delivery. Requires `--deliver` to be a real target (not `log`). |
 
-Subscriptions persist to `~/.sinoclaw/webhook_subscriptions.json` and are hot-reloaded by the webhook adapter without a gateway restart.
+Subscriptions persist to `~/.anan/webhook_subscriptions.json` and are hot-reloaded by the webhook adapter without a gateway restart.
 
 ## `sinoclaw doctor`
 
@@ -465,7 +465,7 @@ Outputs a compact, plain-text summary of your entire Hermes setup. Designed to b
 |---------|---------|
 | **Header** | Hermes version, release date, git commit hash |
 | **Environment** | OS, Python version, OpenAI SDK version |
-| **Identity** | Active profile name, SINOCLAW_HOME path |
+| **Identity** | Active profile name, ANAN_HOME path |
 | **Model** | Configured default model and provider |
 | **Terminal** | Backend type (local, docker, ssh, etc.) |
 | **API keys** | Presence check for all 22 provider/tool API keys |
@@ -483,7 +483,7 @@ os:               Linux 6.14.0-37-generic x86_64
 python:           3.11.14
 openai_sdk:       2.24.0
 profile:          default
-sinoclaw_home:      ~/.sinoclaw
+anan_home:      ~/.sinoclaw
 model:            anthropic/claude-opus-4.6
 provider:         openrouter
 terminal:         local
@@ -556,7 +556,7 @@ sinoclaw debug share --local      # Print report to terminal (no upload)
 hermes backup [options]
 ```
 
-Create a zip archive of your Hermes configuration, skills, sessions, and data. The backup excludes the sinoclaw-agent codebase itself.
+Create a zip archive of your Hermes configuration, skills, sessions, and data. The backup excludes the anan codebase itself.
 
 | Option | Description |
 |--------|-------------|
@@ -570,7 +570,7 @@ The backup uses SQLite's `backup()` API for safe copying, so it works correctly 
 
 - `*.db-wal`, `*.db-shm`, `*.db-journal` — SQLite's WAL / shared-memory / journal sidecars. The `*.db` file already got a consistent snapshot via `sqlite3.backup()`; shipping the live sidecars alongside it would let a restore see a half-committed state.
 - `checkpoints/` — per-session trajectory caches. Hash-keyed and regenerated per session; wouldn't port cleanly to another install anyway.
-- The `sinoclaw-agent` code itself (this is a user-data backup, not a repo snapshot).
+- The `anan` code itself (this is a user-data backup, not a repo snapshot).
 
 ### Examples
 
@@ -587,7 +587,7 @@ hermes backup --quick --label "pre-upgrade"  # Quick snapshot with label
 hermes checkpoints [COMMAND]
 ```
 
-Inspect and manage the shadow git store at `~/.sinoclaw/checkpoints/` — the storage layer behind the in-session `/rollback` command. Safe to run any time; does not require the agent to be running.
+Inspect and manage the shadow git store at `~/.anan/checkpoints/` — the storage layer behind the in-session `/rollback` command. Safe to run any time; does not require the agent to be running.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -647,7 +647,7 @@ hermes import ~/sinoclaw-backup-20260423.zip --force   # Overwrite without promp
 hermes logs [log_name] [options]
 ```
 
-View, tail, and filter Hermes log files. All logs are stored in `~/.sinoclaw/logs/` (or `<profile>/logs/` for non-default profiles).
+View, tail, and filter Hermes log files. All logs are stored in `~/.anan/logs/` (or `<profile>/logs/` for non-default profiles).
 
 ### Log files
 
@@ -806,8 +806,8 @@ The curator is an auxiliary-model background task that periodically reviews agen
 | `run` | Trigger a curator review now (blocks until the LLM pass finishes) |
 | `run --background` | Start the LLM pass in a background thread and return immediately |
 | `run --dry-run` | Preview only — produce the review report with no mutations |
-| `backup` | Take a manual tar.gz snapshot of `~/.sinoclaw/skills/` (curator also snapshots automatically before every real run) |
-| `rollback` | Restore `~/.sinoclaw/skills/` from a snapshot (defaults to newest) |
+| `backup` | Take a manual tar.gz snapshot of `~/.anan/skills/` (curator also snapshots automatically before every real run) |
+| `rollback` | Restore `~/.anan/skills/` from a snapshot (defaults to newest) |
 | `rollback --list` | List available snapshots |
 | `rollback --id <ts>` | Restore a specific snapshot by id |
 | `rollback -y` | Skip the confirmation prompt |
@@ -817,7 +817,7 @@ The curator is an auxiliary-model background task that periodically reviews agen
 | `unpin <skill>` | Unpin a skill |
 | `restore <skill>` | Restore an archived skill |
 
-On a fresh install the first scheduled pass is deferred by one full `interval_hours` (7 days by default) — the gateway will not curate immediately on the first tick after `sinoclaw update`. Use `sinoclaw curator run --dry-run` to preview before that happens.
+On a fresh install the first scheduled pass is deferred by one full `interval_hours` (7 days by default) — the gateway will not curate immediately on the first tick after `anan update`. Use `sinoclaw curator run --dry-run` to preview before that happens.
 
 See [Curator](../user-guide/features/curator.md) for behavior and config.
 
@@ -844,7 +844,7 @@ See [Fallback Providers](../user-guide/features/fallback-providers.md).
 hermes hooks <subcommand>
 ```
 
-Inspect shell-script hooks declared in `~/.sinoclaw/config.yaml`, test them against synthetic payloads, and manage the first-use consent allowlist at `~/.sinoclaw/shell-hooks-allowlist.json`.
+Inspect shell-script hooks declared in `~/.anan/config.yaml`, test them against synthetic payloads, and manage the first-use consent allowlist at `~/.anan/shell-hooks-allowlist.json`.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -872,7 +872,7 @@ Subcommands:
 | `off` | Disable external provider (built-in only). |
 
 :::info Provider-specific subcommands
-When an external memory provider is active, it may register its own top-level `sinoclaw <provider>` command for provider-specific management (e.g. `sinoclaw honcho` when Honcho is active). Inactive providers do not expose their subcommands. Run `sinoclaw --help` to see what's currently wired in.
+When an external memory provider is active, it may register its own top-level `sinoclaw <provider>` command for provider-specific management (e.g. `anan honcho` when Honcho is active). Inactive providers do not expose their subcommands. Run `sinoclaw --help` to see what's currently wired in.
 :::
 
 ## `sinoclaw acp`
@@ -993,7 +993,7 @@ hermes insights [--days N] [--source platform]
 hermes claw migrate [options]
 ```
 
-Migrate your OpenClaw setup to Hermes. Reads from `~/.openclaw` (or a custom path) and writes to `~/.sinoclaw`. Automatically detects legacy directory names (`~/.clawdbot`, `~/.moltbot`) and config filenames (`clawdbot.json`, `moltbot.json`).
+Migrate your OpenClaw setup to Hermes. Reads from `~/.anan` (or a custom path) and writes to `~/.sinoclaw`. Automatically detects legacy directory names (`~/.clawdbot`, `~/.moltbot`) and config filenames (`clawdbot.json`, `moltbot.json`).
 
 | Option | Description |
 |--------|-------------|
@@ -1001,8 +1001,8 @@ Migrate your OpenClaw setup to Hermes. Reads from `~/.openclaw` (or a custom pat
 | `--preset <name>` | Migration preset: `full` (all compatible settings) or `user-data` (excludes infrastructure config). Neither preset imports secrets — pass `--migrate-secrets` explicitly. |
 | `--overwrite` | Overwrite existing Hermes files on conflicts (default: refuse to apply when the plan has conflicts). |
 | `--migrate-secrets` | Include API keys in migration. Required even under `--preset full`. |
-| `--no-backup` | Skip the pre-migration zip snapshot of `~/.sinoclaw/` (by default a single restore-point archive is written to `~/.sinoclaw/backups/pre-migration-*.zip` before apply; restorable with `sinoclaw import`). |
-| `--source <path>` | Custom OpenClaw directory (default: `~/.openclaw`). |
+| `--no-backup` | Skip the pre-migration zip snapshot of `~/.anan/` (by default a single restore-point archive is written to `~/.anan/backups/pre-migration-*.zip` before apply; restorable with `sinoclaw import`). |
+| `--source <path>` | Custom OpenClaw directory (default: `~/.anan`). |
 | `--workspace-target <path>` | Target directory for workspace instructions (AGENTS.md). |
 | `--skill-conflict <mode>` | Handle skill name collisions: `skip` (default), `overwrite`, or `rename`. |
 | `--yes` | Skip the confirmation prompt. |
@@ -1015,7 +1015,7 @@ The migration covers 30+ categories across persona, memory, skills, model provid
 
 **Archived for manual review:** Cron jobs, plugins, hooks/webhooks, memory backend (QMD), skills registry config, UI/identity, logging, multi-agent setup, channel bindings, IDENTITY.md, TOOLS.md, HEARTBEAT.md, BOOTSTRAP.md.
 
-**API key resolution** checks three sources in priority order: config values → `~/.openclaw/.env` → `auth-profiles.json`. All token fields handle plain strings, env templates (`${VAR}`), and SecretRef objects.
+**API key resolution** checks three sources in priority order: config values → `~/.anan/.env` → `auth-profiles.json`. All token fields handle plain strings, env templates (`${VAR}`), and SecretRef objects.
 
 For the complete config key mapping, SecretRef handling details, and post-migration checklist, see the **[full migration guide](../guides/migrate-from-openclaw.md)**.
 
@@ -1044,7 +1044,7 @@ hermes claw migrate --source /home/user/old-openclaw
 hermes dashboard [options]
 ```
 
-Launch the web dashboard — a browser-based UI for managing configuration, API keys, and monitoring sessions. Requires `pip install sinoclaw-agent[web]` (FastAPI + Uvicorn). See [Web Dashboard](/docs/user-guide/features/web-dashboard) for full documentation.
+Launch the web dashboard — a browser-based UI for managing configuration, API keys, and monitoring sessions. Requires `pip install anan[web]` (FastAPI + Uvicorn). See [Web Dashboard](/docs/user-guide/features/web-dashboard) for full documentation.
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -1118,24 +1118,24 @@ hermes completion zsh >> ~/.zshrc
 hermes completion fish > ~/.config/fish/completions/hermes.fish
 ```
 
-## `sinoclaw update`
+## `anan update`
 
 ```bash
-sinoclaw update [--check] [--backup] [--restart-gateway]
+anan update [--check] [--backup] [--restart-gateway]
 ```
 
-Pulls the latest `sinoclaw-agent` code and reinstalls dependencies in your venv, then re-runs the post-install hooks (MCP servers, skills sync, completion install). Safe to run on a live install.
+Pulls the latest `anan` code and reinstalls dependencies in your venv, then re-runs the post-install hooks (MCP servers, skills sync, completion install). Safe to run on a live install.
 
 | Option | Description |
 |--------|-------------|
 | `--check` | Print the current commit and the latest `origin/main` commit side by side, and exit 0 if in sync or 1 if behind. Does not pull, install, or restart anything. |
-| `--backup` | Create a labeled pre-update snapshot of `SINOCLAW_HOME` (config, auth, sessions, skills, pairing data) before pulling. Default is **off** — the previous always-backup behavior was adding minutes to every update on large homes. Flip it on permanently via `update.backup: true` in `config.yaml`. |
+| `--backup` | Create a labeled pre-update snapshot of `ANAN_HOME` (config, auth, sessions, skills, pairing data) before pulling. Default is **off** — the previous always-backup behavior was adding minutes to every update on large homes. Flip it on permanently via `update.backup: true` in `config.yaml`. |
 | `--restart-gateway` | After a successful update, restart the running gateway service. Implies `--all` semantics if multiple profiles are installed. |
 
 Additional behavior:
 
-- **Pairing data snapshot.** Even when `--backup` is off, `sinoclaw update` takes a lightweight snapshot of `~/.sinoclaw/pairing/` and the Feishu comment rules before `git pull`. You can roll it back with `sinoclaw backup restore --state pre-update` if a pull rewrites a file you were editing.
-- **Legacy `sinoclaw.service` warning.** If Hermes detects a pre-rename `sinoclaw.service` systemd unit (instead of the current `sinoclaw-gateway.service`), it prints a one-time migration hint so you can avoid flap-loop issues.
+- **Pairing data snapshot.** Even when `--backup` is off, `anan update` takes a lightweight snapshot of `~/.anan/pairing/` and the Feishu comment rules before `git pull`. You can roll it back with `sinoclaw backup restore --state pre-update` if a pull rewrites a file you were editing.
+- **Legacy `sinoclaw.service` warning.** If Hermes detects a pre-rename `sinoclaw.service` systemd unit (instead of the current `anan-gateway.service`), it prints a one-time migration hint so you can avoid flap-loop issues.
 - **Exit codes.** `0` on success, `1` on pull/install/post-install errors, `2` on unexpected working-tree changes that block `git pull`.
 
 ## `sinoclaw fallback`
@@ -1161,7 +1161,7 @@ See [Fallback Providers](/docs/user-guide/features/fallback-providers) for behav
 | Command | Description |
 |---------|-------------|
 | `sinoclaw version` | Print version information. |
-| `sinoclaw update` | Pull latest changes and reinstall dependencies. |
+| `anan update` | Pull latest changes and reinstall dependencies. |
 | `sinoclaw uninstall [--full] [--yes]` | Remove Hermes, optionally deleting all config/data. |
 
 ## See also

@@ -170,7 +170,7 @@ Notes:
 - Completion requests are debounced by 60 ms. Input starting with `/` uses `complete.slash`. A trailing token that starts with `./`, `../`, `~/`, `/`, or `@` uses `complete.path`.
 - Text pastes are inserted inline directly into the draft. Nothing is newline-flattened.
 - `Cmd/Ctrl+G` (or `Alt+G` in VSCode/Cursor, which intercept the primary keystroke for Find Next) writes the current draft, including any multiline buffer, to a temp file, suspends Ink, launches `$EDITOR`, then restores the TUI and submits the saved text if the editor exits cleanly.
-- Input history is stored in `~/.sinoclaw/.sinoclaw_history` or under `SINOCLAW_HOME`.
+- Input history is stored in `~/.anan/.anan_history` or under `ANAN_HOME`.
 
 ## Rendering
 
@@ -278,7 +278,7 @@ Current color overrides:
 
 ```text
 ui-tui/
-  packages/sinoclaw-ink/   forked Ink renderer (local dep)
+  packages/anan-ink/   forked Ink renderer (local dep)
   src/
     entry.tsx            TTY gate + render()
     app.tsx              top-level Ink tree, composes src/app/*
@@ -330,7 +330,7 @@ ui-tui/
       text.ts            text helpers, ANSI detection, previews
 
     types/
-      sinoclaw-ink.d.ts    type declarations for @sinoclaw/ink
+      anan-ink.d.ts    type declarations for @anan/ink
 
     __tests__/           vitest suite
 ```
@@ -342,5 +342,5 @@ tui_gateway/
   entry.py               stdio entrypoint
   server.py              RPC handlers and session logic
   render.py              optional rich/ANSI bridge
-  slash_worker.py        persistent SinoclawCLI subprocess for slash commands
+  slash_worker.py        persistent AnanCLI subprocess for slash commands
 ```

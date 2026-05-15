@@ -20,7 +20,7 @@ Debug Python: pdb REPL + debugpy remote (DAP).
 | Author | Sinoclaw Agent |
 | License | MIT |
 | Tags | `debugging`, `python`, `pdb`, `debugpy`, `breakpoints`, `dap`, `post-mortem` |
-| Related skills | [`systematic-debugging`](/docs/user-guide/skills/bundled/software-development/software-development-systematic-debugging), [`node-inspect-debugger`](/docs/user-guide/skills/bundled/software-development/software-development-node-inspect-debugger), [`debugging-sinoclaw-tui-commands`](/docs/user-guide/skills/bundled/software-development/software-development-debugging-sinoclaw-tui-commands) |
+| Related skills | [`systematic-debugging`](/docs/user-guide/skills/bundled/software-development/software-development-systematic-debugging), [`node-inspect-debugger`](/docs/user-guide/skills/bundled/software-development/software-development-node-inspect-debugger), [`debugging-anan-tui-commands`](/docs/user-guide/skills/bundled/software-development/software-development-debugging-anan-tui-commands) |
 
 ## Reference: full SKILL.md
 
@@ -168,7 +168,7 @@ For long-lived processes: Sinoclaw gateway, tui_gateway, a daemon, a process tha
 ### Setup
 
 ```bash
-source /home/bb/sinoclaw-agent/.venv/bin/activate
+source /home/bb/anan/.venv/bin/activate
 pip install debugpy
 ```
 
@@ -265,7 +265,7 @@ This is fine for one-off automation but painful as an interactive UX.
   "connect": { "host": "127.0.0.1", "port": 5678 },
   "justMyCode": false,
   "pathMappings": [
-    { "localRoot": "${workspaceFolder}", "remoteRoot": "/home/bb/sinoclaw-agent" }
+    { "localRoot": "${workspaceFolder}", "remoteRoot": "/home/bb/anan" }
   ]
 }
 ```

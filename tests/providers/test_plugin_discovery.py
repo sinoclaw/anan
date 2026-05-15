@@ -2,7 +2,7 @@
 
 Verifies that:
  1. All bundled providers at plugins/model-providers/<name>/ are discovered
- 2. User plugins at $SINOCLAW_HOME/plugins/model-providers/<name>/ override bundled
+ 2. User plugins at $ANAN_HOME/plugins/model-providers/<name>/ override bundled
  3. plugin.yaml manifests with kind=model-provider are correctly categorized
 """
 
@@ -65,15 +65,15 @@ def test_all_33_profiles_register():
 
 def test_user_plugin_overrides_bundled(tmp_path, monkeypatch):
     """A user plugin with the same name must override the bundled profile."""
-    # Point SINOCLAW_HOME at a fresh temp dir
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
-    # get_sinoclaw_home() may be module-cached depending on codebase; ensure the
+    # Point ANAN_HOME at a fresh temp dir
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
+    # get_anan_home() may be module-cached depending on codebase; ensure the
     # env var is the source of truth. Most code paths re-read it each call.
 
     # Drop a user plugin that replaces 'gmi'
-    user_gmi = sinoclaw_home / "plugins" / "model-providers" / "gmi"
+    user_gmi = anan_home / "plugins" / "model-providers" / "gmi"
     user_gmi.mkdir(parents=True)
     (user_gmi / "__init__.py").write_text(
         "from providers import register_provider\n"
@@ -112,14 +112,14 @@ def test_user_plugin_overrides_bundled(tmp_path, monkeypatch):
 def test_general_plugin_manager_skips_model_provider_kind(tmp_path, monkeypatch):
     """The general PluginManager must NOT import model-provider plugins
     (providers/__init__.py handles them). It records the manifest only."""
-    from sinoclaw_cli import plugins as plugin_mod
+    from anan_cli import plugins as plugin_mod
 
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
     # Create a user-installed plugin with an explicit kind: model-provider.
-    user_plugin = sinoclaw_home / "plugins" / "test-model-provider"
+    user_plugin = anan_home / "plugins" / "test-model-provider"
     user_plugin.mkdir(parents=True)
     (user_plugin / "plugin.yaml").write_text(
         "name: test-model-provider\n"

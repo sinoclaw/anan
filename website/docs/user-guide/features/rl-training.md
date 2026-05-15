@@ -29,8 +29,8 @@ RL training requires:
 
 ```bash
 # Set up API keys
-sinoclaw config set TINKER_API_KEY your-tinker-key
-sinoclaw config set WANDB_API_KEY your-wandb-key
+anan config set TINKER_API_KEY your-tinker-key
+anan config set WANDB_API_KEY your-wandb-key
 ```
 
 When both keys are present and Python >= 3.11 is available, the `rl` toolset is automatically enabled.
@@ -219,7 +219,7 @@ Training runs log to Weights & Biases with these key metrics:
 
 ## Log Files
 
-Each training run generates log files in `~/.sinoclaw/logs/rl_training/`:
+Each training run generates log files in `~/.anan/logs/rl_training/`:
 
 ```
 logs/

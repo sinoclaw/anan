@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from sinoclaw_constants import get_config_path, get_skills_dir
+from anan_constants import get_config_path, get_skills_dir
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +189,7 @@ def get_external_skills_dirs() -> List[Path]:
 
     Each entry is expanded (``~`` and ``${VAR}``) and resolved to an absolute
     path.  Only directories that actually exist are returned.  Duplicates and
-    paths that resolve to the local ``~/.sinoclaw/skills/`` are silently skipped.
+    paths that resolve to the local ``~/.anan/skills/`` are silently skipped.
 
     Cached in-process, keyed on ``config.yaml`` mtime — the function is
     called once per skill during banner / tool-registry scans, and YAML
@@ -236,9 +236,9 @@ def get_external_skills_dirs() -> List[Path]:
     if not isinstance(raw_dirs, list):
         return []
 
-    from sinoclaw_constants import get_sinoclaw_home
+    from anan_constants import get_anan_home
 
-    sinoclaw_home = get_sinoclaw_home()
+    anan_home = get_anan_home()
     local_skills = get_skills_dir().resolve()
     seen: Set[Path] = set()
     result = []
@@ -250,9 +250,9 @@ def get_external_skills_dirs() -> List[Path]:
         # Expand ~ and environment variables
         expanded = os.path.expanduser(os.path.expandvars(entry))
         p = Path(expanded)
-        # Resolve relative paths against SINOCLAW_HOME, not cwd
+        # Resolve relative paths against ANAN_HOME, not cwd
         if not p.is_absolute():
-            p = (sinoclaw_home / p).resolve()
+            p = (anan_home / p).resolve()
         else:
             p = p.resolve()
         if p == local_skills:
@@ -271,7 +271,7 @@ def get_external_skills_dirs() -> List[Path]:
 
 
 def get_all_skills_dirs() -> List[Path]:
-    """Return all skill directories: local ``~/.sinoclaw/skills/`` first, then external.
+    """Return all skill directories: local ``~/.anan/skills/`` first, then external.
 
     The local dir is always first (and always included even if it doesn't exist
     yet — callers handle that).  External dirs follow in config order.
@@ -290,14 +290,14 @@ def extract_skill_conditions(frontmatter: Dict[str, Any]) -> Dict[str, List]:
     # Handle cases where metadata is not a dict (e.g., a string from malformed YAML)
     if not isinstance(metadata, dict):
         metadata = {}
-    sinoclaw = metadata.get("sinoclaw") or {}
-    if not isinstance(sinoclaw, dict):
-        sinoclaw = {}
+    anan = metadata.get("anan") or {}
+    if not isinstance(anan, dict):
+        anan = {}
     return {
-        "fallback_for_toolsets": sinoclaw.get("fallback_for_toolsets", []),
-        "requires_toolsets": sinoclaw.get("requires_toolsets", []),
-        "fallback_for_tools": sinoclaw.get("fallback_for_tools", []),
-        "requires_tools": sinoclaw.get("requires_tools", []),
+        "fallback_for_toolsets": anan.get("fallback_for_toolsets", []),
+        "requires_toolsets": anan.get("requires_toolsets", []),
+        "fallback_for_tools": anan.get("fallback_for_tools", []),
+        "requires_tools": anan.get("requires_tools", []),
     }
 
 
@@ -323,10 +323,10 @@ def extract_skill_config_vars(frontmatter: Dict[str, Any]) -> List[Dict[str, Any
     metadata = frontmatter.get("metadata")
     if not isinstance(metadata, dict):
         return []
-    sinoclaw = metadata.get("sinoclaw")
-    if not isinstance(sinoclaw, dict):
+    anan = metadata.get("anan")
+    if not isinstance(anan, dict):
         return []
-    raw = sinoclaw.get("config")
+    raw = anan.get("config")
     if not raw:
         return []
     if isinstance(raw, dict):

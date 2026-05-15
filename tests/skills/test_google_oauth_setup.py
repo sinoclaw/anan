@@ -259,66 +259,66 @@ class TestExchangeAuthCode:
 
 
 class TestSinoclawConstantsFallback:
-    """Tests for _sinoclaw_home.py fallback when sinoclaw_constants is unavailable."""
+    """Tests for _anan_home.py fallback when sinoclaw_constants is unavailable."""
 
     HELPER_PATH = (
         Path(__file__).resolve().parents[2]
-        / "skills/productivity/google-workspace/scripts/_sinoclaw_home.py"
+        / "skills/productivity/google-workspace/scripts/_anan_home.py"
     )
 
     def _load_helper(self, monkeypatch):
-        """Load _sinoclaw_home.py with sinoclaw_constants blocked."""
+        """Load _anan_home.py with sinoclaw_constants blocked."""
         monkeypatch.setitem(sys.modules, "sinoclaw_constants", None)
-        spec = importlib.util.spec_from_file_location("_sinoclaw_home_test", self.HELPER_PATH)
+        spec = importlib.util.spec_from_file_location("_anan_home_test", self.HELPER_PATH)
         module = importlib.util.module_from_spec(spec)
         assert spec.loader is not None
         spec.loader.exec_module(module)
         return module
 
-    def test_fallback_uses_sinoclaw_home_env_var(self, monkeypatch, tmp_path):
-        """When sinoclaw_constants is missing, SINOCLAW_HOME comes from env var."""
-        monkeypatch.setenv("SINOCLAW_HOME", str(tmp_path / "custom-hermes"))
+    def test_fallback_uses_anan_home_env_var(self, monkeypatch, tmp_path):
+        """When sinoclaw_constants is missing, ANAN_HOME comes from env var."""
+        monkeypatch.setenv("ANAN_HOME", str(tmp_path / "custom-hermes"))
         module = self._load_helper(monkeypatch)
-        assert module.get_sinoclaw_home() == tmp_path / "custom-hermes"
+        assert module.get_anan_home() == tmp_path / "custom-hermes"
 
     def test_fallback_defaults_to_dot_hermes(self, monkeypatch):
-        """When sinoclaw_constants is missing and SINOCLAW_HOME unset, default to ~/.sinoclaw."""
-        monkeypatch.delenv("SINOCLAW_HOME", raising=False)
+        """When sinoclaw_constants is missing and ANAN_HOME unset, default to ~/.sinoclaw."""
+        monkeypatch.delenv("ANAN_HOME", raising=False)
         module = self._load_helper(monkeypatch)
-        assert module.get_sinoclaw_home() == Path.home() / ".sinoclaw"
+        assert module.get_anan_home() == Path.home() / ".anan"
 
-    def test_fallback_ignores_empty_sinoclaw_home(self, monkeypatch):
-        """Empty/whitespace SINOCLAW_HOME is treated as unset."""
-        monkeypatch.setenv("SINOCLAW_HOME", "  ")
+    def test_fallback_ignores_empty_anan_home(self, monkeypatch):
+        """Empty/whitespace ANAN_HOME is treated as unset."""
+        monkeypatch.setenv("ANAN_HOME", "  ")
         module = self._load_helper(monkeypatch)
-        assert module.get_sinoclaw_home() == Path.home() / ".sinoclaw"
+        assert module.get_anan_home() == Path.home() / ".anan"
 
-    def test_fallback_display_sinoclaw_home_shortens_path(self, monkeypatch):
-        """Fallback display_sinoclaw_home() uses ~/ shorthand like the real one."""
-        monkeypatch.delenv("SINOCLAW_HOME", raising=False)
+    def test_fallback_display_anan_home_shortens_path(self, monkeypatch):
+        """Fallback display_anan_home() uses ~/ shorthand like the real one."""
+        monkeypatch.delenv("ANAN_HOME", raising=False)
         module = self._load_helper(monkeypatch)
-        assert module.display_sinoclaw_home() == "~/.sinoclaw"
+        assert module.display_anan_home() == "~/.sinoclaw"
 
-    def test_fallback_display_sinoclaw_home_profile_path(self, monkeypatch):
-        """Fallback display_sinoclaw_home() handles profile paths under ~/."""
-        monkeypatch.setenv("SINOCLAW_HOME", str(Path.home() / ".sinoclaw/profiles/coder"))
+    def test_fallback_display_anan_home_profile_path(self, monkeypatch):
+        """Fallback display_anan_home() handles profile paths under ~/."""
+        monkeypatch.setenv("ANAN_HOME", str(Path.home() / ".sinoclaw/profiles/coder"))
         module = self._load_helper(monkeypatch)
-        assert module.display_sinoclaw_home() == "~/.sinoclaw/profiles/coder"
+        assert module.display_anan_home() == "~/.anan/profiles/coder"
 
-    def test_fallback_display_sinoclaw_home_custom_path(self, monkeypatch):
-        """Fallback display_sinoclaw_home() returns full path for non-home locations."""
-        monkeypatch.setenv("SINOCLAW_HOME", "/opt/sinoclaw-custom")
+    def test_fallback_display_anan_home_custom_path(self, monkeypatch):
+        """Fallback display_anan_home() returns full path for non-home locations."""
+        monkeypatch.setenv("ANAN_HOME", "/opt/sinoclaw-custom")
         module = self._load_helper(monkeypatch)
-        assert module.display_sinoclaw_home() == "/opt/sinoclaw-custom"
+        assert module.display_anan_home() == "/opt/sinoclaw-custom"
 
     def test_delegates_to_sinoclaw_constants_when_available(self):
-        """When sinoclaw_constants IS importable, _sinoclaw_home delegates to it."""
+        """When sinoclaw_constants IS importable, _anan_home delegates to it."""
         spec = importlib.util.spec_from_file_location(
-            "_sinoclaw_home_happy", self.HELPER_PATH
+            "_anan_home_happy", self.HELPER_PATH
         )
         module = importlib.util.module_from_spec(spec)
         assert spec.loader is not None
         spec.loader.exec_module(module)
         import sinoclaw_constants
-        assert module.get_sinoclaw_home is sinoclaw_constants.get_sinoclaw_home
-        assert module.display_sinoclaw_home is sinoclaw_constants.display_sinoclaw_home
+        assert module.get_anan_home is sinoclaw_constants.get_anan_home
+        assert module.display_anan_home is sinoclaw_constants.display_anan_home

@@ -49,6 +49,6 @@ and in the SKILL.md credits block. No code was relicensed.
 
 ## pixel-art skill itself
 
-- License: MIT (inherits from sinoclaw-agent repo)
+- License: MIT (inherits from anan repo)
 - Original author of the skill shell: dodo-reach
 - Expansion with palettes + video: Sinoclaw Agent contributors

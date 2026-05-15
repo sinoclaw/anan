@@ -1,12 +1,12 @@
 ---
 sidebar_position: 9
 title: "Optional Skills Catalog"
-description: "Official optional skills shipped with sinoclaw-agent — install via sinoclaw skills install official/<category>/<skill>"
+description: "Official optional skills shipped with anan — install via sinoclaw skills install official/<category>/<skill>"
 ---
 
 # Optional Skills Catalog
 
-Optional skills ship with sinoclaw-agent under `optional-skills/` but are **not active by default**. Install them explicitly:
+Optional skills ship with anan under `optional-skills/` but are **not active by default**. Install them explicitly:
 
 ```bash
 sinoclaw skills install official/<category>/<skill>
@@ -72,7 +72,7 @@ sinoclaw skills uninstall <skill-name>
 
 | Skill | Description |
 |-------|-------------|
-| [**agentmail**](/docs/user-guide/skills/optional/email/email-agentmail) | Give the agent its own dedicated email inbox via AgentMail. Send, receive, and manage email autonomously using agent-owned email addresses (e.g. sinoclaw-agent@agentmail.to). |
+| [**agentmail**](/docs/user-guide/skills/optional/email/email-agentmail) | Give the agent its own dedicated email inbox via AgentMail. Send, receive, and manage email autonomously using agent-owned email addresses (e.g. anan@agentmail.to). |
 
 ## health
 
@@ -92,7 +92,7 @@ sinoclaw skills uninstall <skill-name>
 
 | Skill | Description |
 |-------|-------------|
-| [**openclaw-migration**](/docs/user-guide/skills/optional/migration/migration-openclaw-migration) | Migrate a user's OpenClaw customization footprint into Sinoclaw Agent. Imports Sinoclaw-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.openclaw, then reports exactly what could not be mig... |
+| [**openclaw-migration**](/docs/user-guide/skills/optional/migration/migration-openclaw-migration) | Migrate a user's OpenClaw customization footprint into Sinoclaw Agent. Imports Sinoclaw-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.anan, then reports exactly what could not be mig... |
 
 ## mlops
 

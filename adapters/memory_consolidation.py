@@ -11,7 +11,7 @@ Design:
 - Two backends out of the box:
     * JSONLBackend         — append-only ~/.anan/memories/{day}.jsonl
                              (default, zero deps, always works)
-    * SinoclawProviderBackend — wraps any sinoclaw MemoryProvider
+    * AnanProviderBackend — wraps any anan MemoryProvider
                                 (honcho / mem0 / openviking / ...) and
                                 writes facts via on_memory_write()
 - Backends are pluggable: implement `write(record: dict)` and you're done
@@ -100,8 +100,8 @@ class JSONLBackend:
 
 
 @dataclass
-class SinoclawProviderBackend:
-    """Adapter that forwards consolidated facts into any sinoclaw MemoryProvider.
+class AnanProviderBackend:
+    """Adapter that forwards consolidated facts into any anan MemoryProvider.
 
     Uses the provider's `on_memory_write` hook (the same one that mirrors
     built-in memory writes) so the facts end up in whatever backend the
@@ -112,7 +112,7 @@ class SinoclawProviderBackend:
     """
 
     provider: Any  # plugins.memory.* MemoryProvider instance
-    name: str = "sinoclaw_provider"
+    name: str = "anan_provider"
 
     def write(self, record: dict) -> Optional[str]:
         facts = record.get("facts") or []
@@ -133,7 +133,7 @@ class SinoclawProviderBackend:
                 )
             return f"{self.provider.name}:{len(facts)}"
         except Exception as exc:  # noqa: BLE001
-            logger.warning("SinoclawProviderBackend write failed: %s", exc)
+            logger.warning("AnanProviderBackend write failed: %s", exc)
             return None
 
 

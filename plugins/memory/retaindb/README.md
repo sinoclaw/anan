@@ -16,7 +16,7 @@ hermes memory setup    # select "retaindb"
 Or manually:
 ```bash
 hermes config set memory.provider retaindb
-echo "RETAINDB_API_KEY=your-key" >> ~/.sinoclaw/.env
+echo "RETAINDB_API_KEY=your-key" >> ~/.anan/.env
 ```
 
 ## Config

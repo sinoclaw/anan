@@ -13,11 +13,11 @@ from .constants import QQBOT_VERSION
 # User-Agent
 # ---------------------------------------------------------------------------
 
-def _get_sinoclaw_version() -> str:
-    """Return the sinoclaw-agent package version, or 'dev' if unavailable."""
+def _get_anan_version() -> str:
+    """Return the anan package version, or 'dev' if unavailable."""
     try:
         from importlib.metadata import version
-        return version("sinoclaw-agent")
+        return version("anan")
     except Exception:
         return "dev"
 
@@ -27,16 +27,16 @@ def build_user_agent() -> str:
 
     Format::
 
-        QQBotAdapter/<qqbot_version> (Python/<py_version>; <os>; Sinoclaw/<sinoclaw_version>)
+        QQBotAdapter/<qqbot_version> (Python/<py_version>; <os>; Anan/<anan_version>)
 
     Example::
 
-        QQBotAdapter/1.0.0 (Python/3.11.15; darwin; Sinoclaw/0.9.0)
+        QQBotAdapter/1.0.0 (Python/3.11.15; darwin; Anan/0.9.0)
     """
     py_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     os_name = platform.system().lower()
-    sinoclaw_version = _get_sinoclaw_version()
-    return f"QQBotAdapter/{QQBOT_VERSION} (Python/{py_version}; {os_name}; Sinoclaw/{sinoclaw_version})"
+    anan_version = _get_anan_version()
+    return f"QQBotAdapter/{QQBOT_VERSION} (Python/{py_version}; {os_name}; Anan/{anan_version})"
 
 
 def get_api_headers() -> Dict[str, str]:

@@ -32,9 +32,9 @@ def _state_dir() -> Path:
     override = os.environ.get("WATCHER_STATE_DIR")
     if override:
         return Path(override)
-    # Default: $SINOCLAW_HOME/watcher-state/, falling back to ~/.sinoclaw/watcher-state/.
-    sinoclaw_home = os.environ.get("SINOCLAW_HOME") or str(Path.home() / ".sinoclaw")
-    return Path(sinoclaw_home) / "watcher-state"
+    # Default: $ANAN_HOME/watcher-state/, falling back to ~/.anan/watcher-state/.
+    anan_home = os.environ.get("ANAN_HOME") or str(Path.home() / ".anan")
+    return Path(anan_home) / "watcher-state"
 
 
 class Watermark:

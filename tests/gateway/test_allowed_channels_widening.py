@@ -115,16 +115,16 @@ class TestTelegramAllowedChats:
         """slack-style config.yaml → env var bridge works."""
         from gateway.config import load_gateway_config
 
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "config.yaml").write_text(
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        (anan_home / "config.yaml").write_text(
             "telegram:\n"
             "  allowed_chats:\n"
             "    - -100\n"
             "    - -200\n",
             encoding="utf-8",
         )
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setenv("TELEGRAM_ALLOWED_CHATS", "__sentinel__")
         monkeypatch.delenv("TELEGRAM_ALLOWED_CHATS")
 
@@ -136,14 +136,14 @@ class TestTelegramAllowedChats:
     def test_config_bridge_env_takes_precedence(self, monkeypatch, tmp_path):
         from gateway.config import load_gateway_config
 
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "config.yaml").write_text(
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        (anan_home / "config.yaml").write_text(
             "telegram:\n"
             "  allowed_chats: -100\n",
             encoding="utf-8",
         )
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setenv("TELEGRAM_ALLOWED_CHATS", "-999")
 
         load_gateway_config()
@@ -208,16 +208,16 @@ class TestDingTalkAllowedChats:
     def test_config_bridge(self, monkeypatch, tmp_path):
         from gateway.config import load_gateway_config
 
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "config.yaml").write_text(
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        (anan_home / "config.yaml").write_text(
             "dingtalk:\n"
             "  allowed_chats:\n"
             "    - cidABC\n"
             "    - cidDEF\n",
             encoding="utf-8",
         )
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setenv("DINGTALK_ALLOWED_CHATS", "__sentinel__")
         monkeypatch.delenv("DINGTALK_ALLOWED_CHATS")
 
@@ -280,16 +280,16 @@ class TestMattermostAllowedChannels:
     def test_config_bridge(self, monkeypatch, tmp_path):
         from gateway.config import load_gateway_config
 
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "config.yaml").write_text(
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        (anan_home / "config.yaml").write_text(
             "mattermost:\n"
             "  allowed_channels:\n"
             "    - chanABC\n"
             "    - chanDEF\n",
             encoding="utf-8",
         )
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
         # Pre-register the key with monkeypatch so teardown cleans it up
         # even though load_gateway_config mutates os.environ directly
         # (monkeypatch only restores keys it's touched via setenv/delenv;
@@ -345,16 +345,16 @@ class TestMatrixAllowedRooms:
     def test_config_bridge(self, monkeypatch, tmp_path):
         from gateway.config import load_gateway_config
 
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "config.yaml").write_text(
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        (anan_home / "config.yaml").write_text(
             "matrix:\n"
             "  allowed_rooms:\n"
             "    - '!room1:srv'\n"
             "    - '!room2:srv'\n",
             encoding="utf-8",
         )
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setenv("MATRIX_ALLOWED_ROOMS", "__sentinel__")
         monkeypatch.delenv("MATRIX_ALLOWED_ROOMS")
 

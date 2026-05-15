@@ -4,7 +4,7 @@ Tests cover:
 - Script field in job creation / storage / update
 - Script execution and output injection into prompts
 - Error handling (missing script, timeout, non-zero exit)
-- Path resolution (absolute, relative to SINOCLAW_HOME/scripts/)
+- Path resolution (absolute, relative to ANAN_HOME/scripts/)
 """
 
 import json
@@ -23,22 +23,22 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 @pytest.fixture
 def cron_env(tmp_path, monkeypatch):
-    """Isolated cron environment with temp SINOCLAW_HOME."""
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    (sinoclaw_home / "cron").mkdir()
-    (sinoclaw_home / "cron" / "output").mkdir()
-    (sinoclaw_home / "scripts").mkdir()
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+    """Isolated cron environment with temp ANAN_HOME."""
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    (anan_home / "cron").mkdir()
+    (anan_home / "cron" / "output").mkdir()
+    (anan_home / "scripts").mkdir()
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
     # Clear cached module-level paths
     import cron.jobs as jobs_mod
-    monkeypatch.setattr(jobs_mod, "SINOCLAW_DIR", sinoclaw_home)
-    monkeypatch.setattr(jobs_mod, "CRON_DIR", sinoclaw_home / "cron")
-    monkeypatch.setattr(jobs_mod, "JOBS_FILE", sinoclaw_home / "cron" / "jobs.json")
-    monkeypatch.setattr(jobs_mod, "OUTPUT_DIR", sinoclaw_home / "cron" / "output")
+    monkeypatch.setattr(jobs_mod, "SINOCLAW_DIR", anan_home)
+    monkeypatch.setattr(jobs_mod, "CRON_DIR", anan_home / "cron")
+    monkeypatch.setattr(jobs_mod, "JOBS_FILE", anan_home / "cron" / "jobs.json")
+    monkeypatch.setattr(jobs_mod, "OUTPUT_DIR", anan_home / "cron" / "output")
 
-    return sinoclaw_home
+    return anan_home
 
 
 class TestJobScriptField:
@@ -296,7 +296,7 @@ class TestScriptPathContainment:
     """
 
     def test_absolute_path_outside_scripts_dir_blocked(self, cron_env):
-        """Absolute paths outside ~/.sinoclaw/scripts/ must be rejected."""
+        """Absolute paths outside ~/.anan/scripts/ must be rejected."""
         from cron.scheduler import _run_job_script
 
         # Create a script outside the scripts dir

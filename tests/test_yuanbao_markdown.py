@@ -2,7 +2,7 @@
 test_yuanbao_markdown.py - Unit tests for yuanbao_markdown.py
 
 Run (no pytest needed):
-    cd /root/.openclaw/workspace/sinoclaw-agent
+    cd /root/.openclaw/workspace/anan
     python3 tests/test_yuanbao_markdown.py -v
 
 Or with pytest if available:

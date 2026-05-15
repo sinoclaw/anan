@@ -23,7 +23,7 @@ Hermes has several distinct pluggable interfaces — some use Python `register_*
 | A **TTS backend** (any CLI — Piper, VoxCPM, Kokoro, voice cloning, …) | [TTS custom command providers](/docs/user-guide/features/tts#custom-command-providers) — config-driven, no Python needed |
 | An **STT backend** (custom whisper / ASR CLI) | [Voice Message Transcription](/docs/user-guide/features/tts#voice-message-transcription-stt) — set `SINOCLAW_LOCAL_STT_COMMAND` to a shell template |
 | **External tools via MCP** (filesystem, GitHub, Linear, any MCP server) | [MCP](/docs/user-guide/features/mcp) — declare `mcp_servers.<name>` in `config.yaml` |
-| **Gateway event hooks** (fire on startup, session events, commands) | [Event Hooks](/docs/user-guide/features/hooks#gateway-event-hooks) — drop `HOOK.yaml` + `handler.py` into `~/.sinoclaw/hooks/<name>/` |
+| **Gateway event hooks** (fire on startup, session events, commands) | [Event Hooks](/docs/user-guide/features/hooks#gateway-event-hooks) — drop `HOOK.yaml` + `handler.py` into `~/.anan/hooks/<name>/` |
 | **Shell hooks** (run a shell command on events) | [Shell Hooks](/docs/user-guide/features/hooks#shell-hooks) — declare under `hooks:` in `config.yaml` |
 | **Additional skill sources** (custom GitHub repos, private skill indexes) | [Skills](/docs/user-guide/features/skills) — `sinoclaw skills tap add <repo>` · [Publishing a tap](/docs/user-guide/features/skills#publishing-a-custom-skill-tap) |
 | A first-class **core** inference provider (not a plugin) | [Adding Providers](/docs/developer-guide/adding-providers) |
@@ -42,8 +42,8 @@ Plus a hook that logs every tool call, and a bundled skill file.
 ## Step 1: Create the plugin directory
 
 ```bash
-mkdir -p ~/.sinoclaw/plugins/calculator
-cd ~/.sinoclaw/plugins/calculator
+mkdir -p ~/.anan/plugins/calculator
+cd ~/.anan/plugins/calculator
 ```
 
 ## Step 2: Write the manifest
@@ -314,7 +314,7 @@ Plugins (1):
 ## Your plugin's final structure
 
 ```
-~/.sinoclaw/plugins/calculator/
+~/.anan/plugins/calculator/
 ├── plugin.yaml      # "I'm calculator, I provide tools and hooks"
 ├── __init__.py      # Wiring: schemas → handlers, register hooks
 ├── schemas.py       # What the LLM reads (descriptions + parameter specs)
@@ -349,7 +349,7 @@ with open(_DATA_FILE) as f:
 Plugins can ship skill files that the agent loads via `skill_view("plugin:skill")`. Register them in your `__init__.py`:
 
 ```
-~/.sinoclaw/plugins/my-plugin/
+~/.anan/plugins/my-plugin/
 ├── __init__.py
 ├── plugin.yaml
 └── skills/
@@ -378,13 +378,13 @@ skill_view("my-workflow")              # → built-in version (unchanged)
 ```
 
 **Key properties:**
-- Plugin skills are **read-only** — they don't enter `~/.sinoclaw/skills/` and can't be edited via `skill_manage`.
+- Plugin skills are **read-only** — they don't enter `~/.anan/skills/` and can't be edited via `skill_manage`.
 - Plugin skills are **not** listed in the system prompt's `<available_skills>` index — they're opt-in explicit loads.
 - Bare skill names are unaffected — the namespace prevents collisions with built-in skills.
 - When the agent loads a plugin skill, a bundle context banner is prepended listing sibling skills from the same plugin.
 
 :::tip Legacy pattern
-The old `shutil.copy2` pattern (copying a skill into `~/.sinoclaw/skills/`) still works but creates name collision risk with built-in skills. Prefer `ctx.register_skill()` for new plugins.
+The old `shutil.copy2` pattern (copying a skill into `~/.anan/skills/`) still works but creates name collision risk with built-in skills. Prefer `ctx.register_skill()` for new plugins.
 :::
 
 ### Gate on environment variables
@@ -472,7 +472,7 @@ This is the only hook whose return value matters. When a `pre_llm_call` callback
 
 ```python
 # Dict with context key
-return {"context": "Recalled memories:\n- User prefers dark mode\n- Last project: sinoclaw-agent"}
+return {"context": "Recalled memories:\n- User prefers dark mode\n- Last project: anan"}
 
 # Plain string (equivalent to the dict form above)
 return "Recalled memories:\n- User prefers dark mode"
@@ -695,7 +695,7 @@ This guide covers **general plugins** (tools, hooks, slash commands, CLI command
 
 ## Specialized plugin types
 
-Hermes has five specialized plugin types beyond the general surface. Each ships as a directory under `plugins/<category>/<name>/` (bundled) or `~/.sinoclaw/plugins/<category>/<name>/` (user). The contract differs by category — pick the one you need, then read its full guide.
+Hermes has five specialized plugin types beyond the general surface. Each ships as a directory under `plugins/<category>/<name>/` (bundled) or `~/.anan/plugins/<category>/<name>/` (user). The contract differs by category — pick the one you need, then read its full guide.
 
 ### Model provider plugins — add an LLM backend
 
@@ -884,7 +884,7 @@ Hermes also accepts extensions that aren't Python plugins at all. These are show
 
 ### MCP servers — register external tools
 
-Model Context Protocol (MCP) servers register their own tools into Hermes without any Python plugin. Declare them in `~/.sinoclaw/config.yaml`:
+Model Context Protocol (MCP) servers register their own tools into Hermes without any Python plugin. Declare them in `~/.anan/config.yaml`:
 
 ```yaml
 mcp_servers:
@@ -903,10 +903,10 @@ Hermes connects to each server at startup, lists its tools, and registers them a
 
 ### Gateway event hooks — fire on lifecycle events
 
-Drop a manifest + handler into `~/.sinoclaw/hooks/<name>/`:
+Drop a manifest + handler into `~/.anan/hooks/<name>/`:
 
 ```yaml
-# ~/.sinoclaw/hooks/long-task-alert/HOOK.yaml
+# ~/.anan/hooks/long-task-alert/HOOK.yaml
 name: long-task-alert
 description: Send a push notification when a long task finishes
 events:
@@ -914,7 +914,7 @@ events:
 ```
 
 ```python
-# ~/.sinoclaw/hooks/long-task-alert/handler.py
+# ~/.anan/hooks/long-task-alert/handler.py
 async def handle(event_type: str, context: dict) -> None:
     if context.get("duration_seconds", 0) > 120:
         # send notification …
@@ -996,13 +996,13 @@ NixOS users can install your plugin declaratively if you provide a `pyproject.to
 **Entry-point plugins** (recommended for distribution):
 ```nix
 # User's configuration.nix
-services.sinoclaw-agent.extraPythonPackages = [
+services.anan.extraPythonPackages = [
   (pkgs.python312Packages.buildPythonPackage {
     pname = "my-plugin";
     version = "1.0.0";
     src = pkgs.fetchFromGitHub {
       owner = "you";
-      repo = "sinoclaw-my-plugin";
+      repo = "anan-my-plugin";
       rev = "v1.0.0";
       hash = "sha256-...";  # nix-prefetch-url --unpack
     };
@@ -1014,10 +1014,10 @@ services.sinoclaw-agent.extraPythonPackages = [
 
 **Directory plugins** (no `pyproject.toml` needed):
 ```nix
-services.sinoclaw-agent.extraPlugins = [
+services.anan.extraPlugins = [
   (pkgs.fetchFromGitHub {
     owner = "you";
-    repo = "sinoclaw-my-plugin";
+    repo = "anan-my-plugin";
     rev = "v1.0.0";
     hash = "sha256-...";
   })

@@ -116,7 +116,7 @@ systemctl list-timers sinoclaw-teams-pipeline-maintain.timer
 0 */12 * * * /usr/local/bin/hermes teams-pipeline maintain-subscriptions >> /var/log/hermes/teams-pipeline-maintain.log 2>&1
 ```
 
-Make sure the cron environment has the `MSGRAPH_*` credentials. Simplest fix: source `~/.sinoclaw/.env` at the top of a wrapper script that crontab calls.
+Make sure the cron environment has the `MSGRAPH_*` credentials. Simplest fix: source `~/.anan/.env` at the top of a wrapper script that crontab calls.
 
 #### Verifying renewal is working
 

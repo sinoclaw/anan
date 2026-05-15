@@ -19,7 +19,7 @@ Sinoclaw Agent supports **multimodal vision** — you can paste images from your
 
 You can attach multiple images before sending — each gets its own badge. Press `Ctrl+C` to clear all attached images.
 
-Images are saved to `~/.sinoclaw/images/` as PNG files with timestamped filenames.
+Images are saved to `~/.anan/images/` as PNG files with timestamped filenames.
 
 ## Paste Methods
 

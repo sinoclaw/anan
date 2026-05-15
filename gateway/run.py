@@ -13,13 +13,13 @@ Usage:
     python cli.py --gateway
 """
 
-# IMPORTANT: sinoclaw_bootstrap must be the very first import — UTF-8 stdio
-# on Windows.  No-op on POSIX.  See sinoclaw_bootstrap.py for full rationale.
+# IMPORTANT: anan_bootstrap must be the very first import — UTF-8 stdio
+# on Windows.  No-op on POSIX.  See anan_bootstrap.py for full rationale.
 try:
-    import sinoclaw_bootstrap  # noqa: F401
+    import anan_bootstrap  # noqa: F401
 except ModuleNotFoundError:
-    # Graceful fallback when sinoclaw_bootstrap isn't registered in the venv
-    # yet — happens during partial ``sinoclaw update`` where git-reset landed
+    # Graceful fallback when anan_bootstrap isn't registered in the venv
+    # yet — happens during partial ``anan update`` where git-reset landed
     # new code but ``uv pip install -e .`` didn't finish.  Missing bootstrap
     # means UTF-8 stdio setup is skipped on Windows; POSIX is unaffected.
     pass
@@ -51,7 +51,7 @@ from typing import Dict, Optional, Any, List, Union
 # preserving the established test-patch surface.
 from agent.account_usage import fetch_account_usage, render_account_usage_lines
 from agent.i18n import t
-from sinoclaw_cli.config import cfg_get
+from anan_cli.config import cfg_get
 
 # --- Agent cache tuning ---------------------------------------------------
 # Bounds the per-session AIAgent cache to prevent unbounded growth in
@@ -76,7 +76,7 @@ def _telegramize_command_mentions(text: str, platform: Any) -> str:
     if platform_value != "telegram":
         return text
 
-    from sinoclaw_cli.commands import _sanitize_telegram_name
+    from anan_cli.commands import _sanitize_telegram_name
 
     def _replace(match: re.Match[str]) -> str:
         sanitized = _sanitize_telegram_name(match.group(1))
@@ -90,7 +90,7 @@ def _telegramize_command_mentions(text: str, platform: Any) -> str:
 # after a gateway restart when the user's next message starts new work.
 #
 # The freshness signal is the timestamp of the last transcript row, which
-# ``sinoclaw_state.get_messages`` carries on every persisted message.  This
+# ``anan_state.get_messages`` carries on every persisted message.  This
 # handles the two auto-continue cases uniformly:
 #   * resume_pending (gateway restart/shutdown watchdog marked the session)
 #   * tool-tail     (last persisted message is a tool result the agent
@@ -122,7 +122,7 @@ def _coerce_gateway_timestamp(value: Any) -> Optional[float]:
     if isinstance(value, bool):  # bool is a subclass of int — skip it
         return None
     if isinstance(value, (int, float)):
-        # Some platform events use milliseconds; Sinoclaw state rows use seconds.
+        # Some platform events use milliseconds; Anan state rows use seconds.
         return float(value) / 1000.0 if float(value) > 10_000_000_000 else float(value)
     if isinstance(value, str):
         text = value.strip()
@@ -291,7 +291,7 @@ def _home_thread_env_var(platform_name: str) -> str:
 
 def _restart_notification_pending() -> bool:
     """Return True when a /restart completion marker is waiting to be delivered."""
-    return (_sinoclaw_home / ".restart_notify.json").exists()
+    return (_anan_home / ".restart_notify.json").exists()
 
 
 # Mark this process as a gateway so cli.py's module-level load_cli_config()
@@ -303,40 +303,40 @@ _ensure_ssl_certs()
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Resolve Sinoclaw home directory (respects SINOCLAW_HOME override)
-from sinoclaw_constants import get_sinoclaw_home
+# Resolve Anan home directory (respects ANAN_HOME override)
+from anan_constants import get_anan_home
 from utils import atomic_json_write, atomic_yaml_write, base_url_host_matches, is_truthy_value
-_sinoclaw_home = get_sinoclaw_home()
+_anan_home = get_anan_home()
 
-# Load environment variables from ~/.sinoclaw/.env first.
+# Load environment variables from ~/.anan/.env first.
 # User-managed env files should override stale shell exports on restart.
 from dotenv import load_dotenv  # backward-compat for tests that monkeypatch this symbol
-from sinoclaw_cli.env_loader import load_sinoclaw_dotenv
-_env_path = _sinoclaw_home / '.env'
-load_sinoclaw_dotenv(sinoclaw_home=_sinoclaw_home, project_env=Path(__file__).resolve().parents[1] / '.env')
+from anan_cli.env_loader import load_anan_dotenv
+_env_path = _anan_home / '.env'
+load_anan_dotenv(anan_home=_anan_home, project_env=Path(__file__).resolve().parents[1] / '.env')
 
 
 def _reload_runtime_env_preserving_config_authority() -> None:
     """Reload .env for fresh credentials without letting stale .env override config.
 
-    Gateway processes are long-lived, so per-turn code reloads ~/.sinoclaw/.env to
+    Gateway processes are long-lived, so per-turn code reloads ~/.anan/.env to
     pick up rotated API keys. config.yaml remains authoritative for agent budget
     settings such as agent.max_turns; otherwise a stale SINOCLAW_MAX_ITERATIONS in
     .env can replace the startup bridge on later turns.
     """
-    load_sinoclaw_dotenv(
-        sinoclaw_home=_sinoclaw_home,
+    load_anan_dotenv(
+        anan_home=_anan_home,
         project_env=Path(__file__).resolve().parents[1] / '.env',
     )
 
-    config_path = _sinoclaw_home / 'config.yaml'
+    config_path = _anan_home / 'config.yaml'
     if not config_path.exists():
         return
     try:
         import yaml as _yaml
         with open(config_path, encoding="utf-8") as f:
             cfg = _yaml.safe_load(f) or {}
-        from sinoclaw_cli.config import _expand_env_vars
+        from anan_cli.config import _expand_env_vars
         cfg = _expand_env_vars(cfg)
     except Exception:
         return
@@ -351,14 +351,14 @@ _DOCKER_MEDIA_OUTPUT_CONTAINER_PATHS = {"/output", "/outputs"}
 
 # Bridge config.yaml values into the environment so os.getenv() picks them up.
 # config.yaml is authoritative for terminal settings — overrides .env.
-_config_path = _sinoclaw_home / 'config.yaml'
+_config_path = _anan_home / 'config.yaml'
 if _config_path.exists():
     try:
         import yaml as _yaml
         with open(_config_path, encoding="utf-8") as _f:
             _cfg = _yaml.safe_load(_f) or {}
         # Expand ${ENV_VAR} references before bridging to env vars.
-        from sinoclaw_cli.config import _expand_env_vars
+        from anan_cli.config import _expand_env_vars
         _cfg = _expand_env_vars(_cfg)
         # Top-level simple values (fallback only — don't override .env)
         for _key, _val in _cfg.items():
@@ -456,7 +456,7 @@ if _config_path.exists():
         # settings — it unconditionally wins over .env values. Previously
         # the guards below read `if X not in os.environ` and let stale
         # .env entries (e.g. SINOCLAW_MAX_ITERATIONS=60 written by an old
-        # `sinoclaw setup` run) silently shadow the user's current config.
+        # `anan setup` run) silently shadow the user's current config.
         # See PR #18413 / the 60-vs-500 max_turns incident.
         _agent_cfg = _cfg.get("agent", {})
         if _agent_cfg and isinstance(_agent_cfg, dict):
@@ -505,13 +505,13 @@ if _config_path.exists():
         )
         print(
             "  Gateway will fall back to .env values, which may not match "
-            "your current config.yaml. Run `sinoclaw doctor` to investigate.",
+            "your current config.yaml. Run `anan doctor` to investigate.",
             file=sys.stderr,
         )
 
 # Apply IPv4 preference if configured (before any HTTP clients are created).
 try:
-    from sinoclaw_constants import apply_ipv4_preference
+    from anan_constants import apply_ipv4_preference
     _network_cfg = (_cfg if '_cfg' in dir() else {}).get("network", {})
     if isinstance(_network_cfg, dict) and _network_cfg.get("force_ipv4"):
         apply_ipv4_preference(force=True)
@@ -520,14 +520,14 @@ except Exception as _bootstrap_exc:
 
 # Validate config structure early — log warnings so gateway operators see problems
 try:
-    from sinoclaw_cli.config import print_config_warnings
+    from anan_cli.config import print_config_warnings
     print_config_warnings()
 except Exception as _bootstrap_exc:
     print(f"  Warning: config validation failed: {_bootstrap_exc}", file=sys.stderr)
 
 # Warn if user has deprecated MESSAGING_CWD / TERMINAL_CWD in .env
 try:
-    from sinoclaw_cli.config import warn_deprecated_cwd_env_vars
+    from anan_cli.config import warn_deprecated_cwd_env_vars
     warn_deprecated_cwd_env_vars()
 except Exception as _bootstrap_exc:
     print(f"  Warning: deprecation check failed: {_bootstrap_exc}", file=sys.stderr)
@@ -605,11 +605,11 @@ def _resolve_runtime_agent_kwargs() -> dict:
     resolve credentials using the fallback provider chain from config.yaml
     before giving up.
     """
-    from sinoclaw_cli.runtime_provider import (
+    from anan_cli.runtime_provider import (
         resolve_runtime_provider,
         format_runtime_provider_error,
     )
-    from sinoclaw_cli.auth import AuthError
+    from anan_cli.auth import AuthError
 
     try:
         runtime = resolve_runtime_provider(
@@ -639,10 +639,10 @@ def _resolve_runtime_agent_kwargs() -> dict:
 
 def _try_resolve_fallback_provider() -> dict | None:
     """Attempt to resolve credentials from the fallback_model/fallback_providers config."""
-    from sinoclaw_cli.runtime_provider import resolve_runtime_provider
+    from anan_cli.runtime_provider import resolve_runtime_provider
     try:
         import yaml as _y
-        cfg_path = _sinoclaw_home / "config.yaml"
+        cfg_path = _anan_home / "config.yaml"
         if not cfg_path.exists():
             return None
         with open(cfg_path, encoding="utf-8") as _f:
@@ -829,11 +829,11 @@ def _check_unavailable_skill(command_name: str) -> str | None:
                 if slug == normalized and declared_name in disabled:
                     return (
                         f"The **{command_name}** skill is installed but disabled.\n"
-                        f"Enable it with: `sinoclaw skills config`"
+                        f"Enable it with: `anan skills config`"
                     )
 
         # Check optional skills (shipped with repo but not installed)
-        from sinoclaw_constants import get_optional_skills_dir
+        from anan_constants import get_optional_skills_dir
         repo_root = Path(__file__).resolve().parent.parent
         optional_dir = get_optional_skills_dir(repo_root / "optional-skills")
         if optional_dir.exists():
@@ -848,7 +848,7 @@ def _check_unavailable_skill(command_name: str) -> str | None:
                     install_path = f"official/{'/'.join(parts)}"
                     return (
                         f"The **{command_name}** skill is available but not installed.\n"
-                        f"Install it with: `sinoclaw skills install {install_path}`"
+                        f"Install it with: `anan skills install {install_path}`"
                     )
     except Exception:
         pass
@@ -870,19 +870,19 @@ def _teams_pipeline_plugin_enabled() -> bool:
 
 
 def _load_gateway_config() -> dict:
-    """Load and parse ~/.sinoclaw/config.yaml, returning {} on any error.
+    """Load and parse ~/.anan/config.yaml, returning {} on any error.
 
-    Uses the module-level ``_sinoclaw_home`` (so tests that monkeypatch it
+    Uses the module-level ``_anan_home`` (so tests that monkeypatch it
     still see their fixture) and shares the mtime-keyed raw-yaml cache
-    from ``sinoclaw_cli.config.read_raw_config`` when the paths match.
+    from ``anan_cli.config.read_raw_config`` when the paths match.
     """
-    config_path = _sinoclaw_home / 'config.yaml'
+    config_path = _anan_home / 'config.yaml'
     try:
-        from sinoclaw_cli.config import get_config_path, read_raw_config
-        # Fast path: if _sinoclaw_home agrees with the canonical config
+        from anan_cli.config import get_config_path, read_raw_config
+        # Fast path: if _anan_home agrees with the canonical config
         # location, reuse the shared cache. Otherwise fall through to a
         # direct read (keeps test fixtures with a monkeypatched
-        # _sinoclaw_home working).
+        # _anan_home working).
         if config_path == get_config_path():
             return read_raw_config()
     except Exception:
@@ -914,27 +914,27 @@ def _resolve_gateway_model(config: dict | None = None) -> str:
     return ""
 
 
-def _resolve_sinoclaw_bin() -> Optional[list[str]]:
-    """Resolve the Sinoclaw update command as argv parts.
+def _resolve_anan_bin() -> Optional[list[str]]:
+    """Resolve the Anan update command as argv parts.
 
     Tries in order:
-    1. ``shutil.which("sinoclaw")`` — standard PATH lookup
-    2. ``sys.executable -m sinoclaw_cli.main`` — fallback when Sinoclaw is running
-       from a venv/module invocation and the ``sinoclaw`` shim is not on PATH
+    1. ``shutil.which("anan")`` — standard PATH lookup
+    2. ``sys.executable -m anan_cli.main`` — fallback when Anan is running
+       from a venv/module invocation and the ``anan`` shim is not on PATH
 
     Returns argv parts ready for quoting/joining, or ``None`` if neither works.
     """
     import shutil
 
-    sinoclaw_bin = shutil.which("sinoclaw")
-    if sinoclaw_bin:
-        return [sinoclaw_bin]
+    anan_bin = shutil.which("anan")
+    if anan_bin:
+        return [anan_bin]
 
     try:
         import importlib.util
 
-        if importlib.util.find_spec("sinoclaw_cli") is not None:
-            return [sys.executable, "-m", "sinoclaw_cli.main"]
+        if importlib.util.find_spec("anan_cli") is not None:
+            return [sys.executable, "-m", "anan_cli.main"]
     except Exception:
         pass
 
@@ -1215,15 +1215,15 @@ class GatewayRunner:
         # Initialize session database for session_search tool support
         self._session_db = None
         try:
-            from sinoclaw_state import SessionDB
+            from anan_state import SessionDB
             self._session_db = SessionDB()
         except Exception as e:
             # WARNING (not DEBUG) so the failure appears in errors.log — matches
             # cli.py's handling of the same init path.  Users hitting NFS-mounted
-            # SINOCLAW_HOME silently lost /resume, /title, /history, /branch, and
+            # ANAN_HOME silently lost /resume, /title, /history, /branch, and
             # session search without this.  The underlying cause (usually
             # "locking protocol" from NFS) is now also captured by
-            # sinoclaw_state.get_last_init_error() for slash-command error strings.
+            # anan_state.get_last_init_error() for slash-command error strings.
             logger.warning("SQLite session store not available: %s", e)
 
         # Opportunistic state.db maintenance: prune ended sessions older
@@ -1234,7 +1234,7 @@ class GatewayRunner:
         # but never raised.
         if self._session_db is not None:
             try:
-                from sinoclaw_cli.config import load_config as _load_full_config
+                from anan_cli.config import load_config as _load_full_config
                 _sess_cfg = (_load_full_config().get("sessions") or {})
                 if _sess_cfg.get("auto_prune", False):
                     self._session_db.maybe_auto_prune_and_vacuum(
@@ -1247,10 +1247,10 @@ class GatewayRunner:
                 logger.debug("state.db auto-maintenance skipped: %s", exc)
 
         # Opportunistic shadow-repo cleanup — deletes orphan/stale
-        # checkpoint repos under ~/.sinoclaw/checkpoints/.  Opt-in via
+        # checkpoint repos under ~/.anan/checkpoints/.  Opt-in via
         # checkpoints.auto_prune, idempotent via .last_prune marker.
         try:
-            from sinoclaw_cli.config import load_config as _load_full_config
+            from anan_cli.config import load_config as _load_full_config
             _ckpt_cfg = (_load_full_config().get("checkpoints") or {})
             if _ckpt_cfg.get("auto_prune", False):
                 from tools.checkpoint_manager import maybe_auto_prune_checkpoints
@@ -1355,7 +1355,7 @@ class GatewayRunner:
 
         logger.warning(
             "Docker backend is enabled for the messaging gateway but no explicit host-visible "
-            "output mount (for example '/home/user/.sinoclaw/cache/documents:/output') is configured. "
+            "output mount (for example '/home/user/.anan/cache/documents:/output') is configured. "
             "This is fine if the model already emits host-visible paths, but MEDIA file delivery can fail "
             "for container-local paths like '/workspace/...' or '/output/...'."
         )
@@ -1365,16 +1365,16 @@ class GatewayRunner:
     # -- Setup skill availability ----------------------------------------
 
     def _has_setup_skill(self) -> bool:
-        """Check if the sinoclaw-agent-setup skill is installed."""
+        """Check if the anan-setup skill is installed."""
         try:
             from tools.skill_manager_tool import _find_skill
-            return _find_skill("sinoclaw-agent-setup") is not None
+            return _find_skill("anan-setup") is not None
         except Exception:
             return False
 
     # -- Voice mode persistence ------------------------------------------
 
-    _VOICE_MODE_PATH = _sinoclaw_home / "gateway_voice_mode.json"
+    _VOICE_MODE_PATH = _anan_home / "gateway_voice_mode.json"
 
     def _voice_key(self, platform: Platform, chat_id: str) -> str:
         """Return a platform-namespaced key for voice mode state."""
@@ -1465,9 +1465,9 @@ class GatewayRunner:
             return
 
         # Push the global voice.auto_tts default (config.yaml) onto the adapter.
-        # Lazy import to avoid adding a module-level dep from gateway → sinoclaw_cli.
+        # Lazy import to avoid adding a module-level dep from gateway → anan_cli.
         try:
-            from sinoclaw_cli.config import load_config as _load_full_config
+            from anan_cli.config import load_config as _load_full_config
             _full_cfg = _load_full_config()
             _auto_tts_default = bool(
                 (_full_cfg.get("voice") or {}).get("auto_tts", False)
@@ -1665,18 +1665,18 @@ class GatewayRunner:
     def _telegram_topic_root_lobby_message(self) -> str:
         return (
             "This main chat is reserved for system commands.\n\n"
-            "To start a new Sinoclaw chat, open the All Messages topic at the top "
+            "To start a new Anan chat, open the All Messages topic at the top "
             "of this bot interface and send any message there. Telegram will "
             "create a new topic for that message; each topic works as an "
-            "independent Sinoclaw session."
+            "independent Anan session."
         )
 
     def _telegram_topic_root_new_message(self) -> str:
         return (
-            "To start a new parallel Sinoclaw chat, open the All Messages topic "
+            "To start a new parallel Anan chat, open the All Messages topic "
             "at the top of this bot interface and send any message there. "
             "Telegram will create a new topic for it.\n\n"
-            "Each topic is an independent Sinoclaw session. Use /new inside an "
+            "Each topic is an independent Anan session. Use /new inside an "
             "existing topic only if you want to replace that topic's current session."
         )
 
@@ -1684,7 +1684,7 @@ class GatewayRunner:
         if not self._is_telegram_topic_lane(source):
             return None
         return (
-            "Started a new Sinoclaw session in this topic.\n\n"
+            "Started a new Anan session in this topic.\n\n"
             "Tip: for parallel work, open All Messages and send a message there "
             "to create a separate topic instead of using /new here. /new replaces "
             "the session attached to the current topic."
@@ -1695,7 +1695,7 @@ class GatewayRunner:
         source: SessionSource,
         session_entry,
     ) -> None:
-        """Persist the Telegram topic -> Sinoclaw session binding for topic lanes."""
+        """Persist the Telegram topic -> Anan session binding for topic lanes."""
         session_db = getattr(self, "_session_db", None)
         if session_db is None or not source.chat_id or not source.thread_id:
             return
@@ -1772,12 +1772,12 @@ class GatewayRunner:
             )
 
         # When the config has no model.default but a provider was resolved
-        # (e.g. user ran `sinoclaw auth add openai-codex` without `sinoclaw model`),
+        # (e.g. user ran `anan auth add openai-codex` without `anan model`),
         # fall back to the provider's first catalog model so the API call
         # doesn't fail with "model must be a non-empty string".
         if not model and runtime_kwargs.get("provider"):
             try:
-                from sinoclaw_cli.models import get_default_model_for_provider
+                from anan_cli.models import get_default_model_for_provider
                 model = get_default_model_for_provider(runtime_kwargs["provider"])
                 if model:
                     logger.info(
@@ -1797,7 +1797,7 @@ class GatewayRunner:
         mode, attach `request_overrides` so the API call is marked
         accordingly.
         """
-        from sinoclaw_cli.models import resolve_fast_mode_overrides
+        from anan_cli.models import resolve_fast_mode_overrides
 
         runtime = {
             "api_key": runtime_kwargs.get("api_key"),
@@ -2037,7 +2037,7 @@ class GatewayRunner:
         if not session_id:
             return False
         try:
-            from sinoclaw_cli.goals import GoalManager
+            from anan_cli.goals import GoalManager
             return GoalManager(session_id=session_id).is_active()
         except Exception as exc:
             logger.debug("goal continuation: active-state recheck failed: %s", exc)
@@ -2079,14 +2079,14 @@ class GatewayRunner:
         """Load ephemeral prefill messages from config or env var.
         
         Checks SINOCLAW_PREFILL_MESSAGES_FILE env var first, then falls back to
-        the prefill_messages_file key in ~/.sinoclaw/config.yaml.
-        Relative paths are resolved from ~/.sinoclaw/.
+        the prefill_messages_file key in ~/.anan/config.yaml.
+        Relative paths are resolved from ~/.anan/.
         """
         file_path = os.getenv("SINOCLAW_PREFILL_MESSAGES_FILE", "")
         if not file_path:
             try:
                 import yaml as _y
-                cfg_path = _sinoclaw_home / "config.yaml"
+                cfg_path = _anan_home / "config.yaml"
                 if cfg_path.exists():
                     with open(cfg_path, encoding="utf-8") as _f:
                         cfg = _y.safe_load(_f) or {}
@@ -2097,7 +2097,7 @@ class GatewayRunner:
             return []
         path = Path(file_path).expanduser()
         if not path.is_absolute():
-            path = _sinoclaw_home / path
+            path = _anan_home / path
         if not path.exists():
             logger.warning("Prefill messages file not found: %s", path)
             return []
@@ -2117,14 +2117,14 @@ class GatewayRunner:
         """Load ephemeral system prompt from config or env var.
         
         Checks SINOCLAW_EPHEMERAL_SYSTEM_PROMPT env var first, then falls back to
-        agent.system_prompt in ~/.sinoclaw/config.yaml.
+        agent.system_prompt in ~/.anan/config.yaml.
         """
         prompt = os.getenv("SINOCLAW_EPHEMERAL_SYSTEM_PROMPT", "")
         if prompt:
             return prompt
         try:
             import yaml as _y
-            cfg_path = _sinoclaw_home / "config.yaml"
+            cfg_path = _anan_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -2141,11 +2141,11 @@ class GatewayRunner:
         "minimal", "low", "medium", "high", "xhigh". Returns None to use
         default (medium).
         """
-        from sinoclaw_constants import parse_reasoning_effort
+        from anan_constants import parse_reasoning_effort
         effort = ""
         try:
             import yaml as _y
-            cfg_path = _sinoclaw_home / "config.yaml"
+            cfg_path = _anan_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -2228,7 +2228,7 @@ class GatewayRunner:
         raw = ""
         try:
             import yaml as _y
-            cfg_path = _sinoclaw_home / "config.yaml"
+            cfg_path = _anan_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -2249,7 +2249,7 @@ class GatewayRunner:
         """Load show_reasoning toggle from config.yaml display section."""
         try:
             import yaml as _y
-            cfg_path = _sinoclaw_home / "config.yaml"
+            cfg_path = _anan_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -2268,7 +2268,7 @@ class GatewayRunner:
         if not mode:
             try:
                 import yaml as _y
-                cfg_path = _sinoclaw_home / "config.yaml"
+                cfg_path = _anan_home / "config.yaml"
                 if cfg_path.exists():
                     with open(cfg_path, encoding="utf-8") as _f:
                         cfg = _y.safe_load(_f) or {}
@@ -2288,7 +2288,7 @@ class GatewayRunner:
         if not raw:
             try:
                 import yaml as _y
-                cfg_path = _sinoclaw_home / "config.yaml"
+                cfg_path = _anan_home / "config.yaml"
                 if cfg_path.exists():
                     with open(cfg_path, encoding="utf-8") as _f:
                         cfg = _y.safe_load(_f) or {}
@@ -2321,7 +2321,7 @@ class GatewayRunner:
         if not mode:
             try:
                 import yaml as _y
-                cfg_path = _sinoclaw_home / "config.yaml"
+                cfg_path = _anan_home / "config.yaml"
                 if cfg_path.exists():
                     with open(cfg_path, encoding="utf-8") as _f:
                         cfg = _y.safe_load(_f) or {}
@@ -2347,7 +2347,7 @@ class GatewayRunner:
         """Load OpenRouter provider routing preferences from config.yaml."""
         try:
             import yaml as _y
-            cfg_path = _sinoclaw_home / "config.yaml"
+            cfg_path = _anan_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -2366,7 +2366,7 @@ class GatewayRunner:
         """
         try:
             import yaml as _y
-            cfg_path = _sinoclaw_home / "config.yaml"
+            cfg_path = _anan_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -2563,7 +2563,7 @@ class GatewayRunner:
                     f"{message}\n\n"
                     f"{busy_input_hint_gateway(_hint_mode)}"
                 )
-                mark_seen(_sinoclaw_home / "config.yaml", BUSY_INPUT_FLAG)
+                mark_seen(_anan_home / "config.yaml", BUSY_INPUT_FLAG)
         except Exception as _onb_err:
             logger.debug("Failed to apply busy-input onboarding hint: %s", _onb_err)
 
@@ -2777,7 +2777,7 @@ class GatewayRunner:
     def _finalize_shutdown_agents(self, active_agents: Dict[str, Any]) -> None:
         for agent in active_agents.values():
             try:
-                from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+                from anan_cli.plugins import invoke_hook as _invoke_hook
                 _invoke_hook(
                     "on_session_finalize",
                     session_id=getattr(agent, "session_id", None),
@@ -2840,7 +2840,7 @@ class GatewayRunner:
         """
         import json
 
-        path = _sinoclaw_home / self._STUCK_LOOP_FILE
+        path = _anan_home / self._STUCK_LOOP_FILE
         try:
             counts = json.loads(path.read_text()) if path.exists() else {}
         except Exception:
@@ -2867,7 +2867,7 @@ class GatewayRunner:
         """
         import json
 
-        path = _sinoclaw_home / self._STUCK_LOOP_FILE
+        path = _anan_home / self._STUCK_LOOP_FILE
         if not path.exists():
             return 0
 
@@ -2914,7 +2914,7 @@ class GatewayRunner:
         """
         import json
 
-        path = _sinoclaw_home / self._STUCK_LOOP_FILE
+        path = _anan_home / self._STUCK_LOOP_FILE
         if not path.exists():
             return
         try:
@@ -2932,23 +2932,23 @@ class GatewayRunner:
         import shutil
         import subprocess
 
-        sinoclaw_cmd = _resolve_sinoclaw_bin()
-        if not sinoclaw_cmd:
-            logger.error("Could not locate sinoclaw binary for detached /restart")
+        anan_cmd = _resolve_anan_bin()
+        if not anan_cmd:
+            logger.error("Could not locate anan binary for detached /restart")
             return
 
         current_pid = os.getpid()
 
         # On Windows there's no bash/setsid chain — spawn a tiny Python
         # watcher directly via sys.executable instead.  The watcher polls
-        # current_pid, waits for our exit, then runs `sinoclaw gateway
+        # current_pid, waits for our exit, then runs `anan gateway
         # restart` with detach flags so the respawn survives the CLI
         # that triggered the /restart command closing its console.
         if sys.platform == "win32":
             import textwrap
-            from sinoclaw_cli._subprocess_compat import windows_detach_popen_kwargs
+            from anan_cli._subprocess_compat import windows_detach_popen_kwargs
 
-            cmd_argv = [*sinoclaw_cmd, "gateway", "restart"]
+            cmd_argv = [*anan_cmd, "gateway", "restart"]
             watcher = textwrap.dedent(
                 """
                 import os, subprocess, sys, time
@@ -3006,7 +3006,7 @@ class GatewayRunner:
             )
             return
 
-        cmd = " ".join(shlex.quote(part) for part in sinoclaw_cmd)
+        cmd = " ".join(shlex.quote(part) for part in anan_cmd)
         shell_cmd = (
             f"while kill -0 {current_pid} 2>/dev/null; do sleep 0.2; done; "
             f"{cmd} gateway restart"
@@ -3127,7 +3127,7 @@ class GatewayRunner:
         
         Returns True if at least one adapter connected successfully.
         """
-        logger.info("Starting Sinoclaw Gateway...")
+        logger.info("Starting Anan Gateway...")
         try:
             self._gateway_loop = asyncio.get_running_loop()
         except RuntimeError:
@@ -3169,7 +3169,7 @@ class GatewayRunner:
         except Exception:
             pass
         try:
-            from sinoclaw_cli.profiles import get_active_profile_name
+            from anan_cli.profiles import get_active_profile_name
             _profile = get_active_profile_name()
             if _profile and _profile != "default":
                 logger.info("Active profile: %s", _profile)
@@ -3241,18 +3241,18 @@ class GatewayRunner:
         if not _any_allowlist and not _allow_all:
             logger.warning(
                 "No user allowlists configured. All unauthorized users will be denied. "
-                "Set GATEWAY_ALLOW_ALL_USERS=true in ~/.sinoclaw/.env to allow open access, "
+                "Set GATEWAY_ALLOW_ALL_USERS=true in ~/.anan/.env to allow open access, "
                 "or configure platform allowlists (e.g., TELEGRAM_ALLOWED_USERS=your_id)."
             )
         
         # Discover Python plugins before shell hooks so plugin block
         # decisions take precedence in tie cases.  The CLI startup path
-        # does this via an explicit call in sinoclaw_cli/main.py; the
+        # does this via an explicit call in anan_cli/main.py; the
         # gateway lazily imports run_agent inside per-request handlers,
         # so the discover_plugins() side-effect in model_tools.py is NOT
         # guaranteed to have run by the time we reach this point.
         try:
-            from sinoclaw_cli.plugins import discover_plugins
+            from anan_cli.plugins import discover_plugins
             discover_plugins()
         except Exception:
             logger.debug(
@@ -3269,7 +3269,7 @@ class GatewayRunner:
         # hooks_auto_accept here would just duplicate that lookup.
         # Failures are logged but must never block gateway startup.
         try:
-            from sinoclaw_cli.config import load_config
+            from anan_cli.config import load_config
             from agent.shell_hooks import register_from_config
             register_from_config(load_config(), accept_hooks=False)
         except Exception:
@@ -3298,9 +3298,9 @@ class GatewayRunner:
         #
         # SKIP suspension after a clean (graceful) shutdown — the previous
         # process already drained active agents, so sessions aren't stuck.
-        # This prevents unwanted auto-resets after `sinoclaw update`,
-        # `sinoclaw gateway restart`, or `/restart`.
-        _clean_marker = _sinoclaw_home / ".clean_shutdown"
+        # This prevents unwanted auto-resets after `anan update`,
+        # `anan gateway restart`, or `/restart`.
+        _clean_marker = _anan_home / ".clean_shutdown"
         if _clean_marker.exists():
             logger.info("Previous gateway exited cleanly — skipping session suspension")
             try:
@@ -3504,8 +3504,8 @@ class GatewayRunner:
         if not notified and any(
             path.exists()
             for path in (
-                _sinoclaw_home / ".update_pending.json",
-                _sinoclaw_home / ".update_pending.claimed.json",
+                _anan_home / ".update_pending.json",
+                _anan_home / ".update_pending.claimed.json",
             )
         ):
             self._schedule_update_notification_watch()
@@ -3559,7 +3559,7 @@ class GatewayRunner:
 
         # Start background kanban dispatcher — spawns workers for ready
         # tasks. Gated by `kanban.dispatch_in_gateway` (default True).
-        # When false, users run `sinoclaw kanban daemon` externally or
+        # When false, users run `anan kanban daemon` externally or
         # simply don't use kanban; this loop becomes a no-op.
         asyncio.create_task(self._kanban_dispatcher_watcher())
 
@@ -3619,7 +3619,7 @@ class GatewayRunner:
                 for key, entry in _expired_entries:
                     try:
                         try:
-                            from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+                            from anan_cli.plugins import invoke_hook as _invoke_hook
                             _parts = key.split(":")
                             _platform = _parts[2] if len(_parts) > 2 else ""
                             _invoke_hook(
@@ -3759,7 +3759,7 @@ class GatewayRunner:
         """
         from gateway.config import Platform as _Platform
         try:
-            from sinoclaw_cli import kanban_db as _kb
+            from anan_cli import kanban_db as _kb
         except Exception:
             logger.warning("kanban notifier: kanban_db not importable; notifier disabled")
             return
@@ -3970,7 +3970,7 @@ class GatewayRunner:
         ``board`` scopes the DB connection to the board that owns this
         subscription. Unsub cursors in one board can't touch another's.
         """
-        from sinoclaw_cli import kanban_db as _kb
+        from anan_cli import kanban_db as _kb
         conn = _kb.connect(board=board)
         try:
             _kb.advance_notify_cursor(
@@ -3985,7 +3985,7 @@ class GatewayRunner:
             conn.close()
 
     def _kanban_unsub(self, sub: dict, board: Optional[str] = None) -> None:
-        from sinoclaw_cli import kanban_db as _kb
+        from anan_cli import kanban_db as _kb
         conn = _kb.connect(board=board)
         try:
             _kb.remove_notify_sub(
@@ -4003,7 +4003,7 @@ class GatewayRunner:
 
         Gated by `kanban.dispatch_in_gateway` in config.yaml (default True).
         When true, the gateway hosts the single dispatcher for this profile:
-        no separate `sinoclaw kanban daemon` process needed. When false, the
+        no separate `anan kanban daemon` process needed. When false, the
         loop exits immediately and an external daemon is expected.
 
         Each tick calls :func:`kanban_db.dispatch_once` inside
@@ -4021,7 +4021,7 @@ class GatewayRunner:
         # watcher here. Honours SINOCLAW_KANBAN_DISPATCH_IN_GATEWAY env var
         # as an escape hatch (false-y value disables without editing YAML).
         try:
-            from sinoclaw_cli.config import load_config as _load_config
+            from anan_cli.config import load_config as _load_config
         except Exception:
             logger.warning("kanban dispatcher: config loader unavailable; disabled")
             return
@@ -4043,7 +4043,7 @@ class GatewayRunner:
             return
 
         try:
-            from sinoclaw_cli import kanban_db as _kb
+            from anan_cli import kanban_db as _kb
         except Exception:
             logger.warning("kanban dispatcher: kanban_db not importable; dispatcher disabled")
             return
@@ -4138,7 +4138,7 @@ class GatewayRunner:
 
         def _ready_nonempty() -> bool:
             """Cheap probe: is there at least one ready+assigned+unclaimed
-            task on ANY board whose assignee maps to a real Sinoclaw profile
+            task on ANY board whose assignee maps to a real Anan profile
             (i.e. one the dispatcher would actually spawn for)?
 
             Tasks assigned to control-plane lanes (e.g. ``orion-cc``,
@@ -4146,7 +4146,7 @@ class GatewayRunner:
             ``claim_task`` directly and never spawnable, so a queue full
             of those is "correctly idle", not "stuck". Filtering them out
             here keeps the stuck-warn fire only on real failures (broken
-            PATH, missing venv, credential loss for a real Sinoclaw profile).
+            PATH, missing venv, credential loss for a real Anan profile).
             """
             try:
                 boards = _kb.list_boards(include_archived=False)
@@ -4205,7 +4205,7 @@ class GatewayRunner:
                             "kanban dispatcher stuck: ready queue non-empty for "
                             "%d consecutive ticks but 0 workers spawned. Check "
                             "profile health (venv, PATH, credentials) and "
-                            "`sinoclaw kanban list --status ready`.",
+                            "`anan kanban list --status ready`.",
                             bad_ticks,
                         )
                         last_warn_at = now
@@ -4572,7 +4572,7 @@ class GatewayRunner:
             # of resuming a half-finished tool loop.
             if not timed_out:
                 try:
-                    (_sinoclaw_home / ".clean_shutdown").touch()
+                    (_anan_home / ".clean_shutdown").touch()
                 except Exception:
                     pass
             else:
@@ -4670,7 +4670,7 @@ class GatewayRunner:
         elif platform == Platform.SLACK:
             from gateway.platforms.slack import SlackAdapter, check_slack_requirements
             if not check_slack_requirements():
-                logger.warning("Slack: slack-bolt not installed. Run: pip install 'sinoclaw-agent[slack]'")
+                logger.warning("Slack: slack-bolt not installed. Run: pip install 'anan[slack]'")
                 return None
             return SlackAdapter(config)
 
@@ -5132,7 +5132,7 @@ class GatewayRunner:
         # (e.g. customer handover ingest) without triggering the pairing flow.
         if not is_internal:
             try:
-                from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+                from anan_cli.plugins import invoke_hook as _invoke_hook
                 _hook_results = _invoke_hook(
                     "pre_gateway_dispatch",
                     event=event,
@@ -5194,7 +5194,7 @@ class GatewayRunner:
                             f"Hi~ I don't recognize you yet!\n\n"
                             f"Here's your pairing code: `{code}`\n\n"
                             f"Ask the bot owner to run:\n"
-                            f"`sinoclaw pairing approve {platform_name} {code}`"
+                            f"`anan pairing approve {platform_name} {code}`"
                         )
                 else:
                     adapter = self.adapters.get(source.platform)
@@ -5230,7 +5230,7 @@ class GatewayRunner:
                 _recognized_cmd = None
                 if cmd:
                     try:
-                        from sinoclaw_cli.commands import resolve_command as _resolve_update_cmd
+                        from anan_cli.commands import resolve_command as _resolve_update_cmd
                     except Exception:
                         _resolve_update_cmd = None
                     if _resolve_update_cmd is not None:
@@ -5244,8 +5244,8 @@ class GatewayRunner:
                 else:
                     response_text = raw
             if response_text:
-                response_path = _sinoclaw_home / ".update_response"
-                prompt_path = _sinoclaw_home / ".update_prompt.json"
+                response_path = _anan_home / ".update_response"
+                prompt_path = _anan_home / ".update_prompt.json"
                 try:
                     tmp = response_path.with_suffix(".tmp")
                     tmp.write_text(response_text)
@@ -5264,8 +5264,8 @@ class GatewayRunner:
             # blocking on stdin until the 30-minute watcher timeout.
             # The slash command then falls through to normal dispatch.
             if _recognized_cmd:
-                response_path = _sinoclaw_home / ".update_response"
-                prompt_path = _sinoclaw_home / ".update_prompt.json"
+                response_path = _anan_home / ".update_response"
+                prompt_path = _anan_home / ".update_prompt.json"
                 try:
                     tmp = response_path.with_suffix(".tmp")
                     tmp.write_text("")
@@ -5393,7 +5393,7 @@ class GatewayRunner:
                 return await self._handle_status_command(event)
 
             # Resolve the command once for all early-intercept checks below.
-            from sinoclaw_cli.commands import (
+            from anan_cli.commands import (
                 ACTIVE_SESSION_BYPASS_COMMANDS as _DEDICATED_HANDLERS,
                 resolve_command as _resolve_cmd_inner,
             )
@@ -5685,7 +5685,7 @@ class GatewayRunner:
         # Check for commands
         command = event.get_command()
 
-        from sinoclaw_cli.commands import (
+        from anan_cli.commands import (
             GATEWAY_KNOWN_COMMANDS,
             is_gateway_known_command,
             resolve_command as _resolve_cmd,
@@ -5946,10 +5946,10 @@ class GatewayRunner:
         # Plugin-registered slash commands
         if command:
             try:
-                from sinoclaw_cli.plugins import get_plugin_command_handler
+                from anan_cli.plugins import get_plugin_command_handler
                 # Normalize underscores to hyphens so Telegram's underscored
                 # autocomplete form matches plugin commands registered with
-                # hyphens. See sinoclaw_cli/commands.py:_build_telegram_menu.
+                # hyphens. See anan_cli/commands.py:_build_telegram_menu.
                 plugin_handler = get_plugin_command_handler(command.replace("_", "-"))
                 if plugin_handler:
                     user_args = event.get_command_args().strip()
@@ -5985,7 +5985,7 @@ class GatewayRunner:
                         if _skill_name in _get_plat_disabled(platform=_plat):
                             return (
                                 f"The **{_skill_name}** skill is disabled for {_plat}.\n"
-                                f"Enable it with: `sinoclaw skills config`"
+                                f"Enable it with: `anan skills config`"
                             )
                     user_instruction = event.get_command_args().strip()
                     msg = build_skill_invocation_message(
@@ -6186,12 +6186,12 @@ class GatewayRunner:
                                 "🎤 I received your voice message but can't transcribe it — "
                                 "no speech-to-text provider is configured.\n\n"
                                 "To enable voice: install faster-whisper "
-                                "(`pip install faster-whisper` in the Sinoclaw venv) "
+                                "(`pip install faster-whisper` in the Anan venv) "
                                 "and set `stt.enabled: true` in config.yaml, "
                                 "then /restart the gateway."
                             )
                             if self._has_setup_skill():
-                                _stt_msg += "\n\nFor full setup instructions, type: `/skill sinoclaw-agent-setup`"
+                                _stt_msg += "\n\nFor full setup instructions, type: `/skill anan-setup`"
                             await _stt_adapter.send(
                                 source.chat_id,
                                 _stt_msg,
@@ -6225,7 +6225,7 @@ class GatewayRunner:
 
                 # Translate host cache path to in-container path if running under Docker backend.
                 # This ensures the agent receives a path it can open inside its sandbox, as the
-                # cache directories are auto-mounted at /root/.sinoclaw/cache/* by get_cache_directory_mounts().
+                # cache directories are auto-mounted at /root/.anan/cache/* by get_cache_directory_mounts().
                 agent_path = to_agent_visible_cache_path(path)
 
                 if mtype.startswith("text/"):
@@ -6619,7 +6619,7 @@ class GatewayRunner:
                 if _hyg_config_context_length is None and _hyg_base_url:
                     try:
                         try:
-                            from sinoclaw_cli.config import get_compatible_custom_providers as _gw_gcp
+                            from anan_cli.config import get_compatible_custom_providers as _gw_gcp
                             _hyg_custom_providers = _gw_gcp(_hyg_data)
                         except Exception:
                             _hyg_custom_providers = _hyg_data.get("custom_providers")
@@ -6851,17 +6851,17 @@ class GatewayRunner:
             platform_name = source.platform.value
             env_key = _home_target_env_var(platform_name)
             if not os.getenv(env_key):
-                # Slack dispatches all Sinoclaw commands through a single
-                # parent slash command `/sinoclaw`; bare `/sethome` is not
+                # Slack dispatches all Anan commands through a single
+                # parent slash command `/anan`; bare `/sethome` is not
                 # registered and would fail with "app did not respond".
                 sethome_cmd = (
-                    "/sinoclaw sethome"
+                    "/anan sethome"
                     if source.platform == Platform.SLACK
                     else "/sethome"
                 )
                 notice = (
                     f"📬 No home channel is set for {platform_name.title()}. "
-                    f"A home channel is where Sinoclaw delivers cron job results "
+                    f"A home channel is where Anan delivers cron job results "
                     f"and cross-platform messages.\n\n"
                     f"Type {sethome_cmd} to make this chat your home channel, "
                     f"or ignore to skip."
@@ -7373,7 +7373,7 @@ class GatewayRunner:
                     provider = model_cfg.get("provider") or None
                     base_url = model_cfg.get("base_url") or None
                 try:
-                    from sinoclaw_cli.config import get_compatible_custom_providers
+                    from anan_cli.config import get_compatible_custom_providers
                     custom_provs = get_compatible_custom_providers(data)
                 except Exception:
                     custom_provs = data.get("custom_providers")
@@ -7521,7 +7521,7 @@ class GatewayRunner:
 
         # Fire plugin on_session_finalize hook (session boundary)
         try:
-            from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+            from anan_cli.plugins import invoke_hook as _invoke_hook
             _old_sid = old_entry.session_id if old_entry else None
             _invoke_hook("on_session_finalize", session_id=_old_sid,
                          platform=source.platform.value if source.platform else "")
@@ -7559,7 +7559,7 @@ class GatewayRunner:
         _title_arg = event.get_command_args().strip()
         _title_note = ""
         if _title_arg and self._session_db and new_entry:
-            from sinoclaw_state import SessionDB
+            from anan_state import SessionDB
             try:
                 sanitized = SessionDB.sanitize_title(_title_arg)
             except ValueError as e:
@@ -7591,7 +7591,7 @@ class GatewayRunner:
 
         # Fire plugin on_session_reset hook (new session guaranteed to exist)
         try:
-            from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+            from anan_cli.plugins import invoke_hook as _invoke_hook
             _new_sid = new_entry.session_id if new_entry else None
             _invoke_hook("on_session_reset", session_id=_new_sid,
                          platform=source.platform.value if source.platform else "")
@@ -7600,7 +7600,7 @@ class GatewayRunner:
 
         # Append a random tip to the reset message
         try:
-            from sinoclaw_cli.tips import get_random_tip
+            from anan_cli.tips import get_random_tip
             _tip_line = f"\n✦ Tip: {get_random_tip()}"
         except Exception:
             _tip_line = ""
@@ -7611,10 +7611,10 @@ class GatewayRunner:
 
     async def _handle_profile_command(self, event: MessageEvent) -> str:
         """Handle /profile — show active profile name and home directory."""
-        from sinoclaw_constants import display_sinoclaw_home
-        from sinoclaw_cli.profiles import get_active_profile_name
+        from anan_constants import display_anan_home
+        from anan_cli.profiles import get_active_profile_name
 
-        display = display_sinoclaw_home()
+        display = display_anan_home()
         profile_name = get_active_profile_name()
 
         lines = [
@@ -7641,7 +7641,7 @@ class GatewayRunner:
         """
         import asyncio
         import re
-        from sinoclaw_cli.kanban import run_slash
+        from anan_cli.kanban import run_slash
 
         text = (event.text or "").strip()
         # Strip the leading "/kanban" (with or without slash), leaving args.
@@ -7676,7 +7676,7 @@ class GatewayRunner:
                     user_id = str(getattr(source, "user_id", "") or "") or None
                     if platform_str and chat_id:
                         def _sub():
-                            from sinoclaw_cli import kanban_db as _kb
+                            from anan_cli import kanban_db as _kb
                             conn = _kb.connect()
                             try:
                                 _kb.add_notify_sub(
@@ -7699,7 +7699,7 @@ class GatewayRunner:
         # Gateway messages have practical length caps; truncate long
         # listings to keep the UX reasonable.
         if len(output) > 3800:
-            output = output[:3800] + "\n… (truncated; use `sinoclaw kanban …` in your terminal for full output)"
+            output = output[:3800] + "\n… (truncated; use `anan kanban …` in your terminal for full output)"
         return output or "(no output)"
 
     async def _handle_status_command(self, event: MessageEvent) -> str:
@@ -7744,7 +7744,7 @@ class GatewayRunner:
                 db_total_tokens = 0
 
         lines = [
-            "📊 **Sinoclaw Gateway Status**",
+            "📊 **Anan Gateway Status**",
             "",
             f"**Session ID:** `{session_entry.session_id}`",
         ]
@@ -7932,7 +7932,7 @@ class GatewayRunner:
             if event.source.thread_id:
                 notify_data["thread_id"] = event.source.thread_id
             atomic_json_write(
-                _sinoclaw_home / ".restart_notify.json",
+                _anan_home / ".restart_notify.json",
                 notify_data,
                 indent=None,
             )
@@ -7952,7 +7952,7 @@ class GatewayRunner:
             if event.platform_update_id is not None:
                 dedup_data["update_id"] = event.platform_update_id
             atomic_json_write(
-                _sinoclaw_home / ".restart_last_processed.json",
+                _anan_home / ".restart_last_processed.json",
                 dedup_data,
                 indent=None,
             )
@@ -7972,7 +7972,7 @@ class GatewayRunner:
             self.request_restart(detached=True, via_service=False)
         if active_agents:
             return t("gateway.draining", count=active_agents)
-        return EphemeralReply("♻ Restarting gateway. If you aren't notified within 60 seconds, restart from the console with `sinoclaw gateway restart`.")
+        return EphemeralReply("♻ Restarting gateway. If you aren't notified within 60 seconds, restart from the console with `anan gateway restart`.")
 
     def _is_stale_restart_redelivery(self, event: MessageEvent) -> bool:
         """Return True if this /restart is a Telegram re-delivery we already handled.
@@ -8002,7 +8002,7 @@ class GatewayRunner:
             return False
 
         try:
-            marker_path = _sinoclaw_home / ".restart_last_processed.json"
+            marker_path = _anan_home / ".restart_last_processed.json"
             if not marker_path.exists():
                 return False
             data = json.loads(marker_path.read_text())
@@ -8026,9 +8026,9 @@ class GatewayRunner:
 
     async def _handle_help_command(self, event: MessageEvent) -> str:
         """Handle /help command - list available commands."""
-        from sinoclaw_cli.commands import gateway_help_lines
+        from anan_cli.commands import gateway_help_lines
         lines = [
-            "📖 **Sinoclaw Commands**\n",
+            "📖 **Anan Commands**\n",
             *gateway_help_lines(),
         ]
         try:
@@ -8051,7 +8051,7 @@ class GatewayRunner:
 
     async def _handle_commands_command(self, event: MessageEvent) -> str:
         """Handle /commands [page] - paginated list of all commands and skills."""
-        from sinoclaw_cli.commands import gateway_help_lines
+        from anan_cli.commands import gateway_help_lines
 
         raw_args = event.get_command_args().strip()
         if raw_args:
@@ -8116,12 +8116,12 @@ class GatewayRunner:
           /model --provider <provider>        — switch to provider, auto-detect model
         """
         import yaml
-        from sinoclaw_cli.model_switch import (
+        from anan_cli.model_switch import (
             switch_model as _switch_model, parse_model_flags,
             list_authenticated_providers,
             list_picker_providers,
         )
-        from sinoclaw_cli.providers import get_label
+        from anan_cli.providers import get_label
 
         raw_args = event.get_command_args().strip()
 
@@ -8135,7 +8135,7 @@ class GatewayRunner:
         current_api_key = ""
         user_provs = None
         custom_provs = None
-        config_path = _sinoclaw_home / "config.yaml"
+        config_path = _anan_home / "config.yaml"
         try:
             cfg = _load_gateway_config()
             if cfg:
@@ -8146,7 +8146,7 @@ class GatewayRunner:
                     current_base_url = model_cfg.get("base_url", "")
                 user_provs = cfg.get("providers")
                 try:
-                    from sinoclaw_cli.config import get_compatible_custom_providers
+                    from anan_cli.config import get_compatible_custom_providers
                     custom_provs = get_compatible_custom_providers(cfg)
                 except Exception:
                     custom_provs = cfg.get("custom_providers")
@@ -8258,7 +8258,7 @@ class GatewayRunner:
                         lines = [f"Model switched to `{result.new_model}`"]
                         lines.append(f"Provider: {plabel}")
                         mi = result.model_info
-                        from sinoclaw_cli.model_switch import resolve_display_context_length
+                        from anan_cli.model_switch import resolve_display_context_length
                         _sw_config_ctx = None
                         try:
                             _sw_cfg = _load_gateway_config()
@@ -8405,7 +8405,7 @@ class GatewayRunner:
                 model_cfg["provider"] = result.target_provider
                 if result.base_url:
                     model_cfg["base_url"] = result.base_url
-                from sinoclaw_cli.config import save_config
+                from anan_cli.config import save_config
                 save_config(cfg)
             except Exception as e:
                 logger.warning("Failed to persist model switch: %s", e)
@@ -8418,7 +8418,7 @@ class GatewayRunner:
         # Context: always resolve via the provider-aware chain so Codex OAuth,
         # Copilot, and Nous-enforced caps win over the raw models.dev entry.
         mi = result.model_info
-        from sinoclaw_cli.model_switch import resolve_display_context_length
+        from anan_cli.model_switch import resolve_display_context_length
         _sw2_config_ctx = None
         try:
             _sw2_cfg = _load_gateway_config()
@@ -8467,10 +8467,10 @@ class GatewayRunner:
 
     async def _handle_personality_command(self, event: MessageEvent) -> str:
         """Handle /personality command - list or set a personality."""
-        from sinoclaw_constants import display_sinoclaw_home
+        from anan_constants import display_anan_home
 
         args = event.get_command_args().strip().lower()
-        config_path = _sinoclaw_home / 'config.yaml'
+        config_path = _anan_home / 'config.yaml'
 
         try:
             config = _load_gateway_config()
@@ -8480,7 +8480,7 @@ class GatewayRunner:
             personalities = {}
 
         if not personalities:
-            return f"No personalities configured in `{display_sinoclaw_home()}/config.yaml`"
+            return f"No personalities configured in `{display_anan_home()}/config.yaml`"
 
         if not args:
             lines = ["🎭 **Available Personalities**\n"]
@@ -8578,7 +8578,7 @@ class GatewayRunner:
 
         GatewayRunner.config is a GatewayConfig dataclass, not the full
         user config mapping. Top-level config blocks such as ``goals`` are
-        therefore only available through sinoclaw_cli.config.load_config().
+        therefore only available through anan_cli.config.load_config().
         """
         try:
             goals_cfg = (
@@ -8587,7 +8587,7 @@ class GatewayRunner:
                 else getattr(self.config, "goals", {}) or {}
             )
             if not goals_cfg:
-                from sinoclaw_cli.config import load_config
+                from anan_cli.config import load_config
 
                 goals_cfg = (load_config() or {}).get("goals") or {}
             return int(goals_cfg.get("max_turns", 20) or 20)
@@ -8601,7 +8601,7 @@ class GatewayRunner:
         goals module can't be loaded.
         """
         try:
-            from sinoclaw_cli.goals import GoalManager
+            from anan_cli.goals import GoalManager
         except Exception as exc:
             logger.debug("goal manager unavailable: %s", exc)
             return None, None
@@ -8750,7 +8750,7 @@ class GatewayRunner:
                 generation = None
                 active = getattr(adapter, "_active_sessions", {}).get(session_key)
                 if active is not None:
-                    generation = getattr(active, "_sinoclaw_run_generation", None)
+                    generation = getattr(active, "_anan_run_generation", None)
                 adapter.register_post_delivery_callback(
                     session_key,
                     _deliver,
@@ -8780,7 +8780,7 @@ class GatewayRunner:
         queue and takes priority naturally.
         """
         try:
-            from sinoclaw_cli.goals import GoalManager
+            from anan_cli.goals import GoalManager
         except Exception as exc:
             logger.debug("goal continuation: goals module unavailable: %s", exc)
             return
@@ -8869,7 +8869,7 @@ class GatewayRunner:
 
         # Save to .env so it persists across restarts
         try:
-            from sinoclaw_cli.config import save_env_value
+            from anan_cli.config import save_env_value
             save_env_value(env_key, str(chat_id))
             # Keep thread/topic routing explicit and clear stale values when
             # /sethome is run from the parent chat instead of a thread.
@@ -9249,7 +9249,7 @@ class GatewayRunner:
             # Use .mp3 extension so edge-tts conversion to opus works correctly.
             # The TTS tool may convert to .ogg — use file_path from result.
             audio_path = os.path.join(
-                tempfile.gettempdir(), "sinoclaw_voice",
+                tempfile.gettempdir(), "anan_voice",
                 f"tts_reply_{_uuid.uuid4().hex[:12]}.mp3",
             )
             os.makedirs(os.path.dirname(audio_path), exist_ok=True)
@@ -9414,7 +9414,7 @@ class GatewayRunner:
         cp_cfg = {}
         try:
             import yaml as _y
-            _cfg_path = _sinoclaw_home / "config.yaml"
+            _cfg_path = _anan_home / "config.yaml"
             if _cfg_path.exists():
                 with open(_cfg_path, encoding="utf-8") as _f:
                     _data = _y.safe_load(_f) or {}
@@ -9534,7 +9534,7 @@ class GatewayRunner:
 
             platform_key = _platform_config_key(source.platform)
 
-            from sinoclaw_cli.tools_config import _get_platform_tools
+            from anan_cli.tools_config import _get_platform_tools
             enabled_toolsets = sorted(_get_platform_tools(user_config, platform_key))
             agent_cfg = user_config.get("agent") or {}
             disabled_toolsets = agent_cfg.get("disabled_toolsets") or None
@@ -9666,7 +9666,7 @@ class GatewayRunner:
 
         raw_args = event.get_command_args().strip()
         args, persist_global = self._parse_reasoning_command_args(raw_args)
-        config_path = _sinoclaw_home / "config.yaml"
+        config_path = _anan_home / "config.yaml"
         session_key = self._session_key_for_source(event.source)
         self._show_reasoning = self._load_show_reasoning()
         self._reasoning_config = self._resolve_session_reasoning_config(
@@ -9767,10 +9767,10 @@ class GatewayRunner:
     async def _handle_fast_command(self, event: MessageEvent) -> str:
         """Handle /fast — mirror the CLI Priority Processing toggle in gateway chats."""
         import yaml
-        from sinoclaw_cli.models import model_supports_fast_mode
+        from anan_cli.models import model_supports_fast_mode
 
         args = event.get_command_args().strip().lower()
-        config_path = _sinoclaw_home / "config.yaml"
+        config_path = _anan_home / "config.yaml"
         self._service_tier = self._load_service_tier()
 
         user_config = _load_gateway_config()
@@ -9851,7 +9851,7 @@ class GatewayRunner:
         have its own verbosity level independently.
         """
 
-        config_path = _sinoclaw_home / "config.yaml"
+        config_path = _anan_home / "config.yaml"
         platform_key = _platform_config_key(event.source.platform)
 
         # --- check config gate ------------------------------------------------
@@ -9923,7 +9923,7 @@ class GatewayRunner:
         """
         from gateway.runtime_footer import resolve_footer_config
 
-        config_path = _sinoclaw_home / "config.yaml"
+        config_path = _anan_home / "config.yaml"
         platform_key = _platform_config_key(event.source.platform)
 
         # --- parse argument -------------------------------------------------
@@ -10175,7 +10175,7 @@ class GatewayRunner:
         try:
             send_result = await adapter.send(
                 source.chat_id,
-                "System topic for Sinoclaw commands and status.",
+                "System topic for Anan commands and status.",
                 metadata={"thread_id": str(thread_id)},
             )
             message_id = getattr(send_result, "message_id", None)
@@ -10218,7 +10218,7 @@ class GatewayRunner:
         """Return a Bot API-safe forum topic name from a generated session title."""
         cleaned = re.sub(r"\s+", " ", str(title or "")).strip()
         if not cleaned:
-            return "Sinoclaw Chat"
+            return "Anan Chat"
         # Telegram forum topic names are short (currently 1-128 chars). Keep
         # extra room for multi-byte titles and avoid trailing ellipsis churn.
         if len(cleaned) > 120:
@@ -10231,7 +10231,7 @@ class GatewayRunner:
         session_id: str,
         title: str,
     ) -> None:
-        """Best-effort rename of a Telegram DM topic when Sinoclaw auto-titles a session."""
+        """Best-effort rename of a Telegram DM topic when Anan auto-titles a session."""
         if not self._is_telegram_topic_lane(source) or not source.chat_id or not source.thread_id:
             return
 
@@ -10366,11 +10366,11 @@ class GatewayRunner:
             "  /topic <id>        Inside a topic: restore a previous session by ID\n"
             "\n"
             "How it works:\n"
-            "1. Run /topic once in this DM — Sinoclaw checks BotFather Threads\n"
+            "1. Run /topic once in this DM — Anan checks BotFather Threads\n"
             "   Settings are enabled and flips on multi-session mode.\n"
             "2. Tap All Messages at the top of the bot and send any message.\n"
             "   Telegram creates a new topic for that message; each topic is\n"
-            "   an independent Sinoclaw session (fresh history, fresh context).\n"
+            "   an independent Anan session (fresh history, fresh context).\n"
             "3. The root DM becomes a system lobby — send /topic, /status,\n"
             "   /help, /usage there. Normal prompts go in a topic.\n"
             "4. /new inside a topic resets just that topic's session.\n"
@@ -10380,7 +10380,7 @@ class GatewayRunner:
     def _disable_telegram_topic_mode_for_chat(self, source: SessionSource) -> str:
         """Cleanly disable topic mode for a chat via /topic off."""
         if not self._session_db:
-            from sinoclaw_state import format_session_db_unavailable
+            from anan_state import format_session_db_unavailable
             return format_session_db_unavailable()
         chat_id = str(source.chat_id or "")
         if not chat_id:
@@ -10410,7 +10410,7 @@ class GatewayRunner:
             "Multi-session topic mode is now OFF for this chat.\n\n"
             "Existing topics in Telegram aren't removed — they'll just stop "
             "being gated as independent sessions. The root DM works as a "
-            "normal Sinoclaw chat again. Run /topic to re-enable later."
+            "normal Anan chat again. Run /topic to re-enable later."
         )
 
     async def _handle_topic_command(self, event: MessageEvent, args: str = "") -> str:
@@ -10419,7 +10419,7 @@ class GatewayRunner:
         if source.platform != Platform.TELEGRAM or source.chat_type != "dm":
             return "The /topic command is only available in Telegram private chats."
         if not self._session_db:
-            from sinoclaw_state import format_session_db_unavailable
+            from anan_state import format_session_db_unavailable
             return format_session_db_unavailable()
 
         # Authorization: /topic activates multi-session mode and mutates
@@ -10520,7 +10520,7 @@ class GatewayRunner:
                 )
             return (
                 "Telegram multi-session topics are enabled.\n\n"
-                "This topic will be used as an independent Sinoclaw session. "
+                "This topic will be used as an independent Anan session. "
                 "Use /new to replace this topic's current session. For parallel "
                 "work, open All Messages and send a message there to create another topic."
             )
@@ -10531,7 +10531,7 @@ class GatewayRunner:
         lines = [
             "Telegram multi-session topics are enabled.",
             "",
-            "To create a new Sinoclaw chat, open All Messages at the top of this "
+            "To create a new Anan chat, open All Messages at the top of this "
             "bot interface and send any message there. Telegram will create a "
             "new topic for it.",
             "",
@@ -10574,7 +10574,7 @@ class GatewayRunner:
         return "\n".join(lines)
 
     async def _restore_telegram_topic_session(self, event: MessageEvent, raw_session_id: str) -> str:
-        """Restore an existing Telegram-owned Sinoclaw session into this topic."""
+        """Restore an existing Telegram-owned Anan session into this topic."""
         source = event.source
         session_id = self._session_db.resolve_session_id(raw_session_id.strip())
         if not session_id:
@@ -10624,7 +10624,7 @@ class GatewayRunner:
 
         response = f"Session restored: {title}"
         if last_assistant:
-            response += f"\n\nLast Sinoclaw message:\n{last_assistant}"
+            response += f"\n\nLast Anan message:\n{last_assistant}"
         return response
 
     async def _handle_title_command(self, event: MessageEvent) -> str:
@@ -10634,7 +10634,7 @@ class GatewayRunner:
         session_id = session_entry.session_id
 
         if not self._session_db:
-            from sinoclaw_state import format_session_db_unavailable
+            from anan_state import format_session_db_unavailable
             return format_session_db_unavailable()
 
         # Ensure session exists in SQLite DB (it may only exist in session_store
@@ -10679,7 +10679,7 @@ class GatewayRunner:
     async def _handle_resume_command(self, event: MessageEvent) -> str:
         """Handle /resume command — switch to a previously-named session."""
         if not self._session_db:
-            from sinoclaw_state import format_session_db_unavailable
+            from anan_state import format_session_db_unavailable
             return format_session_db_unavailable()
 
         source = event.source
@@ -10767,7 +10767,7 @@ class GatewayRunner:
         import uuid as _uuid
 
         if not self._session_db:
-            from sinoclaw_state import format_session_db_unavailable
+            from anan_state import format_session_db_unavailable
             return format_session_db_unavailable()
 
         source = event.source
@@ -11022,7 +11022,7 @@ class GatewayRunner:
                     i += 1
 
         try:
-            from sinoclaw_state import SessionDB
+            from anan_state import SessionDB
             from agent.insights import InsightsEngine
 
             loop = asyncio.get_running_loop()
@@ -11370,7 +11370,7 @@ class GatewayRunner:
         (e.g. a prior "Always Approve" click) without a gateway restart.
         """
         try:
-            from sinoclaw_cli.config import load_config
+            from anan_cli.config import load_config
             cfg = load_config()
             return cfg if isinstance(cfg, dict) else {}
         except Exception:
@@ -11520,10 +11520,10 @@ class GatewayRunner:
 
         Gateway uploads ONLY the summary report (system info + log tails),
         NOT full log files, to protect conversation privacy.  Users who need
-        full log uploads should use ``sinoclaw debug share`` from the CLI.
+        full log uploads should use ``anan debug share`` from the CLI.
         """
         import asyncio
-        from sinoclaw_cli.debug import (
+        from anan_cli.debug import (
             _capture_dump, collect_debug_report,
             upload_to_pastebin, _schedule_auto_delete,
             _GATEWAY_PRIVACY_NOTICE, _best_effort_sweep_expired_pastes,
@@ -11553,17 +11553,17 @@ class GatewayRunner:
 
             lines.append("")
             lines.append("⏱ Pastes will auto-delete in 6 hours.")
-            lines.append("For full log uploads, use `sinoclaw debug share` from the CLI.")
-            lines.append("Share these links with the Sinoclaw team for support.")
+            lines.append("For full log uploads, use `anan debug share` from the CLI.")
+            lines.append("Share these links with the Anan team for support.")
             return "\n".join(lines)
 
         return await loop.run_in_executor(None, _collect_and_upload)
 
     async def _handle_update_command(self, event: MessageEvent) -> str:
-        """Handle /update command — update Sinoclaw Agent to the latest version.
+        """Handle /update command — update Anan Agent to the latest version.
 
-        Spawns ``sinoclaw update`` in a detached session (via ``setsid``) so it
-        survives the gateway restart that ``sinoclaw update`` may trigger. Marker
+        Spawns ``anan update`` in a detached session (via ``setsid``) so it
+        survives the gateway restart that ``anan update`` may trigger. Marker
         files are written so either the current gateway process or the next one
         can notify the user when the update finishes.
         """
@@ -11571,7 +11571,7 @@ class GatewayRunner:
         import shutil
         import subprocess
         from datetime import datetime
-        from sinoclaw_cli.config import is_managed, format_managed_message
+        from anan_cli.config import is_managed, format_managed_message
 
         # Block non-messaging platforms (API server, webhooks, ACP)
         platform = event.source.platform
@@ -11582,12 +11582,12 @@ class GatewayRunner:
                 from gateway.platform_registry import platform_registry
                 entry = platform_registry.get(platform.value)
                 if not entry or not entry.allow_update_command:
-                    return "✗ /update is only available from messaging platforms. Run `sinoclaw update` from the terminal."
+                    return "✗ /update is only available from messaging platforms. Run `anan update` from the terminal."
             except Exception:
-                return "✗ /update is only available from messaging platforms. Run `sinoclaw update` from the terminal."
+                return "✗ /update is only available from messaging platforms. Run `anan update` from the terminal."
 
         if is_managed():
-            return f"✗ {format_managed_message('update Sinoclaw Agent')}"
+            return f"✗ {format_managed_message('update Anan Agent')}"
 
         project_root = Path(__file__).parent.parent.resolve()
         git_dir = project_root / '.git'
@@ -11595,18 +11595,18 @@ class GatewayRunner:
         if not git_dir.exists():
             return "✗ Not a git repository — cannot update."
 
-        sinoclaw_cmd = _resolve_sinoclaw_bin()
-        if not sinoclaw_cmd:
+        anan_cmd = _resolve_anan_bin()
+        if not anan_cmd:
             return (
-                "✗ Could not locate the `sinoclaw` command. "
-                "Sinoclaw is running, but the update command could not find the "
+                "✗ Could not locate the `anan` command. "
+                "Anan is running, but the update command could not find the "
                 "executable on PATH or via the current Python interpreter. "
-                "Try running `sinoclaw update` manually in your terminal."
+                "Try running `anan update` manually in your terminal."
             )
 
-        pending_path = _sinoclaw_home / ".update_pending.json"
-        output_path = _sinoclaw_home / ".update_output.txt"
-        exit_code_path = _sinoclaw_home / ".update_exit_code"
+        pending_path = _anan_home / ".update_pending.json"
+        output_path = _anan_home / ".update_output.txt"
+        exit_code_path = _anan_home / ".update_exit_code"
         session_key = self._session_key_for_source(event.source)
         pending = {
             "platform": event.source.platform.value,
@@ -11622,7 +11622,7 @@ class GatewayRunner:
         _tmp_pending.replace(pending_path)
         exit_code_path.unlink(missing_ok=True)
 
-        # Spawn `sinoclaw update --gateway` detached so it survives gateway restart.
+        # Spawn `anan update --gateway` detached so it survives gateway restart.
         # --gateway enables file-based IPC for interactive prompts (stash
         # restore, config migration) so the gateway can forward them to the
         # user instead of silently skipping them.
@@ -11630,7 +11630,7 @@ class GatewayRunner:
         # where systemd-run --user fails due to missing D-Bus session).
         # PYTHONUNBUFFERED ensures output is flushed line-by-line so the
         # gateway can stream it to the messenger in near-real-time.
-        # Spawn `sinoclaw update --gateway` detached so it survives gateway restart.
+        # Spawn `anan update --gateway` detached so it survives gateway restart.
         # --gateway enables file-based IPC for interactive prompts (stash
         # restore, config migration) so the gateway can forward them to the
         # user instead of silently skipping them.
@@ -11639,7 +11639,7 @@ class GatewayRunner:
         # PYTHONUNBUFFERED ensures output is flushed line-by-line so the
         # gateway can stream it to the messenger in near-real-time.
         #
-        # Windows: no bash/setsid chain.  Run `sinoclaw update --gateway`
+        # Windows: no bash/setsid chain.  Run `anan update --gateway`
         # directly via sys.executable; redirect stdout/stderr to the same
         # output files via Popen file handles; write the exit code in a
         # follow-up write.  A tiny Python watcher would be cleaner but
@@ -11649,9 +11649,9 @@ class GatewayRunner:
         try:
             if sys.platform == "win32":
                 import textwrap
-                from sinoclaw_cli._subprocess_compat import windows_detach_popen_kwargs
+                from anan_cli._subprocess_compat import windows_detach_popen_kwargs
 
-                # sinoclaw_cmd is a list of argv parts we can pass directly
+                # anan_cmd is a list of argv parts we can pass directly
                 # (no shell-quoting needed).
                 helper = textwrap.dedent(
                     """
@@ -11672,16 +11672,16 @@ class GatewayRunner:
                     [
                         sys.executable, "-c", helper,
                         str(output_path), str(exit_code_path),
-                        *sinoclaw_cmd, "update", "--gateway",
+                        *anan_cmd, "update", "--gateway",
                     ],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     **windows_detach_popen_kwargs(),
                 )
             else:
-                sinoclaw_cmd_str = " ".join(shlex.quote(part) for part in sinoclaw_cmd)
+                anan_cmd_str = " ".join(shlex.quote(part) for part in anan_cmd)
                 update_cmd = (
-                    f"PYTHONUNBUFFERED=1 {sinoclaw_cmd_str} update --gateway"
+                    f"PYTHONUNBUFFERED=1 {anan_cmd_str} update --gateway"
                     f" > {shlex.quote(str(output_path))} 2>&1; "
                     f"status=$?; printf '%s' \"$status\" > {shlex.quote(str(exit_code_path))}"
                 )
@@ -11708,7 +11708,7 @@ class GatewayRunner:
             return f"✗ Failed to start update: {e}"
 
         self._schedule_update_notification_watch()
-        return "⚕ Starting Sinoclaw update… I'll stream progress here."
+        return "⚕ Starting Anan update… I'll stream progress here."
 
     def _schedule_update_notification_watch(self) -> None:
         """Ensure a background task is watching for update completion."""
@@ -11729,7 +11729,7 @@ class GatewayRunner:
         stream_interval: float = 4.0,
         timeout: float = 1800.0,
     ) -> None:
-        """Watch ``sinoclaw update --gateway``, streaming output + forwarding prompts.
+        """Watch ``anan update --gateway``, streaming output + forwarding prompts.
 
         Polls ``.update_output.txt`` for new content and sends chunks to the
         user periodically.  Detects ``.update_prompt.json`` (written by the
@@ -11737,11 +11737,11 @@ class GatewayRunner:
         the messenger.  The user's next message is intercepted by
         ``_handle_message`` and written to ``.update_response``.
         """
-        pending_path = _sinoclaw_home / ".update_pending.json"
-        claimed_path = _sinoclaw_home / ".update_pending.claimed.json"
-        output_path = _sinoclaw_home / ".update_output.txt"
-        exit_code_path = _sinoclaw_home / ".update_exit_code"
-        prompt_path = _sinoclaw_home / ".update_prompt.json"
+        pending_path = _anan_home / ".update_pending.json"
+        claimed_path = _anan_home / ".update_pending.claimed.json"
+        output_path = _anan_home / ".update_output.txt"
+        exit_code_path = _anan_home / ".update_exit_code"
+        prompt_path = _anan_home / ".update_prompt.json"
 
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
@@ -11830,11 +11830,11 @@ class GatewayRunner:
                     exit_code_raw = exit_code_path.read_text().strip() or "1"
                     exit_code = int(exit_code_raw)
                     if exit_code == 0:
-                        await adapter.send(chat_id, "✅ Sinoclaw update finished.", metadata=metadata)
+                        await adapter.send(chat_id, "✅ Anan update finished.", metadata=metadata)
                     else:
                         await adapter.send(
                             chat_id,
-                            "❌ Sinoclaw update failed (exit code {}).".format(exit_code),
+                            "❌ Anan update failed (exit code {}).".format(exit_code),
                             metadata=metadata,
                         )
                     logger.info("Update finished (exit=%s), notified %s", exit_code, session_key)
@@ -11845,7 +11845,7 @@ class GatewayRunner:
                 for p in (pending_path, claimed_path, output_path,
                           exit_code_path, prompt_path):
                     p.unlink(missing_ok=True)
-                (_sinoclaw_home / ".update_response").unlink(missing_ok=True)
+                (_anan_home / ".update_response").unlink(missing_ok=True)
                 self._update_prompt_pending.pop(session_key, None)
                 return
 
@@ -11922,7 +11922,7 @@ class GatewayRunner:
             try:
                 await adapter.send(
                     chat_id,
-                    "❌ Sinoclaw update timed out after 30 minutes.",
+                    "❌ Anan update timed out after 30 minutes.",
                     metadata=metadata,
                 )
             except Exception:
@@ -11930,7 +11930,7 @@ class GatewayRunner:
             for p in (pending_path, claimed_path, output_path,
                       exit_code_path, prompt_path):
                 p.unlink(missing_ok=True)
-            (_sinoclaw_home / ".update_response").unlink(missing_ok=True)
+            (_anan_home / ".update_response").unlink(missing_ok=True)
             self._update_prompt_pending.pop(session_key, None)
 
     async def _send_update_notification(self) -> bool:
@@ -11943,10 +11943,10 @@ class GatewayRunner:
         cannot resolve the adapter (e.g. after a gateway restart where the
         platform hasn't reconnected yet).
         """
-        pending_path = _sinoclaw_home / ".update_pending.json"
-        claimed_path = _sinoclaw_home / ".update_pending.claimed.json"
-        output_path = _sinoclaw_home / ".update_output.txt"
-        exit_code_path = _sinoclaw_home / ".update_exit_code"
+        pending_path = _anan_home / ".update_pending.json"
+        claimed_path = _anan_home / ".update_pending.claimed.json"
+        output_path = _anan_home / ".update_output.txt"
+        exit_code_path = _anan_home / ".update_exit_code"
 
         if not pending_path.exists() and not claimed_path.exists():
             return False
@@ -11995,14 +11995,14 @@ class GatewayRunner:
                     if len(output) > 3500:
                         output = "…" + output[-3500:]
                     if exit_code == 0:
-                        msg = f"✅ Sinoclaw update finished.\n\n```\n{output}\n```"
+                        msg = f"✅ Anan update finished.\n\n```\n{output}\n```"
                     else:
-                        msg = f"❌ Sinoclaw update failed.\n\n```\n{output}\n```"
+                        msg = f"❌ Anan update failed.\n\n```\n{output}\n```"
                 else:
                     if exit_code == 0:
-                        msg = "✅ Sinoclaw update finished successfully."
+                        msg = "✅ Anan update finished successfully."
                     else:
-                        msg = "❌ Sinoclaw update failed. Check the gateway logs or run `sinoclaw update` manually for details."
+                        msg = "❌ Anan update failed. Check the gateway logs or run `anan update` manually for details."
                 await adapter.send(chat_id, msg, metadata=metadata)
                 logger.info(
                     "Sent post-update notification to %s:%s (exit=%s)",
@@ -12023,7 +12023,7 @@ class GatewayRunner:
 
     async def _send_restart_notification(self) -> Optional[tuple[str, str, Optional[str]]]:
         """Notify the chat that initiated /restart that the gateway is back."""
-        notify_path = _sinoclaw_home / ".restart_notify.json"
+        notify_path = _anan_home / ".restart_notify.json"
         if not notify_path.exists():
             return None
 
@@ -12097,7 +12097,7 @@ class GatewayRunner:
         """
         delivered: set[tuple[str, str, Optional[str]]] = set()
         skipped = skip_targets or set()
-        message = "♻️ Gateway online — Sinoclaw is back and ready."
+        message = "♻️ Gateway online — Anan is back and ready."
 
         for platform, adapter in self.adapters.items():
             home = self.config.get_home_channel(platform)
@@ -12191,7 +12191,7 @@ class GatewayRunner:
         try:
             from agent.image_routing import decide_image_input_mode
             from agent.auxiliary_client import _read_main_model, _read_main_provider
-            from sinoclaw_cli.config import load_config
+            from anan_cli.config import load_config
 
             cfg = load_config()
             provider = _read_main_provider()
@@ -12290,8 +12290,8 @@ class GatewayRunner:
             disabled_note = "[The user sent voice message(s), but transcription is disabled in config."
             if self._has_setup_skill():
                 disabled_note += (
-                    " You have a skill called sinoclaw-agent-setup that can help "
-                    "users configure Sinoclaw features including voice, tools, and more."
+                    " You have a skill called anan-setup that can help "
+                    "users configure Anan features including voice, tools, and more."
                 )
             disabled_note += "]"
             if user_text:
@@ -12325,8 +12325,8 @@ class GatewayRunner:
                         )
                         if self._has_setup_skill():
                             _no_stt_note += (
-                                " You have a skill called sinoclaw-agent-setup "
-                                "that can help users configure Sinoclaw features "
+                                " You have a skill called anan-setup "
+                                "that can help users configure Anan features "
                                 "including voice, tools, and more."
                             )
                         _no_stt_note += "]"
@@ -12866,7 +12866,7 @@ class GatewayRunner:
         try:
             interrupt_event = getattr(adapter, "_active_sessions", {}).get(session_key)
             if interrupt_event is not None:
-                setattr(interrupt_event, "_sinoclaw_run_generation", int(generation))
+                setattr(interrupt_event, "_anan_run_generation", int(generation))
         except Exception:
             pass
 
@@ -13069,7 +13069,7 @@ class GatewayRunner:
         return len(to_evict)
 
     # ------------------------------------------------------------------
-    # Proxy mode: forward messages to a remote Sinoclaw API server
+    # Proxy mode: forward messages to a remote Anan API server
     # ------------------------------------------------------------------
 
     def _get_proxy_url(self) -> Optional[str]:
@@ -13098,7 +13098,7 @@ class GatewayRunner:
         run_generation: Optional[int] = None,
         event_message_id: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Forward the message to a remote Sinoclaw API server instead of
+        """Forward the message to a remote Anan API server instead of
         running a local AIAgent.
 
         When ``GATEWAY_PROXY_URL`` (or ``gateway.proxy_url`` in config.yaml)
@@ -13139,7 +13139,7 @@ class GatewayRunner:
         # Build messages in OpenAI chat format --------------------------
         #
         # The remote api_server can maintain session continuity via
-        # X-Sinoclaw-Session-Id, so it loads its own history.  We only
+        # X-Anan-Session-Id, so it loads its own history.  We only
         # need to send the current user message.  If the remote has
         # no history for this session yet, include what we have locally
         # so the first exchange has context.
@@ -13165,10 +13165,10 @@ class GatewayRunner:
         if proxy_key:
             headers["Authorization"] = f"Bearer {proxy_key}"
         if session_id:
-            headers["X-Sinoclaw-Session-Id"] = session_id
+            headers["X-Anan-Session-Id"] = session_id
 
         body = {
-            "model": "sinoclaw-agent",
+            "model": "anan",
             "messages": api_messages,
             "stream": True,
         }
@@ -13419,7 +13419,7 @@ class GatewayRunner:
         user_config = _load_gateway_config()
         platform_key = _platform_config_key(source.platform)
 
-        from sinoclaw_cli.tools_config import _get_platform_tools
+        from anan_cli.tools_config import _get_platform_tools
         enabled_toolsets = sorted(_get_platform_tools(user_config, platform_key))
         agent_cfg_local = user_config.get("agent") or {}
         disabled_toolsets = agent_cfg_local.get("disabled_toolsets") or None
@@ -13536,7 +13536,7 @@ class GatewayRunner:
                         if gate_on and not is_seen(_cfg, TOOL_PROGRESS_FLAG):
                             long_tool_hint_fired[0] = True
                             progress_queue.put(tool_progress_hint_gateway())
-                            mark_seen(_sinoclaw_home / "config.yaml", TOOL_PROGRESS_FLAG)
+                            mark_seen(_anan_home / "config.yaml", TOOL_PROGRESS_FLAG)
                 except Exception as _hint_err:
                     logger.debug("tool-progress onboarding hint failed: %s", _hint_err)
                 return
@@ -13622,7 +13622,7 @@ class GatewayRunner:
         #
         # Threading metadata is platform-specific:
         # - Slack DM threading needs event_message_id fallback (reply thread)
-        # - Telegram forum topics use message_thread_id; Sinoclaw-created private
+        # - Telegram forum topics use message_thread_id; Anan-created private
         #   DM topic lanes require both thread metadata and a reply anchor
         # - Feishu only honors reply_in_thread when sending a reply, so topic
         #   progress uses the triggering event message as the reply target
@@ -15045,7 +15045,7 @@ class GatewayRunner:
                 _pending_cmd_word = _pending_parts[0][1:].lower() if _pending_parts else ""
                 if _pending_cmd_word:
                     try:
-                        from sinoclaw_cli.commands import resolve_command as _rc_pending
+                        from anan_cli.commands import resolve_command as _rc_pending
                         if _rc_pending(_pending_cmd_word):
                             logger.info(
                                 "Discarding command '/%s' from pending queue — "
@@ -15330,18 +15330,18 @@ def _start_cron_ticker(stop_event: threading.Event, adapters=None, loop=None, in
     Background thread that ticks the cron scheduler at a regular interval.
     
     Runs inside the gateway process so cronjobs fire automatically without
-    needing a separate `sinoclaw cron daemon` or system cron entry.
+    needing a separate `anan cron daemon` or system cron entry.
 
     When ``adapters`` and ``loop`` are provided, passes them through to the
     cron delivery path so live adapters can be used for E2EE rooms.
 
     Also refreshes the channel directory every 5 minutes and prunes the
-    image/audio/document cache + expired ``sinoclaw debug share`` pastes
+    image/audio/document cache + expired ``anan debug share`` pastes
     once per hour.
     """
     from cron.scheduler import tick as cron_tick
     from gateway.platforms.base import cleanup_image_cache, cleanup_document_cache
-    from sinoclaw_cli.debug import _sweep_expired_pastes
+    from anan_cli.debug import _sweep_expired_pastes
 
     IMAGE_CACHE_EVERY = 60   # ticks — once per hour at default 60s interval
     CHANNEL_DIR_EVERY = 5    # ticks — every 5 minutes
@@ -15432,9 +15432,9 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
                  when the previous process hasn't fully exited yet.
     """
     # ── Duplicate-instance guard ──────────────────────────────────────
-    # Prevent two gateways from running under the same SINOCLAW_HOME.
-    # The PID file is scoped to SINOCLAW_HOME, so future multi-profile
-    # setups (each profile using a distinct SINOCLAW_HOME) will naturally
+    # Prevent two gateways from running under the same ANAN_HOME.
+    # The PID file is scoped to ANAN_HOME, so future multi-profile
+    # setups (each profile using a distinct ANAN_HOME) will naturally
     # allow concurrent instances without tripping this guard.
     from gateway.status import (
         acquire_gateway_runtime_lock,
@@ -15502,7 +15502,7 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
             # remove_pid_file() is a no-op when the PID doesn't match.
             # Force-unlink to cover the old-process-crashed case.
             try:
-                (get_sinoclaw_home() / "gateway.pid").unlink(missing_ok=True)
+                (get_anan_home() / "gateway.pid").unlink(missing_ok=True)
             except Exception:
                 pass
             # Clean up any takeover marker the old process didn't consume
@@ -15526,17 +15526,17 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
             except Exception:
                 pass
         else:
-            sinoclaw_home = str(get_sinoclaw_home())
+            anan_home = str(get_anan_home())
             logger.error(
-                "Another gateway instance is already running (PID %d, SINOCLAW_HOME=%s). "
-                "Use 'sinoclaw gateway restart' to replace it, or 'sinoclaw gateway stop' first.",
-                existing_pid, sinoclaw_home,
+                "Another gateway instance is already running (PID %d, ANAN_HOME=%s). "
+                "Use 'anan gateway restart' to replace it, or 'anan gateway stop' first.",
+                existing_pid, anan_home,
             )
             print(
                 f"\n❌ Gateway already running (PID {existing_pid}).\n"
-                f"   Use 'sinoclaw gateway restart' to replace it,\n"
-                f"   or 'sinoclaw gateway stop' to kill it first.\n"
-                f"   Or use 'sinoclaw gateway run --replace' to auto-replace.\n"
+                f"   Use 'anan gateway restart' to replace it,\n"
+                f"   or 'anan gateway stop' to kill it first.\n"
+                f"   Or use 'anan gateway run --replace' to auto-replace.\n"
             )
             return False
 
@@ -15550,8 +15550,8 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
     # Centralized logging — agent.log (INFO+), errors.log (WARNING+),
     # and gateway.log (INFO+, gateway-component records only).
     # Idempotent, so repeated calls from AIAgent.__init__ won't duplicate.
-    from sinoclaw_logging import setup_logging
-    setup_logging(sinoclaw_home=_sinoclaw_home, mode="gateway")
+    from anan_logging import setup_logging
+    setup_logging(anan_home=_anan_home, mode="gateway")
 
     # Optional stderr handler — level driven by -v/-q flags on the CLI.
     # verbosity=None (-q/--quiet): no stderr output
@@ -15586,7 +15586,7 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
         # before sending SIGTERM. If present, treat the signal as a
         # planned shutdown and exit 0 so systemd's Restart=on-failure
         # doesn't revive us (which would flap-fight the replacer when
-        # both services are enabled, e.g. sinoclaw.service + sinoclaw-
+        # both services are enabled, e.g. anan.service + sinoclaw-
         # gateway.service from pre-rename installs).
         planned_takeover = False
         try:
@@ -15595,7 +15595,7 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
         except Exception as e:
             logger.debug("Takeover marker check failed: %s", e)
 
-        # Planned stop check: service managers and `sinoclaw gateway stop`
+        # Planned stop check: service managers and `anan gateway stop`
         # also send SIGTERM, which is indistinguishable from an unexpected
         # external kill unless the CLI marks it first. SIGINT comes from an
         # interactive Ctrl+C and is likewise an intentional foreground stop.
@@ -15621,7 +15621,7 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
             _signal_initiated_shutdown = True
             logger.info("Received SIGTERM/SIGINT — initiating shutdown")
         # Diagnostic: log all sinoclaw-related processes so we can identify
-        # what triggered the signal (sinoclaw update, sinoclaw gateway restart,
+        # what triggered the signal (anan update, anan gateway restart,
         # a stale detached subprocess, etc.).
         try:
             import subprocess as _sp
@@ -15629,18 +15629,18 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
                 ["ps", "aux"],
                 capture_output=True, text=True, timeout=3,
             )
-            _sinoclaw_procs = [
+            _anan_procs = [
                 line for line in _ps.stdout.splitlines()
-                if ("sinoclaw" in line.lower() or "gateway" in line.lower())
+                if ("anan" in line.lower() or "gateway" in line.lower())
                 and str(os.getpid()) not in line.split()[1:2]  # exclude self
             ]
-            if _sinoclaw_procs:
+            if _anan_procs:
                 logger.warning(
-                    "Shutdown diagnostic — other sinoclaw processes running:\n  %s",
-                    "\n  ".join(_sinoclaw_procs),
+                    "Shutdown diagnostic — other anan processes running:\n  %s",
+                    "\n  ".join(_anan_procs),
                 )
             else:
-                logger.info("Shutdown diagnostic — no other sinoclaw processes found")
+                logger.info("Shutdown diagnostic — no other anan processes found")
         except Exception:
             pass
         asyncio.create_task(runner.stop())
@@ -15753,10 +15753,10 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
     # When an unexpected SIGTERM caused the shutdown and it wasn't a planned
     # restart (/restart, /update, SIGUSR1), exit non-zero so systemd's
     # Restart=on-failure revives the process.  This covers:
-    #   - sinoclaw update killing the gateway mid-work
+    #   - anan update killing the gateway mid-work
     #   - External kill commands
     #   - WSL2/container runtime sending unexpected signals
-    # `sinoclaw gateway stop` and interactive Ctrl+C are handled above as
+    # `anan gateway stop` and interactive Ctrl+C are handled above as
     # planned stops and should not trigger service-manager revival.
     if _signal_initiated_shutdown and not runner._restart_requested:
         logger.info(
@@ -15773,14 +15773,14 @@ def main():
     # Force UTF-8 stdio on Windows — gateway logs and startup banner would
     # otherwise UnicodeEncodeError on cp1252 consoles.  No-op on POSIX.
     try:
-        from sinoclaw_cli.stdio import configure_windows_stdio
+        from anan_cli.stdio import configure_windows_stdio
         configure_windows_stdio()
     except Exception:
         pass
 
     import argparse
     
-    parser = argparse.ArgumentParser(description="Sinoclaw Gateway - Multi-platform messaging")
+    parser = argparse.ArgumentParser(description="Anan Gateway - Multi-platform messaging")
     parser.add_argument("--config", "-c", help="Path to gateway config file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     

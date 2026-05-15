@@ -1,11 +1,11 @@
-# OpenAI-Compatible API Server for Sinoclaw Agent
+# OpenAI-Compatible API Server for Anan Agent
 
 ## Motivation
 
 Every major chat frontend (Open WebUI 126k★, LobeChat 73k★, LibreChat 34k★,
 AnythingLLM 56k★, NextChat 87k★, ChatBox 39k★, Jan 26k★, HF Chat-UI 8k★,
 big-AGI 7k★) connects to backends via the OpenAI-compatible REST API with
-SSE streaming. By exposing this endpoint, sinoclaw-agent becomes instantly
+SSE streaming. By exposing this endpoint, anan becomes instantly
 usable as a backend for all of them — no custom adapters needed.
 
 ## What It Enables
@@ -15,24 +15,24 @@ usable as a backend for all of them — no custom adapters needed.
 │  Open WebUI      │──┐
 │  LobeChat        │  │    POST /v1/chat/completions
 │  LibreChat       │  ├──► Authorization: Bearer <key>     ┌─────────────────┐
-│  AnythingLLM     │  │    {"messages": [...]}             │  sinoclaw-agent   │
+│  AnythingLLM     │  │    {"messages": [...]}             │  anan   │
 │  NextChat        │  │                                    │  gateway        │
 │  Any OAI client  │──┘    ◄── SSE streaming response      │  (API server)   │
 └──────────────────┘                                        └─────────────────┘
 ```
 
 A user would:
-1. Set `API_SERVER_ENABLED=true` in `~/.sinoclaw/.env`
-2. Run `sinoclaw gateway` (API server starts alongside Telegram/Discord/etc.)
+1. Set `API_SERVER_ENABLED=true` in `~/.anan/.env`
+2. Run `anan gateway` (API server starts alongside Telegram/Discord/etc.)
 3. Point Open WebUI (or any frontend) at `http://localhost:8642/v1`
-4. Chat with sinoclaw-agent through any OpenAI-compatible UI
+4. Chat with anan through any OpenAI-compatible UI
 
 ## Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
 | POST | `/v1/chat/completions` | Chat with the agent (streaming + non-streaming) |
-| GET | `/v1/models` | List available "models" (returns sinoclaw-agent as a model) |
+| GET | `/v1/models` | List available "models" (returns anan as a model) |
 | GET | `/health` | Health check |
 
 ## Architecture
@@ -69,7 +69,7 @@ Authorization: Bearer sinoclaw-api-key-here
 Content-Type: application/json
 
 {
-  "model": "sinoclaw-agent",
+  "model": "anan",
   "messages": [
     {"role": "system", "content": "You are a helpful assistant."},
     {"role": "user", "content": "What files are in the current directory?"}
@@ -85,7 +85,7 @@ Response:
   "id": "chatcmpl-abc123",
   "object": "chat.completion",
   "created": 1710000000,
-  "model": "sinoclaw-agent",
+  "model": "anan",
   "choices": [{
     "index": 0,
     "message": {
@@ -130,10 +130,10 @@ Response:
 {
   "object": "list",
   "data": [{
-    "id": "sinoclaw-agent",
+    "id": "anan",
     "object": "model",
     "created": 1710000000,
-    "owned_by": "sinoclaw-agent"
+    "owned_by": "anan"
   }]
 }
 ```
@@ -143,7 +143,7 @@ Response:
 ### 1. Session Management
 
 The OpenAI API is stateless — each request includes the full conversation.
-But sinoclaw-agent sessions have persistent state (memory, skills, tool context).
+But anan sessions have persistent state (memory, skills, tool context).
 
 **Approach: Hybrid**
 - Default: Stateless. Each request is independent. The `messages` array IS
@@ -187,9 +187,9 @@ Two modes:
 
 ### 5. Model Mapping
 
-Frontends send `"model": "sinoclaw-agent"` (or whatever). The actual LLM model
+Frontends send `"model": "anan"` (or whatever). The actual LLM model
 used is configured server-side in config.yaml. The API server maps any
-requested model name to the configured sinoclaw-agent model.
+requested model name to the configured anan model.
 
 Optionally, allow model passthrough: if the frontend sends
 `"model": "anthropic/claude-sonnet-4"`, the agent uses that model. Controlled
@@ -232,7 +232,7 @@ API_SERVER_KEY=your-secret-key
    - Responses API: server-side conversation storage via previous_response_id
      - Store full internal conversation (including tool calls) keyed by response ID
      - On subsequent requests, reconstruct full context from stored chain
-   - Frontend system prompt layered on top of sinoclaw-agent's core prompt
+   - Frontend system prompt layered on top of anan's core prompt
 
 2. `gateway/config.py` — add `Platform.API_SERVER` enum + config
 
@@ -273,7 +273,7 @@ API_SERVER_KEY=your-secret-key
 
 ## Compatibility Matrix
 
-Once implemented, sinoclaw-agent works as a drop-in backend for:
+Once implemented, anan works as a drop-in backend for:
 
 | Frontend | Stars | How to Connect |
 |----------|-------|---------------|

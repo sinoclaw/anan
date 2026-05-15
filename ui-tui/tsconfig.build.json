@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@sinoclaw/ink": ["src/types/sinoclaw-ink.d.ts"]
+      "@anan/ink": ["src/types/anan-ink.d.ts"]
     }
   }
 }

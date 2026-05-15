@@ -31,8 +31,8 @@ Usage:
         --openai.model_name YourModel
 
 Built by: github.com/jackx707
-Inspired by: GroceryMind — production Sinoclaw agent doing live web research
-             across German grocery stores (firecrawl + sinoclaw-agent)
+Inspired by: GroceryMind — production Anan agent doing live web research
+             across German grocery stores (firecrawl + anan)
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ from urllib.parse import urlparse
 
 from pydantic import Field
 
-# Ensure sinoclaw-agent root is on path
+# Ensure anan root is on path
 _repo_root = Path(__file__).resolve().parent.parent
 if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))
@@ -68,7 +68,7 @@ from atroposlib.envs.base import ScoredDataGroup
 from atroposlib.envs.server_handling.server_manager import APIServerConfig
 from atroposlib.type_definitions import Item
 
-from environments.sinoclaw_base_env import SinoclawAgentBaseEnv, SinoclawAgentEnvConfig
+from environments.anan_base_env import AnanAgentBaseEnv, AnanAgentEnvConfig
 from environments.agent_loop import AgentResult
 from environments.tool_context import ToolContext
 
@@ -146,7 +146,7 @@ SAMPLE_QUESTIONS = [
 # Configuration
 # ---------------------------------------------------------------------------
 
-class WebResearchEnvConfig(SinoclawAgentEnvConfig):
+class WebResearchEnvConfig(AnanAgentEnvConfig):
     """Configuration for the web research RL environment."""
 
     # Reward weights
@@ -198,7 +198,7 @@ class WebResearchEnvConfig(SinoclawAgentEnvConfig):
 # Environment
 # ---------------------------------------------------------------------------
 
-class WebResearchEnv(SinoclawAgentBaseEnv):
+class WebResearchEnv(AnanAgentBaseEnv):
     """
     RL environment for training multi-step web research skills.
 
@@ -433,7 +433,7 @@ class WebResearchEnv(SinoclawAgentBaseEnv):
         """
         import time
         import uuid
-        from environments.agent_loop import SinoclawAgentLoop
+        from environments.agent_loop import AnanAgentLoop
         from environments.tool_context import ToolContext
 
         items = self._eval_items
@@ -463,7 +463,7 @@ class WebResearchEnv(SinoclawAgentBaseEnv):
                 messages.append({"role": "user", "content": self.format_prompt(item)})
 
                 # Run the full agent loop with tools
-                agent = SinoclawAgentLoop(
+                agent = AnanAgentLoop(
                     server=self.server,
                     tool_schemas=tools,
                     valid_tool_names=valid_names,

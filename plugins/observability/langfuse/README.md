@@ -18,7 +18,7 @@ hermes plugins enable observability/langfuse
 
 ## Required credentials
 
-Set these in `~/.sinoclaw/.env` (or via `sinoclaw tools`):
+Set these in `~/.anan/.env` (or via `anan tools`):
 
 ```bash
 SINOCLAW_LANGFUSE_PUBLIC_KEY=pk-lf-...

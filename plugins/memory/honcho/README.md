@@ -19,7 +19,7 @@ hermes memory setup    # generic picker, also works
 Or manually:
 ```bash
 hermes config set memory.provider honcho
-echo "HONCHO_API_KEY=***" >> ~/.sinoclaw/.env
+echo "HONCHO_API_KEY=***" >> ~/.anan/.env
 ```
 
 ## Architecture Overview
@@ -105,8 +105,8 @@ Config is read from the first file that exists:
 
 | Priority | Path | Scope |
 |----------|------|-------|
-| 1 | `$SINOCLAW_HOME/honcho.json` | Profile-local (isolated Hermes instances) |
-| 2 | `~/.sinoclaw/honcho.json` | Default profile (shared host blocks) |
+| 1 | `$ANAN_HOME/honcho.json` | Profile-local (isolated Hermes instances) |
+| 2 | `~/.anan/honcho.json` | Default profile (shared host blocks) |
 | 3 | `~/.honcho/config.json` | Global (cross-app interop) |
 
 Host key is derived from the active Hermes profile: `hermes` (default) or `hermes.<profile>`.
@@ -160,17 +160,17 @@ The Honcho session name determines which conversation bucket memory lands in. Re
 | 2 | `/title` command (mid-session rename) | `"refactor-auth"` |
 | 3 | Gateway session key (Telegram, Discord, etc.) | `"agent-main-telegram-dm-8439114563"` |
 | 4 | `per-session` strategy | Sinoclaw session ID (`20260415_a3f2b1`) |
-| 5 | `per-repo` strategy | Git root directory name (`sinoclaw-agent`) |
+| 5 | `per-repo` strategy | Git root directory name (`anan`) |
 | 6 | `per-directory` strategy | Current directory basename (`src`) |
 | 7 | `global` strategy | Workspace name (`hermes`) |
 
 Gateway platforms always resolve via priority 3 (per-chat isolation) regardless of `sessionStrategy`. The strategy setting only affects CLI sessions.
 
-If `sessionPeerPrefix` is `true`, the peer name is prepended: `eri-sinoclaw-agent`.
+If `sessionPeerPrefix` is `true`, the peer name is prepended: `eri-anan`.
 
 #### What each strategy produces
 
-- **`per-directory`** — basename of `$PWD`. Opening sinoclaw in `~/code/myapp` and `~/code/other` gives two separate sessions. Same directory = same session across runs.
+- **`per-directory`** — basename of `$PWD`. Opening anan in `~/code/myapp` and `~/code/other` gives two separate sessions. Same directory = same session across runs.
 - **`per-repo`** — git root directory name. All subdirectories within a repo share one session. Falls back to `per-directory` if not inside a git repo.
 - **`per-session`** — Sinoclaw session ID (timestamp + hex). Every `hermes` invocation starts a fresh Honcho session. Falls back to `per-directory` if no session ID is available.
 - **`global`** — workspace name. One session for everything. Memory accumulates across all directories and runs.
@@ -272,16 +272,16 @@ Presets:
 
 | Command | Description |
 |---------|-------------|
-| `sinoclaw honcho setup` | Full interactive setup wizard |
-| `sinoclaw honcho status` | Show resolved config for active profile |
-| `sinoclaw honcho enable` / `disable` | Toggle Honcho for active profile |
-| `sinoclaw honcho mode <mode>` | Change recall or observation mode |
-| `sinoclaw honcho peer --user <name>` | Update user peer name |
-| `sinoclaw honcho peer --ai <name>` | Update AI peer name |
-| `sinoclaw honcho tokens --context <N>` | Set context token budget |
-| `sinoclaw honcho tokens --dialectic <N>` | Set dialectic max chars |
-| `sinoclaw honcho map <name>` | Map current directory to a session name |
-| `sinoclaw honcho sync` | Create host blocks for all Hermes profiles |
+| `anan honcho setup` | Full interactive setup wizard |
+| `anan honcho status` | Show resolved config for active profile |
+| `anan honcho enable` / `disable` | Toggle Honcho for active profile |
+| `anan honcho mode <mode>` | Change recall or observation mode |
+| `anan honcho peer --user <name>` | Update user peer name |
+| `anan honcho peer --ai <name>` | Update AI peer name |
+| `anan honcho tokens --context <N>` | Set context token budget |
+| `anan honcho tokens --dialectic <N>` | Set dialectic max chars |
+| `anan honcho map <name>` | Map current directory to a session name |
+| `anan honcho sync` | Create host blocks for all Hermes profiles |
 
 ## Example Config
 

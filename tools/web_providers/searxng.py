@@ -5,11 +5,11 @@ It implements ``WebSearchProvider`` only — there is no extract capability.
 
 Configuration::
 
-    # ~/.sinoclaw/.env
+    # ~/.anan/.env
     SEARXNG_URL=http://localhost:8080
 
     # Use SearXNG for search, pair with any extract provider:
-    # ~/.sinoclaw/config.yaml
+    # ~/.anan/config.yaml
     web:
       search_backend: "searxng"
       extract_backend: "firecrawl"

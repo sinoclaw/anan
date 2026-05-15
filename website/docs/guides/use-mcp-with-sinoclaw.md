@@ -42,7 +42,7 @@ If you installed Hermes with the standard install script, MCP support is already
 If you installed without extras and need to add MCP separately:
 
 ```bash
-cd ~/.sinoclaw/sinoclaw-agent
+cd ~/.anan/anan
 uv pip install -e ".[mcp]"
 ```
 

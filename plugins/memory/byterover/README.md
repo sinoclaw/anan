@@ -21,7 +21,7 @@ Or manually:
 ```bash
 hermes config set memory.provider byterover
 # Optional cloud sync:
-echo "BRV_API_KEY=your-key" >> ~/.sinoclaw/.env
+echo "BRV_API_KEY=your-key" >> ~/.anan/.env
 ```
 
 ## Config
@@ -30,7 +30,7 @@ echo "BRV_API_KEY=your-key" >> ~/.sinoclaw/.env
 |---------|----------|-------------|
 | `BRV_API_KEY` | No | Cloud sync key (optional, local-first by default) |
 
-Working directory: `$SINOCLAW_HOME/byterover/` (profile-scoped).
+Working directory: `$ANAN_HOME/byterover/` (profile-scoped).
 
 ## Tools
 

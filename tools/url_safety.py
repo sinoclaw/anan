@@ -105,7 +105,7 @@ def _global_allow_private_urls() -> bool:
 
     # 2. Config file
     try:
-        from sinoclaw_cli.config import read_raw_config
+        from anan_cli.config import read_raw_config
         cfg = read_raw_config()
         # security.allow_private_urls (preferred)
         sec = cfg.get("security", {})

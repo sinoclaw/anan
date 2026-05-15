@@ -38,7 +38,7 @@ Creates a fresh profile with bundled skills seeded. Run `mybot setup` to configu
 hermes profile create work --clone
 ```
 
-Copies your current profile's `config.yaml`, `.env`, and `SOUL.md` into the new profile. Same API keys and model, but fresh sessions and memory. Edit `~/.sinoclaw/profiles/work/.env` for different API keys, or `~/.sinoclaw/profiles/work/SOUL.md` for a different personality.
+Copies your current profile's `config.yaml`, `.env`, and `SOUL.md` into the new profile. Same API keys and model, but fresh sessions and memory. Edit `~/.anan/profiles/work/.env` for different API keys, or `~/.anan/profiles/work/SOUL.md` for a different personality.
 
 ### Clone everything (`--clone-all`)
 
@@ -145,10 +145,10 @@ Each profile has its own `.env` file. Configure a different Telegram/Discord/Sla
 
 ```bash
 # Edit coder's tokens
-nano ~/.sinoclaw/profiles/coder/.env
+nano ~/.anan/profiles/coder/.env
 
 # Edit assistant's tokens
-nano ~/.sinoclaw/profiles/assistant/.env
+nano ~/.anan/profiles/assistant/.env
 ```
 
 ### Safety: token locks
@@ -158,8 +158,8 @@ If two profiles accidentally use the same bot token, the second gateway will be 
 ### Persistent services
 
 ```bash
-coder gateway install         # creates sinoclaw-gateway-coder systemd/launchd service
-assistant gateway install     # creates sinoclaw-gateway-assistant service
+coder gateway install         # creates anan-gateway-coder systemd/launchd service
+assistant gateway install     # creates anan-gateway-assistant service
 ```
 
 Each profile gets its own service name. They run independently.
@@ -174,7 +174,7 @@ Each profile has its own:
 
 ```bash
 coder config set model.default anthropic/claude-sonnet-4
-echo "You are a focused coding assistant." > ~/.sinoclaw/profiles/coder/SOUL.md
+echo "You are a focused coding assistant." > ~/.anan/profiles/coder/SOUL.md
 ```
 
 If you want this profile to work in a specific project by default, also set its own `terminal.cwd`:
@@ -185,10 +185,10 @@ coder config set terminal.cwd /absolute/path/to/project
 
 ## Updating
 
-`sinoclaw update` pulls code once (shared) and syncs new bundled skills to **all** profiles automatically:
+`anan update` pulls code once (shared) and syncs new bundled skills to **all** profiles automatically:
 
 ```bash
-sinoclaw update
+anan update
 # → Code updated (12 commits)
 # → Skills synced: default (up to date), coder (+2 new), assistant (+2 new)
 ```
@@ -233,9 +233,9 @@ Add the line to your `~/.bashrc` or `~/.zshrc` for persistent completion. Comple
 
 ## How it works
 
-Profiles use the `SINOCLAW_HOME` environment variable. When you run `coder chat`, the wrapper script sets `SINOCLAW_HOME=~/.sinoclaw/profiles/coder` before launching hermes. Since 119+ files in the codebase resolve paths via `get_sinoclaw_home()`, Hermes state automatically scopes to the profile's directory — config, sessions, memory, skills, state database, gateway PID, logs, and cron jobs.
+Profiles use the `ANAN_HOME` environment variable. When you run `coder chat`, the wrapper script sets `ANAN_HOME=~/.anan/profiles/coder` before launching hermes. Since 119+ files in the codebase resolve paths via `get_anan_home()`, Hermes state automatically scopes to the profile's directory — config, sessions, memory, skills, state database, gateway PID, logs, and cron jobs.
 
-This is separate from terminal working directory. Tool execution starts from `terminal.cwd` (or the launch directory when `cwd: "."` on the local backend), not automatically from `SINOCLAW_HOME`.
+This is separate from terminal working directory. Tool execution starts from `terminal.cwd` (or the launch directory when `cwd: "."` on the local backend), not automatically from `ANAN_HOME`.
 
 The default profile is simply `~/.sinoclaw` itself. No migration needed — existing installs work identically.
 

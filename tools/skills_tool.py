@@ -69,7 +69,7 @@ Usage:
 import json
 import logging
 
-from sinoclaw_constants import get_sinoclaw_home, display_sinoclaw_home
+from anan_constants import get_anan_home, display_anan_home
 import os
 import re
 from enum import Enum
@@ -77,16 +77,16 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Set, Tuple
 
 from tools.registry import registry, tool_error
-from sinoclaw_cli.config import cfg_get
+from anan_cli.config import cfg_get
 
 logger = logging.getLogger(__name__)
 
 
-# All skills live in ~/.sinoclaw/skills/ (seeded from bundled skills/ on install).
+# All skills live in ~/.anan/skills/ (seeded from bundled skills/ on install).
 # This is the single source of truth -- agent edits, hub installs, and bundled
 # skills all coexist here without polluting the git repo.
-SINOCLAW_HOME = get_sinoclaw_home()
-SKILLS_DIR = SINOCLAW_HOME / "skills"
+ANAN_HOME = get_anan_home()
+SKILLS_DIR = ANAN_HOME / "skills"
 
 # Anthropic-recommended limits for progressive disclosure efficiency
 MAX_NAME_LENGTH = 64
@@ -108,8 +108,8 @@ _secret_capture_callback = None
 
 
 def load_env() -> Dict[str, str]:
-    """Load profile-scoped environment variables from SINOCLAW_HOME/.env."""
-    env_path = get_sinoclaw_home() / ".env"
+    """Load profile-scoped environment variables from ANAN_HOME/.env."""
+    env_path = get_anan_home() / ".env"
     env_vars: Dict[str, str] = {}
     if not env_path.exists():
         return env_vars
@@ -411,7 +411,7 @@ def _gateway_setup_hint() -> str:
 
         return GATEWAY_SECRET_CAPTURE_UNSUPPORTED_MESSAGE
     except Exception:
-        return f"Secure secret entry is not available. Load this skill in the local CLI to be prompted, or add the key to {display_sinoclaw_home()}/.env manually."
+        return f"Secure secret entry is not available. Load this skill in the local CLI to be prompted, or add the key to {display_anan_home()}/.env manually."
 
 
 def _build_setup_note(
@@ -447,7 +447,7 @@ def _get_category_from_path(skill_path: Path) -> Optional[str]:
     """
     Extract category from skill path based on directory structure.
 
-    For paths like: ~/.sinoclaw/skills/mlops/axolotl/SKILL.md -> "mlops"
+    For paths like: ~/.anan/skills/mlops/axolotl/SKILL.md -> "mlops"
     Also works for external skill dirs configured via skills.external_dirs.
     """
     # Try the module-level SKILLS_DIR first (respects monkeypatching in tests),
@@ -533,7 +533,7 @@ def _is_skill_disabled(name: str, platform: str = None) -> bool:
     3. ``SINOCLAW_SESSION_PLATFORM`` from gateway session context
     """
     try:
-        from sinoclaw_cli.config import load_config
+        from anan_cli.config import load_config
         config = load_config()
         skills_cfg = config.get("skills", {})
         resolved_platform = platform or os.getenv("SINOCLAW_PLATFORM") or _get_session_platform()
@@ -547,11 +547,11 @@ def _is_skill_disabled(name: str, platform: str = None) -> bool:
 
 
 def _find_all_skills(*, skip_disabled: bool = False) -> List[Dict[str, Any]]:
-    """Recursively find all skills in ~/.sinoclaw/skills/ and external dirs.
+    """Recursively find all skills in ~/.anan/skills/ and external dirs.
 
     Args:
         skip_disabled: If True, return ALL skills regardless of disabled
-            state (used by ``sinoclaw skills`` config UI). Default False
+            state (used by ``anan skills`` config UI). Default False
             filters out disabled skills.
 
     Returns:
@@ -693,7 +693,7 @@ def skills_list(category: str = None, task_id: str = None) -> str:
                     "success": True,
                     "skills": [],
                     "categories": [],
-                    "message": f"No skills found. Skills directory created at {display_sinoclaw_home()}/skills/",
+                    "message": f"No skills found. Skills directory created at {display_anan_home()}/skills/",
                 },
                 ensure_ascii=False,
             )
@@ -751,7 +751,7 @@ def _serve_plugin_skill(
     session_id: str | None = None,
 ) -> str:
     """Read a plugin-provided skill, apply guards, return JSON."""
-    from sinoclaw_cli.plugins import _get_disabled_plugins, get_plugin_manager
+    from anan_cli.plugins import _get_disabled_plugins, get_plugin_manager
 
     if namespace in _get_disabled_plugins():
         return json.dumps(
@@ -759,7 +759,7 @@ def _serve_plugin_skill(
                 "success": False,
                 "error": (
                     f"Plugin '{namespace}' is disabled. "
-                    f"Re-enable with: sinoclaw plugins enable {namespace}"
+                    f"Re-enable with: anan plugins enable {namespace}"
                 ),
             },
             ensure_ascii=False,
@@ -874,7 +874,7 @@ def skill_view(
         # Bare names fall through to the existing flat-tree scan below.
         if ":" in name:
             from agent.skill_utils import is_valid_namespace, parse_qualified_name
-            from sinoclaw_cli.plugins import discover_plugins, get_plugin_manager
+            from anan_cli.plugins import discover_plugins, get_plugin_manager
 
             namespace, bare = parse_qualified_name(name)
             if not is_valid_namespace(namespace):
@@ -1048,7 +1048,7 @@ def skill_view(
         if _outside_skills_dir or _injection_detected:
             _warnings = []
             if _outside_skills_dir:
-                _warnings.append(f"skill file is outside the trusted skills directory (~/.sinoclaw/skills/): {skill_md}")
+                _warnings.append(f"skill file is outside the trusted skills directory (~/.anan/skills/): {skill_md}")
             if _injection_detected:
                 _warnings.append("skill content contains patterns that may indicate prompt injection")
             logging.getLogger(__name__).warning("Skill security warning for '%s': %s", name, "; ".join(_warnings))
@@ -1077,7 +1077,7 @@ def skill_view(
                     "success": False,
                     "error": (
                         f"Skill '{resolved_name}' is disabled. "
-                        "Enable it with `sinoclaw skills` or inspect the files directly on disk."
+                        "Enable it with `anan skills` or inspect the files directly on disk."
                     ),
                 },
                 ensure_ascii=False,
@@ -1233,15 +1233,15 @@ def skill_view(
                     )
 
         # Read tags/related_skills with backward compat:
-        # Check metadata.sinoclaw.* first (agentskills.io convention), fall back to top-level
-        sinoclaw_meta = {}
+        # Check metadata.anan.* first (agentskills.io convention), fall back to top-level
+        anan_meta = {}
         metadata = frontmatter.get("metadata")
         if isinstance(metadata, dict):
-            sinoclaw_meta = metadata.get("hermes", {}) or {}
+            anan_meta = metadata.get("hermes", {}) or {}
 
-        tags = _parse_tags(sinoclaw_meta.get("tags") or frontmatter.get("tags", ""))
+        tags = _parse_tags(anan_meta.get("tags") or frontmatter.get("tags", ""))
         related_skills = _parse_tags(
-            sinoclaw_meta.get("related_skills") or frontmatter.get("related_skills", "")
+            anan_meta.get("related_skills") or frontmatter.get("related_skills", "")
         )
 
         # Build linked files structure for clear discovery

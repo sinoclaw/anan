@@ -1,4 +1,4 @@
-# Sinoclaw Agent Has Had "Routines" Since March
+# Anan Agent Has Had "Routines" Since March
 
 Anthropic just announced [Claude Code Routines](https://claude.com/blog/introducing-routines-in-claude-code) — scheduled tasks, GitHub event triggers, and API-triggered agent runs. Bundled prompt + repo + connectors, running on their infrastructure.
 
@@ -48,7 +48,7 @@ Every use case in their blog post — backlog triage, docs drift, deploy verific
 
 ## What's Different
 
-| | Claude Code Routines | Sinoclaw Agent |
+| | Claude Code Routines | Anan Agent |
 |---|---|---|
 | **Scheduled tasks** | ✅ Schedule-based | ✅ Any cron expression + human-readable intervals |
 | **GitHub triggers** | ✅ PR, issue, push events | ✅ Any GitHub event via webhook subscriptions |
@@ -75,7 +75,7 @@ Run a Python script *before* the agent. The script's stdout becomes context. The
 ```bash
 hermes cron create "every 1h" \
   "If CHANGE DETECTED, summarize what changed. If NO_CHANGE, respond with [SILENT]." \
-  --script ~/.sinoclaw/scripts/watch-site.py \
+  --script ~/.anan/scripts/watch-site.py \
   --name "Pricing monitor" \
   --deliver telegram
 ```
@@ -124,11 +124,11 @@ A nightly backlog triage on Sonnet costs roughly $0.02-0.05. A monitoring check 
 
 ## Get Started
 
-Sinoclaw Agent is open source and free. The automation infrastructure — cron scheduler, webhook platform, skill system, multi-platform delivery — is built in.
+Anan Agent is open source and free. The automation infrastructure — cron scheduler, webhook platform, skill system, multi-platform delivery — is built in.
 
 ```bash
-pip install sinoclaw-agent
-sinoclaw setup
+pip install anan
+anan setup
 ```
 
 Set up a scheduled task in 30 seconds:
@@ -141,7 +141,7 @@ hermes cron create "0 9 * * 1" \
 
 Set up a GitHub webhook in 60 seconds:
 ```bash
-sinoclaw gateway setup    # enable webhooks
+anan gateway setup    # enable webhooks
 hermes webhook subscribe pr-review \
   --events "pull_request" \
   --prompt "Review PR #{pull_request.number}: {pull_request.title}" \
@@ -149,12 +149,12 @@ hermes webhook subscribe pr-review \
   --deliver github_comment
 ```
 
-Full automation templates gallery: [sinoclaw-agent.nousresearch.com/docs/guides/automation-templates](https://sinoclaw-agent.nousresearch.com/docs/guides/automation-templates)
+Full automation templates gallery: [anan.nousresearch.com/docs/guides/automation-templates](https://anan.nousresearch.com/docs/guides/automation-templates)
 
-Documentation: [sinoclaw-agent.nousresearch.com](https://sinoclaw-agent.nousresearch.com)
+Documentation: [anan.nousresearch.com](https://anan.nousresearch.com)
 
-GitHub: [github.com/sinoclaw/sinoclaw-agent](https://github.com/sinoclaw/sinoclaw-agent)
+GitHub: [github.com/anan/anan](https://github.com/anan/anan)
 
 ---
 
-*Sinoclaw Agent is built by [Sinoclaw Team](https://github.com/sinoclaw). Open source, model-agnostic, runs on your infrastructure.*
+*Anan Agent is built by [Anan Team](https://github.com/anan). Open source, model-agnostic, runs on your infrastructure.*

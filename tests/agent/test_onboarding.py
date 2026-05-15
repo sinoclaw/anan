@@ -209,7 +209,7 @@ class TestOpenclawResidueHint:
         # `migrate` is the non-destructive path — should lead the banner.
         msg = openclaw_residue_hint_cli()
         assert "sinoclaw claw migrate" in msg
-        assert "~/.openclaw" in msg
+        assert "~/.anan" in msg
 
     def test_hint_mentions_cleanup_command(self):
         # `cleanup` is mentioned as the follow-up archive step.

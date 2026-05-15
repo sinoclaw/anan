@@ -197,7 +197,7 @@
 
   in {
     options.services.sinoclaw-agent = with lib; {
-      enable = mkEnableOption "Sinoclaw Agent gateway service";
+      enable = mkEnableOption "Anan Agent gateway service";
 
       # ── Package ──────────────────────────────────────────────────────────
       package = mkOption {
@@ -273,7 +273,7 @@
         description = ''
           Paths to environment files containing secrets (API keys, tokens).
           Contents are merged into $SINOCLAW_HOME/.env at activation time.
-          Hermes reads this file on every startup via load_sinoclaw_dotenv().
+          Hermes reads this file on every startup via load_anan_dotenv().
         '';
       };
 
@@ -449,7 +449,7 @@
       extraArgs = mkOption {
         type = types.listOf types.str;
         default = [ ];
-        description = "Extra command-line arguments for `sinoclaw gateway`.";
+        description = "Extra command-line arguments for `anan gateway`.";
       };
 
       extraPackages = mkOption {
@@ -493,7 +493,7 @@
         description = ''
           Python packages to add to PYTHONPATH for entry-point plugin discovery.
           These are pip-packaged plugins that register via the
-          sinoclaw_agent.plugins entry-point group. Each package must be built
+          anan_agent.plugins entry-point group. Each package must be built
           with the same Python interpreter as hermes (python312).
         '';
         example = literalExpression ''
@@ -567,7 +567,7 @@
           type = types.listOf types.str;
           default = [ ];
           description = ''
-            Interactive users who get a ~/.sinoclaw symlink to the service
+            Interactive users who get a ~/.anan symlink to the service
             stateDir. These users are automatically added to the hermes group.
           '';
           example = [ "sidbin" ];
@@ -624,7 +624,7 @@
       # ── Host CLI ──────────────────────────────────────────────────────
       # Add the hermes CLI to system PATH and export SINOCLAW_HOME system-wide
       # so interactive shells share state (sessions, skills, cron) with the
-      # gateway service instead of creating a separate ~/.sinoclaw/.
+      # gateway service instead of creating a separate ~/.anan/.
       (lib.mkIf cfg.addToSystemPackages {
         environment.systemPackages = [ effectivePackage ];
         environment.variables.SINOCLAW_HOME = "${cfg.stateDir}/.hermes";
@@ -685,11 +685,11 @@
         systemd.tmpfiles.rules = [
           "d ${cfg.stateDir}                2770 ${cfg.user} ${cfg.group} - -"
           "d ${cfg.stateDir}/.hermes        2770 ${cfg.user} ${cfg.group} - -"
-          "d ${cfg.stateDir}/.sinoclaw/cron   2770 ${cfg.user} ${cfg.group} - -"
-          "d ${cfg.stateDir}/.sinoclaw/sessions 2770 ${cfg.user} ${cfg.group} - -"
-          "d ${cfg.stateDir}/.sinoclaw/logs   2770 ${cfg.user} ${cfg.group} - -"
-          "d ${cfg.stateDir}/.sinoclaw/memories 2770 ${cfg.user} ${cfg.group} - -"
-          "d ${cfg.stateDir}/.sinoclaw/plugins 2770 ${cfg.user} ${cfg.group} - -"
+          "d ${cfg.stateDir}/.anan/cron   2770 ${cfg.user} ${cfg.group} - -"
+          "d ${cfg.stateDir}/.anan/sessions 2770 ${cfg.user} ${cfg.group} - -"
+          "d ${cfg.stateDir}/.anan/logs   2770 ${cfg.user} ${cfg.group} - -"
+          "d ${cfg.stateDir}/.anan/memories 2770 ${cfg.user} ${cfg.group} - -"
+          "d ${cfg.stateDir}/.anan/plugins 2770 ${cfg.user} ${cfg.group} - -"
           "d ${cfg.stateDir}/home           0750 ${cfg.user} ${cfg.group} - -"
           "d ${cfg.workingDirectory}         2770 ${cfg.user} ${cfg.group} - -"
         ];
@@ -712,10 +712,10 @@
             \( -name "*.db" -o -name "*.db-wal" -o -name "*.db-shm" -o -name "SOUL.md" \) \
             -exec chmod g+rw {} + 2>/dev/null || true
           for _subdir in cron sessions logs memories plugins; do
-            mkdir -p "${cfg.stateDir}/.sinoclaw/$_subdir"
-            chown ${cfg.user}:${cfg.group} "${cfg.stateDir}/.sinoclaw/$_subdir"
-            chmod 2770 "${cfg.stateDir}/.sinoclaw/$_subdir"
-            find "${cfg.stateDir}/.sinoclaw/$_subdir" -type f \
+            mkdir -p "${cfg.stateDir}/.anan/$_subdir"
+            chown ${cfg.user}:${cfg.group} "${cfg.stateDir}/.anan/$_subdir"
+            chmod 2770 "${cfg.stateDir}/.anan/$_subdir"
+            find "${cfg.stateDir}/.anan/$_subdir" -type f \
               -exec chmod g+rw {} + 2>/dev/null || true
           done
 
@@ -723,33 +723,33 @@
           # Preserves user-added keys (skills, streaming, etc.); Nix keys win.
           # If configFile is user-provided (not generated), overwrite instead of merge.
           ${if cfg.configFile != null then ''
-            install -o ${cfg.user} -g ${cfg.group} -m 0640 -D ${configFile} ${cfg.stateDir}/.sinoclaw/config.yaml
+            install -o ${cfg.user} -g ${cfg.group} -m 0640 -D ${configFile} ${cfg.stateDir}/.anan/config.yaml
           '' else ''
-            ${configMergeScript} ${generatedConfigFile} ${cfg.stateDir}/.sinoclaw/config.yaml
-            chown ${cfg.user}:${cfg.group} ${cfg.stateDir}/.sinoclaw/config.yaml
-            chmod 0640 ${cfg.stateDir}/.sinoclaw/config.yaml
+            ${configMergeScript} ${generatedConfigFile} ${cfg.stateDir}/.anan/config.yaml
+            chown ${cfg.user}:${cfg.group} ${cfg.stateDir}/.anan/config.yaml
+            chmod 0640 ${cfg.stateDir}/.anan/config.yaml
           ''}
 
           # Managed mode marker (so interactive shells also detect NixOS management)
-          touch ${cfg.stateDir}/.sinoclaw/.managed
-          chown ${cfg.user}:${cfg.group} ${cfg.stateDir}/.sinoclaw/.managed
-          chmod 0644 ${cfg.stateDir}/.sinoclaw/.managed
+          touch ${cfg.stateDir}/.anan/.managed
+          chown ${cfg.user}:${cfg.group} ${cfg.stateDir}/.anan/.managed
+          chmod 0644 ${cfg.stateDir}/.anan/.managed
 
           # Container mode metadata — tells the host CLI to exec into the
           # container instead of running locally. Removed when container mode
           # is disabled so the host CLI falls back to native execution.
           ${if cfg.container.enable then ''
-            cat > ${cfg.stateDir}/.sinoclaw/.container-mode <<'SINOCLAW_CONTAINER_MODE_EOF'
+            cat > ${cfg.stateDir}/.anan/.container-mode <<'SINOCLAW_CONTAINER_MODE_EOF'
     # Written by NixOS activation script. Do not edit manually.
     backend=${cfg.container.backend}
     container_name=${containerName}
     exec_user=${cfg.user}
-    sinoclaw_bin=${containerDataDir}/current-package/bin/hermes
+    anan_bin=${containerDataDir}/current-package/bin/hermes
     SINOCLAW_CONTAINER_MODE_EOF
-            chown ${cfg.user}:${cfg.group} ${cfg.stateDir}/.sinoclaw/.container-mode
-            chmod 0644 ${cfg.stateDir}/.sinoclaw/.container-mode
+            chown ${cfg.user}:${cfg.group} ${cfg.stateDir}/.anan/.container-mode
+            chmod 0644 ${cfg.stateDir}/.anan/.container-mode
           '' else ''
-            rm -f ${cfg.stateDir}/.sinoclaw/.container-mode
+            rm -f ${cfg.stateDir}/.anan/.container-mode
 
             # Remove symlink bridge for hostUsers
             ${lib.concatStringsSep "\n" (map (user:
@@ -765,7 +765,7 @@
           ''}
 
           # ── Symlink bridge for interactive users ───────────────────────
-          # Create ~/.sinoclaw -> stateDir/.hermes for each hostUser so the
+          # Create ~/.anan -> stateDir/.hermes for each hostUser so the
           # host CLI shares state with the container service.
           # Only runs when container mode is enabled.
           ${lib.optionalString cfg.container.enable
@@ -791,19 +791,19 @@
           # Seed auth file if provided
           ${lib.optionalString (cfg.authFile != null) ''
             ${if cfg.authFileForceOverwrite then ''
-              install -o ${cfg.user} -g ${cfg.group} -m 0600 ${cfg.authFile} ${cfg.stateDir}/.sinoclaw/auth.json
+              install -o ${cfg.user} -g ${cfg.group} -m 0600 ${cfg.authFile} ${cfg.stateDir}/.anan/auth.json
             '' else ''
-              if [ ! -f ${cfg.stateDir}/.sinoclaw/auth.json ]; then
-                install -o ${cfg.user} -g ${cfg.group} -m 0600 ${cfg.authFile} ${cfg.stateDir}/.sinoclaw/auth.json
+              if [ ! -f ${cfg.stateDir}/.anan/auth.json ]; then
+                install -o ${cfg.user} -g ${cfg.group} -m 0600 ${cfg.authFile} ${cfg.stateDir}/.anan/auth.json
               fi
             ''}
           ''}
 
           # Seed .env from Nix-declared environment + environmentFiles.
-          # Hermes reads $SINOCLAW_HOME/.env at startup via load_sinoclaw_dotenv(),
+          # Hermes reads $SINOCLAW_HOME/.env at startup via load_anan_dotenv(),
           # so this is the single source of truth for both native and container mode.
           ${lib.optionalString (cfg.environment != {} || cfg.environmentFiles != []) ''
-            ENV_FILE="${cfg.stateDir}/.sinoclaw/.env"
+            ENV_FILE="${cfg.stateDir}/.anan/.env"
             install -o ${cfg.user} -g ${cfg.group} -m 0640 /dev/null "$ENV_FILE"
             cat > "$ENV_FILE" <<'SINOCLAW_NIX_ENV_EOF'
     ${envFileContent}
@@ -823,7 +823,7 @@
 
         # ── Declarative plugins ─────────────────────────────────────────
         # Remove stale managed symlinks (plugins removed from config)
-        find ${cfg.stateDir}/.sinoclaw/plugins -maxdepth 1 -type l -name 'nix-managed-*' -delete 2>/dev/null || true
+        find ${cfg.stateDir}/.anan/plugins -maxdepth 1 -type l -name 'nix-managed-*' -delete 2>/dev/null || true
 
         ${lib.concatStringsSep "\n" (map (plugin:
           let
@@ -833,8 +833,8 @@
               echo "ERROR: extraPlugins entry '${plugin}' has no plugin.yaml" >&2
               exit 1
             fi
-            ln -sfn ${plugin} ${cfg.stateDir}/.sinoclaw/plugins/nix-managed-${name}
-            chown -h ${cfg.user}:${cfg.group} ${cfg.stateDir}/.sinoclaw/plugins/nix-managed-${name}
+            ln -sfn ${plugin} ${cfg.stateDir}/.anan/plugins/nix-managed-${name}
+            chown -h ${cfg.user}:${cfg.group} ${cfg.stateDir}/.anan/plugins/nix-managed-${name}
           '') cfg.extraPlugins)}
         '';
       }
@@ -844,7 +844,7 @@
       # ══════════════════════════════════════════════════════════════════
       (lib.mkIf (!cfg.container.enable) {
         systemd.services.sinoclaw-agent = {
-          description = "Sinoclaw Agent Gateway";
+          description = "Anan Agent Gateway";
           wantedBy = [ "multi-user.target" ];
           after = [ "network-online.target" ];
           wants = [ "network-online.target" ];
@@ -862,7 +862,7 @@
             WorkingDirectory = cfg.workingDirectory;
 
             # cfg.environment and cfg.environmentFiles are written to
-            # $SINOCLAW_HOME/.env by the activation script. load_sinoclaw_dotenv()
+            # $SINOCLAW_HOME/.env by the activation script. load_anan_dotenv()
             # reads them at Python startup — no systemd EnvironmentFile needed.
 
             ExecStart = lib.concatStringsSep " " ([
@@ -905,7 +905,7 @@
         virtualisation.docker.enable = lib.mkDefault (cfg.container.backend == "docker");
 
         systemd.services.sinoclaw-agent = {
-          description = "Sinoclaw Agent Gateway (container)";
+          description = "Anan Agent Gateway (container)";
           wantedBy = [ "multi-user.target" ];
           after = [ "network-online.target" ]
             ++ lib.optional (cfg.container.backend == "docker") "docker.service";
@@ -953,7 +953,7 @@
                 --env MESSAGING_CWD=${containerWorkDir} \
                 ${lib.concatStringsSep " " cfg.container.extraOptions} \
                 ${cfg.container.image} \
-                ${containerDataDir}/current-package/bin/sinoclaw gateway run --replace ${lib.concatStringsSep " " cfg.extraArgs}
+                ${containerDataDir}/current-package/bin/anan gateway run --replace ${lib.concatStringsSep " " cfg.extraArgs}
 
               echo "${containerIdentity}" > ${identityFile}
             fi

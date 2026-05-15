@@ -137,7 +137,7 @@ actual = str(n.width) + 'x' + str(n.height)
 
 ### Config location
 
-`$SINOCLAW_HOME/config.yaml` (defaults to `~/.sinoclaw/config.yaml` when `SINOCLAW_HOME` is unset)
+`$ANAN_HOME/config.yaml` (defaults to `~/.anan/config.yaml` when `ANAN_HOME` is unset)
 
 ### MCP entry format
 

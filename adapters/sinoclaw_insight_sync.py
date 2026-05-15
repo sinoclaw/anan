@@ -1,23 +1,23 @@
 """
-Sinoclaw Insight Sync — anan → sinoclaw 洞察同步
+Anan Insight Sync — anan → anan 洞察同步
 =================================================
 
-把 anan 最新的 L9 wisdom_facts 和 L5 预测 accuracy 写入 sinoclaw 的 state.db，
-作为 system 角色消息注入到活动 session，让 sinoclaw AIAgent 在下一轮对话时
+把 anan 最新的 L9 wisdom_facts 和 L5 预测 accuracy 写入 anan 的 state.db，
+作为 system 角色消息注入到活动 session，让 anan AIAgent 在下一轮对话时
 能感知 anan 的认知状态。
 
 工作流程:
   cron 触发 → 读取 ~/.anan/wisdom_latest.json
-          → 写入 sinoclaw state.db sessions 表（role=system）
-          → sinoclaw AIAgent 下次 chat() 时自动带入上下文
+          → 写入 anan state.db sessions 表（role=system）
+          → anan AIAgent 下次 chat() 时自动带入上下文
 
 跑法（手动）:
-    python3 -m adapters.sinoclaw_insight_sync
+    python3 -m adapters.anan_insight_sync
 
 配置 cron（每小时一次）:
-    sinoclaw cron create \
+    anan cron create \
       --name "anan_insight_sync" \
-      --prompt "python3 -m adapters.sinoclaw_insight_sync" \
+      --prompt "python3 -m adapters.anan_insight_sync" \
       --schedule "0 * * * *"
 """
 
@@ -31,8 +31,8 @@ from pathlib import Path
 
 # anan 的wisdom输出文件（由 live_causal_demo 或 anan 运行时写入）
 WISDOM_FILE = Path.home() / ".anan" / "wisdom_latest.json"
-# sinoclaw 的 session DB
-SINOCLAW_DB = Path.home() / ".sinoclaw" / "state.db"
+# anan 的 session DB
+SINOCLAW_DB = Path.home() / ".anan" / "state.db"
 
 
 def load_latest_wisdom() -> dict | None:
@@ -45,10 +45,10 @@ def load_latest_wisdom() -> dict | None:
         return None
 
 
-def write_to_sinoclaw_session(insight: dict) -> int | None:
-    """把洞察写入 sinoclaw 最新活动的 session（role=system）。"""
+def write_to_anan_session(insight: dict) -> int | None:
+    """把洞察写入 anan 最新活动的 session（role=system）。"""
     if not SINOCLAW_DB.exists():
-        print(f"⚠️  sinoclaw state.db 不存在: {SINOCLAW_DB}")
+        print(f"⚠️  anan state.db 不存在: {SINOCLAW_DB}")
         return None
 
     try:
@@ -113,7 +113,7 @@ def write_to_sinoclaw_session(insight: dict) -> int | None:
         conn.commit()
         conn.close()
 
-        print(f"✅ 洞察已写入 sinoclaw session {session_id}")
+        print(f"✅ 洞察已写入 anan session {session_id}")
         print(f"   wisdom={len(wisdom_items)} 条, accuracy={acc:.0%}")
         return session_id
 
@@ -123,7 +123,7 @@ def write_to_sinoclaw_session(insight: dict) -> int | None:
 
 
 def main() -> None:
-    print(f"⏰ [{datetime.now().strftime('%H:%M:%S')}] anan → sinoclaw 洞察同步")
+    print(f"⏰ [{datetime.now().strftime('%H:%M:%S')}] anan → anan 洞察同步")
 
     insight = load_latest_wisdom()
     if not insight:
@@ -136,7 +136,7 @@ def main() -> None:
         }
         print("ℹ️  没有找到 wisdom 文件，生成空状态报告")
 
-    write_to_sinoclaw_session(insight)
+    write_to_anan_session(insight)
 
 
 if __name__ == "__main__":

@@ -182,7 +182,7 @@ class TestDispatcherBranch:
         """When provider=kittentts but package missing, return JSON error with setup hint."""
         import sys
         monkeypatch.setitem(sys.modules, "kittentts", None)
-        monkeypatch.setenv("SINOCLAW_HOME", str(tmp_path))
+        monkeypatch.setenv("ANAN_HOME", str(tmp_path))
 
         from tools.tts_tool import text_to_speech_tool
 

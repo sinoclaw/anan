@@ -142,7 +142,7 @@ def _query_osv(
         data=data,
         headers={
             "Content-Type": "application/json",
-            "User-Agent": "sinoclaw-agent-osv-check/1.0",
+            "User-Agent": "anan-osv-check/1.0",
         },
         method="POST",
     )

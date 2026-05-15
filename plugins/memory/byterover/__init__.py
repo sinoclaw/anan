@@ -12,7 +12,7 @@ curl -fsSL https://byterover.dev/install.sh | sh).
 Config via environment variables (profile-scoped via each profile's .env):
   BRV_API_KEY   — ByteRover API key (for cloud features, optional for local)
 
-Working directory: $SINOCLAW_HOME/byterover/ (profile-scoped context tree)
+Working directory: $ANAN_HOME/byterover/ (profile-scoped context tree)
 """
 
 from __future__ import annotations
@@ -115,8 +115,8 @@ def _run_brv(args: List[str], timeout: int = _QUERY_TIMEOUT,
 
 def _get_brv_cwd() -> Path:
     """Profile-scoped working directory for the brv context tree."""
-    from sinoclaw_constants import get_sinoclaw_home
-    return get_sinoclaw_home() / "byterover"
+    from anan_constants import get_anan_home
+    return get_anan_home() / "byterover"
 
 
 # ---------------------------------------------------------------------------

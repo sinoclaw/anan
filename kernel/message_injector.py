@@ -4,7 +4,7 @@ Message Injector — 主动给用户发消息（不打扰模式）
 
 原理：
     L4/L5/L8 层在 idle 时产生的主动想法，需要发给用户。
-    用 sinoclaw 的 send_message 工具走 gateway 投递给 home channel。
+    用 anan 的 send_message 工具走 gateway 投递给 home channel。
 
 为什么重要：
     没有 injector，anan 的"主动想法"永远只存在于内部事件总线。
@@ -24,7 +24,7 @@ Message Injector — 主动给用户发消息（不打扰模式）
     - Failsafe：发不出去只 warn，不崩
 
 依赖：
-    - sinoclaw send_message 工具（通过 sinoclaw_tools 或直接调用）
+    - anan send_message 工具（通过 anan_tools 或直接调用）
     - gateway home channel 配置
 """
 
@@ -159,10 +159,10 @@ class MessageInjector:
             ))
 
     async def _send(self, platform: str, message: str) -> bool:
-        """Deliver message via sinoclaw send_message tool."""
+        """Deliver message via anan send_message tool."""
         try:
-            # Try via sinoclaw_tools if available
-            from sinoclaw_tools import send_message as sc_send
+            # Try via anan_tools if available
+            from anan_tools import send_message as sc_send
             result = await asyncio.to_thread(
                 sc_send, action="send", target=f"{platform}", message=message
             )
@@ -172,10 +172,10 @@ class MessageInjector:
             pass
 
         try:
-            # Try via sinoclaw CLI
+            # Try via anan CLI
             import subprocess, json
             result = subprocess.run(
-                ["sinoclaw", "send", "--platform", platform, "--message", message],
+                ["anan", "send", "--platform", platform, "--message", message],
                 capture_output=True, text=True, timeout=10,
             )
             return result.returncode == 0

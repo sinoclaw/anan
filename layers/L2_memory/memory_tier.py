@@ -16,7 +16,7 @@ L2 Memory Hierarchy — 记忆分层
   - 增量 promote，不做全量重写
   - 每条记忆带 access_count / importance / last_accessed
   - promotion 前做摘要压缩（保留语义，删细节）
-  - 不覆盖 /root/.sinoclaw/MEMORY.md，只 append（原子写）
+  - 不覆盖 /root/.anan/MEMORY.md，只 append（原子写）
 """
 
 from __future__ import annotations
@@ -166,9 +166,9 @@ class MemoryStore:
 # Tier manager
 # ---------------------------------------------------------------------------
 
-RECALL_PATH = Path("/root/.sinoclaw/recall-store.json")
-MIDTERM_DIR = Path("/root/.sinoclaw/midterm/")
-LONGTERM_PATH = Path("/root/.sinoclaw/MEMORY.md")
+RECALL_PATH = Path("/root/.anan/recall-store.json")
+MIDTERM_DIR = Path("/root/.anan/midterm/")
+LONGTERM_PATH = Path("/root/.anan/MEMORY.md")
 SHORT_MAX = 200          # recall-store max items before culling
 MIDTERM_WEEKS = 4       # consolidate after 4 weeks of entries
 

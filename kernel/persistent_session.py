@@ -3,7 +3,7 @@ Persistent Session — 带记忆的常驻 AIAgent 实例
 ==============================================
 
 原理：
-    sinoclaw 主仓的 AIAgent 每次 chat() 都是独立会话，无状态。
+    anan 主仓的 AIAgent 每次 chat() 都是独立会话，无状态。
     我们需要一个"常驻脑子"——同一个 AIAgent 实例持续运行，
     带着 WorkingMemory 做短时记忆，在两次用户输入之间保持思维连贯性。
 
@@ -47,7 +47,7 @@ def _expand_path(path: str) -> str:
 class SessionConfig:
     """Tunables for the persistent session."""
 
-    # Model / provider — must match what sinoclaw has configured
+    # Model / provider — must match what anan has configured
     model: str = "claude-sonnet-4"
     provider: str = "anthropic"
     # System prompt (prepended to every user message)
@@ -121,11 +121,11 @@ class PersistentSession:
             return
         self._running = True
 
-        # Lazily import AIAgent (sinoclaw is a peer package)
+        # Lazily import AIAgent (anan is a peer package)
         try:
-            from sinoclaw import AIAgent
+            from anan import AIAgent
         except ImportError:
-            logger.warning("sinoclaw not installed — PersistentSession running in MOCK mode")
+            logger.warning("anan not installed — PersistentSession running in MOCK mode")
             self._agent = _MockAgent()
         else:
             self._agent = AIAgent(
@@ -294,7 +294,7 @@ class PersistentSession:
 
 
 class _MockAgent:
-    """Fallback when sinoclaw is not available."""
+    """Fallback when anan is not available."""
 
     def __init__(self):
         self._count = 0

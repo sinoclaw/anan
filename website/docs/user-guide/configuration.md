@@ -6,12 +6,12 @@ description: "Configure Sinoclaw Agent — config.yaml, providers, models, API k
 
 # Configuration
 
-All settings are stored in the `~/.sinoclaw/` directory for easy access.
+All settings are stored in the `~/.anan/` directory for easy access.
 
 ## Directory Structure
 
 ```text
-~/.sinoclaw/
+~/.anan/
 ├── config.yaml     # Settings (model, terminal, TTS, compression, etc.)
 ├── .env            # API keys and secrets
 ├── auth.json       # OAuth provider credentials (Nous Portal, etc.)
@@ -28,18 +28,18 @@ All settings are stored in the `~/.sinoclaw/` directory for easy access.
 ```bash
 sinoclaw config              # View current configuration
 sinoclaw config edit         # Open config.yaml in your editor
-sinoclaw config set KEY VAL  # Set a specific value
+anan config set KEY VAL  # Set a specific value
 sinoclaw config check        # Check for missing options (after updates)
 sinoclaw config migrate      # Interactively add missing options
 
 # Examples:
-sinoclaw config set model anthropic/claude-opus-4
-sinoclaw config set terminal.backend docker
-sinoclaw config set OPENROUTER_API_KEY sk-or-...  # Saves to .env
+anan config set model anthropic/claude-opus-4
+anan config set terminal.backend docker
+anan config set OPENROUTER_API_KEY sk-or-...  # Saves to .env
 ```
 
 :::tip
-The `sinoclaw config set` command automatically routes values to the right file — API keys are saved to `.env`, everything else to `config.yaml`.
+The `anan config set` command automatically routes values to the right file — API keys are saved to `.env`, everything else to `config.yaml`.
 :::
 
 ## Configuration Precedence
@@ -47,8 +47,8 @@ The `sinoclaw config set` command automatically routes values to the right file 
 Settings are resolved in this order (highest priority first):
 
 1. **CLI arguments** — e.g., `sinoclaw chat --model anthropic/claude-sonnet-4` (per-invocation override)
-2. **`~/.sinoclaw/config.yaml`** — the primary config file for all non-secret settings
-3. **`~/.sinoclaw/.env`** — fallback for env vars; **required** for secrets (API keys, tokens, passwords)
+2. **`~/.anan/config.yaml`** — the primary config file for all non-secret settings
+3. **`~/.anan/.env`** — fallback for env vars; **required** for secrets (API keys, tokens, passwords)
 4. **Built-in defaults** — hardcoded safe defaults when nothing else is set
 
 :::info Rule of Thumb
@@ -79,7 +79,7 @@ You can set `providers.<id>.request_timeout_seconds` for a provider-wide request
 
 You can also set `providers.<id>.stale_timeout_seconds` for the non-streaming stale-call detector, plus `providers.<id>.models.<model>.stale_timeout_seconds` for a model-specific override. This wins over the legacy `SINOCLAW_API_CALL_STALE_TIMEOUT` env var.
 
-Leaving these unset keeps the legacy defaults (`SINOCLAW_API_TIMEOUT=1800`s, `SINOCLAW_API_CALL_STALE_TIMEOUT=300`s, native Anthropic 900s). Not currently wired for AWS Bedrock (both `bedrock_converse` and AnthropicBedrock SDK paths use boto3 with its own timeout configuration). See the commented example in [`cli-config.yaml.example`](https://github.com/sinoclaw/sinoclaw-agent/blob/main/cli-config.yaml.example).
+Leaving these unset keeps the legacy defaults (`SINOCLAW_API_TIMEOUT=1800`s, `SINOCLAW_API_CALL_STALE_TIMEOUT=300`s, native Anthropic 900s). Not currently wired for AWS Bedrock (both `bedrock_converse` and AnthropicBedrock SDK paths use boto3 with its own timeout configuration). See the commented example in [`cli-config.yaml.example`](https://github.com/sinoclaw/anan/blob/main/cli-config.yaml.example).
 
 ## Terminal Backend Configuration
 
@@ -160,7 +160,7 @@ Parallel subagents spawned via `delegate_task(tasks=[...])` share this one conta
 - `--pids-limit 256`
 - Size-limited tmpfs for `/tmp` (512MB), `/var/tmp` (256MB), `/run` (64MB)
 
-**Credential forwarding:** Env vars listed in `docker_forward_env` are resolved from your shell environment first, then `~/.sinoclaw/.env`. Skills can also declare `required_environment_variables` which are merged automatically.
+**Credential forwarding:** Env vars listed in `docker_forward_env` are resolved from your shell environment first, then `~/.anan/.env`. Skills can also declare `required_environment_variables` which are merged automatically.
 
 ### SSH Backend
 
@@ -204,9 +204,9 @@ terminal:
 
 **Required:** Either `MODAL_TOKEN_ID` + `MODAL_TOKEN_SECRET` environment variables, or a `~/.modal.toml` config file.
 
-**Persistence:** When enabled, the sandbox filesystem is snapshotted on cleanup and restored on next session. Snapshots are tracked in `~/.sinoclaw/modal_snapshots.json`. This preserves filesystem state, not live processes, PID space, or background jobs.
+**Persistence:** When enabled, the sandbox filesystem is snapshotted on cleanup and restored on next session. Snapshots are tracked in `~/.anan/modal_snapshots.json`. This preserves filesystem state, not live processes, PID space, or background jobs.
 
-**Credential files:** Automatically mounted from `~/.sinoclaw/` (OAuth tokens, etc.) and synced before each command.
+**Credential files:** Automatically mounted from `~/.anan/` (OAuth tokens, etc.) and synced before each command.
 
 ### Daytona Backend
 
@@ -243,7 +243,7 @@ terminal:
 **Required install:** Install the optional SDK extra:
 
 ```bash
-pip install 'sinoclaw-agent[vercel]'
+pip install 'anan[vercel]'
 ```
 
 **Required authentication:** Configure access-token auth with all three of `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`, and `VERCEL_TEAM_ID`. This is the supported setup for deployments and normal long-running Sinoclaw processes on Render, Railway, Docker, and similar hosts.
@@ -287,7 +287,7 @@ terminal:
 
 **Image handling:** Docker URLs (`docker://...`) are automatically converted to SIF files and cached. Existing `.sif` files are used directly.
 
-**Scratch directory:** Resolved in order: `TERMINAL_SCRATCH_DIR` → `TERMINAL_SANDBOX_DIR/singularity` → `/scratch/$USER/sinoclaw-agent` (HPC convention) → `~/.sinoclaw/sandboxes/singularity`.
+**Scratch directory:** Resolved in order: `TERMINAL_SCRATCH_DIR` → `TERMINAL_SANDBOX_DIR/singularity` → `/scratch/$USER/anan` (HPC convention) → `~/.anan/sandboxes/singularity`.
 
 **Isolation:** Uses `--containall --no-home` for full namespace isolation without mounting the host home directory.
 
@@ -296,7 +296,7 @@ terminal:
 If terminal commands fail immediately or the terminal tool is reported as disabled:
 
 - **Local** — No special requirements. The safest default when getting started.
-- **Docker** — Run `docker version` to verify Docker is working. If it fails, fix Docker or `sinoclaw config set terminal.backend local`.
+- **Docker** — Run `docker version` to verify Docker is working. If it fails, fix Docker or `anan config set terminal.backend local`.
 - **SSH** — Both `TERMINAL_SSH_HOST` and `TERMINAL_SSH_USER` must be set. Hermes logs a clear error if either is missing.
 - **Modal** — Needs `MODAL_TOKEN_ID` env var or `~/.modal.toml`. Run `sinoclaw doctor` to check.
 - **Daytona** — Needs `DAYTONA_API_KEY`. The Daytona SDK handles server URL configuration.
@@ -306,11 +306,11 @@ When in doubt, set `terminal.backend` back to `local` and verify that commands r
 
 ### Remote-to-Host File Sync on Teardown
 
-For the **SSH**, **Modal**, and **Daytona** backends (anywhere the agent's working tree lives on a different machine than the host running Hermes), Hermes tracks files the agent touched inside the remote sandbox and, on session teardown / sandbox cleanup, **syncs the modified files back to the host** under `~/.sinoclaw/cache/remote-syncs/<session-id>/`.
+For the **SSH**, **Modal**, and **Daytona** backends (anywhere the agent's working tree lives on a different machine than the host running Hermes), Hermes tracks files the agent touched inside the remote sandbox and, on session teardown / sandbox cleanup, **syncs the modified files back to the host** under `~/.anan/cache/remote-syncs/<session-id>/`.
 
 - Triggers on: session close, `/new`, `/reset`, gateway message timeout, `delegate_task` subagent completion when the child used a remote backend.
 - Covers the whole tree the agent modified, not just files it explicitly opened. Additions, edits, and deletions are all captured.
-- The remote sandbox may have been torn down by the time you go looking; the local `~/.sinoclaw/cache/remote-syncs/…` copy is the authoritative record of what the agent changed.
+- The remote sandbox may have been torn down by the time you go looking; the local `~/.anan/cache/remote-syncs/…` copy is the authoritative record of what the agent changed.
 - Large binary outputs (model checkpoints, raw datasets) are capped by size — the sync skips files over `file_sync_max_mb` (default `100`). Bump that if you expect bigger artifacts to come back.
 
 ```yaml
@@ -369,7 +369,7 @@ terminal:
     - "NPM_TOKEN"
 ```
 
-Hermes resolves each listed variable from your current shell first, then falls back to `~/.sinoclaw/.env` if it was saved with `sinoclaw config set`.
+Hermes resolves each listed variable from your current shell first, then falls back to `~/.anan/.env` if it was saved with `anan config set`.
 
 :::warning
 Anything listed in `docker_forward_env` becomes visible to commands run inside the container. Only forward credentials you are comfortable exposing to the terminal session.
@@ -428,7 +428,7 @@ terminal:
 To disable:
 
 ```bash
-sinoclaw config set terminal.persistent_shell false
+anan config set terminal.persistent_shell false
 ```
 
 **What persists across commands:**
@@ -476,7 +476,7 @@ skills:
 **Setting values manually:**
 
 ```bash
-sinoclaw config set skills.config.myplugin.path ~/myplugin-data
+anan config set skills.config.myplugin.path ~/myplugin-data
 ```
 
 For details on declaring config settings in your own skills, see [Creating Skills — Config Settings](/docs/developer-guide/creating-skills#config-settings-configyaml).
@@ -882,7 +882,7 @@ auxiliary:
     api_key: ""
     timeout: 30
 
-  # Kanban triage specifier — `sinoclaw kanban specify <id>` (or the
+  # Kanban triage specifier — `anan kanban specify <id>` (or the
   # dashboard's ✨ Specify button on Triage-column cards) uses this
   # slot to expand a one-liner into a concrete spec and promote the
   # task to `todo`. Cheap fast models work well here; spec expansion
@@ -941,7 +941,7 @@ auxiliary:
     model: "openai/gpt-4o"
 ```
 
-Or via environment variable (in `~/.sinoclaw/.env`):
+Or via environment variable (in `~/.anan/.env`):
 
 ```bash
 AUXILIARY_VISION_MODEL=openai/gpt-4o
@@ -986,7 +986,7 @@ auxiliary:
 
 **Using OpenAI API key for vision:**
 ```yaml
-# In ~/.sinoclaw/.env:
+# In ~/.anan/.env:
 # OPENAI_BASE_URL=https://api.openai.com/v1
 # OPENAI_API_KEY=sk-...
 
@@ -1341,7 +1341,7 @@ For separate natural mid-turn assistant updates without progressive token editin
 **Fresh final (Telegram):** Telegram's `editMessageText` preserves the original message timestamp, so a long-running streamed reply would keep the first-token timestamp even after completion. When `fresh_final_after_seconds > 0` (default `60`), the completed reply is delivered as a brand-new message (with the stale preview best-effort deleted) so Telegram's visible timestamp reflects completion time. Short previews still finalize in place. Set to `0` to always edit in place.
 
 :::note
-Streaming is disabled by default. Enable it in `~/.sinoclaw/config.yaml` to try the streaming UX.
+Streaming is disabled by default. Enable it in `~/.anan/config.yaml` to try the streaming UX.
 :::
 
 ## Group Chat Session Isolation
@@ -1382,13 +1382,13 @@ Define custom commands that either run shell commands without invoking the LLM, 
 quick_commands:
   status:
     type: exec
-    command: systemctl status sinoclaw-agent
+    command: systemctl status anan
   disk:
     type: exec
     command: df -h /
   update:
     type: exec
-    command: cd ~/.sinoclaw/sinoclaw-agent && git pull && pip install -e .
+    command: cd ~/.anan/anan && git pull && pip install -e .
   gpu:
     type: exec
     command: nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total --format=csv,noheader
@@ -1465,7 +1465,7 @@ web:
 
 **Parallel search modes:** Set `PARALLEL_SEARCH_MODE` to control search behavior — `fast`, `one-shot`, or `agentic` (default: `agentic`).
 
-**Exa:** Set `EXA_API_KEY` in `~/.sinoclaw/.env`. Supports `category` filtering (`company`, `research paper`, `news`, `people`, `personal site`, `pdf`) and domain/date filters.
+**Exa:** Set `EXA_API_KEY` in `~/.anan/.env`. Supports `category` filtering (`company`, `research paper`, `news`, `people`, `personal site`, `pdf`) and domain/date filters.
 
 ## Browser
 
@@ -1475,7 +1475,7 @@ Configure browser automation behavior:
 browser:
   inactivity_timeout: 120        # Seconds before auto-closing idle sessions
   command_timeout: 30             # Timeout in seconds for browser commands (screenshot, navigate, etc.)
-  record_sessions: false         # Auto-record browser sessions as WebM videos to ~/.sinoclaw/browser_recordings/
+  record_sessions: false         # Auto-record browser sessions as WebM videos to ~/.anan/browser_recordings/
   # Optional CDP override — when set, Hermes attaches directly to your own
   # Chrome (via /browser connect) rather than starting a headless browser.
   cdp_url: ""
@@ -1645,7 +1645,7 @@ Hermes uses two different context scopes:
 
 | File | Purpose | Scope |
 |------|---------|-------|
-| `SOUL.md` | **Primary agent identity** — defines who the agent is (slot #1 in the system prompt) | `~/.sinoclaw/SOUL.md` or `$SINOCLAW_HOME/SOUL.md` |
+| `SOUL.md` | **Primary agent identity** — defines who the agent is (slot #1 in the system prompt) | `~/.anan/SOUL.md` or `$ANAN_HOME/SOUL.md` |
 | `.hermes.md` / `HERMES.md` | Project-specific instructions (highest priority) | Walks to git root |
 | `AGENTS.md` | Project-specific instructions, coding conventions | Recursive directory walk |
 | `CLAUDE.md` | Claude Code context files (also detected) | Working directory only |
@@ -1673,7 +1673,7 @@ See also:
 
 Override the working directory:
 ```bash
-# In ~/.sinoclaw/.env or ~/.sinoclaw/config.yaml:
+# In ~/.anan/.env or ~/.anan/config.yaml:
 MESSAGING_CWD=/home/myuser/projects    # Gateway sessions
 TERMINAL_CWD=/workspace                # All terminal sessions
 ```

@@ -7,18 +7,18 @@ from pathlib import Path
 from typing import Optional
 
 
-def _sinoclaw_home_path() -> Path:
-    """Resolve the active SINOCLAW_HOME (profile-aware) without circular imports."""
+def _anan_home_path() -> Path:
+    """Resolve the active ANAN_HOME (profile-aware) without circular imports."""
     try:
-        from sinoclaw_constants import get_sinoclaw_home  # local import to avoid cycles
-        return get_sinoclaw_home()
+        from anan_constants import get_anan_home  # local import to avoid cycles
+        return get_anan_home()
     except Exception:
-        return Path(os.path.expanduser("~/.sinoclaw"))
+        return Path(os.path.expanduser("~/.anan"))
 
 
 def build_write_denied_paths(home: str) -> set[str]:
     """Return exact sensitive paths that must never be written."""
-    sinoclaw_home = _sinoclaw_home_path()
+    anan_home = _anan_home_path()
     return {
         os.path.realpath(p)
         for p in [
@@ -26,7 +26,7 @@ def build_write_denied_paths(home: str) -> set[str]:
             os.path.join(home, ".ssh", "id_rsa"),
             os.path.join(home, ".ssh", "id_ed25519"),
             os.path.join(home, ".ssh", "config"),
-            str(sinoclaw_home / ".env"),
+            str(anan_home / ".env"),
             os.path.join(home, ".bashrc"),
             os.path.join(home, ".zshrc"),
             os.path.join(home, ".profile"),
@@ -91,12 +91,12 @@ def is_write_denied(path: str) -> bool:
 
 
 def get_read_block_error(path: str) -> Optional[str]:
-    """Return an error message when a read targets internal Sinoclaw cache files."""
+    """Return an error message when a read targets internal Anan cache files."""
     resolved = Path(path).expanduser().resolve()
-    sinoclaw_home = _sinoclaw_home_path().resolve()
+    anan_home = _anan_home_path().resolve()
     blocked_dirs = [
-        sinoclaw_home / "skills" / ".hub" / "index-cache",
-        sinoclaw_home / "skills" / ".hub",
+        anan_home / "skills" / ".hub" / "index-cache",
+        anan_home / "skills" / ".hub",
     ]
     for blocked in blocked_dirs:
         try:
@@ -104,7 +104,7 @@ def get_read_block_error(path: str) -> Optional[str]:
         except ValueError:
             continue
         return (
-            f"Access denied: {path} is an internal Sinoclaw cache file "
+            f"Access denied: {path} is an internal Anan cache file "
             "and cannot be read directly to prevent prompt injection. "
             "Use the skills_list or skill_view tools instead."
         )

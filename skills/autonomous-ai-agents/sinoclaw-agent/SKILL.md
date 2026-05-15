@@ -1,20 +1,20 @@
 ---
-name: sinoclaw-agent
-description: "Configure, extend, or contribute to Sinoclaw Agent."
+name: anan
+description: "Configure, extend, or contribute to Anan Agent."
 version: 2.1.0
-author: Sinoclaw Agent + Teknium
+author: Anan Agent + Teknium
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [hermes, setup, configuration, multi-agent, spawning, cli, gateway, development]
-    homepage: https://github.com/sinoclaw/sinoclaw-agent
+    homepage: https://github.com/sinoclaw/anan
     related_skills: [claude-code, codex, opencode]
 ---
 
-# Sinoclaw Agent
+# Anan Agent
 
-Sinoclaw Agent is an open-source AI agent framework by Sinoclaw Team that runs in your terminal, messaging platforms, and IDEs. It belongs to the same category as Claude Code (Anthropic), Codex (OpenAI), and OpenClaw — autonomous coding and task-execution agents that use tool calling to interact with your system. Hermes works with any LLM provider (OpenRouter, Anthropic, OpenAI, DeepSeek, local models, and 15+ others) and runs on Linux, macOS, and WSL.
+Anan Agent is an open-source AI agent framework by Anan Team that runs in your terminal, messaging platforms, and IDEs. It belongs to the same category as Claude Code (Anthropic), Codex (OpenAI), and OpenClaw — autonomous coding and task-execution agents that use tool calling to interact with your system. Hermes works with any LLM provider (OpenRouter, Anthropic, OpenAI, DeepSeek, local models, and 15+ others) and runs on Linux, macOS, and WSL.
 
 What makes Hermes different:
 
@@ -27,15 +27,15 @@ What makes Hermes different:
 
 People use Hermes for software development, research, system administration, data analysis, content creation, home automation, and anything else that benefits from an AI agent with persistent context and full system access.
 
-**This skill helps you work with Sinoclaw Agent effectively** — setting it up, configuring features, spawning additional agent instances, troubleshooting issues, finding the right commands and settings, and understanding how the system works when you need to extend or contribute to it.
+**This skill helps you work with Anan Agent effectively** — setting it up, configuring features, spawning additional agent instances, troubleshooting issues, finding the right commands and settings, and understanding how the system works when you need to extend or contribute to it.
 
-**Docs:** https://sinoclaw-agent.nousresearch.com/docs/
+**Docs:** https://anan.nousresearch.com/docs/
 
 ## Quick Start
 
 ```bash
 # Install
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
 
 # Interactive chat (default)
 hermes
@@ -95,7 +95,7 @@ sinoclaw setup [section]      Interactive wizard (model|terminal|gateway|tools|a
 hermes model                Interactive model/provider picker
 sinoclaw config               View current config
 sinoclaw config edit          Open config.yaml in $EDITOR
-sinoclaw config set KEY VAL   Set a config value
+anan config set KEY VAL   Set a config value
 sinoclaw config path          Print config.yaml path
 sinoclaw config env-path      Print .env path
 sinoclaw config check         Check for missing/outdated config
@@ -151,7 +151,7 @@ sinoclaw gateway setup        Configure platforms
 
 Supported platforms: Telegram, Discord, Slack, WhatsApp, Signal, Email, SMS, Matrix, Mattermost, Home Assistant, DingTalk, Feishu, WeCom, BlueBubbles (iMessage), Weixin (WeChat), API Server, Webhooks. Open WebUI connects via the API Server adapter.
 
-Platform docs: https://sinoclaw-agent.nousresearch.com/docs/user-guide/messaging/
+Platform docs: https://anan.nousresearch.com/docs/user-guide/messaging/
 
 ### Sessions
 
@@ -213,7 +213,7 @@ sinoclaw auth reset PROVIDER  Clear exhaustion status
 
 ```
 hermes insights [--days N]  Usage analytics
-sinoclaw update               Update to latest version
+anan update               Update to latest version
 hermes pairing list/approve/revoke  DM authorization
 hermes plugins list/install/remove  Plugin management
 hermes honcho setup/status  Honcho memory integration (requires honcho plugin)
@@ -230,8 +230,8 @@ hermes uninstall            Uninstall Hermes
 
 Type these during an interactive chat session. New commands land fairly
 often; if something below looks stale, run `/help` in-session for the
-authoritative list or see the [live slash commands reference](https://sinoclaw-agent.nousresearch.com/docs/reference/slash-commands).
-The registry of record is `sinoclaw_cli/commands.py` — every consumer
+authoritative list or see the [live slash commands reference](https://anan.nousresearch.com/docs/reference/slash-commands).
+The registry of record is `anan_cli/commands.py` — every consumer
 (autocomplete, Telegram menu, Slack mapping, `/help`) derives from it.
 
 ### Session Control
@@ -279,7 +279,7 @@ The registry of record is `sinoclaw_cli/commands.py` — every consumer
 /toolsets            List toolsets (CLI)
 /skills              Search/install skills (CLI)
 /skill <name>        Load a skill into session
-/reload-skills       Re-scan ~/.sinoclaw/skills/ for added/removed skills
+/reload-skills       Re-scan ~/.anan/skills/ for added/removed skills
 /reload              Reload .env variables into the running session (CLI)
 /reload-mcp          Reload MCP servers
 /cron                Manage cron jobs (CLI)
@@ -333,20 +333,20 @@ The registry of record is `sinoclaw_cli/commands.py` — every consumer
 ## Key Paths & Config
 
 ```
-~/.sinoclaw/config.yaml       Main configuration
-~/.sinoclaw/.env              API keys and secrets
-$SINOCLAW_HOME/skills/        Installed skills
-~/.sinoclaw/sessions/         Session transcripts
-~/.sinoclaw/logs/             Gateway and error logs
-~/.sinoclaw/auth.json         OAuth tokens and credential pools
-~/.sinoclaw/sinoclaw-agent/     Source code (if git-installed)
+~/.anan/config.yaml       Main configuration
+~/.anan/.env              API keys and secrets
+$ANAN_HOME/skills/        Installed skills
+~/.anan/sessions/         Session transcripts
+~/.anan/logs/             Gateway and error logs
+~/.anan/auth.json         OAuth tokens and credential pools
+~/.anan/anan/     Source code (if git-installed)
 ```
 
-Profiles use `~/.sinoclaw/profiles/<name>/` with the same layout.
+Profiles use `~/.anan/profiles/<name>/` with the same layout.
 
 ### Config Sections
 
-Edit with `sinoclaw config edit` or `sinoclaw config set section.key value`.
+Edit with `sinoclaw config edit` or `anan config set section.key value`.
 
 | Section | Key options |
 |---------|-------------|
@@ -362,7 +362,7 @@ Edit with `sinoclaw config edit` or `sinoclaw config set section.key value`.
 | `delegation` | `model`, `provider`, `base_url`, `api_key`, `max_iterations` (50), `reasoning_effort` |
 | `checkpoints` | `enabled`, `max_snapshots` (50) |
 
-Full config reference: https://sinoclaw-agent.nousresearch.com/docs/user-guide/configuration
+Full config reference: https://anan.nousresearch.com/docs/user-guide/configuration
 
 ### Providers
 
@@ -393,7 +393,7 @@ Full config reference: https://sinoclaw-agent.nousresearch.com/docs/user-guide/c
 | Custom endpoint | Config | `model.base_url` + `model.api_key` in config.yaml |
 | GitHub Copilot ACP | External | `COPILOT_CLI_PATH` or Copilot CLI |
 
-Full provider docs: https://sinoclaw-agent.nousresearch.com/docs/integrations/providers
+Full provider docs: https://anan.nousresearch.com/docs/integrations/providers
 
 ### Toolsets
 
@@ -447,14 +447,14 @@ Common "why is Hermes doing X to my output / tool calls / commands?" toggles —
 Secret redaction is **off by default** — tool output (terminal stdout, `read_file`, web content, subagent summaries, etc.) passes through unmodified. If the user wants Hermes to auto-mask strings that look like API keys, tokens, and secrets before they enter the conversation context and logs:
 
 ```bash
-sinoclaw config set security.redact_secrets true       # enable globally
+anan config set security.redact_secrets true       # enable globally
 ```
 
-**Restart required.** `security.redact_secrets` is snapshotted at import time — toggling it mid-session (e.g. via `export SINOCLAW_REDACT_SECRETS=true` from a tool call) will NOT take effect for the running process. Tell the user to run `sinoclaw config set security.redact_secrets true` in a terminal, then start a new session. This is deliberate — it prevents an LLM from flipping the toggle on itself mid-task.
+**Restart required.** `security.redact_secrets` is snapshotted at import time — toggling it mid-session (e.g. via `export SINOCLAW_REDACT_SECRETS=true` from a tool call) will NOT take effect for the running process. Tell the user to run `anan config set security.redact_secrets true` in a terminal, then start a new session. This is deliberate — it prevents an LLM from flipping the toggle on itself mid-task.
 
 Disable again with:
 ```bash
-sinoclaw config set security.redact_secrets false
+anan config set security.redact_secrets false
 ```
 
 ### PII redaction in gateway messages
@@ -462,8 +462,8 @@ sinoclaw config set security.redact_secrets false
 Separate from secret redaction. When enabled, the gateway hashes user IDs and strips phone numbers from the session context before it reaches the model:
 
 ```bash
-sinoclaw config set privacy.redact_pii true    # enable
-sinoclaw config set privacy.redact_pii false   # disable (default)
+anan config set privacy.redact_pii true    # enable
+anan config set privacy.redact_pii false   # disable (default)
 ```
 
 ### Command approval prompts
@@ -475,8 +475,8 @@ By default (`approvals.mode: manual`), Hermes prompts the user before running sh
 - `off` — skip all approval prompts (equivalent to `--yolo`)
 
 ```bash
-sinoclaw config set approvals.mode smart       # recommended middle ground
-sinoclaw config set approvals.mode off         # bypass everything (not recommended)
+anan config set approvals.mode smart       # recommended middle ground
+anan config set approvals.mode off         # bypass everything (not recommended)
 ```
 
 Per-invocation bypass without changing config:
@@ -487,7 +487,7 @@ Note: YOLO / `approvals.mode: off` does NOT turn off secret redaction. They are 
 
 ### Shell hooks allowlist
 
-Some shell-hook integrations require explicit allowlisting before they fire. Managed via `~/.sinoclaw/shell-hooks-allowlist.json` — prompted interactively the first time a hook wants to run.
+Some shell-hook integrations require explicit allowlisting before they fire. Managed via `~/.anan/shell-hooks-allowlist.json` — prompted interactively the first time a hook wants to run.
 
 ### Disabling the web/browser/image-gen tools
 
@@ -533,7 +533,7 @@ Voice commands: `/voice on` (voice-to-voice), `/voice tts` (always voice), `/voi
 
 ## Spawning Additional Hermes Instances
 
-Run additional Sinoclaw processes as fully independent subprocesses — separate sessions, tools, and environments.
+Run additional Anan processes as fully independent subprocesses — separate sessions, tools, and environments.
 
 ### When to Use This vs delegate_task
 
@@ -653,7 +653,7 @@ the `cronjob` tool, the `sinoclaw cron` CLI (`list`, `add`, `edit`,
   header/footer instead of being mirrored into the target gateway
   session (keeps role alternation intact).
 
-User docs: https://sinoclaw-agent.nousresearch.com/docs/user-guide/features/cron
+User docs: https://anan.nousresearch.com/docs/user-guide/features/cron
 
 ### Curator (skill lifecycle)
 
@@ -668,18 +668,18 @@ so nothing is lost.
   Bundled + hub-installed skills are off-limits. **Never deletes** —
   max destructive action is archive. Pinned skills are exempt from
   every auto-transition and every LLM review pass.
-- **Telemetry:** sidecar at `~/.sinoclaw/skills/.usage.json` holds
+- **Telemetry:** sidecar at `~/.anan/skills/.usage.json` holds
   per-skill `use_count`, `view_count`, `patch_count`,
   `last_activity_at`, `state`, `pinned`.
 
 Config: `curator.*` (`enabled`, `interval_hours`, `min_idle_hours`,
 `stale_after_days`, `archive_after_days`, `backup.*`).
-User docs: https://sinoclaw-agent.nousresearch.com/docs/user-guide/features/curator
+User docs: https://anan.nousresearch.com/docs/user-guide/features/curator
 
 ### Kanban (multi-agent work queue)
 
 Durable SQLite board for multi-profile / multi-worker collaboration.
-Users drive it via `sinoclaw kanban <verb>`; dispatcher-spawned workers
+Users drive it via `anan kanban <verb>`; dispatcher-spawned workers
 see a focused `kanban_*` toolset gated by `SINOCLAW_KANBAN_TASK` so the
 schema footprint is zero outside worker processes.
 
@@ -697,7 +697,7 @@ schema footprint is zero outside worker processes.
   `SINOCLAW_KANBAN_BOARD` pinned in env); tenant is a soft namespace
   within a board for workspace-path + memory-key isolation.
 
-User docs: https://sinoclaw-agent.nousresearch.com/docs/user-guide/features/kanban
+User docs: https://anan.nousresearch.com/docs/user-guide/features/kanban
 
 ---
 
@@ -745,7 +745,7 @@ Notepad are the usual culprit.
 or initialized") from the sandbox child process — it can't create an
 `AF_INET` socket, so the loopback-TCP RPC fallback fails before
 `connect()`. Root cause is usually **not** a broken Winsock LSP; it's
-Sinoclaw's own env scrubber dropping `SYSTEMROOT` / `WINDIR` / `COMSPEC`
+Anan's own env scrubber dropping `SYSTEMROOT` / `WINDIR` / `COMSPEC`
 from the child env. Python's `socket` module needs `SYSTEMROOT` to locate
 `mswsock.dll`. Fixed via the `_WINDOWS_ESSENTIAL_ENV_VARS` allowlist in
 `tools/code_execution_tool.py`. If you still hit it, echo `os.environ`
@@ -755,7 +755,7 @@ diagnostic recipe in `references/execute-code-sandbox-env-windows.md`.
 ### Testing / Contributing
 
 **`scripts/run_tests.sh` doesn't work as-is on Windows** — it looks for
-POSIX venv layouts (`.venv/bin/activate`). The Sinoclaw-installed venv at
+POSIX venv layouts (`.venv/bin/activate`). The Anan-installed venv at
 `venv/Scripts/` has no pip or pytest either (stripped for install size).
 Workaround: install `pytest + pytest-xdist + pyyaml` into a system Python
 3.11 user site, then invoke pytest directly with `PYTHONPATH` set:
@@ -822,13 +822,13 @@ and logs — avoids shell-escaping backslashes in bash.
 ### Gateway issues
 Check logs first:
 ```bash
-grep -i "failed to send\|error" ~/.sinoclaw/logs/gateway.log | tail -20
+grep -i "failed to send\|error" ~/.anan/logs/gateway.log | tail -20
 ```
 
 Common gateway problems:
 - **Gateway dies on SSH logout**: Enable linger: `sudo loginctl enable-linger $USER`
 - **Gateway dies on WSL2 close**: WSL2 requires `systemd=true` in `/etc/wsl.conf` for systemd services to work. Without it, gateway falls back to `nohup` (dies when session closes).
-- **Gateway crash loop**: Reset the failed state: `systemctl --user reset-failed sinoclaw-gateway`
+- **Gateway crash loop**: Reset the failed state: `systemctl --user reset-failed anan-gateway`
 
 ### Platform-specific issues
 - **Discord bot silent**: Must enable **Message Content Intent** in Bot → Privileged Gateway Intents.
@@ -838,8 +838,8 @@ Common gateway problems:
 ### Auxiliary models not working
 If `auxiliary` tasks (vision, compression, session_search) fail silently, the `auto` provider can't find a backend. Either set `OPENROUTER_API_KEY` or `GOOGLE_API_KEY`, or explicitly configure each auxiliary task's provider:
 ```bash
-sinoclaw config set auxiliary.vision.provider <your_provider>
-sinoclaw config set auxiliary.vision.model <model_name>
+anan config set auxiliary.vision.provider <your_provider>
+anan config set auxiliary.vision.model <model_name>
 ```
 
 ---
@@ -848,39 +848,39 @@ sinoclaw config set auxiliary.vision.model <model_name>
 
 | Looking for... | Location |
 |----------------|----------|
-| Config options | `sinoclaw config edit` or [Configuration docs](https://sinoclaw-agent.nousresearch.com/docs/user-guide/configuration) |
-| Available tools | `sinoclaw tools list` or [Tools reference](https://sinoclaw-agent.nousresearch.com/docs/reference/tools-reference) |
-| Slash commands | `/help` in session or [Slash commands reference](https://sinoclaw-agent.nousresearch.com/docs/reference/slash-commands) |
-| Skills catalog | `sinoclaw skills browse` or [Skills catalog](https://sinoclaw-agent.nousresearch.com/docs/reference/skills-catalog) |
-| Provider setup | `sinoclaw model` or [Providers guide](https://sinoclaw-agent.nousresearch.com/docs/integrations/providers) |
-| Platform setup | `sinoclaw gateway setup` or [Messaging docs](https://sinoclaw-agent.nousresearch.com/docs/user-guide/messaging/) |
-| MCP servers | `sinoclaw mcp list` or [MCP guide](https://sinoclaw-agent.nousresearch.com/docs/user-guide/features/mcp) |
-| Profiles | `sinoclaw profile list` or [Profiles docs](https://sinoclaw-agent.nousresearch.com/docs/user-guide/profiles) |
-| Cron jobs | `sinoclaw cron list` or [Cron docs](https://sinoclaw-agent.nousresearch.com/docs/user-guide/features/cron) |
-| Memory | `sinoclaw memory status` or [Memory docs](https://sinoclaw-agent.nousresearch.com/docs/user-guide/features/memory) |
-| Env variables | `sinoclaw config env-path` or [Env vars reference](https://sinoclaw-agent.nousresearch.com/docs/reference/environment-variables) |
-| CLI commands | `sinoclaw --help` or [CLI reference](https://sinoclaw-agent.nousresearch.com/docs/reference/cli-commands) |
-| Gateway logs | `~/.sinoclaw/logs/gateway.log` |
-| Session files | `~/.sinoclaw/sessions/` or `sinoclaw sessions browse` |
-| Source code | `~/.sinoclaw/sinoclaw-agent/` |
+| Config options | `sinoclaw config edit` or [Configuration docs](https://anan.nousresearch.com/docs/user-guide/configuration) |
+| Available tools | `sinoclaw tools list` or [Tools reference](https://anan.nousresearch.com/docs/reference/tools-reference) |
+| Slash commands | `/help` in session or [Slash commands reference](https://anan.nousresearch.com/docs/reference/slash-commands) |
+| Skills catalog | `sinoclaw skills browse` or [Skills catalog](https://anan.nousresearch.com/docs/reference/skills-catalog) |
+| Provider setup | `sinoclaw model` or [Providers guide](https://anan.nousresearch.com/docs/integrations/providers) |
+| Platform setup | `sinoclaw gateway setup` or [Messaging docs](https://anan.nousresearch.com/docs/user-guide/messaging/) |
+| MCP servers | `sinoclaw mcp list` or [MCP guide](https://anan.nousresearch.com/docs/user-guide/features/mcp) |
+| Profiles | `sinoclaw profile list` or [Profiles docs](https://anan.nousresearch.com/docs/user-guide/profiles) |
+| Cron jobs | `sinoclaw cron list` or [Cron docs](https://anan.nousresearch.com/docs/user-guide/features/cron) |
+| Memory | `anan memory status` or [Memory docs](https://anan.nousresearch.com/docs/user-guide/features/memory) |
+| Env variables | `sinoclaw config env-path` or [Env vars reference](https://anan.nousresearch.com/docs/reference/environment-variables) |
+| CLI commands | `sinoclaw --help` or [CLI reference](https://anan.nousresearch.com/docs/reference/cli-commands) |
+| Gateway logs | `~/.anan/logs/gateway.log` |
+| Session files | `~/.anan/sessions/` or `sinoclaw sessions browse` |
+| Source code | `~/.anan/anan/` |
 
 ---
 
 ## Contributor Quick Reference
 
-For occasional contributors and PR authors. Full developer docs: https://sinoclaw-agent.nousresearch.com/docs/developer-guide/
+For occasional contributors and PR authors. Full developer docs: https://anan.nousresearch.com/docs/developer-guide/
 
 ### Project Layout
 
 ```
-sinoclaw-agent/
+anan/
 ├── run_agent.py          # AIAgent — core conversation loop
 ├── model_tools.py        # Tool discovery and dispatch
 ├── toolsets.py           # Toolset definitions
-├── cli.py                # Interactive CLI (SinoclawCLI)
+├── cli.py                # Interactive CLI (AnanCLI)
 ├── sinoclaw_state.py       # SQLite session store
 ├── agent/                # Prompt builder, context compression, memory, model routing, credential pooling, skill dispatch
-├── sinoclaw_cli/           # CLI subcommands, config, setup, commands
+├── anan_cli/           # CLI subcommands, config, setup, commands
 │   ├── commands.py       # Slash command registry (CommandDef)
 │   ├── config.py         # DEFAULT_CONFIG, env var definitions
 │   └── main.py           # CLI entry point and argparse
@@ -893,7 +893,7 @@ sinoclaw-agent/
 └── website/              # Docusaurus docs site
 ```
 
-Config: `~/.sinoclaw/config.yaml` (settings), `~/.sinoclaw/.env` (API keys).
+Config: `~/.anan/config.yaml` (settings), `~/.anan/.env` (API keys).
 
 ### Adding a Tool (3 files)
 
@@ -923,11 +923,11 @@ registry.register(
 
 Auto-discovery: any `tools/*.py` file with a top-level `registry.register()` call is imported automatically — no manual list needed.
 
-All handlers must return JSON strings. Use `get_sinoclaw_home()` for paths, never hardcode `~/.sinoclaw`.
+All handlers must return JSON strings. Use `get_anan_home()` for paths, never hardcode `~/.sinoclaw`.
 
 ### Adding a Slash Command
 
-1. Add `CommandDef` to `COMMAND_REGISTRY` in `sinoclaw_cli/commands.py`
+1. Add `CommandDef` to `COMMAND_REGISTRY` in `anan_cli/commands.py`
 2. Add handler in `cli.py` → `process_command()`
 3. (Optional) Add gateway handler in `gateway/run.py`
 
@@ -952,11 +952,11 @@ python -m pytest tests/ -o 'addopts=' -q   # Full suite
 python -m pytest tests/tools/ -q            # Specific area
 ```
 
-- Tests auto-redirect `SINOCLAW_HOME` to temp dirs — never touch real `~/.sinoclaw/`
+- Tests auto-redirect `ANAN_HOME` to temp dirs — never touch real `~/.anan/`
 - Run full suite before pushing any change
 - Use `-o 'addopts='` to clear any baked-in pytest flags
 
-**Windows contributors:** `scripts/run_tests.sh` currently looks for POSIX venvs (`.venv/bin/activate` / `venv/bin/activate`) and will error out on Windows where the layout is `venv/Scripts/activate` + `python.exe`. The Sinoclaw-installed venv at `venv/Scripts/` also has no `pip` or `pytest` — it's stripped for end-user install size. Workaround: install pytest + pytest-xdist + pyyaml into a system Python 3.11 user site (`/c/Program Files/Python311/python -m pip install --user pytest pytest-xdist pyyaml`), then run tests directly:
+**Windows contributors:** `scripts/run_tests.sh` currently looks for POSIX venvs (`.venv/bin/activate` / `venv/bin/activate`) and will error out on Windows where the layout is `venv/Scripts/activate` + `python.exe`. The Anan-installed venv at `venv/Scripts/` also has no `pip` or `pytest` — it's stripped for end-user install size. Workaround: install pytest + pytest-xdist + pyyaml into a system Python 3.11 user site (`/c/Program Files/Python311/python -m pip install --user pytest pytest-xdist pyyaml`), then run tests directly:
 
 ```bash
 export PYTHONPATH="$(pwd)"
@@ -967,7 +967,7 @@ Use `-n 0` (not `-n 4`) because `pyproject.toml`'s default `addopts` already inc
 
 **Cross-platform test guards:** tests that use POSIX-only syscalls need a skip marker. Common ones already in the codebase:
 - Symlink creation → `@pytest.mark.skipif(sys.platform == "win32", reason="Symlinks require elevated privileges on Windows")` (see `tests/cron/test_cron_script.py`)
-- POSIX file modes (0o600, etc.) → `@pytest.mark.skipif(sys.platform.startswith("win"), reason="POSIX mode bits not enforced on Windows")` (see `tests/sinoclaw_cli/test_auth_toctou_file_modes.py`)
+- POSIX file modes (0o600, etc.) → `@pytest.mark.skipif(sys.platform.startswith("win"), reason="POSIX mode bits not enforced on Windows")` (see `tests/anan_cli/test_auth_toctou_file_modes.py`)
 - `signal.SIGALRM` → Unix-only (see `tests/conftest.py::_enforce_test_timeout`)
 - Live Winsock / Windows-specific regression tests → `@pytest.mark.skipif(sys.platform != "win32", reason="Windows-specific regression")`
 
@@ -1008,6 +1008,6 @@ Types: `fix:`, `feat:`, `refactor:`, `docs:`, `chore:`
 
 - **Never break prompt caching** — don't change context, tools, or system prompt mid-conversation
 - **Message role alternation** — never two assistant or two user messages in a row
-- Use `get_sinoclaw_home()` from `sinoclaw_constants` for all paths (profile-safe)
+- Use `get_anan_home()` from `sinoclaw_constants` for all paths (profile-safe)
 - Config values go in `config.yaml`, secrets go in `.env`
 - New tools need a `check_fn` so they only appear when requirements are met

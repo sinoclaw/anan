@@ -100,7 +100,7 @@ class TestSyncBackNoop:
     def test_sync_back_noop_without_download_fn(self, tmp_path):
         mgr = _make_manager(tmp_path, bulk_download_fn=None)
         # Should return immediately without error
-        mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+        mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
         # Nothing to assert beyond "no exception raised"
 
 
@@ -112,7 +112,7 @@ class TestSyncBackNoChanges:
         host_content = b'{"key": "val"}'
         _write_file(host_file, host_content)
 
-        remote_path = "/root/.sinoclaw/cred.json"
+        remote_path = "/root/.anan/cred.json"
         mapping = [(str(host_file), remote_path)]
 
         # Remote tar contains the same content as was pushed
@@ -124,7 +124,7 @@ class TestSyncBackNoChanges:
         # Simulate that we already pushed this file with this hash
         mgr._pushed_hashes[remote_path] = _sha256_bytes(host_content)
 
-        mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+        mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
         # Host file should be unchanged (same content, same bytes)
         assert host_file.read_bytes() == host_content
@@ -138,7 +138,7 @@ class TestSyncBackAppliesChanged:
         original_content = b"print('v1')"
         _write_file(host_file, original_content)
 
-        remote_path = "/root/.sinoclaw/skill.py"
+        remote_path = "/root/.anan/skill.py"
         mapping = [(str(host_file), remote_path)]
 
         remote_content = b"print('v2 - edited on remote')"
@@ -149,7 +149,7 @@ class TestSyncBackAppliesChanged:
         mgr = _make_manager(tmp_path, file_mapping=mapping, bulk_download_fn=download_fn)
         mgr._pushed_hashes[remote_path] = _sha256_bytes(original_content)
 
-        mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+        mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
         assert host_file.read_bytes() == remote_content
 
@@ -161,7 +161,7 @@ class TestSyncBackNewRemoteFile:
         # Existing mapping gives _infer_host_path a prefix to work with
         existing_host = tmp_path / "host" / "skills" / "existing.py"
         _write_file(existing_host, b"existing")
-        mapping = [(str(existing_host), "/root/.sinoclaw/skills/existing.py")]
+        mapping = [(str(existing_host), "/root/.anan/skills/existing.py")]
 
         # Remote has a NEW file in the same directory that was never pushed
         new_remote_content = b"# brand new skill created on remote"
@@ -172,7 +172,7 @@ class TestSyncBackNewRemoteFile:
         mgr = _make_manager(tmp_path, file_mapping=mapping, bulk_download_fn=download_fn)
         # No entry in _pushed_hashes for the new file
 
-        mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+        mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
         # The new file should have been inferred and written to the host
         expected_host_path = tmp_path / "host" / "skills" / "new_skill.py"
@@ -188,7 +188,7 @@ class TestSyncBackConflict:
         original_content = b'{"v": 1}'
         _write_file(host_file, original_content)
 
-        remote_path = "/root/.sinoclaw/config.json"
+        remote_path = "/root/.anan/config.json"
         mapping = [(str(host_file), remote_path)]
 
         # Host was modified after push
@@ -204,7 +204,7 @@ class TestSyncBackConflict:
         mgr._pushed_hashes[remote_path] = _sha256_bytes(original_content)
 
         with caplog.at_level(logging.WARNING, logger="tools.environments.file_sync"):
-            mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+            mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
         # Conflict warning was logged
         assert any("conflict" in r.message.lower() for r in caplog.records)
@@ -229,7 +229,7 @@ class TestSyncBackRetries:
             _make_tar({}, dest)
 
         mgr = _make_manager(tmp_path, bulk_download_fn=flaky_download)
-        mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+        mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
         assert call_count == 3
         # Sleep called twice (between attempt 1->2 and 2->3)
@@ -246,7 +246,7 @@ class TestSyncBackRetries:
 
         with caplog.at_level(logging.WARNING, logger="tools.environments.file_sync"):
             # Should NOT raise -- failures are logged, not propagated
-            mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+            mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
         # All retries were attempted
         assert mock_sleep.call_count == _SYNC_BACK_MAX_RETRIES - 1
@@ -262,7 +262,7 @@ class TestPushedHashesPopulated:
         host_file = tmp_path / "data.txt"
         host_file.write_bytes(b"hello world")
 
-        remote_path = "/root/.sinoclaw/data.txt"
+        remote_path = "/root/.anan/data.txt"
         mapping = [(str(host_file), remote_path)]
 
         mgr = FileSyncManager(
@@ -280,7 +280,7 @@ class TestPushedHashesPopulated:
         host_file = tmp_path / "deleteme.txt"
         host_file.write_bytes(b"to be deleted")
 
-        remote_path = "/root/.sinoclaw/deleteme.txt"
+        remote_path = "/root/.anan/deleteme.txt"
         mapping = [(str(host_file), remote_path)]
         current_mapping = list(mapping)
 
@@ -312,7 +312,7 @@ class TestSyncBackFileLock:
         download_fn = _make_download_fn({})
         mgr = _make_manager(tmp_path, bulk_download_fn=download_fn)
 
-        mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+        mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
         # flock should have been called at least twice: LOCK_EX to acquire, LOCK_UN to release
         assert mock_flock.call_count >= 2
@@ -329,7 +329,7 @@ class TestSyncBackFileLock:
 
         with patch("tools.environments.file_sync.fcntl", None):
             # Should not raise — locking is skipped
-            mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+            mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
 
 class TestInferHostPath:
@@ -339,26 +339,26 @@ class TestInferHostPath:
         """Remote path in unmapped directory should return None."""
         host_file = tmp_path / "host" / "skills" / "a.py"
         _write_file(host_file, b"content")
-        mapping = [(str(host_file), "/root/.sinoclaw/skills/a.py")]
+        mapping = [(str(host_file), "/root/.anan/skills/a.py")]
 
         mgr = _make_manager(tmp_path, file_mapping=mapping)
         result = mgr._infer_host_path(
-            "/root/.sinoclaw/cache/new.json",
+            "/root/.anan/cache/new.json",
             file_mapping=mapping,
         )
         assert result is None
 
     def test_infer_partial_prefix_no_false_match(self, tmp_path):
-        """A partial prefix like /root/.sinoclaw/sk should NOT match /root/.sinoclaw/skills/."""
+        """A partial prefix like /root/.anan/sk should NOT match /root/.anan/skills/."""
         host_file = tmp_path / "host" / "skills" / "a.py"
         _write_file(host_file, b"content")
-        mapping = [(str(host_file), "/root/.sinoclaw/skills/a.py")]
+        mapping = [(str(host_file), "/root/.anan/skills/a.py")]
 
         mgr = _make_manager(tmp_path, file_mapping=mapping)
-        # /root/.sinoclaw/skillsXtra/b.py shares prefix "skills" but the
-        # directory is different — should not match /root/.sinoclaw/skills/
+        # /root/.anan/skillsXtra/b.py shares prefix "skills" but the
+        # directory is different — should not match /root/.anan/skills/
         result = mgr._infer_host_path(
-            "/root/.sinoclaw/skillsXtra/b.py",
+            "/root/.anan/skillsXtra/b.py",
             file_mapping=mapping,
         )
         assert result is None
@@ -367,11 +367,11 @@ class TestInferHostPath:
         """A file in a mapped directory should be correctly inferred."""
         host_file = tmp_path / "host" / "skills" / "a.py"
         _write_file(host_file, b"content")
-        mapping = [(str(host_file), "/root/.sinoclaw/skills/a.py")]
+        mapping = [(str(host_file), "/root/.anan/skills/a.py")]
 
         mgr = _make_manager(tmp_path, file_mapping=mapping)
         result = mgr._infer_host_path(
-            "/root/.sinoclaw/skills/b.py",
+            "/root/.anan/skills/b.py",
             file_mapping=mapping,
         )
         expected = str(tmp_path / "host" / "skills" / "b.py")
@@ -392,7 +392,7 @@ class TestSyncBackSIGINT:
         with patch("tools.environments.file_sync.signal.getsignal",
                     side_effect=original_getsignal) as mock_get, \
              patch("tools.environments.file_sync.signal.signal") as mock_set:
-            mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+            mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
         # signal.getsignal was called to save the original handler
         assert mock_get.called
@@ -416,7 +416,7 @@ class TestSyncBackSIGINT:
             exc = []
             def run():
                 try:
-                    mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+                    mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
                 except Exception as e:
                     exc.append(e)
 
@@ -442,14 +442,14 @@ class TestSyncBackSizeCap:
 
         mgr = _make_manager(
             tmp_path,
-            file_mapping=[(skill_host, "/root/.sinoclaw/skill.md")],
+            file_mapping=[(skill_host, "/root/.anan/skill.md")],
             bulk_download_fn=download_fn,
         )
 
         # Cap at 1 byte so any non-empty tar exceeds it
         with caplog.at_level(logging.WARNING, logger="tools.environments.file_sync"):
             with patch("tools.environments.file_sync._SYNC_BACK_MAX_BYTES", 1):
-                mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+                mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
 
         # Host file should be untouched because extraction was skipped
         assert Path(skill_host).read_bytes() == b"original"
@@ -464,10 +464,10 @@ class TestSyncBackSizeCap:
 
         mgr = _make_manager(
             tmp_path,
-            file_mapping=[(host_file, "/root/.sinoclaw/skill.md")],
+            file_mapping=[(host_file, "/root/.anan/skill.md")],
             bulk_download_fn=download_fn,
         )
 
         # Default cap (2 GiB) is far above our tiny tar; extraction should proceed
-        mgr.sync_back(sinoclaw_home=tmp_path / ".sinoclaw")
+        mgr.sync_back(anan_home=tmp_path / ".sinoclaw")
         assert Path(host_file).read_bytes() == b"remote_version"

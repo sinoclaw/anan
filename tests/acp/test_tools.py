@@ -29,7 +29,7 @@ COMMON_SINOCLAW_TOOLS = ["read_file", "search_files", "terminal", "patch", "writ
 
 
 class TestToolKindMap:
-    def test_all_sinoclaw_tools_have_kind(self):
+    def test_all_anan_tools_have_kind(self):
         """Every common sinoclaw tool should appear in TOOL_KIND_MAP."""
         for tool in COMMON_SINOCLAW_TOOLS:
             assert tool in TOOL_KIND_MAP, f"{tool} missing from TOOL_KIND_MAP"
@@ -125,15 +125,15 @@ class TestBuildToolTitle:
         assert title == "skill view (github-pitfalls/references/api.md)"
 
     def test_execute_code_title_includes_first_code_line(self):
-        title = build_tool_title("execute_code", {"code": "\nfrom sinoclaw_tools import terminal\nprint('done')"})
-        assert title == "python: from sinoclaw_tools import terminal"
+        title = build_tool_title("execute_code", {"code": "\nfrom anan_tools import terminal\nprint('done')"})
+        assert title == "python: from anan_tools import terminal"
 
     def test_skill_manage_title_includes_action_and_target(self):
         title = build_tool_title(
             "skill_manage",
-            {"action": "patch", "name": "sinoclaw-agent-operations", "file_path": "references/acp.md"},
+            {"action": "patch", "name": "anan-operations", "file_path": "references/acp.md"},
         )
-        assert title == "skill patch: sinoclaw-agent-operations/references/acp.md"
+        assert title == "skill patch: anan-operations/references/acp.md"
 
     def test_unknown_tool_uses_name(self):
         title = build_tool_title("some_new_tool", {"foo": "bar"})
@@ -243,16 +243,16 @@ class TestBuildToolStart:
             "skill_manage",
             {
                 "action": "patch",
-                "name": "sinoclaw-agent-operations",
+                "name": "anan-operations",
                 "file_path": "references/acp.md",
                 "old_string": "old advice",
                 "new_string": "new advice",
             },
         )
         assert result.kind == "edit"
-        assert result.title == "skill patch: sinoclaw-agent-operations/references/acp.md"
+        assert result.title == "skill patch: anan-operations/references/acp.md"
         assert isinstance(result.content[0], FileEditToolCallContent)
-        assert result.content[0].path == "skills/sinoclaw-agent-operations/references/acp.md"
+        assert result.content[0].path == "skills/anan-operations/references/acp.md"
         assert result.content[0].old_text == "old advice"
         assert result.content[0].new_text == "new advice"
         assert result.raw_input is None
@@ -320,17 +320,17 @@ class TestBuildToolComplete:
         result = build_tool_complete(
             "tc-skill-manage",
             "skill_manage",
-            '{"success":true,"message":"Patched references/sinoclaw-acp-zed-rendering.md in skill \'sinoclaw-agent-operations\' (1 replacement)."}',
+            '{"success":true,"message":"Patched references/sinoclaw-acp-zed-rendering.md in skill \'anan-operations\' (1 replacement)."}',
             function_args={
                 "action": "patch",
-                "name": "sinoclaw-agent-operations",
+                "name": "anan-operations",
                 "file_path": "references/sinoclaw-acp-zed-rendering.md",
             },
         )
         text = result.content[0].content.text
         assert "**✅ Skill updated**" in text
         assert "`patch`" in text
-        assert "`sinoclaw-agent-operations`" in text
+        assert "`anan-operations`" in text
         assert "references/sinoclaw-acp-zed-rendering.md" in text
         assert "{\"success\"" not in text
         assert result.raw_output is None

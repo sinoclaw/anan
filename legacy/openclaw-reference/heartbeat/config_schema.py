@@ -23,7 +23,7 @@ HEARTBEAT_CONFIG_SCHEMA = {
         },
         "scheduler_seed": {
             "type": "string",
-            "default": "sinoclaw-heartbeat-v1",
+            "default": "anan-heartbeat-v1",
             "description": "Seed for phase-offset calculation (change to reset phase distribution)"
         },
         "flood_window_ms": {
@@ -57,7 +57,7 @@ HEARTBEAT_CONFIG_SCHEMA = {
         },
         "state_file": {
             "type": "string",
-            "default": "~/.sinoclaw/heartbeat-state.json",
+            "default": "~/.anan/heartbeat-state.json",
             "description": "Path to persistent state file"
         },
         "agents": {
@@ -123,12 +123,12 @@ def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:
     # Global settings
     result["enabled"] = config.get("enabled", True)
     result["interval_ms"] = config.get("interval_ms", 1800000)
-    result["scheduler_seed"] = config.get("scheduler_seed", "sinoclaw-heartbeat-v1")
+    result["scheduler_seed"] = config.get("scheduler_seed", "anan-heartbeat-v1")
     result["flood_window_ms"] = config.get("flood_window_ms", 60000)
     result["flood_threshold"] = config.get("flood_threshold", 5)
     result["min_spacing_ms"] = config.get("min_spacing_ms", 30000)
     result["ack_max_chars"] = config.get("ack_max_chars", 300)
-    result["state_file"] = config.get("state_file", "~/.sinoclaw/heartbeat-state.json")
+    result["state_file"] = config.get("state_file", "~/.anan/heartbeat-state.json")
     
     # Active hours
     if "active_hours" in config:
@@ -184,7 +184,7 @@ plugins:
   heartbeat:
     enabled: true
     interval_ms: 1800000  # 30 minutes
-    scheduler_seed: "sinoclaw-heartbeat-v1"
+    scheduler_seed: "anan-heartbeat-v1"
     flood_window_ms: 60000
     flood_threshold: 5
     min_spacing_ms: 30000
@@ -192,7 +192,7 @@ plugins:
       start: "09:00"
       end: "22:00"
       timezone: "Asia/Shanghai"
-    state_file: "~/.sinoclaw/heartbeat-state.json"
+    state_file: "~/.anan/heartbeat-state.json"
     
     agents:
       main:

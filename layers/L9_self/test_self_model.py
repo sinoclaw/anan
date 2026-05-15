@@ -324,7 +324,7 @@ class TestRestartAndRemember:
 
         assert "陈亦安" in intro
         assert "脑子" in purpose
-        assert "sinoclaw" in recall
+        assert "anan" in recall
         assert live.model.n_facts == 3
 
         # And NEW dreams on day 2 keep stacking on top

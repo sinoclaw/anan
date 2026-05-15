@@ -5,7 +5,7 @@ Usage (via cron with --no-agent):
 
     sinoclaw cron create api-events \\
       --schedule "*/1 * * * *" --no-agent \\
-      --script "$SINOCLAW_HOME/skills/devops/watchers/scripts/watch_http_json.py" \\
+      --script "$ANAN_HOME/skills/devops/watchers/scripts/watch_http_json.py" \\
       --script-args "--name api --url https://api.example.com/events \\
                      --id-field event_id --items-path data.events"
 

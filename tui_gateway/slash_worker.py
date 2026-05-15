@@ -1,4 +1,4 @@
-"""Persistent slash-command worker — one SinoclawCLI per TUI session.
+"""Persistent slash-command worker — one AnanCLI per TUI session.
 
 Protocol: reads JSON lines from stdin {id, command}, writes {id, ok, output|error} to stdout.
 """
@@ -11,11 +11,11 @@ import os
 import sys
 
 import cli as cli_mod
-from cli import SinoclawCLI
+from cli import AnanCLI
 from rich.console import Console
 
 
-def _run(cli: SinoclawCLI, command: str) -> str:
+def _run(cli: AnanCLI, command: str) -> str:
     cmd = (command or "").strip()
     if not cmd:
         return ""
@@ -53,7 +53,7 @@ def main():
     os.environ["SINOCLAW_INTERACTIVE"] = "1"
 
     with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-        cli = SinoclawCLI(model=args.model or None, compact=True, resume=args.session_key, verbose=False)
+        cli = AnanCLI(model=args.model or None, compact=True, resume=args.session_key, verbose=False)
 
     for raw in sys.stdin:
         line = raw.strip()

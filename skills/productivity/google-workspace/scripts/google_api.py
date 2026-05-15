@@ -31,16 +31,16 @@ from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
 from pathlib import Path
 
-# Ensure sibling modules (_sinoclaw_home) are importable when run standalone.
+# Ensure sibling modules (_anan_home) are importable when run standalone.
 _SCRIPTS_DIR = str(Path(__file__).resolve().parent)
 if _SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, _SCRIPTS_DIR)
 
-from _sinoclaw_home import get_sinoclaw_home
+from _anan_home import get_anan_home
 
-SINOCLAW_HOME = get_sinoclaw_home()
-TOKEN_PATH = SINOCLAW_HOME / "google_token.json"
-CLIENT_SECRET_PATH = SINOCLAW_HOME / "google_client_secret.json"
+ANAN_HOME = get_anan_home()
+TOKEN_PATH = ANAN_HOME / "google_token.json"
+CLIENT_SECRET_PATH = ANAN_HOME / "google_client_secret.json"
 
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",

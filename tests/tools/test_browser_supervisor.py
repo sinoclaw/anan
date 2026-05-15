@@ -56,7 +56,7 @@ def chrome_cdp(worker_id):
     else:
         port_offset = int(worker_id.lstrip("gw"))
     port = 9225 + port_offset
-    profile = tempfile.mkdtemp(prefix="sinoclaw-supervisor-test-")
+    profile = tempfile.mkdtemp(prefix="anan-supervisor-test-")
     proc = subprocess.Popen(
         [
             _find_chrome(),

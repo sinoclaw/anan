@@ -3,8 +3,8 @@
 Standalone Web Tools Module
 
 This module provides generic web tools that work with multiple backend providers.
-Backend is selected during ``sinoclaw tools`` setup (web.backend in config.yaml).
-When available, Sinoclaw can route Firecrawl calls through a Nous-hosted tool-gateway
+Backend is selected during ``anan tools`` setup (web.backend in config.yaml).
+When available, Anan can route Firecrawl calls through a Nous-hosted tool-gateway
 for Nous Subscribers only.
 
 Available tools:
@@ -111,9 +111,9 @@ def _has_env(name: str) -> bool:
     return bool(val and val.strip())
 
 def _load_web_config() -> dict:
-    """Load the ``web:`` section from ~/.sinoclaw/config.yaml."""
+    """Load the ``web:`` section from ~/.anan/config.yaml."""
     try:
-        from sinoclaw_cli.config import load_config
+        from anan_cli.config import load_config
         return load_config().get("web", {})
     except (ImportError, Exception):
         return {}
@@ -121,7 +121,7 @@ def _load_web_config() -> dict:
 def _get_backend() -> str:
     """Determine which web backend to use (shared fallback).
 
-    Reads ``web.backend`` from config.yaml (set by ``sinoclaw tools``).
+    Reads ``web.backend`` from config.yaml (set by ``anan tools``).
     Falls back to whichever API key is present for users who configured
     keys manually without running setup.
     """
@@ -268,7 +268,7 @@ def _raise_web_backend_configuration_error() -> None:
     if managed_nous_tools_enabled():
         message += (
             " With your Nous subscription you can also use the Tool Gateway — "
-            "run `sinoclaw tools` and select Nous Subscription as the web provider."
+            "run `anan tools` and select Nous Subscription as the web provider."
         )
     raise ValueError(message)
 
@@ -569,7 +569,7 @@ def _resolve_web_extract_auxiliary(model: Optional[str] = None) -> tuple[Optiona
     extra_body: Dict[str, Any] = {}
     if client is not None and _is_nous_auxiliary_client(client):
         from agent.auxiliary_client import get_auxiliary_extra_body
-        extra_body = get_auxiliary_extra_body() or {"tags": ["product=sinoclaw-agent"]}
+        extra_body = get_auxiliary_extra_body() or {"tags": ["product=anan"]}
 
     return client, effective_model, extra_body
 
@@ -999,7 +999,7 @@ def _get_exa_client():
                 "Get your API key at https://exa.ai"
             )
         _exa_client = Exa(api_key=api_key)
-        _exa_client.headers["x-exa-integration"] = "sinoclaw-agent"
+        _exa_client.headers["x-exa-integration"] = "anan"
     return _exa_client
 
 

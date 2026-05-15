@@ -1,4 +1,4 @@
-"""ACP auth helpers — detect the currently configured Sinoclaw provider."""
+"""ACP auth helpers — detect the currently configured Anan provider."""
 
 from __future__ import annotations
 
@@ -6,9 +6,9 @@ from typing import Optional
 
 
 def detect_provider() -> Optional[str]:
-    """Resolve the active Sinoclaw runtime provider, or None if unavailable."""
+    """Resolve the active Anan runtime provider, or None if unavailable."""
     try:
-        from sinoclaw_cli.runtime_provider import resolve_runtime_provider
+        from anan_cli.runtime_provider import resolve_runtime_provider
         runtime = resolve_runtime_provider()
         api_key = runtime.get("api_key")
         provider = runtime.get("provider")
@@ -20,5 +20,5 @@ def detect_provider() -> Optional[str]:
 
 
 def has_provider() -> bool:
-    """Return True if Sinoclaw can resolve any runtime provider credentials."""
+    """Return True if Anan can resolve any runtime provider credentials."""
     return detect_provider() is not None

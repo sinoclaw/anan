@@ -538,13 +538,13 @@ class MemoryManager:
     def initialize_all(self, session_id: str, **kwargs) -> None:
         """Initialize all providers.
 
-        Automatically injects ``sinoclaw_home`` into *kwargs* so that every
+        Automatically injects ``anan_home`` into *kwargs* so that every
         provider can resolve profile-scoped storage paths without importing
-        ``get_sinoclaw_home()`` themselves.
+        ``get_anan_home()`` themselves.
         """
-        if "sinoclaw_home" not in kwargs:
-            from sinoclaw_constants import get_sinoclaw_home
-            kwargs["sinoclaw_home"] = str(get_sinoclaw_home())
+        if "anan_home" not in kwargs:
+            from anan_constants import get_anan_home
+            kwargs["anan_home"] = str(get_anan_home())
         for provider in self._providers:
             try:
                 provider.initialize(session_id=session_id, **kwargs)

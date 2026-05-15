@@ -44,7 +44,7 @@ hermes model
 hermes
 ```
 
-After the first login, credentials are stored under `~/.sinoclaw/auth.json` and are refreshed automatically before each session.
+After the first login, credentials are stored under `~/.anan/auth.json` and are refreshed automatically before each session.
 
 ## Logging In Manually
 
@@ -80,7 +80,7 @@ Hermes implements a PKCE device-code flow against the MiniMax OAuth endpoints:
 2. It POSTs to `{base_url}/oauth/code` with the challenge and receives a `user_code` and `verification_uri`.
 3. Your browser opens `verification_uri`. If prompted, enter the `user_code`.
 4. Hermes polls `{base_url}/oauth/token` until the token arrives (or the deadline passes).
-5. Tokens (`access_token`, `refresh_token`, expiry) are saved to `~/.sinoclaw/auth.json` under the `minimax-oauth` key.
+5. Tokens (`access_token`, `refresh_token`, expiry) are saved to `~/.anan/auth.json` under the `minimax-oauth` key.
 
 Token refresh (standard OAuth `refresh_token` grant) runs automatically at each session start when the access token is within 60 seconds of expiry.
 
@@ -113,13 +113,13 @@ hermes model
 Or set the model directly:
 
 ```bash
-sinoclaw config set model MiniMax-M2.7
-sinoclaw config set provider minimax-oauth
+anan config set model MiniMax-M2.7
+anan config set provider minimax-oauth
 ```
 
 ## Configuration Reference
 
-After login, `~/.sinoclaw/config.yaml` will contain entries similar to:
+After login, `~/.anan/config.yaml` will contain entries similar to:
 
 ```yaml
 model:

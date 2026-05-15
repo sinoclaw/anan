@@ -1,6 +1,6 @@
 """GMI Cloud provider profile."""
 
-from sinoclaw_cli import __version__ as _SINOCLAW_VERSION
+from anan_cli import __version__ as _SINOCLAW_VERSION
 from providers import register_provider
 from providers.base import ProviderProfile
 

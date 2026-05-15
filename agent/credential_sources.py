@@ -1,27 +1,27 @@
-"""Unified removal contract for every credential source Sinoclaw reads from.
+"""Unified removal contract for every credential source Anan reads from.
 
-Sinoclaw seeds its credential pool from many places:
+Anan seeds its credential pool from many places:
 
-    env:<VAR>     — os.environ / ~/.sinoclaw/.env
+    env:<VAR>     — os.environ / ~/.anan/.env
     claude_code   — ~/.claude/.credentials.json
-    sinoclaw_pkce   — ~/.sinoclaw/.anthropic_oauth.json
+    anan_pkce   — ~/.anan/.anthropic_oauth.json
     device_code   — auth.json providers.<provider> (nous, openai-codex, ...)
     qwen-cli      — ~/.qwen/oauth_creds.json
     gh_cli        — gh auth token
     config:<name> — custom_providers config entry
     model_config  — model.api_key when model.provider == "custom"
-    manual        — user ran `sinoclaw auth add`
+    manual        — user ran `anan auth add`
 
 Each source has its own reader inside ``agent.credential_pool._seed_from_*``
 (which keep their existing shape — we haven't restructured them).  What we
 unify here is **removal**:
 
-    ``sinoclaw auth remove <provider> <N>`` must make the pool entry stay gone.
+    ``anan auth remove <provider> <N>`` must make the pool entry stay gone.
 
 Before this module, every source had an ad-hoc removal branch in
 ``auth_remove_command``, and several sources had no branch at all — so
 ``auth remove`` silently reverted on the next ``load_pool()`` call for
-qwen-cli, nous device_code (partial), sinoclaw_pkce, copilot gh_cli, and
+qwen-cli, nous device_code (partial), anan_pkce, copilot gh_cli, and
 custom-config sources.
 
 Now every source registers a ``RemovalStep`` that does exactly three things
@@ -144,12 +144,12 @@ def _remove_env_source(provider: str, removed) -> RemovalResult:
     """env:<VAR> — the most common case.
 
     Handles three user situations:
-      1. Var lives only in ~/.sinoclaw/.env  → clear it
+      1. Var lives only in ~/.anan/.env  → clear it
       2. Var lives only in the user's shell (shell profile, systemd
          EnvironmentFile, launchd plist) → hint them where to unset it
       3. Var lives in both → clear from .env, hint about shell
     """
-    from sinoclaw_cli.config import get_env_path, remove_env_value
+    from anan_cli.config import get_env_path, remove_env_value
 
     result = RemovalResult()
     env_var = removed.source[len("env:"):]
@@ -177,11 +177,11 @@ def _remove_env_source(provider: str, removed) -> RemovalResult:
     if shell_exported:
         result.hints.extend([
             f"Note: {env_var} is still set in your shell environment "
-            f"(not in ~/.sinoclaw/.env).",
+            f"(not in ~/.anan/.env).",
             "  Unset it there (shell profile, systemd EnvironmentFile, "
-            "launchd plist, etc.) or it will keep being visible to Sinoclaw.",
-            f"  The pool entry is now suppressed — Sinoclaw will ignore "
-            f"{env_var} until you run `sinoclaw auth add {provider}`.",
+            "launchd plist, etc.) or it will keep being visible to Anan.",
+            f"  The pool entry is now suppressed — Anan will ignore "
+            f"{env_var} until you run `anan auth add {provider}`.",
         ])
     else:
         result.hints.append(
@@ -195,25 +195,25 @@ def _remove_claude_code(provider: str, removed) -> RemovalResult:
     """~/.claude/.credentials.json is owned by Claude Code itself.
 
     We don't delete it — the user's Claude Code install still needs to
-    work.  We just suppress it so Sinoclaw stops reading it.
+    work.  We just suppress it so Anan stops reading it.
     """
     return RemovalResult(hints=[
         "Suppressed claude_code credential — it will not be re-seeded.",
         "Note: Claude Code credentials still live in ~/.claude/.credentials.json",
-        "Run `sinoclaw auth add anthropic` to re-enable if needed.",
+        "Run `anan auth add anthropic` to re-enable if needed.",
     ])
 
 
-def _remove_sinoclaw_pkce(provider: str, removed) -> RemovalResult:
-    """~/.sinoclaw/.anthropic_oauth.json is ours — delete it outright."""
-    from sinoclaw_constants import get_sinoclaw_home
+def _remove_anan_pkce(provider: str, removed) -> RemovalResult:
+    """~/.anan/.anthropic_oauth.json is ours — delete it outright."""
+    from anan_constants import get_anan_home
 
     result = RemovalResult()
-    oauth_file = get_sinoclaw_home() / ".anthropic_oauth.json"
+    oauth_file = get_anan_home() / ".anthropic_oauth.json"
     if oauth_file.exists():
         try:
             oauth_file.unlink()
-            result.cleaned.append("Cleared Sinoclaw Anthropic OAuth credentials")
+            result.cleaned.append("Cleared Anan Anthropic OAuth credentials")
         except OSError as exc:
             result.hints.append(f"Could not delete {oauth_file}: {exc}")
     return result
@@ -221,7 +221,7 @@ def _remove_sinoclaw_pkce(provider: str, removed) -> RemovalResult:
 
 def _clear_auth_store_provider(provider: str) -> bool:
     """Delete auth_store.providers[provider].  Returns True if deleted."""
-    from sinoclaw_cli.auth import (
+    from anan_cli.auth import (
         _auth_store_lock,
         _load_auth_store,
         _save_auth_store,
@@ -241,9 +241,9 @@ def _remove_nous_device_code(provider: str, removed) -> RemovalResult:
     """Nous OAuth lives in auth.json providers.nous — clear it and suppress.
 
     We suppress in addition to clearing because nothing else stops the
-    user's next `sinoclaw login` run from writing providers.nous again
+    user's next `anan login` run from writing providers.nous again
     before they decide to.  Suppression forces them to go through
-    `sinoclaw auth add nous` to re-engage, which is the documented re-add
+    `anan auth add nous` to re-engage, which is the documented re-add
     path and clears the suppression atomically.
     """
     result = RemovalResult()
@@ -269,7 +269,7 @@ def _remove_codex_device_code(provider: str, removed) -> RemovalResult:
     """Codex tokens live in TWO places: our auth store AND ~/.codex/auth.json.
 
     refresh_codex_oauth_pure() writes both every time, so clearing only
-    the Sinoclaw auth store is not enough — _seed_from_singletons() would
+    the Anan auth store is not enough — _seed_from_singletons() would
     re-import from ~/.codex/auth.json on the next load_pool() call and
     the removal would be instantly undone.  We suppress instead of
     deleting Codex CLI's file, so the Codex CLI itself keeps working.
@@ -277,12 +277,12 @@ def _remove_codex_device_code(provider: str, removed) -> RemovalResult:
     The canonical source name in ``_seed_from_singletons`` is
     ``"device_code"`` (no prefix).  Entries may show up in the pool as
     either ``"device_code"`` (seeded) or ``"manual:device_code"`` (added
-    via ``sinoclaw auth add openai-codex``), but in both cases the re-seed
+    via ``anan auth add openai-codex``), but in both cases the re-seed
     gate lives at the ``"device_code"`` suppression key.  We suppress
     that canonical key here; the central dispatcher also suppresses
     ``removed.source`` which is fine — belt-and-suspenders, idempotent.
     """
-    from sinoclaw_cli.auth import suppress_credential_source
+    from anan_cli.auth import suppress_credential_source
 
     result = RemovalResult()
     if _clear_auth_store_provider(provider):
@@ -294,7 +294,7 @@ def _remove_codex_device_code(provider: str, removed) -> RemovalResult:
     result.hints.extend([
         "Suppressed openai-codex device_code source — it will not be re-seeded.",
         "Note: Codex CLI credentials still live in ~/.codex/auth.json",
-        "Run `sinoclaw auth add openai-codex` to re-enable if needed.",
+        "Run `anan auth add openai-codex` to re-enable if needed.",
     ])
     return result
 
@@ -308,7 +308,7 @@ def _remove_qwen_cli(provider: str, removed) -> RemovalResult:
     return RemovalResult(hints=[
         "Suppressed qwen-cli credential — it will not be re-seeded.",
         "Note: Qwen CLI credentials still live in ~/.qwen/oauth_creds.json",
-        "Run `sinoclaw auth add qwen-oauth` to re-enable if needed.",
+        "Run `anan auth add qwen-oauth` to re-enable if needed.",
     ])
 
 
@@ -323,13 +323,13 @@ def _remove_copilot_gh(provider: str, removed) -> RemovalResult:
     user clicked.
 
     We don't touch the user's gh CLI or shell state — just suppress so
-    Sinoclaw stops picking the token up.
+    Anan stops picking the token up.
     """
     # Suppress ALL copilot source variants up-front so no path resurrects
     # the pool entry.  The central dispatcher in auth_remove_command will
     # ALSO suppress removed.source, but it's idempotent so double-calling
     # is harmless.
-    from sinoclaw_cli.auth import suppress_credential_source
+    from anan_cli.auth import suppress_credential_source
     suppress_credential_source(provider, "gh_cli")
     for env_var in ("COPILOT_GITHUB_TOKEN", "GH_TOKEN", "GITHUB_TOKEN"):
         suppress_credential_source(provider, f"env:{env_var}")
@@ -337,7 +337,7 @@ def _remove_copilot_gh(provider: str, removed) -> RemovalResult:
     return RemovalResult(hints=[
         "Suppressed all copilot token sources (gh_cli + env vars) — they will not be re-seeded.",
         "Note: Your gh CLI / shell environment is unchanged.",
-        "Run `sinoclaw auth add copilot` to re-enable if needed.",
+        "Run `anan auth add copilot` to re-enable if needed.",
     ])
 
 
@@ -382,9 +382,9 @@ def _register_all_sources() -> None:
         description="~/.claude/.credentials.json",
     ))
     register(RemovalStep(
-        provider="anthropic", source_id="sinoclaw_pkce",
-        remove_fn=_remove_sinoclaw_pkce,
-        description="~/.sinoclaw/.anthropic_oauth.json",
+        provider="anthropic", source_id="anan_pkce",
+        remove_fn=_remove_anan_pkce,
+        description="~/.anan/.anthropic_oauth.json",
     ))
     register(RemovalStep(
         provider="nous", source_id="device_code",

@@ -35,7 +35,7 @@ The picker has two columns:
 
 Type in the filter box to narrow by provider name, slug, or model ID.
 
-Pick a model, hit **Switch**, and Sinoclaw writes it to `~/.sinoclaw/config.yaml` under the `model` section. **This applies to new sessions only** — any chat tab you already have open keeps running whatever model it started with. To hot-swap the current chat, use the `/model` slash command inside it.
+Pick a model, hit **Switch**, and Sinoclaw writes it to `~/.anan/config.yaml` under the `model` section. **This applies to new sessions only** — any chat tab you already have open keeps running whatever model it started with. To hot-swap the current chat, use the `/model` slash command inside it.
 
 ## Setting auxiliary models
 
@@ -82,7 +82,7 @@ Cards are badged with `main` or `aux · <task>` when they're currently assigned 
 
 ## What gets written to `config.yaml`
 
-When you save via the dashboard, Sinoclaw writes to `~/.sinoclaw/config.yaml`:
+When you save via the dashboard, Sinoclaw writes to `~/.anan/config.yaml`:
 
 **Main model:**
 ```yaml
@@ -166,7 +166,7 @@ Inside any `sinoclaw chat` session:
 Define your own short names for models you reach for often, then use `/model <alias>` in the CLI or any messaging platform:
 
 ```yaml
-# ~/.sinoclaw/config.yaml
+# ~/.anan/config.yaml
 model_aliases:
   fav:
     model: claude-sonnet-4.6
@@ -179,8 +179,8 @@ model_aliases:
 Or from the shell (short form, `provider/model`):
 
 ```bash
-sinoclaw config set model.aliases.fav anthropic/claude-opus-4.6
-sinoclaw config set model.aliases.grok x-ai/grok-4
+anan config set model.aliases.fav anthropic/claude-opus-4.6
+anan config set model.aliases.grok x-ai/grok-4
 ```
 
 Then `/model fav` or `/model grok` in chat. User aliases shadow built-in short names (`sonnet`, `kimi`, `opus`, etc.). See [Custom model aliases](/docs/reference/slash-commands#custom-model-aliases) for the full reference.
@@ -194,7 +194,7 @@ hermes model set anthropic/claude-opus-4.7 --provider openrouter
 
 ### Direct config edit
 
-Edit `~/.sinoclaw/config.yaml` and restart whatever reads it. See the [Configuration reference](./configuration.md) for the full schema.
+Edit `~/.anan/config.yaml` and restart whatever reads it. See the [Configuration reference](./configuration.md) for the full schema.
 
 ### REST API
 

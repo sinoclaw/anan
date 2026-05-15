@@ -20,7 +20,7 @@ Delegate coding to OpenCode CLI (features, PR review).
 | Author | Sinoclaw Agent |
 | License | MIT |
 | Tags | `Coding-Agent`, `OpenCode`, `Autonomous`, `Refactoring`, `Code-Review` |
-| Related skills | [`claude-code`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-claude-code), [`codex`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-codex), [`sinoclaw-agent`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-sinoclaw-agent) |
+| Related skills | [`claude-code`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-claude-code), [`codex`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-codex), [`anan`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-anan) |
 
 ## Reference: full SKILL.md
 

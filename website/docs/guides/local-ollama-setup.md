@@ -105,7 +105,7 @@ When prompted for a provider, select **Custom Endpoint** and enter:
 - **API Key:** Leave empty or type `no-key` (Ollama doesn't need one)
 - **Model:** `gemma4:31b` (or whichever model you pulled)
 
-Alternatively, edit `~/.sinoclaw/config.yaml` directly:
+Alternatively, edit `~/.anan/config.yaml` directly:
 
 ```yaml
 model:
@@ -205,7 +205,7 @@ Once Hermes works locally in the CLI, you can expose it as a Telegram or Discord
 ### Telegram
 
 1. Create a bot via [@BotFather](https://t.me/BotFather) and get the token
-2. Add to your `~/.sinoclaw/config.yaml`:
+2. Add to your `~/.anan/config.yaml`:
 
 ```yaml
 model:

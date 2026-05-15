@@ -1,5 +1,5 @@
 """
-Session-scoped context variables for the Sinoclaw gateway.
+Session-scoped context variables for the Anan gateway.
 
 Replaces the previous ``os.environ``-based session state
 (``SINOCLAW_SESSION_PLATFORM``, ``SINOCLAW_SESSION_CHAT_ID``, etc.) with

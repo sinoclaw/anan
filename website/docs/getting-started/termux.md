@@ -46,7 +46,7 @@ That does not stop Hermes from working well as a phone-native CLI agent — it j
 Hermes now ships a Termux-aware installer path:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
 ```
 
 On Termux, the installer automatically:
@@ -80,8 +80,8 @@ Why these packages?
 ### 2. Clone Hermes
 
 ```bash
-git clone --recurse-submodules https://github.com/sinoclaw/sinoclaw-agent.git
-cd sinoclaw-agent
+git clone --recurse-submodules https://github.com/sinoclaw/anan.git
+cd anan
 ```
 
 If you already cloned without submodules:
@@ -144,7 +144,7 @@ hermes
 hermes model
 ```
 
-Or set keys directly in `~/.sinoclaw/.env`.
+Or set keys directly in `~/.anan/.env`.
 
 ### Re-run the full interactive setup wizard later
 

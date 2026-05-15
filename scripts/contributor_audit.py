@@ -44,7 +44,7 @@ IGNORED_PATTERNS = [
     re.compile(r"^GitHub\s*Actions?$", re.IGNORECASE),
     re.compile(r"^dependabot", re.IGNORECASE),
     re.compile(r"^renovate", re.IGNORECASE),
-    re.compile(r"^Sinoclaw\s+(Agent|Audit)$", re.IGNORECASE),
+    re.compile(r"^Anan\s+(Agent|Audit)$", re.IGNORECASE),
     re.compile(r"^Ubuntu$", re.IGNORECASE),
 ]
 
@@ -53,7 +53,7 @@ IGNORED_EMAILS = {
     "noreply@github.com",
     "cursoragent@cursor.com",
     "hermes@nousresearch.com",
-    "sinoclaw-audit@example.com",
+    "anan-audit@example.com",
     "hermes@habibilabs.dev",
 }
 
@@ -96,7 +96,7 @@ def gh_pr_list():
         result = subprocess.run(
             [
                 "gh", "pr", "list",
-                "--repo", "sinoclaw/sinoclaw-agent",
+                "--repo", "anan/anan",
                 "--state", "merged",
                 "--json", "number,title,body,author,mergedAt",
                 "--limit", "300",

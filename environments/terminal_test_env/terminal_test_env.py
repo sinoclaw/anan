@@ -112,7 +112,7 @@ class TerminalTestEnv(SinoclawAgentBaseEnv):
         Default configuration for the terminal test environment.
 
         Uses Modal terminal backend for cloud isolation and OpenRouter with
-        Claude for inference. API keys loaded from ~/sinoclaw-agent/.env.
+        Claude for inference. API keys loaded from ~/anan/.env.
         """
         env_config = TerminalTestEnvConfig(
             # Terminal + file tools only

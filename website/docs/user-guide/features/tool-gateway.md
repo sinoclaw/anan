@@ -142,7 +142,7 @@ web:
 
 ### Self-hosted gateway (advanced)
 
-Running your own Nous-compatible gateway? Override endpoints in `~/.sinoclaw/.env`:
+Running your own Nous-compatible gateway? Override endpoints in `~/.anan/.env`:
 
 ```bash
 TOOL_GATEWAY_DOMAIN=your-domain.example.com

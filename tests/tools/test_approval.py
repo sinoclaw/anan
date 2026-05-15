@@ -20,11 +20,11 @@ from tools.approval import (
 
 class TestApprovalModeParsing:
     def test_unquoted_yaml_off_boolean_false_maps_to_off(self):
-        with mock_patch("sinoclaw_cli.config.load_config", return_value={"approvals": {"mode": False}}):
+        with mock_patch("anan_cli.config.load_config", return_value={"approvals": {"mode": False}}):
             assert _get_approval_mode() == "off"
 
     def test_string_off_still_maps_to_off(self):
-        with mock_patch("sinoclaw_cli.config.load_config", return_value={"approvals": {"mode": "off"}}):
+        with mock_patch("anan_cli.config.load_config", return_value={"approvals": {"mode": "off"}}):
             assert _get_approval_mode() == "off"
 
 
@@ -362,17 +362,17 @@ class TestTeePattern:
         assert key is not None
 
     def test_tee_sinoclaw_env(self):
-        dangerous, key, desc = detect_dangerous_command("echo x | tee ~/.sinoclaw/.env")
+        dangerous, key, desc = detect_dangerous_command("echo x | tee ~/.anan/.env")
         assert dangerous is True
         assert key is not None
 
-    def test_tee_custom_sinoclaw_home_env(self):
-        dangerous, key, desc = detect_dangerous_command("echo x | tee $SINOCLAW_HOME/.env")
+    def test_tee_custom_anan_home_env(self):
+        dangerous, key, desc = detect_dangerous_command("echo x | tee $ANAN_HOME/.env")
         assert dangerous is True
         assert key is not None
 
-    def test_tee_quoted_custom_sinoclaw_home_env(self):
-        dangerous, key, desc = detect_dangerous_command('echo x | tee "$SINOCLAW_HOME/.env"')
+    def test_tee_quoted_custom_anan_home_env(self):
+        dangerous, key, desc = detect_dangerous_command('echo x | tee "$ANAN_HOME/.env"')
         assert dangerous is True
         assert key is not None
 
@@ -414,8 +414,8 @@ class TestFindExecFullPathRm:
 class TestSensitiveRedirectPattern:
     """Detect shell redirection writes to sensitive user-managed paths."""
 
-    def test_redirect_to_custom_sinoclaw_home_env(self):
-        dangerous, key, desc = detect_dangerous_command("echo x > $SINOCLAW_HOME/.env")
+    def test_redirect_to_custom_anan_home_env(self):
+        dangerous, key, desc = detect_dangerous_command("echo x > $ANAN_HOME/.env")
         assert dangerous is True
         assert key is not None
 
@@ -611,35 +611,35 @@ class TestGatewayProtection:
     """Prevent agents from starting the gateway outside systemd management."""
 
     def test_gateway_run_with_disown_detected(self):
-        cmd = "kill 1605 && cd ~/.sinoclaw/sinoclaw-agent && source venv/bin/activate && python -m sinoclaw_cli.main gateway run --replace &disown; echo done"
+        cmd = "kill 1605 && cd ~/.anan/anan && source venv/bin/activate && python -m anan_cli.main gateway run --replace &disown; echo done"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True
         assert "systemctl" in desc
 
     def test_gateway_run_with_ampersand_detected(self):
-        cmd = "python -m sinoclaw_cli.main gateway run --replace &"
+        cmd = "python -m anan_cli.main gateway run --replace &"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True
 
     def test_gateway_run_with_nohup_detected(self):
-        cmd = "nohup python -m sinoclaw_cli.main gateway run --replace"
+        cmd = "nohup python -m anan_cli.main gateway run --replace"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True
 
     def test_gateway_run_with_setsid_detected(self):
-        cmd = "sinoclaw_cli.main gateway run --replace &disown"
+        cmd = "anan_cli.main gateway run --replace &disown"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True
 
     def test_gateway_run_foreground_not_flagged(self):
         """Normal foreground gateway run (as in systemd ExecStart) is fine."""
-        cmd = "python -m sinoclaw_cli.main gateway run --replace"
+        cmd = "python -m anan_cli.main gateway run --replace"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is False
 
     def test_systemctl_restart_flagged(self):
         """systemctl restart kills running agents and should require approval."""
-        cmd = "systemctl --user restart sinoclaw-gateway"
+        cmd = "systemctl --user restart anan-gateway"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True
         assert "stop/restart" in desc

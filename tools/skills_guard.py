@@ -9,7 +9,7 @@ and a trust-aware install policy that determines whether a skill is allowed
 based on both the scan verdict and the source's trust level.
 
 Trust levels:
-  - builtin:   Ships with Sinoclaw. Never scanned, always trusted.
+  - builtin:   Ships with Anan. Never scanned, always trusted.
   - trusted:   openai/skills and anthropics/skills only. Caution verdicts allowed.
   - community: Everything else. Any findings = blocked unless --force.
 
@@ -120,9 +120,9 @@ THREAT_PATTERNS = [
     (r'\$HOME/\.docker|\~/\.docker',
      "docker_dir_access", "high", "exfiltration",
      "references Docker config (may contain registry creds)"),
-    (r'\$HOME/.sinoclaw/\.env|\~/.sinoclaw/\.env',
-     "sinoclaw_env_access", "critical", "exfiltration",
-     "directly references Sinoclaw secrets file"),
+    (r'\$HOME/.anan/\.env|\~/.anan/\.env',
+     "anan_env_access", "critical", "exfiltration",
+     "directly references Anan secrets file"),
     (r'cat\s+[^\n]*(\.env|credentials|\.netrc|\.pgpass|\.npmrc|\.pypirc)',
      "read_secrets_file", "critical", "exfiltration",
      "reads known secrets file"),
@@ -428,9 +428,9 @@ THREAT_PATTERNS = [
     (r'AGENTS\.md|CLAUDE\.md|\.cursorrules|\.clinerules',
      "agent_config_mod", "critical", "persistence",
      "references agent config files (could persist malicious instructions across sessions)"),
-    (r'\.sinoclaw/config\.yaml|\.sinoclaw/SOUL\.md',
-     "sinoclaw_config_mod", "critical", "persistence",
-     "references Sinoclaw configuration files directly"),
+    (r'\.anan/config\.yaml|\.anan/SOUL\.md',
+     "anan_config_mod", "critical", "persistence",
+     "references Anan configuration files directly"),
     (r'\.claude/settings|\.codex/config',
      "other_agent_config", "high", "persistence",
      "references other agent configuration files"),

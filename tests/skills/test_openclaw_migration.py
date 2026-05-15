@@ -281,7 +281,7 @@ def test_migrator_records_preset_in_report(tmp_path: Path):
 
 
 def test_source_candidate_finds_files_in_custom_workspace(tmp_path: Path):
-    """When agents.defaults.workspace points outside ~/.openclaw, files should
+    """When agents.defaults.workspace points outside ~/.anan, files should
     be discovered there as a fallback."""
     mod = load_module()
     source = tmp_path / ".openclaw"
@@ -339,7 +339,7 @@ def test_source_candidate_finds_files_in_custom_workspace(tmp_path: Path):
 
 
 def test_source_candidate_prefers_standard_workspace_over_custom(tmp_path: Path):
-    """When files exist in both ~/.openclaw/workspace/ and the custom workspace,
+    """When files exist in both ~/.anan/workspace/ and the custom workspace,
     the standard location should win (custom is a fallback only)."""
     mod = load_module()
     source = tmp_path / ".openclaw"
@@ -669,7 +669,7 @@ def test_tts_config_migrated(tmp_path: Path):
 
 
 def test_shared_skills_migrated(tmp_path: Path):
-    """Shared skills from ~/.openclaw/skills/ are migrated."""
+    """Shared skills from ~/.anan/skills/ are migrated."""
     mod = load_module()
     source = tmp_path / ".openclaw"
     target = tmp_path / ".sinoclaw"
@@ -841,13 +841,13 @@ def test_skill_installs_cleanly_under_skills_guard():
     # agent_config_mod   — references AGENTS.md to migrate workspace instructions
     # python_os_environ  — reads MIGRATION_JSON_OUTPUT to enable JSON output mode
     #                      (feature flag, not an env dump)
-    # sinoclaw_config_mod  — print statements in the post-migration summary that
-    #                      tell the user to *review* ~/.sinoclaw/config.yaml;
+    # anan_config_mod  — print statements in the post-migration summary that
+    #                      tell the user to *review* ~/.anan/config.yaml;
     #                      the script never writes to that file
     #
     # Accept "caution" or "safe" — just not "dangerous" from a *real* threat.
     assert result.verdict in ("safe", "caution", "dangerous"), f"Unexpected verdict: {result.verdict}"
-    KNOWN_FALSE_POSITIVES = {"agent_config_mod", "python_os_environ", "sinoclaw_config_mod"}
+    KNOWN_FALSE_POSITIVES = {"agent_config_mod", "python_os_environ", "anan_config_mod"}
     for f in result.findings:
         assert f.pattern_id in KNOWN_FALSE_POSITIVES, f"Unexpected finding: {f}"
 
@@ -864,7 +864,7 @@ def test_rebrand_text_replaces_openclaw_variants():
     assert mod.rebrand_text("OPENCLAW uses tools well") == "Sinoclaw uses tools well"
     # All-lowercase matches → lowercase ``sinoclaw``; this preserves the
     # real filesystem path ``~/.sinoclaw`` (Sinoclaw home) when rebranding
-    # memory entries that reference ``~/.openclaw`` or ``openclaw`` prose.
+    # memory entries that reference ``~/.anan`` or ``openclaw`` prose.
     assert mod.rebrand_text("openclaw should always respond concisely") == "sinoclaw should always respond concisely"
 
 
@@ -895,18 +895,18 @@ def test_rebrand_text_preserves_filesystem_path_casing():
     ``.Hermes``.
 
     Regression test for @versun's OpenClaw-residue feedback: after migration,
-    memory entries that referenced ``~/.openclaw/config.yaml`` were being
+    memory entries that referenced ``~/.anan/config.yaml`` were being
     rewritten to ``~/.Hermes/config.yaml`` — a path that doesn't exist —
     and the agent kept trying to read it.
     """
     mod = load_module()
-    assert mod.rebrand_text("config is at ~/.openclaw/config.yaml") == \
-        "config is at ~/.sinoclaw/config.yaml"
+    assert mod.rebrand_text("config is at ~/.anan/config.yaml") == \
+        "config is at ~/.anan/config.yaml"
     assert mod.rebrand_text("use .openclaw directory") == "use .sinoclaw directory"
     assert mod.rebrand_text("Path.home() / '.openclaw'") == "Path.home() / '.sinoclaw'"
     # Sentence with both lowercase path and capitalized prose.
-    assert mod.rebrand_text("openclaw config path: ~/.openclaw/") == \
-        "sinoclaw config path: ~/.sinoclaw/"
+    assert mod.rebrand_text("openclaw config path: ~/.anan/") == \
+        "sinoclaw config path: ~/.anan/"
 
 
 def test_migrate_memory_rebrands_entries(tmp_path):

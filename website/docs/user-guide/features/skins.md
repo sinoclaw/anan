@@ -18,10 +18,10 @@ Conversational style and visual style are separate concepts:
 ```bash
 /skin                # show the current skin and list available skins
 /skin ares           # switch to a built-in skin
-/skin mytheme        # switch to a custom skin from ~/.sinoclaw/skins/mytheme.yaml
+/skin mytheme        # switch to a custom skin from ~/.anan/skins/mytheme.yaml
 ```
 
-Or set the default skin in `~/.sinoclaw/config.yaml`:
+Or set the default skin in `~/.anan/config.yaml`:
 
 ```yaml
 display:
@@ -110,12 +110,12 @@ Text strings used throughout the CLI interface.
 
 ## Custom skins
 
-Create YAML files under `~/.sinoclaw/skins/`. User skins inherit missing values from the built-in `default` skin, so you only need to specify the keys you want to change.
+Create YAML files under `~/.anan/skins/`. User skins inherit missing values from the built-in `default` skin, so you only need to specify the keys you want to change.
 
 ### Full custom skin YAML template
 
 ```yaml
-# ~/.sinoclaw/skins/mytheme.yaml
+# ~/.anan/skins/mytheme.yaml
 # Complete skin template — all keys shown. Delete any you don't need;
 # missing values automatically inherit from the 'default' skin.
 
@@ -224,8 +224,8 @@ tool_prefix: "▏"
 - Opens any skin into a visual editor with all Hermes skin fields (colors, spinner, branding, tool prefix, tool emojis)
 - Generates `banner_logo` text art from a text prompt
 - Converts uploaded images (PNG, JPG, GIF, WEBP) into `banner_hero` ASCII art with multiple render styles (braille, ASCII ramp, blocks, dots)
-- Saves directly to `~/.sinoclaw/skins/`
-- Activates a skin by updating `~/.sinoclaw/config.yaml`
+- Saves directly to `~/.anan/skins/`
+- Activates a skin by updating `~/.anan/config.yaml`
 - Shows the generated YAML and a live preview
 
 ### Install
@@ -256,16 +256,16 @@ npm start
 3. Choose a built-in or custom skin to edit.
 4. Generate a logo from text and/or upload an image for hero art. Pick a render style and width.
 5. Edit colors, spinner, branding, and other fields.
-6. Click **Save** to write the skin YAML to `~/.sinoclaw/skins/`.
+6. Click **Save** to write the skin YAML to `~/.anan/skins/`.
 7. Click **Activate** to set it as the current skin (updates `display.skin` in `config.yaml`).
 
-Hermes Mod respects the `SINOCLAW_HOME` environment variable, so it works with [profiles](/docs/user-guide/profiles) too.
+Hermes Mod respects the `ANAN_HOME` environment variable, so it works with [profiles](/docs/user-guide/profiles) too.
 
 ## Operational notes
 
-- Built-in skins load from `sinoclaw_cli/skin_engine.py`.
+- Built-in skins load from `anan_cli/skin_engine.py`.
 - Unknown skins automatically fall back to `default`.
 - `/skin` updates the active CLI theme immediately for the current session.
-- User skins in `~/.sinoclaw/skins/` take precedence over built-in skins with the same name.
+- User skins in `~/.anan/skins/` take precedence over built-in skins with the same name.
 - Skin changes via `/skin` are session-only. To make a skin your permanent default, set it in `config.yaml`.
 - The `banner_logo` and `banner_hero` fields support Rich console markup (e.g., `[bold #FF0000]text[/]`) for colored ASCII art.

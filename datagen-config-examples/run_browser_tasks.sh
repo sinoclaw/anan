@@ -10,12 +10,12 @@
 # Distribution: browser 97%, web 20%, vision 12%, terminal 15%
 #
 # Prerequisites:
-#   - OPENROUTER_API_KEY in ~/.sinoclaw/.env
-#   - BROWSERBASE_API_KEY in ~/.sinoclaw/.env (for browser tools)
+#   - OPENROUTER_API_KEY in ~/.anan/.env
+#   - BROWSERBASE_API_KEY in ~/.anan/.env (for browser tools)
 #   - A dataset JSONL file with one {"prompt": "..."} per line
 #
 # Usage:
-#   cd ~/.sinoclaw/sinoclaw-agent
+#   cd ~/.anan/anan
 #   bash datagen-config-examples/run_browser_tasks.sh
 #
 # Output: data/browser_tasks_example/trajectories.jsonl

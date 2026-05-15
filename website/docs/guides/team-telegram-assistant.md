@@ -26,7 +26,7 @@ Before starting, make sure you have:
 
 - **Sinoclaw Agent installed** on a server or VPS (not your laptop — the bot needs to stay running). Follow the [installation guide](/docs/getting-started/installation) if you haven't yet.
 - **A Telegram account** for yourself (the bot owner)
-- **An LLM provider configured** — at minimum, an API key for OpenAI, Anthropic, or another supported provider in `~/.sinoclaw/.env`
+- **An LLM provider configured** — at minimum, an API key for OpenAI, Anthropic, or another supported provider in `~/.anan/.env`
 
 :::tip
 A $5/month VPS is plenty for running the gateway. Hermes itself is lightweight — the LLM API calls are what cost money, and those happen remotely.
@@ -93,7 +93,7 @@ This walks you through everything with arrow-key selection. Pick **Telegram**, p
 
 ### Option B: Manual Configuration
 
-Add these lines to `~/.sinoclaw/.env`:
+Add these lines to `~/.anan/.env`:
 
 ```bash
 # Telegram bot token from BotFather
@@ -155,7 +155,7 @@ sinoclaw gateway stop
 sinoclaw gateway status
 
 # View live logs
-journalctl --user -u sinoclaw-gateway -f
+journalctl --user -u anan-gateway -f
 
 # Keep running after SSH logout
 sudo loginctl enable-linger $USER
@@ -163,14 +163,14 @@ sudo loginctl enable-linger $USER
 # Linux servers — explicit system-service commands
 sudo sinoclaw gateway start --system
 sudo sinoclaw gateway status --system
-journalctl -u sinoclaw-gateway -f
+journalctl -u anan-gateway -f
 ```
 
 ```bash
 # macOS — manage the service
 sinoclaw gateway start
 sinoclaw gateway stop
-tail -f ~/.sinoclaw/logs/gateway.log
+tail -f ~/.anan/logs/gateway.log
 ```
 
 :::tip macOS PATH
@@ -196,7 +196,7 @@ Now let's give your teammates access. There are two approaches.
 Collect each team member's Telegram user ID (have them message [@userinfobot](https://t.me/userinfobot)) and add them as a comma-separated list:
 
 ```bash
-# In ~/.sinoclaw/.env
+# In ~/.anan/.env
 TELEGRAM_ALLOWED_USERS=123456789,987654321,555555555
 ```
 
@@ -260,7 +260,7 @@ A **home channel** is where the bot delivers cron job results and proactive mess
 
 **Option 1:** Use the `/sethome` command in any Telegram group or chat where the bot is a member.
 
-**Option 2:** Set it manually in `~/.sinoclaw/.env`:
+**Option 2:** Set it manually in `~/.anan/.env`:
 
 ```bash
 TELEGRAM_HOME_CHANNEL=-1001234567890
@@ -271,7 +271,7 @@ To find a channel ID, add [@userinfobot](https://t.me/userinfobot) to the group 
 
 ### Configure Tool Progress Display
 
-Control how much detail the bot shows when using tools. In `~/.sinoclaw/config.yaml`:
+Control how much detail the bot shows when using tools. In `~/.anan/config.yaml`:
 
 ```yaml
 display:
@@ -289,7 +289,7 @@ Users can also change this per-session with the `/verbose` command in chat.
 
 ### Set Up a Personality with SOUL.md
 
-Customize how the bot communicates by editing `~/.sinoclaw/SOUL.md`:
+Customize how the bot communicates by editing `~/.anan/SOUL.md`:
 
 For a full guide, see [Use SOUL.md with Hermes](/docs/guides/use-soul-with-hermes).
 
@@ -306,7 +306,7 @@ before guessing at solutions.
 If your team works on specific projects, create context files so the bot knows your stack:
 
 ```markdown
-<!-- ~/.sinoclaw/AGENTS.md -->
+<!-- ~/.anan/AGENTS.md -->
 # Team Context
 - We use Python 3.12 with FastAPI and SQLAlchemy
 - Frontend is React with TypeScript
@@ -373,12 +373,12 @@ Cron job prompts run in completely fresh sessions with no memory of prior conver
 On a shared team bot, use Docker as the terminal backend so agent commands run in a container instead of on your host:
 
 ```bash
-# In ~/.sinoclaw/.env
+# In ~/.anan/.env
 TERMINAL_BACKEND=docker
 TERMINAL_DOCKER_IMAGE=nikolaik/python-nodejs:python3.11-nodejs20
 ```
 
-Or in `~/.sinoclaw/config.yaml`:
+Or in `~/.anan/config.yaml`:
 
 ```yaml
 terminal:
@@ -397,10 +397,10 @@ This way, even if someone asks the bot to run something destructive, your host s
 sinoclaw gateway status
 
 # Watch live logs (Linux)
-journalctl --user -u sinoclaw-gateway -f
+journalctl --user -u anan-gateway -f
 
 # Watch live logs (macOS)
-tail -f ~/.sinoclaw/logs/gateway.log
+tail -f ~/.anan/logs/gateway.log
 ```
 
 ### Keep Hermes Updated
@@ -408,7 +408,7 @@ tail -f ~/.sinoclaw/logs/gateway.log
 From Telegram, send `/update` to the bot — it will pull the latest version and restart. Or from the server:
 
 ```bash
-sinoclaw update
+anan update
 sinoclaw gateway stop && sinoclaw gateway start
 ```
 
@@ -416,11 +416,11 @@ sinoclaw gateway stop && sinoclaw gateway start
 
 | What | Location |
 |------|----------|
-| Gateway logs | `journalctl --user -u sinoclaw-gateway` (Linux) or `~/.sinoclaw/logs/gateway.log` (macOS) |
-| Cron job output | `~/.sinoclaw/cron/output/{job_id}/{timestamp}.md` |
-| Cron job definitions | `~/.sinoclaw/cron/jobs.json` |
-| Pairing data | `~/.sinoclaw/pairing/` |
-| Session history | `~/.sinoclaw/sessions/` |
+| Gateway logs | `journalctl --user -u anan-gateway` (Linux) or `~/.anan/logs/gateway.log` (macOS) |
+| Cron job output | `~/.anan/cron/output/{job_id}/{timestamp}.md` |
+| Cron job definitions | `~/.anan/cron/jobs.json` |
+| Pairing data | `~/.anan/pairing/` |
+| Session history | `~/.anan/sessions/` |
 
 ---
 

@@ -1,15 +1,15 @@
 # Optional Skills
 
-Official skills maintained by Sinoclaw Team that are **not activated by default**.
+Official skills maintained by Anan Team that are **not activated by default**.
 
-These skills ship with the sinoclaw-agent repository but are not copied to
-`~/.sinoclaw/skills/` during setup. They are discoverable via the Skills Hub:
+These skills ship with the anan repository but are not copied to
+`~/.anan/skills/` during setup. They are discoverable via the Skills Hub:
 
 ```bash
 hermes skills browse               # browse all skills, official shown first
 hermes skills browse --source official  # browse only official optional skills
 hermes skills search <query>       # finds optional skills labeled "official"
-hermes skills install <identifier> # copies to ~/.sinoclaw/skills/ and activates
+hermes skills install <identifier> # copies to ~/.anan/skills/ and activates
 ```
 
 ## Why optional?

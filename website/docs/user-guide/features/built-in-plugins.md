@@ -7,7 +7,7 @@ description: "Plugins shipped with Sinoclaw Agent that run automatically via lif
 
 # Built-in Plugins
 
-Hermes ships a small set of plugins bundled with the repository. They live under `<repo>/plugins/<name>/` and load automatically alongside user-installed plugins in `~/.sinoclaw/plugins/`. They use the same plugin surface as third-party plugins — hooks, tools, slash commands — just maintained in-tree.
+Hermes ships a small set of plugins bundled with the repository. They live under `<repo>/plugins/<name>/` and load automatically alongside user-installed plugins in `~/.anan/plugins/`. They use the same plugin surface as third-party plugins — hooks, tools, slash commands — just maintained in-tree.
 
 See the [Plugins](/docs/user-guide/features/plugins) page for the general plugin system, and [Build a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin) to write your own.
 
@@ -16,13 +16,13 @@ See the [Plugins](/docs/user-guide/features/plugins) page for the general plugin
 The `PluginManager` scans four sources, in order:
 
 1. **Bundled** — `<repo>/plugins/<name>/` (what this page documents)
-2. **User** — `~/.sinoclaw/plugins/<name>/`
+2. **User** — `~/.anan/plugins/<name>/`
 3. **Project** — `./.sinoclaw/plugins/<name>/` (requires `SINOCLAW_ENABLE_PROJECT_PLUGINS=1`)
 4. **Pip entry points** — `sinoclaw_agent.plugins`
 
 On name collision, later sources win — a user plugin named `disk-cleanup` would replace the bundled one.
 
-`plugins/memory/` and `plugins/context_engine/` are deliberately excluded from bundled scanning. Those directories use their own discovery paths because memory providers and context engines are single-select providers configured through `sinoclaw memory setup` / `context.engine` in config.
+`plugins/memory/` and `plugins/context_engine/` are deliberately excluded from bundled scanning. Those directories use their own discovery paths because memory providers and context engines are single-select providers configured through `anan memory setup` / `context.engine` in config.
 
 ## Bundled plugins are opt-in
 
@@ -32,7 +32,7 @@ Bundled plugins ship disabled. Discovery finds them (they appear in `sinoclaw pl
 hermes plugins enable disk-cleanup
 ```
 
-Or via `~/.sinoclaw/config.yaml`:
+Or via `~/.anan/config.yaml`:
 
 ```yaml
 plugins:
@@ -62,7 +62,7 @@ The repo ships these bundled plugins under `plugins/`. All are opt-in — enable
 | `image_gen/openai` | image backend | OpenAI `gpt-image-2` image generation backend (alternative to FAL) |
 | `image_gen/openai-codex` | image backend | OpenAI image generation via Codex OAuth |
 | `image_gen/xai` | image backend | xAI `grok-2-image` backend |
-| `sinoclaw-achievements` | dashboard tab | Steam-style collectible badges generated from your real Sinoclaw session history |
+| `anan-achievements` | dashboard tab | Steam-style collectible badges generated from your real Sinoclaw session history |
 | `example-dashboard` | dashboard example | Reference dashboard plugin for [Extending the Dashboard](./extending-the-dashboard.md) |
 | `strike-freedom-cockpit` | dashboard skin | Sample custom dashboard skin |
 
@@ -76,7 +76,7 @@ Auto-tracks and removes ephemeral files created during sessions — test scripts
 
 | Hook | Behaviour |
 |---|---|
-| `post_tool_call` | When `write_file` / `terminal` / `patch` creates a file matching `test_*`, `tmp_*`, or `*.test.*` inside `SINOCLAW_HOME` or `/tmp/sinoclaw-*`, track it silently as `test` / `temp` / `cron-output`. |
+| `post_tool_call` | When `write_file` / `terminal` / `patch` creates a file matching `test_*`, `tmp_*`, or `*.test.*` inside `ANAN_HOME` or `/tmp/anan-*`, track it silently as `test` / `temp` / `cron-output`. |
 | `on_session_end` | If any test files were auto-tracked during the turn, run the safe `quick` cleanup and log a one-line summary. Stays silent otherwise. |
 
 **Deletion rules:**
@@ -86,7 +86,7 @@ Auto-tracks and removes ephemeral files created during sessions — test scripts
 | `test` | every session end | Never |
 | `temp` | >7 days since tracked | Never |
 | `cron-output` | >14 days since tracked | Never |
-| empty dirs under SINOCLAW_HOME | always | Never |
+| empty dirs under ANAN_HOME | always | Never |
 | `research` | >30 days, beyond 10 newest | Always (deep only) |
 | `chrome-profile` | >14 days since tracked | Always (deep only) |
 | files >500 MB | never auto | Always (deep only) |
@@ -102,7 +102,7 @@ Auto-tracks and removes ephemeral files created during sessions — test scripts
 /disk-cleanup forget <path>              # stop tracking (does not delete)
 ```
 
-**State** — everything lives at `$SINOCLAW_HOME/disk-cleanup/`:
+**State** — everything lives at `$ANAN_HOME/disk-cleanup/`:
 
 | File | Contents |
 |---|---|
@@ -110,7 +110,7 @@ Auto-tracks and removes ephemeral files created during sessions — test scripts
 | `tracked.json.bak` | Atomic-write backup of the above |
 | `cleanup.log` | Append-only audit trail of every track / skip / reject / delete |
 
-**Safety** — cleanup only ever touches paths under `SINOCLAW_HOME` or `/tmp/sinoclaw-*`. Windows mounts (`/mnt/c/...`) are rejected. Well-known top-level state dirs (`logs/`, `memories/`, `sessions/`, `cron/`, `cache/`, `skills/`, `plugins/`, `disk-cleanup/` itself) are never removed even when empty — a fresh install does not get gutted on first session end.
+**Safety** — cleanup only ever touches paths under `ANAN_HOME` or `/tmp/anan-*`. Windows mounts (`/mnt/c/...`) are rejected. Well-known top-level state dirs (`logs/`, `memories/`, `sessions/`, `cron/`, `cache/`, `skills/`, `plugins/`, `disk-cleanup/` itself) are never removed even when empty — a fresh install does not get gutted on first session end.
 
 **Enabling:** `sinoclaw plugins enable disk-cleanup` (or check the box in `sinoclaw plugins`).
 
@@ -137,7 +137,7 @@ pip install langfuse
 hermes plugins enable observability/langfuse
 ```
 
-Then put the credentials in `~/.sinoclaw/.env`:
+Then put the credentials in `~/.anan/.env`:
 
 ```bash
 SINOCLAW_LANGFUSE_PUBLIC_KEY=pk-lf-...
@@ -188,7 +188,7 @@ Lets the agent **join, transcribe, and participate in Google Meet calls** — ta
 - A headless virtual participant that joins a Meet URL using browser automation
 - Live transcription of the meeting audio via the configured STT provider
 - A `meet_summarize` / `meet_speak` / `meet_followup` toolset the agent invokes to act on what it heard
-- Post-meeting artifacts (transcript, speaker-attributed notes, action items) saved under `~/.sinoclaw/cache/google_meet/<meeting_id>/`
+- Post-meeting artifacts (transcript, speaker-attributed notes, action items) saved under `~/.anan/cache/google_meet/<meeting_id>/`
 
 **Setup:**
 
@@ -207,18 +207,18 @@ The agent kicks off the meeting join, streams the transcription back into its co
 
 **When to use it:** recurring standups where you want a bot to transcribe + summarize for async attendees; deposition-style interviews where you want structured notes; any case where you'd otherwise need Fireflies / Otter / Grain. When you'd rather not have an AI listening in — don't enable it.
 
-**Disabling:** `sinoclaw plugins disable google_meet`. Any cached transcripts and recordings stay in `~/.sinoclaw/cache/google_meet/` until you remove them.
+**Disabling:** `sinoclaw plugins disable google_meet`. Any cached transcripts and recordings stay in `~/.anan/cache/google_meet/` until you remove them.
 
-### sinoclaw-achievements
+### anan-achievements
 
 Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, tiered badges generated from your real Sinoclaw session history. Tool-chain feats, debugging patterns, vibe-coding streaks, skill/memory usage, model/provider variety, lifestyle quirks (weekend and night sessions). Originally authored by [@PCinkusz](https://github.com/PCinkusz) as an external plugin; brought in-tree so it stays in lockstep with Hermes feature changes.
 
 **How it works:**
 
-- Scans your entire `~/.sinoclaw/state.db` session history on the dashboard backend
+- Scans your entire `~/.anan/state.db` session history on the dashboard backend
 - Per-session stats are cached by `(started_at, last_active)` fingerprint, so only new or changed sessions re-analyze on subsequent scans
 - First-ever scan runs in a background thread — the dashboard never blocks waiting for it, even on databases with thousands of sessions
-- Unlock state is persisted to `$SINOCLAW_HOME/plugins/sinoclaw-achievements/state.json`
+- Unlock state is persisted to `$ANAN_HOME/plugins/anan-achievements/state.json`
 
 **Tier progression:** Copper → Silver → Gold → Diamond → Olympian. Each card exposes a "What counts" section listing the exact metric being tracked.
 
@@ -230,7 +230,7 @@ Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, ti
 | Discovered | Known achievement, progress visible, not yet earned |
 | Secret | Hidden until Hermes detects the first related signal in your history |
 
-**API** — routes mount under `/api/plugins/sinoclaw-achievements/`:
+**API** — routes mount under `/api/plugins/anan-achievements/`:
 
 | Endpoint | Purpose |
 |---|---|
@@ -241,7 +241,7 @@ Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, ti
 | `POST /rescan` | Manual synchronous rescan (blocks; use when the user clicks the rescan button) |
 | `POST /reset-state` | Clear unlock history and cached snapshot |
 
-**State files** — live under `$SINOCLAW_HOME/plugins/sinoclaw-achievements/`:
+**State files** — live under `$ANAN_HOME/plugins/anan-achievements/`:
 
 | File | Contents |
 |---|---|
@@ -256,15 +256,15 @@ Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, ti
 - Warm rescan reuses per-session stats for every session whose `started_at` + `last_active` fingerprint matches the checkpoint — completes in seconds even on large histories.
 - The in-memory snapshot TTL is 120s; stale requests serve the old snapshot immediately and kick a background refresh. You never wait on a spinner just because TTL expired.
 
-**Enabling:** Nothing to enable — `sinoclaw-achievements` is a dashboard-only plugin (no lifecycle hooks, no model-visible tools). It auto-registers as a tab in `sinoclaw dashboard` on first launch. The `plugins.enabled` config only gates lifecycle/tool plugins; dashboard plugins are discovered purely via their `dashboard/manifest.json`.
+**Enabling:** Nothing to enable — `anan-achievements` is a dashboard-only plugin (no lifecycle hooks, no model-visible tools). It auto-registers as a tab in `sinoclaw dashboard` on first launch. The `plugins.enabled` config only gates lifecycle/tool plugins; dashboard plugins are discovered purely via their `dashboard/manifest.json`.
 
-**Opting out:** Delete or rename `plugins/sinoclaw-achievements/dashboard/manifest.json`, or override it with a user plugin of the same name in `~/.sinoclaw/plugins/sinoclaw-achievements/` that ships no dashboard. The plugin's state files under `$SINOCLAW_HOME/plugins/sinoclaw-achievements/` survive — reinstalling preserves your unlock history.
+**Opting out:** Delete or rename `plugins/anan-achievements/dashboard/manifest.json`, or override it with a user plugin of the same name in `~/.anan/plugins/anan-achievements/` that ships no dashboard. The plugin's state files under `$ANAN_HOME/plugins/anan-achievements/` survive — reinstalling preserves your unlock history.
 
 ## Adding a bundled plugin
 
 Bundled plugins are written exactly like any other Hermes plugin — see [Build a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin). The only differences are:
 
-- Directory lives at `<repo>/plugins/<name>/` instead of `~/.sinoclaw/plugins/<name>/`
+- Directory lives at `<repo>/plugins/<name>/` instead of `~/.anan/plugins/<name>/`
 - Manifest source is reported as `bundled` in `sinoclaw plugins list`
 - User plugins with the same name override the bundled version
 

@@ -27,16 +27,16 @@
 │ Layer 2: 内核能力层 (anan/kernel/)             │  ← anan 自己模拟主仓内核
 │   idle detection / persistent session / ...    │
 ├────────────────────────────────────────────────┤
-│ Layer 1: Sinoclaw 主仓 (gateway/cron/tools)    │  ← 不动
+│ Layer 1: Anan 主仓 (gateway/cron/tools)    │  ← 不动
 └────────────────────────────────────────────────┘
 ```
 
-### 为什么不直接改 Sinoclaw 主仓？
+### 为什么不直接改 Anan 主仓？
 
 1. **主仓是生产代码**，CI 必须 100% 过，不能拿来做实验
 2. **认知架构需要大胆迭代**，独立仓库可以推翻重来
 3. **跑通了再回哺**，已验证的能力可以 PR 进主仓
-4. **anan 是"灵魂仓库"**，跟 sinoclaw 这个"身体仓库"分工明确
+4. **anan 是"灵魂仓库"**，跟 anan 这个"身体仓库"分工明确
 
 ### 为什么不能全做成插件？
 
@@ -48,7 +48,7 @@ OpenClaw 的教训：他们把 heartbeat 做成插件，结果 typing/send_to_se
 - 事件总线 → 插件内 asyncio pub/sub
 - 自我修改 sandbox → git branch + dry-run
 
-跑通后再推动 sinoclaw 主仓加真正的 kernel API。
+跑通后再推动 anan 主仓加真正的 kernel API。
 
 ---
 
@@ -68,8 +68,8 @@ OpenClaw 的教训：他们把 heartbeat 做成插件，结果 typing/send_to_se
 
 **关键改进 vs OpenClaw**：
 - 修核心 bug：`_extract_concept_tags` 大写字母 split 问题
-- 不直接写 `MEMORY.md`，改用 sinoclaw memory provider API
-- 跟 sinoclaw cron 整合，不重复造调度
+- 不直接写 `MEMORY.md`，改用 anan memory provider API
+- 跟 anan cron 整合，不重复造调度
 
 ### L2 — Memory Hierarchy（记忆分层）
 
@@ -143,10 +143,10 @@ class AttentionQueue:
 
 ### L7 — Goal Generator（目标生成）
 
-现在 sinoclaw 100% 响应式。AGI 要能**自己设目标**：
+现在 anan 100% 响应式。AGI 要能**自己设目标**：
 
 - **长期目标库**：从对话中提取用户隐性希望
-- **自主子目标分解**：把"帮爸爸搞好 sinoclaw"拆成今天/本周/本月行动
+- **自主子目标分解**：把"帮爸爸搞好 anan"拆成今天/本周/本月行动
 - **目标冲突解决**：多个目标冲突时自主权衡
 - **机会识别**：发现"现在是做 X 的好时机"主动行动
 
@@ -171,7 +171,7 @@ class AttentionQueue:
 - **关系模型**：跟每个用户的独特关系（我跟爸爸 vs 跟陌生人）
 - **进化追踪**：记录"我相比 1 个月前进步在哪"
 
-跟 sinoclaw 现有的 SOUL.md 对接，作为 SOUL.md 的**活态版本**。
+跟 anan 现有的 SOUL.md 对接，作为 SOUL.md 的**活态版本**。
 
 ---
 

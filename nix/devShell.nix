@@ -21,7 +21,7 @@
             combined = pkgs.lib.concatStringsSep "\n" (builtins.filter (h: h != "") hooks);
           in
           ''
-            echo "Sinoclaw Agent dev shell"
+            echo "Anan Agent dev shell"
             ${combined}
             echo "Ready. Run 'hermes' to start."
           '';

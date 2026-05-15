@@ -44,10 +44,10 @@ class TestGoogleWorkspaceCredentialFiles:
         )
 
     def test_entries_are_registered_when_files_exist(self, tmp_path):
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "google_token.json").write_text("{}")
-        (sinoclaw_home / "google_client_secret.json").write_text("{}")
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        (anan_home / "google_token.json").write_text("{}")
+        (anan_home / "google_client_secret.json").write_text("{}")
 
         from tools.credential_files import (
             clear_credential_files,
@@ -61,22 +61,22 @@ class TestGoogleWorkspaceCredentialFiles:
             fm = _parse_frontmatter(content)
             entries = fm.get("required_credential_files", [])
 
-            with patch.dict(os.environ, {"SINOCLAW_HOME": str(sinoclaw_home)}):
+            with patch.dict(os.environ, {"ANAN_HOME": str(anan_home)}):
                 missing = register_credential_files(entries)
 
             assert missing == [], f"Unexpected missing files: {missing}"
             mounts = get_credential_file_mounts()
             container_paths = {m["container_path"] for m in mounts}
-            assert "/root/.sinoclaw/google_token.json" in container_paths
-            assert "/root/.sinoclaw/google_client_secret.json" in container_paths
+            assert "/root/.anan/google_token.json" in container_paths
+            assert "/root/.anan/google_client_secret.json" in container_paths
         finally:
             clear_credential_files()
 
     def test_missing_token_is_reported(self, tmp_path):
         """google_token.json absent (first-time setup) — reported as missing, client secret still mounts."""
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "google_client_secret.json").write_text("{}")
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        (anan_home / "google_client_secret.json").write_text("{}")
 
         from tools.credential_files import (
             clear_credential_files,
@@ -90,13 +90,13 @@ class TestGoogleWorkspaceCredentialFiles:
             fm = _parse_frontmatter(content)
             entries = fm.get("required_credential_files", [])
 
-            with patch.dict(os.environ, {"SINOCLAW_HOME": str(sinoclaw_home)}):
+            with patch.dict(os.environ, {"ANAN_HOME": str(anan_home)}):
                 missing = register_credential_files(entries)
 
             assert "google_token.json" in missing
             mounts = get_credential_file_mounts()
             container_paths = {m["container_path"] for m in mounts}
-            assert "/root/.sinoclaw/google_client_secret.json" in container_paths
-            assert "/root/.sinoclaw/google_token.json" not in container_paths
+            assert "/root/.anan/google_client_secret.json" in container_paths
+            assert "/root/.anan/google_token.json" not in container_paths
         finally:
             clear_credential_files()

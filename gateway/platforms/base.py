@@ -23,7 +23,7 @@ from utils import normalize_proxy_url
 
 logger = logging.getLogger(__name__)
 
-# Audio file extensions Sinoclaw recognizes for native audio delivery.
+# Audio file extensions Anan recognizes for native audio delivery.
 # Kept in sync with tools/send_message_tool.py and cron/scheduler.py via
 # should_send_media_as_audio() below.
 _AUDIO_EXTS = frozenset({'.ogg', '.opus', '.mp3', '.wav', '.m4a', '.flac'})
@@ -44,7 +44,7 @@ def _thread_metadata_for_source(source, reply_to_message_id: str | None = None) 
     """Build platform-aware thread metadata for adapter sends.
 
     Most platforms route threaded sends with a generic ``thread_id`` metadata
-    value. Telegram private-chat topics created through Sinoclaw' DM-topic helper
+    value. Telegram private-chat topics created through Anan' DM-topic helper
     are exposed in updates as ``message_thread_id`` plus a reply anchor, but
     outbound sends only render in the correct Telegram lane when the adapter
     supplies both ``message_thread_id`` and ``reply_to_message_id``. Mark those
@@ -66,7 +66,7 @@ def _reply_anchor_for_event(event) -> str | None:
     """Return reply_to id for platforms that need reply semantics.
 
     Telegram forum/supergroup topics should be routed by topic metadata, not by
-    replying to the triggering message. Sinoclaw-created Telegram private-chat
+    replying to the triggering message. Anan-created Telegram private-chat
     topic lanes are different: Bot API sends reject their ``message_thread_id``
     and do not route with ``direct_messages_topic_id``. Those lanes only remain
     visible when sent with both the private topic thread id and a reply to the
@@ -470,12 +470,12 @@ sys.path.insert(0, str(_Path(__file__).resolve().parents[2]))
 
 from gateway.config import Platform, PlatformConfig
 from gateway.session import SessionSource, build_session_key
-from sinoclaw_constants import get_sinoclaw_dir
+from anan_constants import get_anan_dir
 
 
 GATEWAY_SECRET_CAPTURE_UNSUPPORTED_MESSAGE = (
     "Secure secret entry is not supported over messaging. "
-    "Load this skill in the local CLI to be prompted, or add the key to ~/.sinoclaw/.env manually."
+    "Load this skill in the local CLI to be prompted, or add the key to ~/.anan/.env manually."
 )
 
 
@@ -542,8 +542,8 @@ async def _ssrf_redirect_guard(response):
 # (e.g. Telegram file URLs expire after ~1 hour).
 # ---------------------------------------------------------------------------
 
-# Default location: {SINOCLAW_HOME}/cache/images/ (legacy: image_cache/)
-IMAGE_CACHE_DIR = get_sinoclaw_dir("cache/images", "image_cache")
+# Default location: {ANAN_HOME}/cache/images/ (legacy: image_cache/)
+IMAGE_CACHE_DIR = get_anan_dir("cache/images", "image_cache")
 
 
 def get_image_cache_dir() -> Path:
@@ -632,7 +632,7 @@ async def cache_image_from_url(url: str, ext: str = ".jpg", retries: int = 2) ->
                 response = await client.get(
                     url,
                     headers={
-                        "User-Agent": "Mozilla/5.0 (compatible; SinoclawAgent/1.0)",
+                        "User-Agent": "Mozilla/5.0 (compatible; AnanAgent/1.0)",
                         "Accept": "image/*,*/*;q=0.8",
                     },
                 )
@@ -684,7 +684,7 @@ def cleanup_image_cache(max_age_hours: int = 24) -> int:
 # here so the STT tool (OpenAI Whisper) can transcribe them from local files.
 # ---------------------------------------------------------------------------
 
-AUDIO_CACHE_DIR = get_sinoclaw_dir("cache/audio", "audio_cache")
+AUDIO_CACHE_DIR = get_anan_dir("cache/audio", "audio_cache")
 
 
 def get_audio_cache_dir() -> Path:
@@ -746,7 +746,7 @@ async def cache_audio_from_url(url: str, ext: str = ".ogg", retries: int = 2) ->
                 response = await client.get(
                     url,
                     headers={
-                        "User-Agent": "Mozilla/5.0 (compatible; SinoclawAgent/1.0)",
+                        "User-Agent": "Mozilla/5.0 (compatible; AnanAgent/1.0)",
                         "Accept": "audio/*,*/*;q=0.8",
                     },
                 )
@@ -777,7 +777,7 @@ async def cache_audio_from_url(url: str, ext: str = ".ogg", retries: int = 2) ->
 # here so the agent can reference them by local file path.
 # ---------------------------------------------------------------------------
 
-VIDEO_CACHE_DIR = get_sinoclaw_dir("cache/videos", "video_cache")
+VIDEO_CACHE_DIR = get_anan_dir("cache/videos", "video_cache")
 
 SUPPORTED_VIDEO_TYPES = {
     ".mp4": "video/mp4",
@@ -810,7 +810,7 @@ def cache_video_from_bytes(data: bytes, ext: str = ".mp4") -> str:
 # here so the agent can reference them by local file path.
 # ---------------------------------------------------------------------------
 
-DOCUMENT_CACHE_DIR = get_sinoclaw_dir("cache/documents", "document_cache")
+DOCUMENT_CACHE_DIR = get_anan_dir("cache/documents", "document_cache")
 
 SUPPORTED_DOCUMENT_TYPES = {
     ".pdf": "application/pdf",
@@ -1569,7 +1569,7 @@ class BasePlatformAdapter(ABC):
         auto-deletion.  Non-fatal if config is unreadable.
         """
         try:
-            from sinoclaw_cli.config import load_config as _load_config
+            from anan_cli.config import load_config as _load_config
         except Exception:
             return 0
         try:
@@ -2697,7 +2697,7 @@ class BasePlatformAdapter(ABC):
             # session lifecycle and its cleanup races with the running task
             # (see PR #4926).
             cmd = event.get_command()
-            from sinoclaw_cli.commands import should_bypass_active_session
+            from anan_cli.commands import should_bypass_active_session
 
             if should_bypass_active_session(cmd):
                 # /stop, /new, /reset must cancel the in-flight adapter task
@@ -3159,7 +3159,7 @@ class BasePlatformAdapter(ABC):
             # session (e.g. deferred background-review notifications).
             #
             # Snapshot the callback generation HERE (after the agent has run),
-            # not at the top of this task.  _sinoclaw_run_generation is set on
+            # not at the top of this task.  _anan_run_generation is set on
             # the interrupt event by GatewayRunner._bind_adapter_run_generation
             # during _handle_message_with_agent — which happens DURING the
             # self._message_handler(event) await above.  Snapshotting earlier
@@ -3168,7 +3168,7 @@ class BasePlatformAdapter(ABC):
             # fresher run's callbacks.
             _callback_generation = getattr(
                 interrupt_event,
-                "_sinoclaw_run_generation",
+                "_anan_run_generation",
                 None,
             )
             if hasattr(self, "pop_post_delivery_callback"):

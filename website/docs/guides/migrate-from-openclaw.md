@@ -23,7 +23,7 @@ hermes claw migrate --preset full --migrate-secrets --yes
 
 The migration always shows a full preview of what will be imported before making any changes. Review the list, then confirm to proceed.
 
-Reads from `~/.openclaw/` by default. Legacy `~/.clawdbot/` or `~/.moltbot/` directories are detected automatically. Same for legacy config filenames (`clawdbot.json`, `moltbot.json`).
+Reads from `~/.anan/` by default. Legacy `~/.clawdbot/` or `~/.moltbot/` directories are detected automatically. Same for legacy config filenames (`clawdbot.json`, `moltbot.json`).
 
 ## Options
 
@@ -33,7 +33,7 @@ Reads from `~/.openclaw/` by default. Legacy `~/.clawdbot/` or `~/.moltbot/` dir
 | `--preset <name>` | `full` (all compatible settings) or `user-data` (excludes infrastructure config). Neither preset imports secrets by default — pass `--migrate-secrets` explicitly. |
 | `--overwrite` | Overwrite existing Hermes files on conflicts (default: refuse to apply when the plan has conflicts). |
 | `--migrate-secrets` | Include API keys. Required even under `--preset full` — no preset imports secrets silently. |
-| `--no-backup` | Skip the pre-migration zip snapshot of `~/.sinoclaw/` (by default a single restore-point archive is written before apply, under `~/.sinoclaw/backups/pre-migration-*.zip`; restorable with `sinoclaw import`). |
+| `--no-backup` | Skip the pre-migration zip snapshot of `~/.anan/` (by default a single restore-point archive is written before apply, under `~/.anan/backups/pre-migration-*.zip`; restorable with `sinoclaw import`). |
 | `--source <path>` | Custom OpenClaw directory. |
 | `--workspace-target <path>` | Where to place `AGENTS.md`. |
 | `--skill-conflict <mode>` | `skip` (default), `overwrite`, or `rename`. |
@@ -45,11 +45,11 @@ Reads from `~/.openclaw/` by default. Legacy `~/.clawdbot/` or `~/.moltbot/` dir
 
 | What | OpenClaw source | Hermes destination | Notes |
 |------|----------------|-------------------|-------|
-| Persona | `workspace/SOUL.md` | `~/.sinoclaw/SOUL.md` | Direct copy |
+| Persona | `workspace/SOUL.md` | `~/.anan/SOUL.md` | Direct copy |
 | Workspace instructions | `workspace/AGENTS.md` | `AGENTS.md` in `--workspace-target` | Requires `--workspace-target` flag |
-| Long-term memory | `workspace/MEMORY.md` | `~/.sinoclaw/memories/MEMORY.md` | Parsed into entries, merged with existing, deduped. Uses `§` delimiter. |
-| User profile | `workspace/USER.md` | `~/.sinoclaw/memories/USER.md` | Same entry-merge logic as memory. |
-| Daily memory files | `workspace/memory/*.md` | `~/.sinoclaw/memories/MEMORY.md` | All daily files merged into main memory. |
+| Long-term memory | `workspace/MEMORY.md` | `~/.anan/memories/MEMORY.md` | Parsed into entries, merged with existing, deduped. Uses `§` delimiter. |
+| User profile | `workspace/USER.md` | `~/.anan/memories/USER.md` | Same entry-merge logic as memory. |
+| Daily memory files | `workspace/memory/*.md` | `~/.anan/memories/MEMORY.md` | All daily files merged into main memory. |
 
 Workspace files are also checked at `workspace.default/` and `workspace-main/` as fallback paths (OpenClaw renamed `workspace/` to `workspace-main/` in recent versions, and uses `workspace-{agentId}` for multi-agent setups).
 
@@ -57,10 +57,10 @@ Workspace files are also checked at `workspace.default/` and `workspace-main/` a
 
 | Source | OpenClaw location | Hermes destination |
 |--------|------------------|-------------------|
-| Workspace skills | `workspace/skills/` | `~/.sinoclaw/skills/openclaw-imports/` |
-| Managed/shared skills | `~/.openclaw/skills/` | `~/.sinoclaw/skills/openclaw-imports/` |
-| Personal cross-project | `~/.agents/skills/` | `~/.sinoclaw/skills/openclaw-imports/` |
-| Project-level shared | `workspace/.agents/skills/` | `~/.sinoclaw/skills/openclaw-imports/` |
+| Workspace skills | `workspace/skills/` | `~/.anan/skills/openclaw-imports/` |
+| Managed/shared skills | `~/.anan/skills/` | `~/.anan/skills/openclaw-imports/` |
+| Personal cross-project | `~/.agents/skills/` | `~/.anan/skills/openclaw-imports/` |
+| Project-level shared | `workspace/.agents/skills/` | `~/.anan/skills/openclaw-imports/` |
 
 Skill conflicts are handled by `--skill-conflict`: `skip` leaves the existing Hermes skill, `overwrite` replaces it, `rename` creates a `-imported` copy.
 
@@ -70,7 +70,7 @@ Skill conflicts are handled by `--skill-conflict`: `skip` leaves the existing He
 |------|---------------------|-------------------|-------|
 | Default model | `agents.defaults.model` | `config.yaml` → `model` | Can be a string or `{primary, fallbacks}` object |
 | Custom providers | `models.providers.*` | `config.yaml` → `custom_providers` | Maps `baseUrl`, `apiType`/`api` — handles both short ("openai", "anthropic") and hyphenated ("openai-completions", "anthropic-messages", "google-generative-ai") values |
-| Provider API keys | `models.providers.*.apiKey` | `~/.sinoclaw/.env` | Requires `--migrate-secrets`. See [API key resolution](#api-key-resolution) below. |
+| Provider API keys | `models.providers.*.apiKey` | `~/.anan/.env` | Requires `--migrate-secrets`. See [API key resolution](#api-key-resolution) below. |
 
 ### Agent behavior
 
@@ -126,7 +126,7 @@ TTS settings are read from **two** OpenClaw config locations with this priority:
 | OpenAI model | `config.yaml` → `tts.openai.model` |
 | OpenAI voice | `config.yaml` → `tts.openai.voice` |
 | Edge TTS voice | `config.yaml` → `tts.edge.voice` (OpenClaw renamed "edge" to "microsoft" — both are recognized) |
-| TTS assets | `~/.sinoclaw/tts/` (file copy) |
+| TTS assets | `~/.anan/tts/` (file copy) |
 
 ### Messaging platforms
 
@@ -160,7 +160,7 @@ TTS settings are read from **two** OpenClaw config locations with this priority:
 
 ### Archived (no direct Hermes equivalent)
 
-These are saved to `~/.sinoclaw/migration/openclaw/<timestamp>/archive/` for manual review:
+These are saved to `~/.anan/migration/openclaw/<timestamp>/archive/` for manual review:
 
 | What | Archive file | How to recreate in Hermes |
 |------|-------------|--------------------------|
@@ -171,7 +171,7 @@ These are saved to `~/.sinoclaw/migration/openclaw/<timestamp>/archive/` for man
 | Cron jobs | `archive/cron-config.json` | Recreate with `sinoclaw cron create` |
 | Plugins | `archive/plugins-config.json` | See [plugins guide](/docs/user-guide/features/hooks) |
 | Hooks/webhooks | `archive/hooks-config.json` | Use `sinoclaw webhook` or gateway hooks |
-| Memory backend | `archive/memory-backend-config.json` | Configure via `sinoclaw honcho` |
+| Memory backend | `archive/memory-backend-config.json` | Configure via `anan honcho` |
 | Skills registry | `archive/skills-registry-config.json` | Use `sinoclaw skills config` |
 | UI/identity | `archive/ui-identity-config.json` | Use `/skin` command |
 | Logging | `archive/logging-diagnostics-config.json` | Set in `config.yaml` logging section |
@@ -184,9 +184,9 @@ These are saved to `~/.sinoclaw/migration/openclaw/<timestamp>/archive/` for man
 When `--migrate-secrets` is enabled, API keys are collected from **four sources** in priority order:
 
 1. **Config values** — `models.providers.*.apiKey` and TTS provider keys in `openclaw.json`
-2. **Environment file** — `~/.openclaw/.env` (keys like `OPENROUTER_API_KEY`, `ANTHROPIC_API_KEY`, etc.)
+2. **Environment file** — `~/.anan/.env` (keys like `OPENROUTER_API_KEY`, `ANTHROPIC_API_KEY`, etc.)
 3. **Config env sub-object** — `openclaw.json` → `"env"` or `"env"."vars"` (some setups store keys here instead of a separate `.env` file)
-4. **Auth profiles** — `~/.openclaw/agents/main/agent/auth-profiles.json` (per-agent credentials)
+4. **Auth profiles** — `~/.anan/agents/main/agent/auth-profiles.json` (per-agent credentials)
 
 Config values take priority. Each subsequent source fills any remaining gaps.
 
@@ -211,19 +211,19 @@ OpenClaw config values for tokens and API keys can be in three formats:
 "channels": { "telegram": { "botToken": { "source": "env", "id": "TELEGRAM_BOT_TOKEN" } } }
 ```
 
-The migration resolves all three formats. For env templates and SecretRef objects with `source: "env"`, it looks up the value in `~/.openclaw/.env` and the `openclaw.json` env sub-object. SecretRef objects with `source: "file"` or `source: "exec"` can't be resolved automatically — the migration warns about these, and those values must be added to Hermes manually via `sinoclaw config set`.
+The migration resolves all three formats. For env templates and SecretRef objects with `source: "env"`, it looks up the value in `~/.anan/.env` and the `openclaw.json` env sub-object. SecretRef objects with `source: "file"` or `source: "exec"` can't be resolved automatically — the migration warns about these, and those values must be added to Hermes manually via `anan config set`.
 
 ## After migration
 
 1. **Check the migration report** — printed on completion with counts of migrated, skipped, and conflicting items.
 
-2. **Review archived files** — anything in `~/.sinoclaw/migration/openclaw/<timestamp>/archive/` needs manual attention.
+2. **Review archived files** — anything in `~/.anan/migration/openclaw/<timestamp>/archive/` needs manual attention.
 
 3. **Start a new session** — imported skills and memory entries take effect in new sessions, not the current one.
 
 4. **Verify API keys** — run `sinoclaw status` to check provider authentication.
 
-5. **Test messaging** — if you migrated platform tokens, restart the gateway: `systemctl --user restart sinoclaw-gateway`
+5. **Test messaging** — if you migrated platform tokens, restart the gateway: `systemctl --user restart anan-gateway`
 
 6. **Check session policies** — verify `sinoclaw config get session_reset` matches your expectations.
 
@@ -235,16 +235,16 @@ The migration resolves all three formats. For env templates and SecretRef object
 
 ### "OpenClaw directory not found"
 
-The migration checks `~/.openclaw/`, then `~/.clawdbot/`, then `~/.moltbot/`. If your installation is elsewhere, use `--source /path/to/your/openclaw`.
+The migration checks `~/.anan/`, then `~/.clawdbot/`, then `~/.moltbot/`. If your installation is elsewhere, use `--source /path/to/your/openclaw`.
 
 ### "No provider API keys found"
 
-Keys might be stored in several places depending on your OpenClaw version: inline in `openclaw.json` under `models.providers.*.apiKey`, in `~/.openclaw/.env`, in the `openclaw.json` `"env"` sub-object, or in `agents/main/agent/auth-profiles.json`. The migration checks all four. If keys use `source: "file"` or `source: "exec"` SecretRefs, they can't be resolved automatically — add them via `sinoclaw config set`.
+Keys might be stored in several places depending on your OpenClaw version: inline in `openclaw.json` under `models.providers.*.apiKey`, in `~/.anan/.env`, in the `openclaw.json` `"env"` sub-object, or in `agents/main/agent/auth-profiles.json`. The migration checks all four. If keys use `source: "file"` or `source: "exec"` SecretRefs, they can't be resolved automatically — add them via `anan config set`.
 
 ### Skills not appearing after migration
 
-Imported skills land in `~/.sinoclaw/skills/openclaw-imports/`. Start a new session for them to take effect, or run `/skills` to verify they're loaded.
+Imported skills land in `~/.anan/skills/openclaw-imports/`. Start a new session for them to take effect, or run `/skills` to verify they're loaded.
 
 ### TTS voice not migrated
 
-OpenClaw stores TTS settings in two places: `messages.tts.providers.*` and the top-level `talk` config. The migration checks both. If your voice ID was set via the OpenClaw UI (stored in a different path), you may need to set it manually: `sinoclaw config set tts.elevenlabs.voice_id YOUR_VOICE_ID`.
+OpenClaw stores TTS settings in two places: `messages.tts.providers.*` and the top-level `talk` config. The migration checks both. If your voice ID was set via the OpenClaw UI (stored in a different path), you may need to set it manually: `anan config set tts.elevenlabs.voice_id YOUR_VOICE_ID`.

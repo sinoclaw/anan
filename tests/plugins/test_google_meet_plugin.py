@@ -25,10 +25,10 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate_home(tmp_path, monkeypatch):
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
-    yield sinoclaw_home
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
+    yield anan_home
 
 
 # ---------------------------------------------------------------------------
@@ -189,7 +189,7 @@ def test_start_spawns_subprocess_and_writes_active_pointer(tmp_path):
 def test_transcript_reads_last_n_lines(tmp_path):
     from plugins.google_meet import process_manager as pm
 
-    meeting_dir = Path(os.environ["SINOCLAW_HOME"]) / "workspace" / "meetings" / "abc-defg-hij"
+    meeting_dir = Path(os.environ["ANAN_HOME"]) / "workspace" / "meetings" / "abc-defg-hij"
     meeting_dir.mkdir(parents=True)
     (meeting_dir / "transcript.txt").write_text(
         "[10:00:00] Alice: one\n"
@@ -385,7 +385,7 @@ def test_enqueue_say_no_active_meeting():
 def test_enqueue_say_rejects_transcribe_mode(tmp_path):
     from plugins.google_meet import process_manager as pm
 
-    out_dir = Path(os.environ["SINOCLAW_HOME"]) / "workspace" / "meetings" / "abc-defg-hij"
+    out_dir = Path(os.environ["ANAN_HOME"]) / "workspace" / "meetings" / "abc-defg-hij"
     out_dir.mkdir(parents=True)
     pm._write_active({
         "pid": 0, "meeting_id": "abc-defg-hij",
@@ -400,7 +400,7 @@ def test_enqueue_say_rejects_transcribe_mode(tmp_path):
 def test_enqueue_say_writes_jsonl_in_realtime_mode():
     from plugins.google_meet import process_manager as pm
 
-    out_dir = Path(os.environ["SINOCLAW_HOME"]) / "workspace" / "meetings" / "abc-defg-hij"
+    out_dir = Path(os.environ["ANAN_HOME"]) / "workspace" / "meetings" / "abc-defg-hij"
     out_dir.mkdir(parents=True)
     pm._write_active({
         "pid": 0, "meeting_id": "abc-defg-hij",
@@ -571,7 +571,7 @@ def test_meet_join_auto_node_ambiguous_returns_error():
 
 
 def test_cli_register_includes_node_subcommand():
-    """`sinoclaw meet` argparse tree includes the node subtree."""
+    """`anan meet` argparse tree includes the node subtree."""
     import argparse
     from plugins.google_meet.cli import register_cli
 
@@ -722,7 +722,7 @@ def test_realtime_session_counters_initialized():
 
 
 # ---------------------------------------------------------------------------
-# sinoclaw meet install CLI
+# anan meet install CLI
 # ---------------------------------------------------------------------------
 
 def test_cli_install_subcommand_is_registered():

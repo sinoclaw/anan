@@ -1,4 +1,4 @@
-# nix/packages.nix — Sinoclaw Agent package built with uv2nix
+# nix/packages.nix — Anan Agent package built with uv2nix
 { inputs, ... }:
 {
   perSystem =

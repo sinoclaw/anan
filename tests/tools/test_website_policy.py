@@ -86,7 +86,7 @@ def test_check_website_access_supports_wildcard_subdomains_only(tmp_path):
 
 
 def test_default_config_exposes_website_blocklist_shape():
-    from sinoclaw_cli.config import DEFAULT_CONFIG
+    from anan_cli.config import DEFAULT_CONFIG
 
     website_blocklist = DEFAULT_CONFIG["security"]["website_blocklist"]
     assert website_blocklist["enabled"] is False
@@ -239,10 +239,10 @@ def test_load_website_blocklist_wraps_shared_file_read_errors(tmp_path, monkeypa
     assert result["rules"] == []  # shared file rules skipped
 
 
-def test_check_website_access_uses_dynamic_sinoclaw_home(monkeypatch, tmp_path):
-    sinoclaw_home = tmp_path / "sinoclaw-home"
-    sinoclaw_home.mkdir()
-    (sinoclaw_home / "config.yaml").write_text(
+def test_check_website_access_uses_dynamic_anan_home(monkeypatch, tmp_path):
+    anan_home = tmp_path / "anan-home"
+    anan_home.mkdir()
+    (anan_home / "config.yaml").write_text(
         yaml.safe_dump(
             {
                 "security": {
@@ -257,11 +257,11 @@ def test_check_website_access_uses_dynamic_sinoclaw_home(monkeypatch, tmp_path):
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
-    # Invalidate the module-level cache so the new SINOCLAW_HOME is picked up.
+    # Invalidate the module-level cache so the new ANAN_HOME is picked up.
     # A prior test may have cached a default policy (enabled=False) under the
-    # old SINOCLAW_HOME set by the autouse _isolate_sinoclaw_home fixture.
+    # old ANAN_HOME set by the autouse _isolate_anan_home fixture.
     from tools.website_policy import invalidate_cache
     invalidate_cache()
 
@@ -385,8 +385,8 @@ def test_check_website_access_fails_open_on_malformed_config(tmp_path, monkeypat
     with pytest.raises(WebsitePolicyError):
         check_website_access("https://example.com", config_path=config_path)
 
-    # Simulate default path by pointing SINOCLAW_HOME to tmp_path
-    monkeypatch.setenv("SINOCLAW_HOME", str(tmp_path))
+    # Simulate default path by pointing ANAN_HOME to tmp_path
+    monkeypatch.setenv("ANAN_HOME", str(tmp_path))
     from tools import website_policy
     website_policy.invalidate_cache()
 

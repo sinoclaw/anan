@@ -147,15 +147,15 @@ If you open the task and `kanban_show` returns `runs: [...]` with one or more cl
 
 **Workspace may have stale artifacts.** Especially `dir:` and `worktree` workspaces can have files from previous runs. Read the comment thread — it usually explains why you're running again and what state the workspace is in.
 
-**Don't rely on the CLI when the guidance is available.** The `kanban_*` tools work across all terminal backends (Docker, Modal, SSH). `sinoclaw kanban <verb>` from your terminal tool will fail in containerized backends because the CLI isn't installed there. When in doubt, use the tool.
+**Don't rely on the CLI when the guidance is available.** The `kanban_*` tools work across all terminal backends (Docker, Modal, SSH). `anan kanban <verb>` from your terminal tool will fail in containerized backends because the CLI isn't installed there. When in doubt, use the tool.
 
 ## CLI fallback (for scripting)
 
 Every tool has a CLI equivalent for human operators and scripts:
-- `kanban_show` ↔ `sinoclaw kanban show <id> --json`
-- `kanban_complete` ↔ `sinoclaw kanban complete <id> --summary "..." --metadata '{...}'`
-- `kanban_block` ↔ `sinoclaw kanban block <id> "reason"`
-- `kanban_create` ↔ `sinoclaw kanban create "title" --assignee <profile> [--parent <id>]`
+- `kanban_show` ↔ `anan kanban show <id> --json`
+- `kanban_complete` ↔ `anan kanban complete <id> --summary "..." --metadata '{...}'`
+- `kanban_block` ↔ `anan kanban block <id> "reason"`
+- `kanban_create` ↔ `anan kanban create "title" --assignee <profile> [--parent <id>]`
 - etc.
 
 Use the tools from inside an agent; the CLI exists for the human at the terminal.

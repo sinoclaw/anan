@@ -21,7 +21,7 @@ env:
   steps_per_eval: 50
   total_steps: 500
   use_wandb: true
-  wandb_name: "sinoclaw-swe"
+  wandb_name: "anan-swe"
   system_prompt: >
     You are a skilled software engineer. You have access to a terminal,
     file tools, and web search. Use these tools to complete the coding task.

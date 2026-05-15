@@ -6,7 +6,7 @@ description: "How to build a model provider (inference backend) plugin for Sinoc
 
 # Building a Model Provider Plugin
 
-Model provider plugins declare an inference backend — an OpenAI-compatible endpoint, an Anthropic Messages server, a Codex-style Responses API, or a Bedrock-native surface — that Hermes can route `AIAgent` calls through. Every built-in provider (OpenRouter, Anthropic, GMI, DeepSeek, Nvidia, …) ships as one of these plugins. Third parties can add their own by dropping a directory under `$SINOCLAW_HOME/plugins/model-providers/` with zero changes to the repo.
+Model provider plugins declare an inference backend — an OpenAI-compatible endpoint, an Anthropic Messages server, a Codex-style Responses API, or a Bedrock-native surface — that Hermes can route `AIAgent` calls through. Every built-in provider (OpenRouter, Anthropic, GMI, DeepSeek, Nvidia, …) ships as one of these plugins. Third parties can add their own by dropping a directory under `$ANAN_HOME/plugins/model-providers/` with zero changes to the repo.
 
 :::tip
 Model provider plugins are the third kind of **provider plugin**. The others are [Memory Provider Plugins](/docs/developer-guide/memory-provider-plugin) (cross-session knowledge) and [Context Engine Plugins](/docs/developer-guide/context-engine-plugin) (context compression strategies). All three follow the same "drop a directory, declare a profile, no repo edits" pattern.
@@ -17,10 +17,10 @@ Model provider plugins are the third kind of **provider plugin**. The others are
 `providers/__init__.py._discover_providers()` runs lazily the first time any code calls `get_provider_profile()` or `list_providers()`. Discovery order:
 
 1. **Bundled plugins** — `<repo>/plugins/model-providers/<name>/` — ship with Hermes
-2. **User plugins** — `$SINOCLAW_HOME/plugins/model-providers/<name>/` — drop in any directory; no restart required for subsequent sessions
+2. **User plugins** — `$ANAN_HOME/plugins/model-providers/<name>/` — drop in any directory; no restart required for subsequent sessions
 3. **Legacy single-file** — `<repo>/providers/<name>.py` — back-compat for out-of-tree editable installs
 
-**User plugins override bundled plugins of the same name** because `register_provider()` is last-writer-wins. Drop a `$SINOCLAW_HOME/plugins/model-providers/gmi/` directory to replace the built-in GMI profile without touching the repo.
+**User plugins override bundled plugins of the same name** because `register_provider()` is last-writer-wins. Drop a `$ANAN_HOME/plugins/model-providers/gmi/` directory to replace the built-in GMI profile without touching the repo.
 
 ## Directory structure
 
@@ -73,14 +73,14 @@ That's it. After dropping these two files, the following **auto-wire** with no o
 
 | Integration | Where | What it gets |
 |---|---|---|
-| Credential resolution | `sinoclaw_cli/auth.py` | `PROVIDER_REGISTRY["acme-inference"]` populated from profile |
-| `--provider` CLI flag | `sinoclaw_cli/main.py` | Accepts `acme-inference` |
-| `sinoclaw model` picker | `sinoclaw_cli/models.py` | Appears in `CANONICAL_PROVIDERS`, model list fetched from `{base_url}/models` |
-| `sinoclaw doctor` | `sinoclaw_cli/doctor.py` | Health check for `ACME_API_KEY` + `{base_url}/models` probe |
-| `sinoclaw setup` | `sinoclaw_cli/config.py` | `ACME_API_KEY` appears in `OPTIONAL_ENV_VARS` and the setup wizard |
+| Credential resolution | `anan_cli/auth.py` | `PROVIDER_REGISTRY["acme-inference"]` populated from profile |
+| `--provider` CLI flag | `anan_cli/main.py` | Accepts `acme-inference` |
+| `sinoclaw model` picker | `anan_cli/models.py` | Appears in `CANONICAL_PROVIDERS`, model list fetched from `{base_url}/models` |
+| `sinoclaw doctor` | `anan_cli/doctor.py` | Health check for `ACME_API_KEY` + `{base_url}/models` probe |
+| `sinoclaw setup` | `anan_cli/config.py` | `ACME_API_KEY` appears in `OPTIONAL_ENV_VARS` and the setup wizard |
 | URL reverse-mapping | `agent/model_metadata.py` | Hostname → provider name for auto-detection |
 | Auxiliary model | `agent/auxiliary_client.py` | Uses `default_aux_model` for compression / summarization |
-| Runtime resolution | `sinoclaw_cli/runtime_provider.py` | Returns correct `base_url`, `api_key`, `api_mode` |
+| Runtime resolution | `anan_cli/runtime_provider.py` | Returns correct `base_url`, `api_key`, `api_mode` |
 | Transport | `agent/transports/chat_completions.py` | Profile path generates kwargs via `prepare_messages` / `build_extra_body` / `build_api_kwargs_extras` |
 
 ## ProviderProfile fields
@@ -158,7 +158,7 @@ Look at these bundled plugins for idioms:
 
 ## User overrides — replace a built-in without editing the repo
 
-Say you want to point `gmi` at your private staging endpoint for testing. Create `~/.sinoclaw/plugins/model-providers/gmi/__init__.py`:
+Say you want to point `gmi` at your private staging endpoint for testing. Create `~/.anan/plugins/model-providers/gmi/__init__.py`:
 
 ```python
 from providers import register_provider
@@ -221,12 +221,12 @@ for p in list_providers():
 
 ## Testing your plugin
 
-Point `SINOCLAW_HOME` at a temp directory so you don't pollute your real config:
+Point `ANAN_HOME` at a temp directory so you don't pollute your real config:
 
 ```bash
-export SINOCLAW_HOME=/tmp/sinoclaw-plugin-test
-mkdir -p $SINOCLAW_HOME/plugins/model-providers/my-provider
-cat > $SINOCLAW_HOME/plugins/model-providers/my-provider/__init__.py <<'EOF'
+export ANAN_HOME=/tmp/anan-plugin-test
+mkdir -p $ANAN_HOME/plugins/model-providers/my-provider
+cat > $ANAN_HOME/plugins/model-providers/my-provider/__init__.py <<'EOF'
 from providers import register_provider
 from providers.base import ProviderProfile
 register_provider(ProviderProfile(
@@ -243,7 +243,7 @@ hermes -z "hello" --provider my-provider -m some-model
 
 ## General PluginManager integration
 
-The general `PluginManager` (the thing `sinoclaw plugins` operates on) **sees** model-provider plugins but does not import them — `providers/__init__.py` owns their lifecycle. The manager records the manifest for introspection and categorizes by `kind: model-provider`. When you drop an unlabeled user plugin into `$SINOCLAW_HOME/plugins/` that happens to call `register_provider` with a `ProviderProfile`, the manager auto-coerces it to `kind: model-provider` via a source-text heuristic — so the plugin still routes correctly even without `plugin.yaml`.
+The general `PluginManager` (the thing `sinoclaw plugins` operates on) **sees** model-provider plugins but does not import them — `providers/__init__.py` owns their lifecycle. The manager records the manifest for introspection and categorizes by `kind: model-provider`. When you drop an unlabeled user plugin into `$ANAN_HOME/plugins/` that happens to call `register_provider` with a `ProviderProfile`, the manager auto-coerces it to `kind: model-provider` via a source-text heuristic — so the plugin still routes correctly even without `plugin.yaml`.
 
 ## Distribute via pip
 

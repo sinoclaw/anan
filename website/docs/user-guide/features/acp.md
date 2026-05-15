@@ -95,7 +95,7 @@ Example settings snippet:
 ```json
 {
   "agent_servers": {
-    "sinoclaw-agent": {
+    "anan": {
       "type": "custom",
       "command": "hermes",
       "args": ["acp"],
@@ -109,7 +109,7 @@ Example settings snippet:
 Use an ACP-compatible plugin and point it at:
 
 ```text
-/path/to/sinoclaw-agent/acp_registry
+/path/to/anan/acp_registry
 ```
 
 ## Registry manifest
@@ -130,10 +130,10 @@ hermes acp
 
 ACP mode uses the same Hermes configuration as the CLI:
 
-- `~/.sinoclaw/.env`
-- `~/.sinoclaw/config.yaml`
-- `~/.sinoclaw/skills/`
-- `~/.sinoclaw/state.db`
+- `~/.anan/.env`
+- `~/.anan/config.yaml`
+- `~/.anan/skills/`
+- `~/.anan/state.db`
 
 Provider resolution uses Hermes' normal runtime resolver, so ACP inherits the currently configured provider and credentials.
 
@@ -193,7 +193,7 @@ ACP mode does not have its own login flow. It uses Hermes' existing provider set
 hermes model
 ```
 
-or by editing `~/.sinoclaw/.env`.
+or by editing `~/.anan/.env`.
 
 ## See also
 

@@ -21,7 +21,7 @@ class TestHonchoSession:
         return HonchoSession(
             key="telegram:12345",
             user_peer_id="user-telegram-12345",
-            assistant_peer_id="sinoclaw-assistant",
+            assistant_peer_id="anan-assistant",
             honcho_session_id="telegram-12345",
         )
 
@@ -197,7 +197,7 @@ class TestPeerLookupHelpers:
         session = HonchoSession(
             key="telegram:123",
             user_peer_id="robert",
-            assistant_peer_id="sinoclaw",
+            assistant_peer_id="anan",
             honcho_session_id="telegram-123",
         )
         mgr._cache[session.key] = session
@@ -424,11 +424,11 @@ class TestConcludeToolDispatch:
 
         result = provider.handle_tool_call(
             "honcho_profile",
-            {"peer": "sinoclaw"},
+            {"peer": "anan"},
         )
 
         assert "Role: Assistant" in result
-        provider._manager.get_peer_card.assert_called_once_with("telegram:123", peer="sinoclaw")
+        provider._manager.get_peer_card.assert_called_once_with("telegram:123", peer="anan")
 
     def test_honcho_search_can_target_explicit_peer_id(self):
         provider = HonchoMemoryProvider()
@@ -439,7 +439,7 @@ class TestConcludeToolDispatch:
 
         result = provider.handle_tool_call(
             "honcho_search",
-            {"query": "assistant", "peer": "sinoclaw"},
+            {"query": "assistant", "peer": "anan"},
         )
 
         assert "Assistant self context" in result
@@ -447,7 +447,7 @@ class TestConcludeToolDispatch:
             "telegram:123",
             "assistant",
             max_tokens=800,
-            peer="sinoclaw",
+            peer="anan",
         )
 
     def test_honcho_reasoning_can_target_explicit_peer_id(self):
@@ -459,7 +459,7 @@ class TestConcludeToolDispatch:
 
         result = provider.handle_tool_call(
             "honcho_reasoning",
-            {"query": "who are you", "peer": "sinoclaw"},
+            {"query": "who are you", "peer": "anan"},
         )
 
         assert "Assistant answer" in result
@@ -467,7 +467,7 @@ class TestConcludeToolDispatch:
             "telegram:123",
             "who are you",
             reasoning_level=None,
-            peer="sinoclaw",
+            peer="anan",
         )
 
     def test_honcho_conclude_missing_both_params_returns_error(self):
@@ -602,7 +602,7 @@ class TestToolsModeInitBehavior:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager) as mock_manager_cls, \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="test-session-001", **init_kwargs)
 
         return provider, cfg, mock_manager_cls
@@ -688,7 +688,7 @@ class TestPerSessionMigrateGuard:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="test-session-001")
 
         return provider, mock_manager
@@ -892,7 +892,7 @@ class TestDialecticCadenceDefaults:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="test-session-001")
 
         _settle_prewarm(provider)
@@ -963,7 +963,7 @@ class TestDialecticDepth:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="test-session-001")
 
         _settle_prewarm(provider)
@@ -1125,7 +1125,7 @@ class TestTrivialPromptHeuristic:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="test-session-trivial")
         _settle_prewarm(provider)
         return provider
@@ -1187,7 +1187,7 @@ class TestDialecticCadenceAdvancesOnSuccess:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="test-session-retry")
         _settle_prewarm(provider)
         return provider
@@ -1272,7 +1272,7 @@ class TestSessionStartDialecticPrewarm:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="test-prewarm")
         return provider
 
@@ -1344,7 +1344,7 @@ class TestDialecticLiveness:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="test-liveness")
         _settle_prewarm(provider)
         return provider
@@ -1491,7 +1491,7 @@ class TestDialecticLifecycleSmoke:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             return provider, mock_manager, cfg
 
     def _await_thread(self, provider):
@@ -1525,7 +1525,7 @@ class TestDialecticLifecycleSmoke:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mgr), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="smoke-test")
 
         self._await_thread(provider)
@@ -1625,7 +1625,7 @@ class TestReasoningHeuristic:
         with patch("plugins.memory.honcho.client.HonchoClientConfig.from_global_config", return_value=cfg), \
              patch("plugins.memory.honcho.client.get_honcho_client", return_value=MagicMock()), \
              patch("plugins.memory.honcho.session.HonchoSessionManager", return_value=mock_manager), \
-             patch("sinoclaw_constants.get_sinoclaw_home", return_value=MagicMock()):
+             patch("sinoclaw_constants.get_anan_home", return_value=MagicMock()):
             provider.initialize(session_id="test-heuristic")
         _settle_prewarm(provider)
         return provider

@@ -27,7 +27,7 @@ from acp.schema import (
     ToolCallStart,
 )
 
-from acp_adapter.server import SinoclawACPAgent
+from acp_adapter.server import AnanACPAgent
 from acp_adapter.session import SessionManager
 from acp_adapter.tools import build_tool_start
 
@@ -44,7 +44,7 @@ def mock_manager():
 
 @pytest.fixture()
 def acp_agent(mock_manager):
-    return SinoclawACPAgent(session_manager=mock_manager)
+    return AnanACPAgent(session_manager=mock_manager)
 
 
 # ---------------------------------------------------------------------------
@@ -306,7 +306,7 @@ class TestSessionLifecycleMcpE2E:
             return []
 
         state = mock_manager.get_session(sid)
-        state.agent.enabled_toolsets = ["sinoclaw-acp"]
+        state.agent.enabled_toolsets = ["anan-acp"]
         state.agent.disabled_toolsets = None
         state.agent.tools = []
         state.agent.valid_tool_names = set()
@@ -333,7 +333,7 @@ class TestSessionLifecycleMcpE2E:
             return []
 
         state = mock_manager.get_session(sid)
-        state.agent.enabled_toolsets = ["sinoclaw-acp"]
+        state.agent.enabled_toolsets = ["anan-acp"]
         state.agent.disabled_toolsets = None
         state.agent.tools = []
         state.agent.valid_tool_names = set()

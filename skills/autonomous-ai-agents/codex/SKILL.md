@@ -8,7 +8,7 @@ platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [Coding-Agent, Codex, OpenAI, Code-Review, Refactoring]
-    related_skills: [claude-code, sinoclaw-agent]
+    related_skills: [claude-code, anan]
 ---
 
 # Codex CLI
@@ -33,7 +33,7 @@ Requires the codex CLI and a git repository.
 - Use `pty=true` in terminal calls — Codex is an interactive terminal app
 
 For Hermes itself, `model.provider: openai-codex` uses Sinoclaw-managed Codex
-OAuth from `~/.sinoclaw/auth.json` after `sinoclaw auth add openai-codex`. For the
+OAuth from `~/.anan/auth.json` after `sinoclaw auth add openai-codex`. For the
 standalone Codex CLI, a valid CLI OAuth session may live under
 `~/.codex/auth.json`; do not treat a missing `OPENAI_API_KEY` alone as proof
 that Codex auth is missing.

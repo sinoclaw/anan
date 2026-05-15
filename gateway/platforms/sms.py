@@ -55,9 +55,9 @@ def check_sms_requirements() -> bool:
 
 class SmsAdapter(BasePlatformAdapter):
     """
-    Twilio SMS <-> Sinoclaw gateway adapter.
+    Twilio SMS <-> Anan gateway adapter.
 
-    Each inbound phone number gets its own Sinoclaw session (multi-tenant).
+    Each inbound phone number gets its own Anan session (multi-tenant).
     Replies are always sent from the configured TWILIO_PHONE_NUMBER.
     """
 

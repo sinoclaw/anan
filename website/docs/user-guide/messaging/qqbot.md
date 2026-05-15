@@ -35,7 +35,7 @@ Select **QQ Bot** from the platform list and follow the prompts.
 
 ### Manual configuration
 
-Set the required environment variables in `~/.sinoclaw/.env`:
+Set the required environment variables in `~/.anan/.env`:
 
 ```bash
 QQ_APP_ID=your-app-id
@@ -60,7 +60,7 @@ QQ_CLIENT_SECRET=your-app-secret
 
 ## Advanced Configuration
 
-For fine-grained control, add platform settings to `~/.sinoclaw/config.yaml`:
+For fine-grained control, add platform settings to `~/.anan/config.yaml`:
 
 ```yaml
 platforms:

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Bootstrap Open WebUI against Sinoclaw Agent's OpenAI-compatible API server.
+# Bootstrap Open WebUI against Anan Agent's OpenAI-compatible API server.
 #
 # Idempotent by design:
-# - ensures ~/.sinoclaw/.env has API server settings
+# - ensures ~/.anan/.env has API server settings
 # - installs Open WebUI into ~/.local/open-webui-venv
 # - writes a reusable launcher at ~/.local/bin/start-open-webui-hermes.sh
 # - optionally installs a user service (launchd on macOS, systemd --user on Linux)
@@ -22,23 +22,23 @@ set -euo pipefail
 #   OPEN_WEBUI_DATA_DIR=~/.local/share/open-webui/data
 #   SINOCLAW_API_PORT=8642
 #   SINOCLAW_API_HOST=127.0.0.1
-#   SINOCLAW_API_MODEL_NAME='Sinoclaw Agent'
+#   SINOCLAW_API_MODEL_NAME='Anan Agent'
 
 OPEN_WEBUI_PORT="${OPEN_WEBUI_PORT:-8080}"
 OPEN_WEBUI_HOST="${OPEN_WEBUI_HOST:-127.0.0.1}"
-OPEN_WEBUI_NAME="${OPEN_WEBUI_NAME:-Sinoclaw Agent WebUI}"
+OPEN_WEBUI_NAME="${OPEN_WEBUI_NAME:-Anan Agent WebUI}"
 OPEN_WEBUI_ENABLE_SIGNUP="${OPEN_WEBUI_ENABLE_SIGNUP:-true}"
 OPEN_WEBUI_ENABLE_SERVICE="${OPEN_WEBUI_ENABLE_SERVICE:-auto}"
 OPEN_WEBUI_VENV="${OPEN_WEBUI_VENV:-$HOME/.local/open-webui-venv}"
 OPEN_WEBUI_DATA_DIR="${OPEN_WEBUI_DATA_DIR:-$HOME/.local/share/open-webui/data}"
-SINOCLAW_ENV_FILE="${SINOCLAW_ENV_FILE:-$HOME/.sinoclaw/.env}"
+SINOCLAW_ENV_FILE="${SINOCLAW_ENV_FILE:-$HOME/.anan/.env}"
 SINOCLAW_API_PORT="${SINOCLAW_API_PORT:-8642}"
 SINOCLAW_API_HOST="${SINOCLAW_API_HOST:-127.0.0.1}"
 SINOCLAW_API_CONNECT_HOST="${SINOCLAW_API_CONNECT_HOST:-127.0.0.1}"
-SINOCLAW_API_MODEL_NAME="${SINOCLAW_API_MODEL_NAME:-Sinoclaw Agent}"
+SINOCLAW_API_MODEL_NAME="${SINOCLAW_API_MODEL_NAME:-Anan Agent}"
 SINOCLAW_API_BASE_URL="http://${SINOCLAW_API_CONNECT_HOST}:${SINOCLAW_API_PORT}/v1"
 LAUNCHER_PATH="$HOME/.local/bin/start-open-webui-hermes.sh"
-LOG_DIR="$HOME/.sinoclaw/logs"
+LOG_DIR="$HOME/.anan/logs"
 
 log() {
   printf '[open-webui-bootstrap] %s\n' "$*"
@@ -258,11 +258,11 @@ EOF
 install_systemd_user_service() {
   require_cmd systemctl
   local unit_dir="$HOME/.config/systemd/user"
-  local unit="$unit_dir/openwebui-sinoclaw.service"
+  local unit="$unit_dir/openwebui-anan.service"
   mkdir -p "$unit_dir"
   cat > "$unit" <<EOF
 [Unit]
-Description=Open WebUI connected to Sinoclaw Agent
+Description=Open WebUI connected to Anan Agent
 After=default.target
 
 [Service]
@@ -271,14 +271,14 @@ ExecStart=/bin/bash %h/.local/bin/start-open-webui-hermes.sh
 Restart=always
 RestartSec=3
 WorkingDirectory=%h
-StandardOutput=append:%h/.sinoclaw/logs/openwebui.log
-StandardError=append:%h/.sinoclaw/logs/openwebui.error.log
+StandardOutput=append:%h/.anan/logs/openwebui.log
+StandardError=append:%h/.anan/logs/openwebui.error.log
 
 [Install]
 WantedBy=default.target
 EOF
   systemctl --user daemon-reload
-  systemctl --user enable --now openwebui-sinoclaw.service
+  systemctl --user enable --now openwebui-anan.service
 }
 
 start_foreground_hint() {
@@ -299,7 +299,7 @@ main() {
     api_key="$(generate_secret)"
   fi
 
-  log 'Ensuring Sinoclaw API server is configured...'
+  log 'Ensuring Anan API server is configured...'
   upsert_env API_SERVER_ENABLED true "$SINOCLAW_ENV_FILE"
   upsert_env API_SERVER_HOST "$SINOCLAW_API_HOST" "$SINOCLAW_ENV_FILE"
   upsert_env API_SERVER_PORT "$SINOCLAW_API_PORT" "$SINOCLAW_ENV_FILE"
@@ -307,12 +307,12 @@ main() {
   upsert_env API_SERVER_KEY "$api_key" "$SINOCLAW_ENV_FILE"
   ensure_env_permissions
 
-  log 'Restarting Sinoclaw gateway so API server settings take effect...'
-  sinoclaw gateway restart >/dev/null 2>&1 || true
+  log 'Restarting Anan gateway so API server settings take effect...'
+  anan gateway restart >/dev/null 2>&1 || true
   sleep 4
   if ! curl -fsS "http://${SINOCLAW_API_CONNECT_HOST}:${SINOCLAW_API_PORT}/health" >/dev/null; then
-    log 'Sinoclaw API server did not answer on the first check. Trying to start gateway in the background...'
-    nohup sinoclaw gateway run >/dev/null 2>&1 &
+    log 'Anan API server did not answer on the first check. Trying to start gateway in the background...'
+    nohup anan gateway run >/dev/null 2>&1 &
     sleep 6
   fi
   curl -fsS "http://${SINOCLAW_API_CONNECT_HOST}:${SINOCLAW_API_PORT}/health" >/dev/null

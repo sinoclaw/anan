@@ -58,7 +58,7 @@ The heartbeat plugin provides intelligent, periodic health-checks for the Sinocl
          target: "last"
    ```
 
-3. Restart sinoclaw-gateway
+3. Restart anan-gateway
 
 ## Configuration
 
@@ -94,8 +94,8 @@ The heartbeat plugin provides intelligent, periodic health-checks for the Sinocl
 When multiple agents have heartbeat enabled, they use SHA256 hashing to compute a unique phase offset within the interval window:
 
 ```
-Agent A: SHA256("sinoclaw-heartbeat-v1:main") % 1800000 = 547293ms
-Agent B: SHA256("sinoclaw-heartbeat-v1:ops") % 1800000 = 1204891ms
+Agent A: SHA256("anan-heartbeat-v1:main") % 1800000 = 547293ms
+Agent B: SHA256("anan-heartbeat-v1:ops") % 1800000 = 1204891ms
 
 → Agent A fires at T+9min, Agent B fires at T+20min
 → No simultaneous heartbeat storms
@@ -176,7 +176,7 @@ Check plugin status:
 curl http://localhost:8642/api/plugins/heartbeat/status
 
 # Check state file
-cat ~/.sinoclaw/heartbeat-state.json
+cat ~/.anan/heartbeat-state.json
 ```
 
 ## vs Cron

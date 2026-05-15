@@ -8,7 +8,7 @@ This guide covers adding a new messaging platform to the Sinoclaw gateway. A pla
 
 :::tip
 There are two ways to add a platform:
-- **Plugin** (recommended for community/third-party): Drop a plugin directory into `~/.sinoclaw/plugins/` — zero core code changes needed. See [Plugin Path](#plugin-path-recommended) below.
+- **Plugin** (recommended for community/third-party): Drop a plugin directory into `~/.anan/plugins/` — zero core code changes needed. See [Plugin Path](#plugin-path-recommended) below.
 - **Built-in**: Modify 20+ files across code, config, and docs. Use the [Built-in Checklist](#step-by-step-checklist) below.
 :::
 
@@ -33,7 +33,7 @@ Inbound messages are received by the adapter and forwarded via `self.handle_mess
 The plugin system lets you add a platform adapter without modifying any core Hermes code. Your plugin is a directory with two files:
 
 ```
-~/.sinoclaw/plugins/my-platform/
+~/.anan/plugins/my-platform/
   PLUGIN.yaml      # Plugin metadata
   adapter.py       # Adapter class + register() entry point
 ```
@@ -199,7 +199,7 @@ When you call `ctx.register_platform()`, the following integration points are ha
 
 ## Env-Driven Auto-Configuration
 
-Most users set up a platform by dropping env vars into `~/.sinoclaw/.env` rather than editing `config.yaml`. The `env_enablement_fn` hook lets your plugin pick those env vars up **before** the adapter is constructed, so `sinoclaw gateway status`, `get_connected_platforms()`, and cron delivery see the correct state without instantiating the platform SDK.
+Most users set up a platform by dropping env vars into `~/.anan/.env` rather than editing `config.yaml`. The `env_enablement_fn` hook lets your plugin pick those env vars up **before** the adapter is constructed, so `sinoclaw gateway status`, `get_connected_platforms()`, and cron delivery see the correct state without instantiating the platform SDK.
 
 ```python
 def _env_enablement() -> dict | None:
@@ -286,7 +286,7 @@ The function receives the same `pconfig` and `chat_id` that the live adapter wou
 
 ## Surfacing Env Vars in `sinoclaw config`
 
-`sinoclaw_cli/config.py` scans `plugins/platforms/*/plugin.yaml` at import time and auto-populates `OPTIONAL_ENV_VARS` from `requires_env` and (optional) `optional_env` blocks. Use the rich-dict form to contribute proper descriptions, prompts, password flags, and URLs — the CLI setup UI picks them up for free.
+`anan_cli/config.py` scans `plugins/platforms/*/plugin.yaml` at import time and auto-populates `OPTIONAL_ENV_VARS` from `requires_env` and (optional) `optional_env` blocks. Use the rich-dict form to contribute proper descriptions, prompts, password flags, and URLs — the CLI setup UI picks them up for free.
 
 ```yaml
 # plugins/platforms/my_platform/plugin.yaml
@@ -427,12 +427,12 @@ Five touchpoints:
 
 ### 6. CLI Integration
 
-1. **`sinoclaw_cli/config.py`** — Add all `NEWPLAT_*` vars to `_EXTRA_ENV_KEYS`
-2. **`sinoclaw_cli/gateway.py`** — Add entry to `_PLATFORMS` list with key, label, emoji, token_var, setup_instructions, and vars
-3. **`sinoclaw_cli/platforms.py`** — Add `PlatformInfo` entry with label and default_toolset (used by `skills_config` and `tools_config` TUIs)
-4. **`sinoclaw_cli/setup.py`** — Add `_setup_newplat()` function (can delegate to `gateway.py`) and add tuple to the messaging platforms list
-5. **`sinoclaw_cli/status.py`** — Add platform detection entry: `"NewPlat": ("NEWPLAT_TOKEN", "NEWPLAT_HOME_CHANNEL")`
-6. **`sinoclaw_cli/dump.py`** — Add `"newplat": "NEWPLAT_TOKEN"` to platform detection dict
+1. **`anan_cli/config.py`** — Add all `NEWPLAT_*` vars to `_EXTRA_ENV_KEYS`
+2. **`anan_cli/gateway.py`** — Add entry to `_PLATFORMS` list with key, label, emoji, token_var, setup_instructions, and vars
+3. **`anan_cli/platforms.py`** — Add `PlatformInfo` entry with label and default_toolset (used by `skills_config` and `tools_config` TUIs)
+4. **`anan_cli/setup.py`** — Add `_setup_newplat()` function (can delegate to `gateway.py`) and add tuple to the messaging platforms list
+5. **`anan_cli/status.py`** — Add platform detection entry: `"NewPlat": ("NEWPLAT_TOKEN", "NEWPLAT_HOME_CHANNEL")`
+6. **`anan_cli/dump.py`** — Add `"newplat": "NEWPLAT_TOKEN"` to platform detection dict
 
 ### 7. Tools
 
@@ -441,8 +441,8 @@ Five touchpoints:
 
 ### 8. Toolsets
 
-1. **`toolsets.py`** — Add `"sinoclaw-newplat"` toolset definition with `_SINOCLAW_CORE_TOOLS`
-2. **`toolsets.py`** — Add `"sinoclaw-newplat"` to the `"sinoclaw-gateway"` includes list
+1. **`toolsets.py`** — Add `"anan-newplat"` toolset definition with `_SINOCLAW_CORE_TOOLS`
+2. **`toolsets.py`** — Add `"anan-newplat"` to the `"anan-gateway"` includes list
 
 ### 9. Optional: Platform Hints
 

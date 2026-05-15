@@ -52,8 +52,8 @@ class _FakeStream:
 
 
 @pytest.fixture(autouse=True)
-def _tmp_sinoclaw_home(tmp_path, monkeypatch):
-    monkeypatch.setenv("SINOCLAW_HOME", str(tmp_path))
+def _tmp_anan_home(tmp_path, monkeypatch):
+    monkeypatch.setenv("ANAN_HOME", str(tmp_path))
     yield tmp_path
 
 

@@ -1,10 +1,10 @@
 """
-SinoclawAgentBaseEnv -- Abstract Base Environment for Sinoclaw-Agent + Atropos
+AnanAgentBaseEnv -- Abstract Base Environment for Anan-Agent + Atropos
 
-Provides the Atropos integration plumbing that all sinoclaw-agent environments share:
+Provides the Atropos integration plumbing that all anan environments share:
 - Two-mode operation (OpenAI server for Phase 1, VLLM ManagedServer for Phase 2)
 - Per-group toolset/distribution resolution
-- Agent loop orchestration via SinoclawAgentLoop
+- Agent loop orchestration via AnanAgentLoop
 - ToolContext creation for reward functions
 - ScoredDataGroup construction from ManagedServer state
 
@@ -26,7 +26,7 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-# Ensure the sinoclaw-agent repo root is on sys.path so that imports like
+# Ensure the anan repo root is on sys.path so that imports like
 # `from model_tools import ...` and `from environments.X import ...` work
 # regardless of where the script is invoked from.
 _repo_root = Path(__file__).resolve().parent.parent
@@ -36,7 +36,7 @@ if str(_repo_root) not in sys.path:
 from dotenv import load_dotenv
 from pydantic import Field
 
-# Load API keys from sinoclaw-agent/.env so all environments can access them
+# Load API keys from anan/.env so all environments can access them
 _env_path = _repo_root / ".env"
 if _env_path.exists():
     load_dotenv(dotenv_path=_env_path)
@@ -60,7 +60,7 @@ from atroposlib.envs.server_handling.server_manager import (
 )
 from atroposlib.type_definitions import Item
 
-from environments.agent_loop import AgentResult, SinoclawAgentLoop
+from environments.agent_loop import AgentResult, AnanAgentLoop
 from environments.tool_context import ToolContext
 from tools.budget_config import (
     DEFAULT_RESULT_SIZE_CHARS,
@@ -68,16 +68,16 @@ from tools.budget_config import (
     DEFAULT_PREVIEW_SIZE_CHARS,
 )
 
-# Import sinoclaw-agent toolset infrastructure
+# Import anan toolset infrastructure
 from model_tools import get_tool_definitions
 from toolset_distributions import sample_toolsets_from_distribution
 
 logger = logging.getLogger(__name__)
 
 
-class SinoclawAgentEnvConfig(BaseEnvConfig):
+class AnanAgentEnvConfig(BaseEnvConfig):
     """
-    Configuration for sinoclaw-agent Atropos environments.
+    Configuration for anan Atropos environments.
 
     Extends BaseEnvConfig with agent-specific settings for toolsets,
     terminal backend, dataset loading, and tool call parsing.
@@ -87,7 +87,7 @@ class SinoclawAgentEnvConfig(BaseEnvConfig):
     # Mutually exclusive: use either enabled_toolsets OR distribution
     enabled_toolsets: Optional[List[str]] = Field(
         default=None,
-        description="Explicit list of sinoclaw toolsets to enable (e.g., ['terminal', 'file', 'web']). "
+        description="Explicit list of anan toolsets to enable (e.g., ['terminal', 'file', 'web']). "
         "If None and distribution is also None, all available toolsets are enabled.",
     )
     disabled_toolsets: Optional[List[str]] = Field(
@@ -170,7 +170,7 @@ class SinoclawAgentEnvConfig(BaseEnvConfig):
     default_result_size_chars: int = Field(
         default=DEFAULT_RESULT_SIZE_CHARS,
         description="Default per-tool threshold (chars) for persisting large results "
-        "to sandbox. Results exceeding this are written to /tmp/sinoclaw-results/ "
+        "to sandbox. Results exceeding this are written to /tmp/anan-results/ "
         "and replaced with a preview. Per-tool registry values take precedence "
         "unless overridden via tool_result_overrides.",
     )
@@ -218,9 +218,9 @@ class SinoclawAgentEnvConfig(BaseEnvConfig):
         )
 
 
-class SinoclawAgentBaseEnv(BaseEnv):
+class AnanAgentBaseEnv(BaseEnv):
     """
-    Abstract base environment for sinoclaw-agent Atropos integration.
+    Abstract base environment for anan Atropos integration.
 
     Handles two modes of operation:
     - Phase 1 (OpenAI server type): Uses server.chat_completion() directly.
@@ -240,19 +240,19 @@ class SinoclawAgentBaseEnv(BaseEnv):
         evaluate()        -- Periodic evaluation
     """
 
-    name: Optional[str] = "sinoclaw-agent"
-    env_config_cls = SinoclawAgentEnvConfig
+    name: Optional[str] = "anan"
+    env_config_cls = AnanAgentEnvConfig
 
     def __init__(
         self,
-        config: SinoclawAgentEnvConfig,
+        config: AnanAgentEnvConfig,
         server_configs: Union[ServerBaseline, List[APIServerConfig]],
         slurm=False,
         testing=False,
     ):
         super().__init__(config, server_configs, slurm, testing)
 
-        # Set terminal environment variables so sinoclaw tools pick them up.
+        # Set terminal environment variables so anan tools pick them up.
         # These can all be overridden per-environment via config fields instead
         # of requiring users to set shell env vars.
         if config.terminal_backend:
@@ -522,7 +522,7 @@ class SinoclawAgentBaseEnv(BaseEnv):
                     tokenizer=self.tokenizer,
                     preserve_think_blocks=bool(self.config.thinking_mode),
                 ) as managed:
-                    agent = SinoclawAgentLoop(
+                    agent = AnanAgentLoop(
                         server=managed,
                         tool_schemas=tools,
                         valid_tool_names=valid_names,
@@ -540,7 +540,7 @@ class SinoclawAgentBaseEnv(BaseEnv):
                     "ManagedServer not available (OpenAI server?). "
                     "Falling back to direct server mode."
                 )
-                agent = SinoclawAgentLoop(
+                agent = AnanAgentLoop(
                     server=self.server,
                     tool_schemas=tools,
                     valid_tool_names=valid_names,
@@ -554,7 +554,7 @@ class SinoclawAgentBaseEnv(BaseEnv):
                 result = await agent.run(messages)
         else:
             # Phase 1: OpenAI server -- native tool_calls, placeholder tokens
-            agent = SinoclawAgentLoop(
+            agent = AnanAgentLoop(
                 server=self.server,
                 tool_schemas=tools,
                 valid_tool_names=valid_names,
@@ -689,7 +689,7 @@ class SinoclawAgentBaseEnv(BaseEnv):
         Score the rollout. Has full access to:
         - item: the original dataset item (ground truth, test commands, etc.)
         - result: AgentResult with full messages, turn count, reasoning, etc.
-        - ctx: ToolContext -- call ANY sinoclaw-agent tool (terminal, file, web,
+        - ctx: ToolContext -- call ANY anan tool (terminal, file, web,
                browser, vision...) scoped to this rollout's sandbox. Nothing
                is off-limits.
 

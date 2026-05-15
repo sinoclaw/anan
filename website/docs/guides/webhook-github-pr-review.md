@@ -36,7 +36,7 @@ Webhook payloads contain attacker-controlled data — PR titles, commit messages
 
 ## Step 1 — Enable the webhook platform
 
-Add the following to your `~/.sinoclaw/config.yaml`:
+Add the following to your `~/.anan/config.yaml`:
 
 ```yaml
 platforms:
@@ -88,7 +88,7 @@ platforms:
 | `deliver_extra.pr_number` | Resolves to the PR number from the payload. |
 
 :::note The payload does not contain code
-The GitHub webhook payload includes PR metadata (title, description, branch names, URLs) but **not the diff**. The prompt above instructs the agent to run `gh pr diff` to fetch the actual changes. The `terminal` tool is included in the default `sinoclaw-webhook` toolset, so no extra configuration is needed.
+The GitHub webhook payload includes PR metadata (title, description, branch names, URLs) but **not the diff**. The prompt above instructs the agent to run `gh pr diff` to fetch the actual changes. The `terminal` tool is included in the default `anan-webhook` toolset, so no extra configuration is needed.
 :::
 
 ---
@@ -135,7 +135,7 @@ Create a branch, push a change, and open a PR. Within 30–90 seconds (depending
 To follow the agent's progress in real time:
 
 ```bash
-tail -f "${SINOCLAW_HOME:-$HOME/.hermes}/logs/gateway.log"
+tail -f "${ANAN_HOME:-$HOME/.hermes}/logs/gateway.log"
 ```
 
 ---
@@ -171,7 +171,7 @@ curl -s -X POST http://localhost:8644/webhooks/github-pr-review \
 
 Then watch the agent run:
 ```bash
-tail -f "${SINOCLAW_HOME:-$HOME/.hermes}/logs/gateway.log"
+tail -f "${ANAN_HOME:-$HOME/.hermes}/logs/gateway.log"
 ```
 
 :::note

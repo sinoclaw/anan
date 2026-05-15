@@ -57,19 +57,19 @@ If that is not solid yet, fix text mode first.
 ### CLI microphone + playback
 
 ```bash
-pip install "sinoclaw-agent[voice]"
+pip install "anan[voice]"
 ```
 
 ### Messaging platforms
 
 ```bash
-pip install "sinoclaw-agent[messaging]"
+pip install "anan[messaging]"
 ```
 
 ### Premium ElevenLabs TTS
 
 ```bash
-pip install "sinoclaw-agent[tts-premium]"
+pip install "anan[tts-premium]"
 ```
 
 ### Local NeuTTS (optional)
@@ -81,7 +81,7 @@ python -m pip install -U neutts[all]
 ### Everything
 
 ```bash
-pip install "sinoclaw-agent[all]"
+pip install "anan[all]"
 ```
 
 ## Step 3: install system dependencies
@@ -120,7 +120,7 @@ This is usually the best place to start.
 
 ### Environment file example
 
-Add to `~/.sinoclaw/.env`:
+Add to `~/.anan/.env`:
 
 ```bash
 # Cloud STT options (local needs no key)
@@ -440,7 +440,7 @@ By default, the bot needs an `@mention` in Discord server text channels unless c
 If you want the shortest path to success:
 
 1. get text Hermes working
-2. install `sinoclaw-agent[voice]`
+2. install `anan[voice]`
 3. use CLI voice mode with local STT + Edge TTS
 4. then enable `/voice on` in Telegram or Discord
 5. only after that, try Discord VC mode

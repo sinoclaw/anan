@@ -45,9 +45,9 @@ Teams cannot deliver messages to `localhost`. For local development, use any tun
 
 ```bash
 # devtunnel (Microsoft)
-devtunnel create sinoclaw-bot --allow-anonymous
-devtunnel port create sinoclaw-bot -p 3978 --protocol https  # replace 3978 with TEAMS_PORT if changed
-devtunnel host sinoclaw-bot
+devtunnel create anan-bot --allow-anonymous
+devtunnel port create anan-bot -p 3978 --protocol https  # replace 3978 with TEAMS_PORT if changed
+devtunnel host anan-bot
 
 # ngrok
 ngrok http 3978  # replace 3978 with TEAMS_PORT if changed
@@ -76,7 +76,7 @@ The CLI outputs your `CLIENT_ID`, `CLIENT_SECRET`, and `TENANT_ID`, plus an inst
 
 ## Step 4: Configure Environment Variables
 
-Add to `~/.sinoclaw/.env`:
+Add to `~/.anan/.env`:
 
 ```bash
 # Required
@@ -138,7 +138,7 @@ Open the printed link in your browser — it opens directly in the Teams client.
 
 ### config.yaml
 
-Alternatively, configure via `~/.sinoclaw/config.yaml`:
+Alternatively, configure via `~/.anan/config.yaml`:
 
 ```yaml
 platforms:
@@ -226,9 +226,9 @@ Make sure your configured port (`TEAMS_PORT`, default `3978`) is reachable from 
 | `health` endpoint works but bot doesn't respond | Check that your tunnel is still running and the bot's messaging endpoint matches the tunnel URL |
 | `KeyError: 'teams'` in logs | Restart the container — this is fixed in the current version |
 | Bot responds with auth errors | Verify `TEAMS_CLIENT_ID`, `TEAMS_CLIENT_SECRET`, and `TEAMS_TENANT_ID` are all set correctly |
-| `No inference provider configured` | Check that `ANTHROPIC_API_KEY` (or another provider key) is set in `~/.sinoclaw/.env` |
+| `No inference provider configured` | Check that `ANTHROPIC_API_KEY` (or another provider key) is set in `~/.anan/.env` |
 | Bot receives messages but ignores them | Your AAD object ID may not be in `TEAMS_ALLOWED_USERS`. Run `teams status --verbose` to find it |
-| Tunnel URL changes on restart | devtunnel URLs are persistent if you use a named tunnel (`devtunnel create sinoclaw-bot`). ngrok and cloudflared generate a new URL each run unless you have a paid plan — update the bot endpoint with `teams app update` when it changes |
+| Tunnel URL changes on restart | devtunnel URLs are persistent if you use a named tunnel (`devtunnel create anan-bot`). ngrok and cloudflared generate a new URL each run unless you have a paid plan — update the bot endpoint with `teams app update` when it changes |
 | Teams shows "This bot is not responding" | The webhook returned an error. Check `docker logs hermes` for tracebacks |
 | `[teams] Failed to connect` in logs | The SDK failed to authenticate. Double-check your credentials and that the tenant ID matches the account you used in `teams login` |
 
@@ -242,7 +242,7 @@ Make sure your configured port (`TEAMS_PORT`, default `3978`) is reachable from 
 Treat `TEAMS_CLIENT_SECRET` like a password — rotate it periodically via the Azure portal or Teams CLI.
 :::
 
-- Store credentials in `~/.sinoclaw/.env` with permissions `600` (`chmod 600 ~/.sinoclaw/.env`)
+- Store credentials in `~/.anan/.env` with permissions `600` (`chmod 600 ~/.anan/.env`)
 - The bot only accepts messages from users in `TEAMS_ALLOWED_USERS`; unauthorized messages are silently dropped
 - Your public endpoint (`/api/messages`) is authenticated by the Teams Bot Framework — requests without valid JWTs are rejected
 

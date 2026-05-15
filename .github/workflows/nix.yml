@@ -47,9 +47,9 @@ jobs:
           # The nix-daemon caches .drv files whose embedded npm-deps path is
           # inconsistent with the current package-lock.json.  Delete the known
           # stale .drv so the next build re-evaluates from scratch.
-          echo "Removing stale .drv for sinoclaw-web..."
-          nix store delete /nix/store/svzhdhdpc7h2w6d5gasipsbwrxgfm4b3-sinoclaw-web-0.0.0.drv 2>/dev/null || true
-          nix store delete /nix/store/9fjplxw0zriwvbwcn0pdk92hmhf728cc-sinoclaw-agent-0.13.0.drv 2>/dev/null || true
+          echo "Removing stale .drv for anan-web..."
+          nix store delete /nix/store/svzhdhdpc7h2w6d5gasipsbwrxgfm4b3-anan-web-0.0.0.drv 2>/dev/null || true
+          nix store delete /nix/store/9fjplxw0zriwvbwcn0pdk92hmhf728cc-anan-0.13.0.drv 2>/dev/null || true
           echo "Done"
 
       - name: Build package

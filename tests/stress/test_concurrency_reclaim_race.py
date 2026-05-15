@@ -38,11 +38,11 @@ WORK_DURATION_S = 2.0  # longer than TTL => reclaimer wins
 WT = str(Path(__file__).resolve().parents[2])
 
 
-def worker_loop(worker_id: int, sinoclaw_home: str, result_file: str) -> None:
-    os.environ["SINOCLAW_HOME"] = sinoclaw_home
-    os.environ["HOME"] = sinoclaw_home
+def worker_loop(worker_id: int, anan_home: str, result_file: str) -> None:
+    os.environ["ANAN_HOME"] = anan_home
+    os.environ["HOME"] = anan_home
     sys.path.insert(0, WT)
-    from sinoclaw_cli import kanban_db as kb
+    from anan_cli import kanban_db as kb
 
     events = []
     start = time.monotonic()
@@ -95,11 +95,11 @@ def worker_loop(worker_id: int, sinoclaw_home: str, result_file: str) -> None:
         json.dump(events, f)
 
 
-def reclaimer_loop(sinoclaw_home: str, result_file: str) -> None:
-    os.environ["SINOCLAW_HOME"] = sinoclaw_home
-    os.environ["HOME"] = sinoclaw_home
+def reclaimer_loop(anan_home: str, result_file: str) -> None:
+    os.environ["ANAN_HOME"] = anan_home
+    os.environ["HOME"] = anan_home
     sys.path.insert(0, WT)
-    from sinoclaw_cli import kanban_db as kb
+    from anan_cli import kanban_db as kb
 
     events = []
     start = time.monotonic()
@@ -122,10 +122,10 @@ def reclaimer_loop(sinoclaw_home: str, result_file: str) -> None:
 
 def main():
     home = tempfile.mkdtemp(prefix="sinoclaw_reclaim_race_")
-    os.environ["SINOCLAW_HOME"] = home
+    os.environ["ANAN_HOME"] = home
     os.environ["HOME"] = home
     sys.path.insert(0, WT)
-    from sinoclaw_cli import kanban_db as kb
+    from anan_cli import kanban_db as kb
 
     kb.init_db()
     conn = kb.connect()

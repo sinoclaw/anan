@@ -30,7 +30,7 @@ import re
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from sinoclaw_constants import get_sinoclaw_home
+from anan_constants import get_anan_home
 from typing import Dict, Any, List, Optional
 
 from utils import atomic_replace
@@ -49,12 +49,12 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Where memory files live — resolved dynamically so profile overrides
-# (SINOCLAW_HOME env var changes) are always respected.  The old module-level
+# (ANAN_HOME env var changes) are always respected.  The old module-level
 # constant was cached at import time and could go stale if a profile switch
 # happened after the first import.
 def get_memory_dir() -> Path:
     """Return the profile-scoped memories directory."""
-    return get_sinoclaw_home() / "memories"
+    return get_anan_home() / "memories"
 
 ENTRY_DELIMITER = "\n§\n"
 
@@ -79,7 +79,7 @@ _MEMORY_THREAT_PATTERNS = [
     # Persistence via shell rc
     (r'authorized_keys', "ssh_backdoor"),
     (r'\$HOME/\.ssh|\~/\.ssh', "ssh_access"),
-    (r'\$HOME/\.sinoclaw/\.env|\~/.sinoclaw/\.env', "sinoclaw_env"),
+    (r'\$HOME/\.anan/\.env|\~/.anan/\.env', "anan_env"),
 ]
 
 # Subset of invisible chars for injection detection

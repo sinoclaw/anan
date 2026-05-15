@@ -300,13 +300,13 @@ class HeartbeatConfig:
     """Heartbeat plugin configuration."""
     enabled: bool = True
     interval_ms: int = DEFAULT_INTERVAL_MS
-    scheduler_seed: str = "sinoclaw-heartbeat-v1"
+    scheduler_seed: str = "anan-heartbeat-v1"
     flood_window_ms: int = DEFAULT_FLOOD_WINDOW_MS
     flood_threshold: int = DEFAULT_FLOOD_THRESHOLD
     min_spacing_ms: int = DEFAULT_MIN_SPACING_MS
     ack_max_chars: int = DEFAULT_ACK_MAX_CHARS
     active_hours: Optional[Dict[str, str]] = None
-    state_file: str = "~/.sinoclaw/heartbeat-state.json"
+    state_file: str = "~/.anan/heartbeat-state.json"
     
     # Per-agent configs
     agent_configs: Dict[str, Dict[str, Any]] = field(default_factory=dict)

@@ -1,4 +1,4 @@
-# nix/sinoclaw-agent.nix — Overridable Sinoclaw Agent package
+# nix/sinoclaw-agent.nix — Overridable Anan Agent package
 #
 # callPackage auto-wires nixpkgs args; flake inputs are passed explicitly.
 # Users override via: pkgs.sinoclaw-agent.override { extraPythonPackages = [...]; }
@@ -158,7 +158,7 @@ stdenv.mkDerivation {
       [
         "sinoclaw-agent"
         "sinoclaw-acp"
-        "sinoclaw"
+        "anan"
       ]
     }
 

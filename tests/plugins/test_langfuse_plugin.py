@@ -48,12 +48,12 @@ class TestManifest:
 class TestDiscovery:
     def test_plugin_is_discovered_as_standalone_opt_in(self, tmp_path, monkeypatch):
         """Scanner should find the plugin but NOT load it by default."""
-        from sinoclaw_cli import plugins as plugins_mod
+        from anan_cli import plugins as plugins_mod
 
-        # Isolated SINOCLAW_HOME so we don't read the developer's config.yaml.
+        # Isolated ANAN_HOME so we don't read the developer's config.yaml.
         home = tmp_path / ".sinoclaw"
         home.mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(home))
+        monkeypatch.setenv("ANAN_HOME", str(home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
         manager = plugins_mod.PluginManager()
@@ -124,7 +124,7 @@ class TestRuntimeGate:
             "it should short-circuit via _INIT_FAILED"
         )
 
-    def test_get_langfuse_does_not_import_sinoclaw_config(self, monkeypatch):
+    def test_get_langfuse_does_not_import_anan_config(self, monkeypatch):
         """The plugin must not re-read config.yaml per hook."""
         for k in (
             "SINOCLAW_LANGFUSE_PUBLIC_KEY", "SINOCLAW_LANGFUSE_SECRET_KEY",
@@ -132,15 +132,15 @@ class TestRuntimeGate:
         ):
             monkeypatch.delenv(k, raising=False)
 
-        # Drop any cached import of sinoclaw_cli.config.
-        sys.modules.pop("sinoclaw_cli.config", None)
+        # Drop any cached import of anan_cli.config.
+        sys.modules.pop("anan_cli.config", None)
 
         langfuse_plugin = self._fresh_plugin()
         for _ in range(20):
             langfuse_plugin._get_langfuse()
 
-        assert "sinoclaw_cli.config" not in sys.modules, (
-            "langfuse plugin imported sinoclaw_cli.config — regression toward "
+        assert "anan_cli.config" not in sys.modules, (
+            "langfuse plugin imported anan_cli.config — regression toward "
             "the rejected per-hook load_config() design"
         )
 

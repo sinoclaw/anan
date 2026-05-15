@@ -27,16 +27,16 @@ from pathlib import Path
 import fire
 import yaml
 
-from sinoclaw_constants import OPENROUTER_BASE_URL, get_sinoclaw_home
+from anan_constants import OPENROUTER_BASE_URL, get_anan_home
 
-# Load .env from ~/.sinoclaw/.env first, then project root as dev fallback.
+# Load .env from ~/.anan/.env first, then project root as dev fallback.
 # User-managed env files should override stale shell exports on restart.
-_sinoclaw_home = get_sinoclaw_home()
+_anan_home = get_anan_home()
 _project_env = Path(__file__).parent / '.env'
 
-from sinoclaw_cli.env_loader import load_sinoclaw_dotenv
+from anan_cli.env_loader import load_anan_dotenv
 
-_loaded_env_paths = load_sinoclaw_dotenv(sinoclaw_home=_sinoclaw_home, project_env=_project_env)
+_loaded_env_paths = load_anan_dotenv(anan_home=_anan_home, project_env=_project_env)
 for _env_path in _loaded_env_paths:
     print(f"✅ Loaded environment variables from {_env_path}")
 
@@ -48,7 +48,7 @@ if tinker_atropos_dir.exists():
     os.environ['SINOCLAW_QUIET'] = '1'  # Disable temp subdirectory creation
     print(f"📂 Terminal working directory: {tinker_atropos_dir}")
 else:
-    # Fall back to sinoclaw-agent directory if submodule not found
+    # Fall back to anan directory if submodule not found
     os.environ['TERMINAL_CWD'] = str(Path(__file__).parent)
     os.environ['SINOCLAW_QUIET'] = '1'
     print(f"⚠️  tinker-atropos submodule not found, using: {Path(__file__).parent}")
@@ -66,14 +66,14 @@ DEFAULT_MODEL = "anthropic/claude-opus-4.5"
 DEFAULT_BASE_URL = OPENROUTER_BASE_URL
 
 
-def load_sinoclaw_config() -> dict:
+def load_anan_config() -> dict:
     """
-    Load configuration from ~/.sinoclaw/config.yaml.
+    Load configuration from ~/.anan/config.yaml.
     
     Returns:
         dict: Configuration with model, base_url, etc.
     """
-    config_path = _sinoclaw_home / 'config.yaml'
+    config_path = _anan_home / 'config.yaml'
     
     config = {
         "model": DEFAULT_MODEL,
@@ -249,7 +249,7 @@ def main(
     
     Args:
         task: The training task/goal (e.g., "Train a model on GSM8k for math")
-        model: Model to use for the agent (reads from ~/.sinoclaw/config.yaml if not provided)
+        model: Model to use for the agent (reads from ~/.anan/config.yaml if not provided)
         api_key: OpenRouter API key (uses OPENROUTER_API_KEY env var if not provided)
         base_url: API base URL (reads from config or defaults to OpenRouter)
         max_iterations: Maximum agent iterations (default: 200 for long workflows)
@@ -272,8 +272,8 @@ def main(
         # Check server status
         python rl_cli.py --check-server
     """
-    # Load config from ~/.sinoclaw/config.yaml
-    config = load_sinoclaw_config()
+    # Load config from ~/.anan/config.yaml
+    config = load_anan_config()
     
     # Use config values if not explicitly provided
     if model is None:
@@ -297,7 +297,7 @@ def main(
             missing = get_missing_keys()
             if missing:
                 print(f"\n⚠️  Missing API keys: {', '.join(missing)}")
-                print("   Add them to ~/.sinoclaw/.env")
+                print("   Add them to ~/.anan/.env")
             else:
                 print("✅ API keys configured")
         else:

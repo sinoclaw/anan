@@ -12,8 +12,8 @@ Sinoclaw Agent automatically saves every conversation as a session. Sessions ena
 
 Every conversation — whether from the CLI, Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Teams, or any other messaging platform — is stored as a session with full message history. Sessions are tracked in two complementary systems:
 
-1. **SQLite database** (`~/.sinoclaw/state.db`) — structured session metadata with FTS5 full-text search
-2. **JSONL transcripts** (`~/.sinoclaw/sessions/`) — raw conversation transcripts including tool calls (gateway)
+1. **SQLite database** (`~/.anan/state.db`) — structured session metadata with FTS5 full-text search
+2. **JSONL transcripts** (`~/.anan/sessions/`) — raw conversation transcripts including tool calls (gateway)
 
 The SQLite database stores:
 - Session ID, source platform, user ID
@@ -116,7 +116,7 @@ The recap:
 - **Caps** at the last 10 exchanges with a "... N earlier messages ..." indicator
 - Uses **dim styling** to distinguish from the active conversation
 
-To disable the recap and keep the minimal one-liner behavior, set in `~/.sinoclaw/config.yaml`:
+To disable the recap and keep the minimal one-liner behavior, set in `~/.anan/config.yaml`:
 
 ```yaml
 display:
@@ -366,9 +366,9 @@ Sessions with **active background processes** are never auto-reset, regardless o
 
 | What | Path | Description |
 |------|------|-------------|
-| SQLite database | `~/.sinoclaw/state.db` | All session metadata + messages with FTS5 |
-| Gateway transcripts | `~/.sinoclaw/sessions/` | JSONL transcripts per session + sessions.json index |
-| Gateway index | `~/.sinoclaw/sessions/sessions.json` | Maps session keys to active session IDs |
+| SQLite database | `~/.anan/state.db` | All session metadata + messages with FTS5 |
+| Gateway transcripts | `~/.anan/sessions/` | JSONL transcripts per session + sessions.json index |
+| Gateway index | `~/.anan/sessions/sessions.json` | Maps session keys to active session IDs |
 
 The SQLite database uses WAL mode for concurrent readers and a single writer, which suits the gateway's multi-platform architecture well.
 
@@ -388,9 +388,9 @@ Key tables in `state.db`:
 - Before reset, the agent saves memories and skills from the expiring session
 - Opt-in auto-pruning: when `sessions.auto_prune` is `true`, ended sessions older than `sessions.retention_days` (default 90) are pruned at CLI/gateway startup
 - After a prune that actually removed rows, `state.db` is `VACUUM`ed to reclaim disk space (SQLite does not shrink the file on plain DELETE)
-- Pruning runs at most once per `sessions.min_interval_hours` (default 24); the last-run timestamp is tracked inside `state.db` itself so it's shared across every Hermes process in the same `SINOCLAW_HOME`
+- Pruning runs at most once per `sessions.min_interval_hours` (default 24); the last-run timestamp is tracked inside `state.db` itself so it's shared across every Hermes process in the same `ANAN_HOME`
 
-Default is **off** — session history is valuable for `session_search` recall, and silently deleting it could surprise users. Enable in `~/.sinoclaw/config.yaml`:
+Default is **off** — session history is valuable for `session_search` recall, and silently deleting it could surprise users. Enable in `~/.anan/config.yaml`:
 
 ```yaml
 sessions:

@@ -2,7 +2,7 @@
 # Kill all running Modal apps (sandboxes, deployments, etc.)
 #
 # Usage:
-#   bash scripts/kill_modal.sh          # Stop sinoclaw-agent sandboxes
+#   bash scripts/kill_modal.sh          # Stop anan sandboxes
 #   bash scripts/kill_modal.sh --all    # Stop ALL Modal apps
 
 set -uo pipefail
@@ -17,10 +17,10 @@ if [[ "${1:-}" == "--all" ]]; then
         modal app stop "$app_id" 2>/dev/null || true
     done
 else
-    echo "Stopping sinoclaw-agent sandboxes..."
-    APPS=$(echo "$APP_LIST" | grep 'sinoclaw-agent' | grep -oE 'ap-[A-Za-z0-9]+' || true)
+    echo "Stopping anan sandboxes..."
+    APPS=$(echo "$APP_LIST" | grep 'anan' | grep -oE 'ap-[A-Za-z0-9]+' || true)
     if [[ -z "$APPS" ]]; then
-        echo "  No sinoclaw-agent apps found."
+        echo "  No anan apps found."
     else
         echo "$APPS" | while read app_id; do
             echo "  Stopping $app_id"
@@ -30,5 +30,5 @@ else
 fi
 
 echo ""
-echo "Current sinoclaw-agent status:"
-modal app list 2>/dev/null | grep -E 'State|sinoclaw-agent' || echo "  (none)"
+echo "Current anan status:"
+modal app list 2>/dev/null | grep -E 'State|anan' || echo "  (none)"

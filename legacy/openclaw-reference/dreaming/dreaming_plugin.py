@@ -139,11 +139,11 @@ CONCEPT_STOP_WORDS = {
 
 REM_REFLECTION_TAG_BLACKLIST = {
     "agent", "assistant", "chat", "conversation", "gateway", "install", "message",
-    "model", "openclaw", "plugin", "session", "sinoclaw", "tool", "user", "workspace",
+    "model", "openclaw", "plugin", "session", "anan", "tool", "user", "workspace",
 }
 
 # Sinoclaw state DB path
-DEFAULT_STATE_DB_PATH = Path("~/.sinoclaw/state.db").expanduser()
+DEFAULT_STATE_DB_PATH = Path("~/.anan/state.db").expanduser()
 
 
 # ---------------------------------------------------------------------------
@@ -207,7 +207,7 @@ class DreamingConfig:
 # Sinoclaw SessionDB integration
 # ---------------------------------------------------------------------------
 
-class SinoclawSessionDB:
+class AnanSessionDB:
     """Read-only wrapper for Sinoclaw's SQLite session database.
     
     Uses the same state.db as the gateway, with proper locking.
@@ -1131,7 +1131,7 @@ async def _ingest_session_signals_from_db(
 ) -> List[str]:
     """Ingest signals from Sinoclaw's SQLite session database."""
     try:
-        session_db = SinoclawSessionDB()
+        session_db = AnanSessionDB()
     except Exception as e:
         logger.warning(f"dreaming: failed to connect to session DB: {e}")
         return ["- Session DB unavailable."]

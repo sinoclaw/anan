@@ -3,24 +3,24 @@ label: IRC
 kind: platform
 version: 1.0.0
 description: >
-  IRC gateway adapter for Sinoclaw Agent.
+  IRC gateway adapter for Anan Agent.
   Connects to an IRC server and relays messages between an IRC channel
-  (or DMs) and the Sinoclaw agent.  No external dependencies — uses
+  (or DMs) and the Anan agent.  No external dependencies — uses
   Python's stdlib asyncio for the IRC protocol.
-author: Sinoclaw Team
-# ``requires_env`` entries are surfaced in ``sinoclaw config`` UI via the
-# platform-plugin env var injector in ``sinoclaw_cli/config.py``.
+author: Anan Team
+# ``requires_env`` entries are surfaced in ``anan config`` UI via the
+# platform-plugin env var injector in ``anan_cli/config.py``.
 requires_env:
   - name: IRC_SERVER
     description: "IRC server hostname (e.g. irc.libera.chat)"
     prompt: "IRC server"
     password: false
   - name: IRC_CHANNEL
-    description: "Channel to join (e.g. #sinoclaw — comma-separate for multiple)"
+    description: "Channel to join (e.g. #anan — comma-separate for multiple)"
     prompt: "IRC channel"
     password: false
   - name: IRC_NICKNAME
-    description: "Bot nickname on IRC (default: sinoclaw-bot)"
+    description: "Bot nickname on IRC (default: anan-bot)"
     prompt: "Bot nickname"
     password: false
 optional_env:

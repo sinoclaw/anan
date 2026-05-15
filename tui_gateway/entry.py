@@ -2,7 +2,7 @@ import os
 import sys
 
 # Guard against a local utils/ (or other package) in CWD shadowing installed
-# sinoclaw modules.  sinoclaw_cli sets SINOCLAW_PYTHON_SRC_ROOT before spawning this
+# anan modules.  anan_cli sets SINOCLAW_PYTHON_SRC_ROOT before spawning this
 # subprocess; inserting it first ensures the installed packages win.
 _src_root = os.environ.get("SINOCLAW_PYTHON_SRC_ROOT", "")
 if _src_root and _src_root not in sys.path:
@@ -146,7 +146,7 @@ def _log_signal(signum: int, frame) -> None:
 #
 # SIGPIPE and SIGHUP don't exist on Windows; guard each installation
 # with hasattr so ``python -m tui_gateway.entry`` (spawned by
-# ``sinoclaw --tui``) imports cleanly there.  SIGBREAK (Windows' Ctrl+Break)
+# ``anan --tui``) imports cleanly there.  SIGBREAK (Windows' Ctrl+Break)
 # is installed when available as a weaker equivalent of SIGHUP.
 if hasattr(signal, "SIGPIPE"):
     signal.signal(signal.SIGPIPE, signal.SIG_IGN)
@@ -202,7 +202,7 @@ def main():
     # loaded once by ``_config_mtime`` elsewhere) and only pay the import
     # cost when there's actually MCP work to do.
     try:
-        from sinoclaw_cli.config import read_raw_config
+        from anan_cli.config import read_raw_config
         _mcp_servers = (read_raw_config() or {}).get("mcp_servers")
         _has_mcp_servers = isinstance(_mcp_servers, dict) and len(_mcp_servers) > 0
     except Exception:

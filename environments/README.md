@@ -1,6 +1,6 @@
-# Sinoclaw-Agent Atropos Environments
+# Anan-Agent Atropos Environments
 
-This directory contains the integration layer between **sinoclaw-agent's** tool-calling capabilities and the **Atropos** RL training framework. It provides everything needed to run agentic LLMs through multi-turn tool-calling loops, score their output with arbitrary reward functions, and feed results into Atropos for training or evaluation.
+This directory contains the integration layer between **anan's** tool-calling capabilities and the **Atropos** RL training framework. It provides everything needed to run agentic LLMs through multi-turn tool-calling loops, score their output with arbitrary reward functions, and feed results into Atropos for training or evaluation.
 
 ## Architecture Overview
 
@@ -16,7 +16,7 @@ This directory contains the integration layer between **sinoclaw-agent's** tool-
                     └───────────┬───────────┘
                                 │ inherits
                     ┌───────────┴───────────┐
-                    │  SinoclawAgentBaseEnv    │  sinoclaw_base_env.py
+                    │  AnanAgentBaseEnv    │  anan_base_env.py
                     │  - Terminal backend    │
                     │  - Tool resolution     │
                     │  - Agent loop          │
@@ -39,14 +39,14 @@ This directory contains the integration layer between **sinoclaw-agent's** tool-
 - CLI interface with three subcommands: `serve`, `process`, `evaluate`
 - `evaluate_log()` for saving eval results to JSON + samples.jsonl
 
-**SinoclawAgentBaseEnv** (`sinoclaw_base_env.py`) extends BaseEnv with sinoclaw-agent specifics:
+**AnanAgentBaseEnv** (`anan_base_env.py`) extends BaseEnv with anan specifics:
 - Sets `os.environ["TERMINAL_ENV"]` to configure the terminal backend (local, docker, ssh, singularity, modal, daytona, vercel_sandbox)
-- Resolves sinoclaw-agent toolsets via `_resolve_tools_for_group()` (calls `get_tool_definitions()` which queries `tools/registry.py`)
+- Resolves anan toolsets via `_resolve_tools_for_group()` (calls `get_tool_definitions()` which queries `tools/registry.py`)
 - Implements `collect_trajectory()` which runs the full agent loop and computes rewards
 - Supports two-phase operation (Phase 1: OpenAI server, Phase 2: VLLM ManagedServer)
 - Applies monkey patches for async-safe tool operation at import time
 
-Concrete environments inherit from `SinoclawAgentBaseEnv` and implement:
+Concrete environments inherit from `AnanAgentBaseEnv` and implement:
 - `setup()` -- Load dataset, initialize state
 - `get_next_item()` -- Return the next item for rollout
 - `format_prompt()` -- Convert a dataset item into the user message
@@ -57,7 +57,7 @@ Concrete environments inherit from `SinoclawAgentBaseEnv` and implement:
 
 ### Agent Loop (`agent_loop.py`)
 
-`SinoclawAgentLoop` is the reusable multi-turn agent engine. It runs the same pattern as sinoclaw-agent's `run_agent.py`:
+`AnanAgentLoop` is the reusable multi-turn agent engine. It runs the same pattern as anan's `run_agent.py`:
 
 1. Send messages + tools to the API via `server.chat_completion()`
 2. If the response contains `tool_calls`, execute each one via `handle_function_call()` (which delegates to `tools/registry.py`'s `dispatch()`)
@@ -70,7 +70,7 @@ Returns an `AgentResult` containing the full conversation history, turn count, r
 
 ### Tool Context (`tool_context.py`)
 
-`ToolContext` is a per-rollout handle that gives reward/verification functions direct access to **all** sinoclaw-agent tools, scoped to the rollout's `task_id`. The same `task_id` means the terminal/browser session is the SAME one the model used during its rollout -- all state (files, processes, browser tabs) is preserved.
+`ToolContext` is a per-rollout handle that gives reward/verification functions direct access to **all** anan tools, scoped to the rollout's `task_id`. The same `task_id` means the terminal/browser session is the SAME one the model used during its rollout -- all state (files, processes, browser tabs) is preserved.
 
 ```python
 async def compute_reward(self, item, result, ctx: ToolContext):
@@ -96,12 +96,12 @@ Available methods:
 - **Transfers**: `upload_file()`, `upload_dir()`, `download_file()`, `download_dir()` -- binary-safe file transfers between host and sandbox
 - **Web**: `web_search(query)`, `web_extract(urls)`
 - **Browser**: `browser_navigate(url)`, `browser_snapshot()`
-- **Generic**: `call_tool(name, args)` -- call any sinoclaw-agent tool by name
+- **Generic**: `call_tool(name, args)` -- call any anan tool by name
 - **Cleanup**: `cleanup()` -- release all resources (called automatically after `compute_reward`)
 
 ### Patches (`patches.py`)
 
-**Problem**: Some sinoclaw-agent tools use `asyncio.run()` internally (e.g., the Modal backend). This crashes when called from inside Atropos's event loop because `asyncio.run()` cannot be nested.
+**Problem**: Some anan tools use `asyncio.run()` internally (e.g., the Modal backend). This crashes when called from inside Atropos's event loop because `asyncio.run()` cannot be nested.
 
 **Solution**: `ModalEnvironment` uses a dedicated `_AsyncWorker` background thread with its own event loop. The calling code sees a sync interface, but internally all async Modal SDK calls happen on the worker thread so they don't conflict with Atropos's loop. This is built directly into `tools/environments/modal.py` — no monkey-patching required.
 
@@ -159,14 +159,14 @@ Uses ManagedServer for exact token IDs + logprobs via `/generate`. Client-side t
 environments/
 ├── README.md                     # This file
 ├── __init__.py                   # Package exports
-├── sinoclaw_base_env.py            # Abstract base (SinoclawAgentBaseEnv)
-├── agent_loop.py                 # Multi-turn agent engine (SinoclawAgentLoop)
+├── anan_base_env.py            # Abstract base (AnanAgentBaseEnv)
+├── agent_loop.py                 # Multi-turn agent engine (AnanAgentLoop)
 ├── tool_context.py               # Per-rollout tool access for reward functions
 ├── patches.py                    # Async-safety patches for Modal backend
 │
 ├── tool_call_parsers/            # Phase 2 client-side parsers
 │   ├── __init__.py               # Registry + base class
-│   ├── sinoclaw_parser.py
+│   ├── anan_parser.py
 │   ├── mistral_parser.py
 │   ├── llama_parser.py
 │   ├── qwen_parser.py
@@ -181,8 +181,8 @@ environments/
 ├── terminal_test_env/            # Stack validation environment
 │   └── terminal_test_env.py
 │
-├── sinoclaw_swe_env/               # SWE-bench style training environment
-│   └── sinoclaw_swe_env.py
+├── anan_swe_env/               # SWE-bench style training environment
+│   └── anan_swe_env.py
 │
 └── benchmarks/                   # Evaluation benchmarks
     ├── terminalbench_2/          # 89 terminal tasks, Modal sandboxes
@@ -209,12 +209,12 @@ python environments/terminal_test_env/terminal_test_env.py process \
     --env.data_path_to_save_groups terminal_test_output.jsonl
 ```
 
-### HermesSweEnv (`sinoclaw_swe_env/`)
+### HermesSweEnv (`anan_swe_env/`)
 
 SWE-bench style training environment. The model gets a coding task, uses terminal + file + web tools to solve it, and the reward function runs tests in the same Modal sandbox.
 
 ```bash
-python environments/sinoclaw_swe_env/sinoclaw_swe_env.py serve \
+python environments/anan_swe_env/anan_swe_env.py serve \
     --openai.model_name YourModel \
     --env.dataset_name bigcode/humanevalpack \
     --env.terminal_backend modal
@@ -251,16 +251,16 @@ python environments/benchmarks/terminalbench_2/terminalbench2_env.py evaluate \
 ### Training Environment
 
 1. Create a new directory under `environments/`
-2. Create your env file inheriting from `SinoclawAgentBaseEnv`
+2. Create your env file inheriting from `AnanAgentBaseEnv`
 3. Implement the four abstract methods + `evaluate()`
 
 ```python
-from environments.sinoclaw_base_env import SinoclawAgentBaseEnv, SinoclawAgentEnvConfig
+from environments.anan_base_env import AnanAgentBaseEnv, AnanAgentEnvConfig
 
-class MyEnvConfig(SinoclawAgentEnvConfig):
+class MyEnvConfig(AnanAgentEnvConfig):
     pass  # Add custom fields as needed
 
-class MyEnv(SinoclawAgentBaseEnv):
+class MyEnv(AnanAgentBaseEnv):
     name = "my-env"
     env_config_cls = MyEnvConfig
 
@@ -303,7 +303,7 @@ if __name__ == "__main__":
 
 For eval benchmarks, follow the pattern in `terminalbench2_env.py`:
 1. Create under `environments/benchmarks/your-benchmark/`
-2. Inherit from `SinoclawAgentBaseEnv`
+2. Inherit from `AnanAgentBaseEnv`
 3. Set eval-only config: `eval_handling=STOP_TRAIN`, `steps_per_eval=1`, `total_steps=1`
 4. Stub the training methods (`collect_trajectories`, `score`)
 5. Implement `rollout_and_score_eval()` and `evaluate()`
@@ -313,7 +313,7 @@ For eval benchmarks, follow the pattern in `terminalbench2_env.py`:
 
 | Field | Description | Default |
 |-------|-------------|---------|
-| `enabled_toolsets` | Which sinoclaw toolsets to enable | `None` (all) |
+| `enabled_toolsets` | Which anan toolsets to enable | `None` (all) |
 | `disabled_toolsets` | Toolsets to disable | `None` |
 | `distribution` | Probabilistic toolset distribution name | `None` |
 | `max_agent_turns` | Max LLM calls per rollout | `30` |

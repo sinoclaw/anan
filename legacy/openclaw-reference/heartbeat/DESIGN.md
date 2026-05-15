@@ -182,7 +182,7 @@ plugins:
   heartbeat:
     enabled: true
     interval_ms: 1800000  # 30分钟
-    scheduler_seed: "sinoclaw-heartbeat-v1"
+    scheduler_seed: "anan-heartbeat-v1"
     flood_window_ms: 60000
     flood_threshold: 5
     min_spacing_ms: 30000
@@ -190,7 +190,7 @@ plugins:
       start: "09:00"
       end: "22:00"
       timezone: "Asia/Shanghai"
-    state_file: "~/.sinoclaw/heartbeat-state.json"
+    state_file: "~/.anan/heartbeat-state.json"
 
 agents:
   main:
@@ -221,7 +221,7 @@ agents:
 
 ## 状态追踪
 
-插件状态保存在 `~/.sinoclaw/heartbeat-state.json`：
+插件状态保存在 `~/.anan/heartbeat-state.json`：
 
 ```json
 {

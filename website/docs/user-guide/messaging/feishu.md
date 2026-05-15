@@ -107,7 +107,7 @@ Select **Feishu / Lark** and fill in the prompts.
 
 ### Option B: Manual Configuration
 
-Add the following to `~/.sinoclaw/.env`:
+Add the following to `~/.anan/.env`:
 
 ```bash
 FEISHU_APP_ID=cli_xxx
@@ -249,7 +249,7 @@ When users click buttons or interact with interactive cards sent by the bot, the
 - The action's `value` payload from the card definition is included as JSON.
 - Card actions are deduplicated with a 15-minute window to prevent double processing.
 
-Gateway-driven update prompts use a native Feishu `Yes` / `No` card instead of falling back to plain text replies. When `sinoclaw update --gateway` needs confirmation, the adapter records the selected answer in Hermes's `.update_response` file and replaces the card inline with a resolved state.
+Gateway-driven update prompts use a native Feishu `Yes` / `No` card instead of falling back to plain text replies. When `anan update --gateway` needs confirmation, the adapter records the selected answer in Hermes's `.update_response` file and replaces the card inline with a resolved state.
 
 Card action events are dispatched with `MessageType.COMMAND`, so they flow through the normal command processing pipeline.
 
@@ -296,7 +296,7 @@ Two policies are available per rule:
 - **`allowlist`** — a static list of users / tenants.
 - **`pairing`** — static list ∪ runtime-approved store. Useful for rollouts where moderators can grant access live.
 
-Rules live in `~/.sinoclaw/feishu_comment_rules.json` (pairing grants in `~/.sinoclaw/feishu_comment_pairing.json`) with mtime-cached hot-reload — edits take effect on the next comment event without restarting the gateway.
+Rules live in `~/.anan/feishu_comment_rules.json` (pairing grants in `~/.anan/feishu_comment_pairing.json`) with mtime-cached hot-reload — edits take effect on the next comment event without restarting the gateway.
 
 CLI:
 
@@ -473,7 +473,7 @@ Groups not listed in `group_rules` fall back to `default_group_policy` (defaults
 
 ## Deduplication
 
-Inbound messages are deduplicated using message IDs with a 24-hour TTL. The dedup state is persisted across restarts to `~/.sinoclaw/feishu_seen_message_ids.json`.
+Inbound messages are deduplicated using message IDs with a 24-hour TTL. The dedup state is persisted across restarts to `~/.anan/feishu_seen_message_ids.json`.
 
 | Setting | Env Var | Default |
 |---------|---------|---------|

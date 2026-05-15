@@ -52,7 +52,7 @@ async def test_sinoclaw_provider_forwards_asend_values(tmp_path, monkeypatch):
 
     assert _SINOCLAW_PROVIDER_CLS is not None, "SDK OAuth types must be available"
 
-    monkeypatch.setenv("SINOCLAW_HOME", str(tmp_path))
+    monkeypatch.setenv("ANAN_HOME", str(tmp_path))
     reset_manager_for_tests()
 
     # Seed a valid-looking token so the SDK's _initialize loads something and
@@ -134,7 +134,7 @@ async def test_sinoclaw_provider_forwards_401_triggers_refresh(tmp_path, monkeyp
 
     assert _SINOCLAW_PROVIDER_CLS is not None
 
-    monkeypatch.setenv("SINOCLAW_HOME", str(tmp_path))
+    monkeypatch.setenv("ANAN_HOME", str(tmp_path))
     reset_manager_for_tests()
 
     storage = SinoclawTokenStorage("srv")

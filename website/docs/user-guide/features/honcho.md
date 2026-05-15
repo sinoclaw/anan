@@ -39,13 +39,13 @@ hermes memory setup    # select "honcho" from the provider list
 Or configure manually:
 
 ```yaml
-# ~/.sinoclaw/config.yaml
+# ~/.anan/config.yaml
 memory:
   provider: honcho
 ```
 
 ```bash
-echo "HONCHO_API_KEY=*** >> ~/.sinoclaw/.env
+echo "HONCHO_API_KEY=*** >> ~/.anan/.env
 ```
 
 Get an API key at [honcho.dev](https://honcho.dev).
@@ -104,7 +104,7 @@ The auto-injected dialectic scales `dialecticReasoningLevel` by query length: +1
 
 ## Configuration Options
 
-Honcho is configured in `~/.honcho/config.json` (global) or `$SINOCLAW_HOME/honcho.json` (profile-local). The setup wizard handles this for you.
+Honcho is configured in `~/.honcho/config.json` (global) or `$ANAN_HOME/honcho.json` (profile-local). The setup wizard handles this for you.
 
 ### Full Config Reference
 
@@ -212,15 +212,15 @@ hermes honcho enable          # Enable Honcho
 hermes honcho disable         # Disable Honcho
 ```
 
-## Migrating from `sinoclaw honcho`
+## Migrating from `anan honcho`
 
-If you previously used the standalone `sinoclaw honcho setup`:
+If you previously used the standalone `anan honcho setup`:
 
 1. Your existing configuration (`honcho.json` or `~/.honcho/config.json`) is preserved
 2. Your server-side data (memories, conclusions, user profiles) is intact
 3. Set `memory.provider: honcho` in config.yaml to reactivate
 
-No re-login or re-setup needed. Run `sinoclaw memory setup` and select "honcho" — the wizard detects your existing config.
+No re-login or re-setup needed. Run `anan memory setup` and select "honcho" — the wizard detects your existing config.
 
 ## Full Documentation
 

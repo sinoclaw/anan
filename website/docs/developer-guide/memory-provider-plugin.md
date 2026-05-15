@@ -43,7 +43,7 @@ class MyMemoryProvider(MemoryProvider):
         """Called once at agent startup.
 
         kwargs always includes:
-          sinoclaw_home (str): Active SINOCLAW_HOME path. Use for storage.
+          anan_home (str): Active ANAN_HOME path. Use for storage.
         """
         self._api_key = os.environ.get("MY_API_KEY", "")
         self._session_id = session_id
@@ -67,8 +67,8 @@ class MyMemoryProvider(MemoryProvider):
 
 | Method | Purpose | Must Implement? |
 |--------|---------|-----------------|
-| `get_config_schema()` | Declare config fields for `sinoclaw memory setup` | **Yes** |
-| `save_config(values, sinoclaw_home)` | Write non-secret config to native location | **Yes** (unless env-var-only) |
+| `get_config_schema()` | Declare config fields for `anan memory setup` | **Yes** |
+| `save_config(values, anan_home)` | Write non-secret config to native location | **Yes** (unless env-var-only) |
 
 ### Optional Hooks
 
@@ -85,7 +85,7 @@ class MyMemoryProvider(MemoryProvider):
 
 ## Config Schema
 
-`get_config_schema()` returns a list of field descriptors used by `sinoclaw memory setup`:
+`get_config_schema()` returns a list of field descriptors used by `anan memory setup`:
 
 ```python
 def get_config_schema(self):
@@ -115,17 +115,17 @@ def get_config_schema(self):
 Fields with `secret: True` and `env_var` go to `.env`. Non-secret fields are passed to `save_config()`.
 
 :::tip Minimal vs Full Schema
-Every field in `get_config_schema()` is prompted during `sinoclaw memory setup`. Providers with many options should keep the schema minimal — only include fields the user **must** configure (API key, required credentials). Document optional settings in a config file reference (e.g. `$SINOCLAW_HOME/myprovider.json`) rather than prompting for them all during setup. This keeps the setup wizard fast while still supporting advanced configuration. See the Supermemory provider for an example — it only prompts for the API key; all other options live in `supermemory.json`.
+Every field in `get_config_schema()` is prompted during `anan memory setup`. Providers with many options should keep the schema minimal — only include fields the user **must** configure (API key, required credentials). Document optional settings in a config file reference (e.g. `$ANAN_HOME/myprovider.json`) rather than prompting for them all during setup. This keeps the setup wizard fast while still supporting advanced configuration. See the Supermemory provider for an example — it only prompts for the API key; all other options live in `supermemory.json`.
 :::
 
 ## Save Config
 
 ```python
-def save_config(self, values: dict, sinoclaw_home: str) -> None:
+def save_config(self, values: dict, anan_home: str) -> None:
     """Write non-secret config to your native location."""
     import json
     from pathlib import Path
-    config_path = Path(sinoclaw_home) / "my-provider.json"
+    config_path = Path(anan_home) / "my-provider.json"
     config_path.write_text(json.dumps(values, indent=2))
 ```
 
@@ -169,15 +169,15 @@ def sync_turn(self, user_content, assistant_content):
 
 ## Profile Isolation
 
-All storage paths **must** use the `sinoclaw_home` kwarg from `initialize()`, not hardcoded `~/.sinoclaw`:
+All storage paths **must** use the `anan_home` kwarg from `initialize()`, not hardcoded `~/.sinoclaw`:
 
 ```python
 # CORRECT — profile-scoped
-from sinoclaw_constants import get_sinoclaw_home
-data_dir = get_sinoclaw_home() / "my-provider"
+from anan_constants import get_anan_home
+data_dir = get_anan_home() / "my-provider"
 
 # WRONG — shared across all profiles
-data_dir = Path("~/.sinoclaw/my-provider").expanduser()
+data_dir = Path("~/.anan/my-provider").expanduser()
 ```
 
 ## Testing

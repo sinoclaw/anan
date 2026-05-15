@@ -198,7 +198,7 @@ async def main() -> None:
     print(f"{_ts()} 📋 SelfModel 当前状态:")
     print(f"     {live.model.summary()}")
 
-    # ── 导出 wisdom 快照（供 sinoclaw_insight_sync 使用）────────────────
+    # ── 导出 wisdom 快照（供 anan_insight_sync 使用）────────────────
     wisdom_file = Path.home() / ".anan" / "wisdom_latest.json"
     wisdom_file.parent.mkdir(parents=True, exist_ok=True)
     wisdom_file.write_text(json.dumps({

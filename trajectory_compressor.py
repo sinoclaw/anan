@@ -45,15 +45,15 @@ from utils import base_url_host_matches, base_url_hostname
 import fire
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn, TimeRemainingColumn
 from rich.console import Console
-from sinoclaw_constants import OPENROUTER_BASE_URL, get_sinoclaw_home
+from anan_constants import OPENROUTER_BASE_URL, get_anan_home
 from agent.retry_utils import jittered_backoff
 
-# Load .env from SINOCLAW_HOME first, then project root as a dev fallback.
-from sinoclaw_cli.env_loader import load_sinoclaw_dotenv
+# Load .env from ANAN_HOME first, then project root as a dev fallback.
+from anan_cli.env_loader import load_anan_dotenv
 
-_sinoclaw_home = get_sinoclaw_home()
+_anan_home = get_anan_home()
 _project_env = Path(__file__).parent / ".env"
-load_sinoclaw_dotenv(sinoclaw_home=_sinoclaw_home, project_env=_project_env)
+load_anan_dotenv(anan_home=_anan_home, project_env=_project_env)
 
 
 def _effective_temperature_for_model(
@@ -391,7 +391,7 @@ class TrajectoryCompressor:
             if client is None:
                 raise RuntimeError(
                     f"Provider '{provider}' is not configured. "
-                    f"Check your API key or run: sinoclaw setup")
+                    f"Check your API key or run: anan setup")
             self.client = None  # Not used directly
             self.async_client = None  # Not used directly
         else:

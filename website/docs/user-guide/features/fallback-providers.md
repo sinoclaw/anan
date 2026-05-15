@@ -29,7 +29,7 @@ sinoclaw fallback
 
 `sinoclaw fallback` reuses the provider picker from `sinoclaw model` — same provider list, same credential prompts, same validation. Press `a` to add a fallback, `↑`/`↓` to reorder, `d` to remove, `q` to save and exit. Changes persist under `model.fallback_providers` in `config.yaml`.
 
-If you'd rather edit the YAML directly, add a `fallback_model` section to `~/.sinoclaw/config.yaml`:
+If you'd rather edit the YAML directly, add a `fallback_model` section to `~/.anan/config.yaml`:
 
 ```yaml
 fallback_model:
@@ -192,7 +192,7 @@ Hermes uses separate lightweight models for side tasks. Each task has its own pr
 | MCP | MCP helper operations | `auxiliary.mcp` |
 | Approval | Smart command-approval classification | `auxiliary.approval` |
 | Title Generation | Session title summaries | `auxiliary.title_generation` |
-| Triage Specifier | `sinoclaw kanban specify` / dashboard ✨ button — fleshes out a one-liner triage task into a real spec | `auxiliary.triage_specifier` |
+| Triage Specifier | `anan kanban specify` / dashboard ✨ button — fleshes out a one-liner triage task into a real spec | `auxiliary.triage_specifier` |
 
 ### Auto-Detection Chain
 

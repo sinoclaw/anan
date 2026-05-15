@@ -2,11 +2,11 @@
 
 from unittest.mock import MagicMock, patch
 
-from cli import SinoclawCLI
+from cli import AnanCLI
 
 
-def _make_cli() -> SinoclawCLI:
-    cli_obj = SinoclawCLI.__new__(SinoclawCLI)
+def _make_cli() -> AnanCLI:
+    cli_obj = AnanCLI.__new__(AnanCLI)
     cli_obj.config = {}
     cli_obj.console = MagicMock()
     cli_obj.agent = None

@@ -96,7 +96,7 @@ Select **Signal** from the platform menu. The wizard will:
 
 ### Manual Configuration
 
-Add to `~/.sinoclaw/.env`:
+Add to `~/.anan/.env`:
 
 ```bash
 # Required

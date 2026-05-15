@@ -1,14 +1,14 @@
-"""langfuse — Sinoclaw plugin for Langfuse observability.
+"""langfuse — Anan plugin for Langfuse observability.
 
-Traces Sinoclaw conversations, LLM calls, and tool usage to Langfuse.
+Traces Anan conversations, LLM calls, and tool usage to Langfuse.
 
-Activation is handled by the Sinoclaw plugin system — standalone plugins only
-load when listed in ``plugins.enabled`` (via ``sinoclaw plugins enable
-observability/langfuse`` or ``sinoclaw tools → Langfuse Observability``). At
+Activation is handled by the Anan plugin system — standalone plugins only
+load when listed in ``plugins.enabled`` (via ``anan plugins enable
+observability/langfuse`` or ``anan tools → Langfuse Observability``). At
 runtime the plugin also requires the ``langfuse`` SDK and credentials; if
 either is missing the hooks are inert.
 
-Required env vars (set via ``sinoclaw tools`` or ~/.sinoclaw/.env):
+Required env vars (set via ``anan tools`` or ~/.anan/.env):
   SINOCLAW_LANGFUSE_PUBLIC_KEY  - Langfuse project public key (pk-lf-...)
   SINOCLAW_LANGFUSE_SECRET_KEY  - Langfuse project secret key (sk-lf-...)
   SINOCLAW_LANGFUSE_BASE_URL    - Langfuse server URL (default: https://cloud.langfuse.com)
@@ -89,7 +89,7 @@ _INIT_FAILED = object()
 def _get_langfuse() -> Optional[Langfuse]:
     """Return a cached Langfuse client, or ``None`` if unavailable.
 
-    Activation of this plugin is controlled by the Sinoclaw plugin system —
+    Activation of this plugin is controlled by the Anan plugin system —
     this function only handles the runtime-availability gate (SDK installed
     + credentials present). The result is cached: on the first call we try
     to construct a client, and every subsequent call returns that client
@@ -464,12 +464,12 @@ def _start_root_trace(task_key: str, *, task_id: str, session_id: str, platform:
         try:
             with propagate_attributes(
                 session_id=session_id or task_key,
-                trace_name="Sinoclaw turn",
+                trace_name="Anan turn",
                 tags=["hermes", "langfuse"],
             ):
                 root_ctx = client.start_as_current_observation(
                     trace_context=trace_ctx,
-                    name="Sinoclaw turn",
+                    name="Anan turn",
                     as_type="chain",
                     input=trace_input,
                     metadata=metadata,
@@ -479,7 +479,7 @@ def _start_root_trace(task_key: str, *, task_id: str, session_id: str, platform:
         except Exception:
             root_ctx = client.start_as_current_observation(
                 trace_context=trace_ctx,
-                name="Sinoclaw turn",
+                name="Anan turn",
                 as_type="chain",
                 input=trace_input,
                 metadata=metadata,
@@ -489,7 +489,7 @@ def _start_root_trace(task_key: str, *, task_id: str, session_id: str, platform:
     else:
         root_ctx = client.start_as_current_observation(
             trace_context=trace_ctx,
-            name="Sinoclaw turn",
+            name="Anan turn",
             as_type="chain",
             input=trace_input,
             metadata=metadata,
@@ -590,8 +590,8 @@ def on_pre_llm_call(*, task_id: str = "", session_id: str = "", platform: str = 
                     provider: str = "", base_url: str = "", api_mode: str = "",
                     api_call_count: int = 0, messages: Any = None, turn_type: str = "user",
                     conversation_history: Any = None, user_message: Any = None, **_: Any) -> None:
-    # Older Sinoclaw branches used pre_llm_call for request-scoped tracing and
-    # passed the actual API messages. Current Sinoclaw also has a turn-scoped
+    # Older Anan branches used pre_llm_call for request-scoped tracing and
+    # passed the actual API messages. Current Anan also has a turn-scoped
     # pre_llm_call used for context injection; tracing that hook creates an
     # extra orphan/root trace before the real request trace. Only trace the
     # legacy request-shaped call here.
@@ -602,8 +602,8 @@ def on_pre_llm_call(*, task_id: str = "", session_id: str = "", platform: str = 
     if client is None:
         return
 
-    # messages is a list only for legacy Sinoclaw branches that fired
-    # pre_llm_call with API messages directly. Current Sinoclaw fires
+    # messages is a list only for legacy Anan branches that fired
+    # pre_llm_call with API messages directly. Current Anan fires
     # pre_llm_call for context injection (conversation_history/user_message,
     # no messages list) — tracing that would create orphan traces.
     task_key = _trace_key(task_id, session_id)
@@ -864,7 +864,7 @@ def on_post_tool_call(*, tool_name: str = "", args: Any = None, result: Any = No
 
 def register(ctx) -> None:
     # Register for both hook name variants so the plugin works across
-    # Sinoclaw versions.  pre_api_request / post_api_request fire per API
+    # Anan versions.  pre_api_request / post_api_request fire per API
     # call (preferred); pre_llm_call / post_llm_call fire once per turn.
     ctx.register_hook("pre_api_request", on_pre_llm_request)
     ctx.register_hook("post_api_request", on_post_llm_call)

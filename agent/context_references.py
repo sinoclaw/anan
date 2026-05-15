@@ -340,14 +340,14 @@ def _resolve_path(cwd: Path, target: str, *, allowed_root: Path | None = None) -
 
 
 def _ensure_reference_path_allowed(path: Path) -> None:
-    from sinoclaw_constants import get_sinoclaw_home
+    from anan_constants import get_anan_home
     home = Path(os.path.expanduser("~")).resolve()
-    sinoclaw_home = get_sinoclaw_home().resolve()
+    anan_home = get_anan_home().resolve()
 
     blocked_exact = {home / rel for rel in _SENSITIVE_HOME_FILES}
-    blocked_exact.add(sinoclaw_home / ".env")
+    blocked_exact.add(anan_home / ".env")
     blocked_dirs = [home / rel for rel in _SENSITIVE_HOME_DIRS]
-    blocked_dirs.extend(sinoclaw_home / rel for rel in _SENSITIVE_SINOCLAW_DIRS)
+    blocked_dirs.extend(anan_home / rel for rel in _SENSITIVE_SINOCLAW_DIRS)
 
     if path in blocked_exact:
         raise ValueError("path is a sensitive credential file and cannot be attached")
@@ -357,7 +357,7 @@ def _ensure_reference_path_allowed(path: Path) -> None:
             path.relative_to(blocked_dir)
         except ValueError:
             continue
-        raise ValueError("path is a sensitive credential or internal Sinoclaw path and cannot be attached")
+        raise ValueError("path is a sensitive credential or internal Anan path and cannot be attached")
 
 
 def _strip_trailing_punctuation(value: str) -> str:

@@ -2,11 +2,11 @@
 
 This validates the IPC + lifecycle story that mocks can't:
   - spawn_fn returns a real PID
-  - the child process resolves sinoclaw_cli.kanban_db on its own
+  - the child process resolves anan_cli.kanban_db on its own
   - the child writes heartbeats via the CLI (real argparse, real init_db)
   - the child completes via the CLI with --summary + --metadata
   - the dispatcher observes all of this through the DB only
-  - worker logs are captured to SINOCLAW_HOME/kanban/logs/<task>.log
+  - worker logs are captured to ANAN_HOME/kanban/logs/<task>.log
   - crash detection works against a real dead PID
 """
 
@@ -30,7 +30,7 @@ def make_spawn_fn(home: str):
         log_path = os.path.join(home, f"worker_{task.id}.log")
         env = {
             **os.environ,
-            "SINOCLAW_HOME": home,
+            "ANAN_HOME": home,
             "HOME": home,
             "PYTHONPATH": WT,
             "SINOCLAW_KANBAN_TASK": task.id,
@@ -53,19 +53,19 @@ def make_spawn_fn(home: str):
 
 def main():
     home = tempfile.mkdtemp(prefix="sinoclaw_e2e_")
-    os.environ["SINOCLAW_HOME"] = home
+    os.environ["ANAN_HOME"] = home
     os.environ["HOME"] = home
     sys.path.insert(0, WT)
-    from sinoclaw_cli import kanban_db as kb
+    from anan_cli import kanban_db as kb
 
     # Point the `hermes` CLI child processes will run at the worktree
-    # sinoclaw_cli.main. We do this by putting a shim on PATH.
+    # anan_cli.main. We do this by putting a shim on PATH.
     shim_dir = os.path.join(home, "bin")
     os.makedirs(shim_dir, exist_ok=True)
     shim_path = os.path.join(shim_dir, "hermes")
     with open(shim_path, "w") as f:
         f.write(f"""#!/bin/sh
-exec {PY} -m sinoclaw_cli.main "$@"
+exec {PY} -m anan_cli.main "$@"
 """)
     os.chmod(shim_path, 0o755)
     os.environ["PATH"] = f"{shim_dir}:{os.environ.get('PATH','')}"

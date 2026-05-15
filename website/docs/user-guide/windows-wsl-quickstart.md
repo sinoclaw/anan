@@ -100,7 +100,7 @@ The `metadata` mount option above is important — without it, files on `/mnt/c/
 Once you have a WSL2 shell open:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
 source ~/.bashrc
 hermes
 ```
@@ -124,7 +124,7 @@ Both are real, both work, but they are **not the same filesystem** — they're b
 
 **Rule of thumb: keep everything Linux-ish inside the Linux filesystem.**
 
-- Your Hermes install (`~/.sinoclaw/`) — Linux side. The installer already does this.
+- Your Hermes install (`~/.anan/`) — Linux side. The installer already does this.
 - Your git repos that you work on from WSL — Linux side (`~/code/...`, `~/projects/...`).
 - Your models, datasets, venvs — Linux side.
 

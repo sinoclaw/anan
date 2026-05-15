@@ -9,24 +9,24 @@ import pytest
 
 @pytest.fixture
 def _isolate(tmp_path, monkeypatch):
-    """Isolate SINOCLAW_HOME so tests don't touch real config."""
+    """Isolate ANAN_HOME so tests don't touch real config."""
     home = tmp_path / ".sinoclaw"
     home.mkdir()
-    monkeypatch.setenv("SINOCLAW_HOME", str(home))
+    monkeypatch.setenv("ANAN_HOME", str(home))
 
 
 @pytest.fixture
 def cli_obj(_isolate):
-    """Create a minimal SinoclawCLI instance for banner testing."""
+    """Create a minimal AnanCLI instance for banner testing."""
     with patch("cli.load_cli_config", return_value={
         "display": {"tool_progress": "new"},
         "terminal": {},
     }), patch("cli.get_tool_definitions", return_value=[]), \
          patch("cli.build_welcome_banner"):
-        from cli import SinoclawCLI
-        obj = SinoclawCLI.__new__(SinoclawCLI)
+        from cli import AnanCLI
+        obj = AnanCLI.__new__(AnanCLI)
         obj.model = "test-model"
-        obj.enabled_toolsets = ["sinoclaw-core"]
+        obj.enabled_toolsets = ["anan-core"]
         obj.compact = False
         obj.console = MagicMock()
         obj.session_id = None

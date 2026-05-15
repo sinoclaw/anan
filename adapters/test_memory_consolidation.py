@@ -14,7 +14,7 @@ from kernel.event_bus import Event, EventBus
 from adapters.memory_consolidation import (
     JSONLBackend,
     MemoryConsolidationAdapter,
-    SinoclawProviderBackend,
+    AnanProviderBackend,
 )
 
 
@@ -74,12 +74,12 @@ class TestJSONLBackend:
 
 
 # --------------------------------------------------------------------------
-# SinoclawProviderBackend
+# AnanProviderBackend
 # --------------------------------------------------------------------------
 
 
 class _FakeProvider:
-    """Minimal stand-in for a sinoclaw MemoryProvider — captures writes."""
+    """Minimal stand-in for a anan MemoryProvider — captures writes."""
 
     def __init__(self, name="fake", *, raise_on_write=False):
         self.name = name
@@ -94,10 +94,10 @@ class _FakeProvider:
         )
 
 
-class TestSinoclawProviderBackend:
+class TestAnanProviderBackend:
     def test_forwards_string_facts_one_by_one(self):
         provider = _FakeProvider("honcho-fake")
-        b = SinoclawProviderBackend(provider=provider)
+        b = AnanProviderBackend(provider=provider)
         ref = b.write({"phase": "rem", "day": "2026-05-14", "facts": ["fact1", "fact2"]})
         assert ref == "honcho-fake:2"
         assert len(provider.writes) == 2
@@ -108,20 +108,20 @@ class TestSinoclawProviderBackend:
 
     def test_serializes_dict_facts_as_json(self):
         provider = _FakeProvider()
-        b = SinoclawProviderBackend(provider=provider)
+        b = AnanProviderBackend(provider=provider)
         b.write({"phase": "deep", "facts": [{"k": "v", "n": 1}]})
         assert provider.writes[0]["content"] == '{"k": "v", "n": 1}'
 
     def test_returns_none_when_no_facts(self):
         provider = _FakeProvider()
-        b = SinoclawProviderBackend(provider=provider)
+        b = AnanProviderBackend(provider=provider)
         assert b.write({"facts": []}) is None
         assert b.write({}) is None
         assert provider.writes == []
 
     def test_swallows_provider_errors(self):
         provider = _FakeProvider(raise_on_write=True)
-        b = SinoclawProviderBackend(provider=provider)
+        b = AnanProviderBackend(provider=provider)
         # MUST NOT raise — we'd rather lose a memory than crash the agent
         ref = b.write({"facts": ["x"]})
         assert ref is None

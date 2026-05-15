@@ -1,6 +1,6 @@
-# Contributing to Sinoclaw Agent
+# Contributing to Anan Agent
 
-Thank you for contributing to Sinoclaw Agent! This guide covers everything you need: setting up your dev environment, understanding the architecture, deciding what to build, and getting your PR merged.
+Thank you for contributing to Anan Agent! This guide covers everything you need: setting up your dev environment, understanding the architecture, deciding what to build, and getting your PR merged.
 
 ---
 
@@ -43,9 +43,9 @@ Bundled skills (in `skills/`) ship with every Hermes install. They should be **b
 - Document handling, web research, common dev workflows, system administration
 - Used regularly by a wide range of people
 
-If your skill is official and useful but not universally needed (e.g., a paid service integration, a heavyweight dependency), put it in **`optional-skills/`** — it ships with the repo but isn't activated by default. Users can discover it via `sinoclaw skills browse` (labeled "official") and install it with `sinoclaw skills install` (no third-party warning, builtin trust).
+If your skill is official and useful but not universally needed (e.g., a paid service integration, a heavyweight dependency), put it in **`optional-skills/`** — it ships with the repo but isn't activated by default. Users can discover it via `anan skills browse` (labeled "official") and install it with `anan skills install` (no third-party warning, builtin trust).
 
-If your skill is specialized, community-contributed, or niche, it's better suited for a **Skills Hub** — upload it to a skills registry and share it in the [Sinoclaw Team Discord](https://github.com/sinoclaw/sinoclaw-agent). Users can install it with `sinoclaw skills install`.
+If your skill is specialized, community-contributed, or niche, it's better suited for a **Skills Hub** — upload it to a skills registry and share it in the [Anan Team Discord](https://github.com/anan/anan). Users can install it with `anan skills install`.
 
 ---
 
@@ -63,8 +63,8 @@ If your skill is specialized, community-contributed, or niche, it's better suite
 ### Clone and install
 
 ```bash
-git clone --recurse-submodules https://github.com/sinoclaw/sinoclaw-agent.git
-cd sinoclaw-agent
+git clone --recurse-submodules https://github.com/anan/anan.git
+cd anan
 
 # Create venv with Python 3.11
 uv venv venv --python 3.11
@@ -83,12 +83,12 @@ npm install
 ### Configure for development
 
 ```bash
-mkdir -p ~/.sinoclaw/{cron,sessions,logs,memories,skills}
-cp cli-config.yaml.example ~/.sinoclaw/config.yaml
-touch ~/.sinoclaw/.env
+mkdir -p ~/.anan/{cron,sessions,logs,memories,skills}
+cp cli-config.yaml.example ~/.anan/config.yaml
+touch ~/.anan/.env
 
 # Add at minimum an LLM provider key:
-echo "OPENROUTER_API_KEY=***" >> ~/.sinoclaw/.env
+echo "OPENROUTER_API_KEY=***" >> ~/.anan/.env
 ```
 
 ### Run
@@ -96,7 +96,7 @@ echo "OPENROUTER_API_KEY=***" >> ~/.sinoclaw/.env
 ```bash
 # Symlink for global access
 mkdir -p ~/.local/bin
-ln -sf "$(pwd)/venv/bin/sinoclaw" ~/.local/bin/hermes
+ln -sf "$(pwd)/venv/bin/anan" ~/.local/bin/hermes
 
 # Verify
 hermes doctor
@@ -119,12 +119,12 @@ pytest tests/ -v
 ## Project Structure
 
 ```
-sinoclaw-agent/
+anan/
 ├── run_agent.py              # AIAgent class — core conversation loop, tool dispatch, session persistence
-├── cli.py                    # SinoclawCLI class — interactive TUI, prompt_toolkit integration
+├── cli.py                    # AnanCLI class — interactive TUI, prompt_toolkit integration
 ├── model_tools.py            # Tool orchestration (thin layer over tools/registry.py)
-├── toolsets.py               # Tool groupings and presets (sinoclaw-cli, sinoclaw-telegram, etc.)
-├── sinoclaw_state.py           # SQLite session database with FTS5 full-text search, session titles
+├── toolsets.py               # Tool groupings and presets (anan-cli, sinoclaw-telegram, etc.)
+├── anan_state.py           # SQLite session database with FTS5 full-text search, session titles
 ├── batch_runner.py           # Parallel batch processing for trajectory generation
 │
 ├── agent/                    # Agent internals (extracted modules)
@@ -135,7 +135,7 @@ sinoclaw-agent/
 │   ├── model_metadata.py         # Model context lengths, token estimation
 │   └── trajectory.py             # Trajectory saving helpers
 │
-├── sinoclaw_cli/               # CLI command implementations
+├── anan_cli/               # CLI command implementations
 │   ├── main.py                   # Entry point, argument parsing, command dispatch
 │   ├── config.py                 # Config management, migration, env var definitions
 │   ├── setup.py                  # Interactive setup wizard
@@ -176,29 +176,29 @@ sinoclaw-agent/
 │   ├── install.ps1               # Windows PowerShell installer
 │   └── whatsapp-bridge/          # Node.js WhatsApp bridge (Baileys)
 │
-├── skills/                   # Bundled skills (copied to ~/.sinoclaw/skills/ on install)
+├── skills/                   # Bundled skills (copied to ~/.anan/skills/ on install)
 ├── optional-skills/          # Official optional skills (discoverable via hub, not activated by default)
 ├── environments/             # RL training environments (Atropos integration)
 ├── tests/                    # Test suite
-├── website/                  # Documentation site (sinoclaw-agent.nousresearch.com)
+├── website/                  # Documentation site (anan.nousresearch.com)
 │
-├── cli-config.yaml.example   # Example configuration (copied to ~/.sinoclaw/config.yaml)
+├── cli-config.yaml.example   # Example configuration (copied to ~/.anan/config.yaml)
 └── AGENTS.md                 # Development guide for AI coding assistants
 ```
 
-### User configuration (stored in `~/.sinoclaw/`)
+### User configuration (stored in `~/.anan/`)
 
 | Path | Purpose |
 |------|---------|
-| `~/.sinoclaw/config.yaml` | Settings (model, terminal, toolsets, compression, etc.) |
-| `~/.sinoclaw/.env` | API keys and secrets |
-| `~/.sinoclaw/auth.json` | OAuth credentials (Nous Portal) |
-| `~/.sinoclaw/skills/` | All active skills (bundled + hub-installed + agent-created) |
-| `~/.sinoclaw/memories/` | Persistent memory (MEMORY.md, USER.md) |
-| `~/.sinoclaw/state.db` | SQLite session database |
-| `~/.sinoclaw/sessions/` | JSON session logs |
-| `~/.sinoclaw/cron/` | Scheduled job data |
-| `~/.sinoclaw/whatsapp/session/` | WhatsApp bridge credentials |
+| `~/.anan/config.yaml` | Settings (model, terminal, toolsets, compression, etc.) |
+| `~/.anan/.env` | API keys and secrets |
+| `~/.anan/auth.json` | OAuth credentials (Nous Portal) |
+| `~/.anan/skills/` | All active skills (bundled + hub-installed + agent-created) |
+| `~/.anan/memories/` | Persistent memory (MEMORY.md, USER.md) |
+| `~/.anan/state.db` | SQLite session database |
+| `~/.anan/sessions/` | JSON session logs |
+| `~/.anan/cron/` | Scheduled job data |
+| `~/.anan/whatsapp/session/` | WhatsApp bridge credentials |
 
 ---
 
@@ -225,7 +225,7 @@ User message → AIAgent._run_agent_loop()
 
 - **Self-registering tools**: Each tool file calls `registry.register()` at import time. `model_tools.py` triggers discovery by importing all tool modules.
 - **Toolset grouping**: Tools are grouped into toolsets (`web`, `terminal`, `file`, `browser`, etc.) that can be enabled/disabled per platform.
-- **Session persistence**: All conversations are stored in SQLite (`sinoclaw_state.py`) with full-text search and unique session titles. JSON logs go to `~/.sinoclaw/sessions/`.
+- **Session persistence**: All conversations are stored in SQLite (`anan_state.py`) with full-text search and unique session titles. JSON logs go to `~/.anan/sessions/`.
 - **Ephemeral injection**: System prompts and prefill messages are injected at API call time, never persisted to the database or logs.
 - **Provider abstraction**: The agent works with any OpenAI-compatible API. Provider resolution happens at init time (Nous Portal OAuth, OpenRouter API key, or custom endpoint).
 - **Provider routing**: When using OpenRouter, `provider_routing` in config.yaml controls provider selection (sort by throughput/latency/price, allow/ignore specific providers, data retention policies). These are injected as `extra_body.provider` in API requests.
@@ -449,7 +449,7 @@ prerequisites:
   commands: [curl, jq]            # Advisory CLI checks
 ```
 
-Gateway and messaging sessions never collect secrets in-band; they instruct the user to run `sinoclaw setup` or update `~/.sinoclaw/.env` locally.
+Gateway and messaging sessions never collect secrets in-band; they instruct the user to run `anan setup` or update `~/.anan/.env` locally.
 
 **When to declare required environment variables:**
 - The skill uses an API key or token that should be collected securely at load time
@@ -466,7 +466,7 @@ See `skills/gifs/gif-search/` and `skills/email/himalaya/` for examples.
 - **No external dependencies unless absolutely necessary.** Prefer stdlib Python, curl, and existing Hermes tools (`web_extract`, `terminal`, `read_file`).
 - **Progressive disclosure.** Put the most common workflow first. Edge cases and advanced usage go at the bottom.
 - **Include helper scripts** for XML/JSON parsing or complex logic — don't expect the LLM to write parsers inline every time.
-- **Test it.** Run `sinoclaw --toolsets skills -q "Use the X skill to do Y"` and verify the agent follows the instructions correctly.
+- **Test it.** Run `anan --toolsets skills -q "Use the X skill to do Y"` and verify the agent follows the instructions correctly.
 
 ---
 
@@ -476,7 +476,7 @@ Hermes uses a data-driven skin system — no code changes needed to add a new sk
 
 **Option A: User skin (YAML file)**
 
-Create `~/.sinoclaw/skins/<name>.yaml`:
+Create `~/.anan/skins/<name>.yaml`:
 
 ```yaml
 name: mytheme
@@ -510,13 +510,13 @@ All fields are optional — missing values inherit from the default skin.
 
 **Option B: Built-in skin**
 
-Add to `_BUILTIN_SKINS` dict in `sinoclaw_cli/skin_engine.py`. Use the same schema as above but as a Python dict. Built-in skins ship with the package and are always available.
+Add to `_BUILTIN_SKINS` dict in `anan_cli/skin_engine.py`. Use the same schema as above but as a Python dict. Built-in skins ship with the package and are always available.
 
 **Activating:**
 - CLI: `/skin mytheme` or set `display.skin: mytheme` in config.yaml
 - Config: `display: { skin: mytheme }`
 
-See `sinoclaw_cli/skin_engine.py` for the full schema and existing skins as examples.
+See `anan_cli/skin_engine.py` for the full schema and existing skins as examples.
 
 ---
 
@@ -550,7 +550,7 @@ that touches the OS, assume *any* platform can hit your code path.
        ...
    ```
 
-   If you specifically need the sinoclaw wrapper (it has a stdlib fallback
+   If you specifically need the anan wrapper (it has a stdlib fallback
    for scaffold-phase imports before pip install finishes), use
    `gateway.status._pid_exists(pid)`. It calls `psutil.pid_exists` first
    and falls back to a hand-rolled `OpenProcess + WaitForSingleObject`
@@ -569,7 +569,7 @@ that touches the OS, assume *any* platform can hit your code path.
 
    For process enumeration: PowerShell's `Get-CimInstance Win32_Process` is
    the modern replacement for `wmic process`. See
-   `sinoclaw_cli/gateway.py::_scan_gateway_pids` for the pattern.
+   `anan_cli/gateway.py::_scan_gateway_pids` for the pattern.
 
 3. **`termios` and `fcntl` are Unix-only.** Always catch both `ImportError`
    and `NotImplementedError`:
@@ -649,7 +649,7 @@ that touches the OS, assume *any* platform can hit your code path.
     process. `pythonw.exe` is the no-console variant. Combine with
     `CREATE_NO_WINDOW | DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP |
     CREATE_BREAKAWAY_FROM_JOB` in `subprocess.Popen(creationflags=...)`.
-    See `sinoclaw_cli/gateway_windows.py::_spawn_detached` for the reference
+    See `anan_cli/gateway_windows.py::_spawn_detached` for the reference
     implementation.
 
 11. **`subprocess.Popen` with `.cmd` or `.bat` shims needs `shutil.which`
@@ -687,7 +687,7 @@ that touches the OS, assume *any* platform can hit your code path.
     (["schtasks", "/TR", some_cmd])` → schtasks itself parses `/TR`, AND
     the `some_cmd` string is re-parsed by `cmd.exe` when the task fires.
     Different parsers, different escape rules. Use two separate quoting
-    helpers and never cross them. See `sinoclaw_cli/gateway_windows.py::
+    helpers and never cross them. See `anan_cli/gateway_windows.py::
     _quote_cmd_script_arg` and `_quote_schtasks_arg` for the reference
     pair.
 
@@ -794,8 +794,8 @@ test(tools): add unit tests for file_operations
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/sinoclaw/sinoclaw-agent/issues)
-- Include: OS, Python version, Hermes version (`sinoclaw version`), full error traceback
+- Use [GitHub Issues](https://github.com/anan/anan/issues)
+- Include: OS, Python version, Hermes version (`anan version`), full error traceback
 - Include steps to reproduce
 - Check existing issues before creating duplicates
 - For security vulnerabilities, please report privately
@@ -804,7 +804,7 @@ test(tools): add unit tests for file_operations
 
 ## Community
 
-- **Discord**: [github.com/sinoclaw/sinoclaw-agent](https://github.com/sinoclaw/sinoclaw-agent) — for questions, showcasing projects, and sharing skills
+- **Discord**: [github.com/anan/anan](https://github.com/anan/anan) — for questions, showcasing projects, and sharing skills
 - **GitHub Discussions**: For design proposals and architecture discussions
 - **Skills Hub**: Upload specialized skills to a registry and share them with the community
 

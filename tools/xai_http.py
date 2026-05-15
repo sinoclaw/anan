@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 
-def sinoclaw_xai_user_agent() -> str:
-    """Return a stable Sinoclaw-specific User-Agent for xAI HTTP calls."""
+def anan_xai_user_agent() -> str:
+    """Return a stable Anan-specific User-Agent for xAI HTTP calls."""
     try:
-        from sinoclaw_cli import __version__
+        from anan_cli import __version__
     except Exception:
         __version__ = "unknown"
-    return f"Sinoclaw-Agent/{__version__}"
+    return f"Anan-Agent/{__version__}"

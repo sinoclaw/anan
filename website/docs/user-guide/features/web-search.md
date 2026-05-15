@@ -50,7 +50,7 @@ sinoclaw tools
 Full-featured search, extract, and crawl. Recommended for most users.
 
 ```bash
-# ~/.sinoclaw/.env
+# ~/.anan/.env
 FIRECRAWL_API_KEY=fc-your-key-here
 ```
 
@@ -59,7 +59,7 @@ Get a key at [firecrawl.dev](https://firecrawl.dev). The free tier includes 500 
 **Self-hosted Firecrawl:** Point at your own instance instead of the cloud API:
 
 ```bash
-# ~/.sinoclaw/.env
+# ~/.anan/.env
 FIRECRAWL_API_URL=http://localhost:3002
 ```
 
@@ -148,11 +148,11 @@ You should see something like `10 results`. If you get a `403 Forbidden`, JSON f
 **7. Configure Hermes:**
 
 ```bash
-# ~/.sinoclaw/.env
+# ~/.anan/.env
 SEARXNG_URL=http://localhost:8888
 ```
 
-Then select SearXNG as the search backend in `~/.sinoclaw/config.yaml`:
+Then select SearXNG as the search backend in `~/.anan/config.yaml`:
 
 ```yaml
 web:
@@ -168,7 +168,7 @@ Or set via `sinoclaw tools` → Web Search & Extract → SearXNG.
 Public SearXNG instances are listed at [searx.space](https://searx.space/). Filter by instances that have **JSON format enabled** (shown in the table).
 
 ```bash
-# ~/.sinoclaw/.env
+# ~/.anan/.env
 SEARXNG_URL=https://searx.example.com
 ```
 
@@ -183,7 +183,7 @@ Public instances have rate limits, variable uptime, and may disable JSON format 
 SearXNG handles search; you need a separate provider for `web_extract` and `web_crawl`. Use the per-capability keys:
 
 ```yaml
-# ~/.sinoclaw/config.yaml
+# ~/.anan/config.yaml
 web:
   search_backend: "searxng"
   extract_backend: "firecrawl"   # or tavily, exa, parallel
@@ -198,7 +198,7 @@ With this config, Hermes uses SearXNG for all search queries and Firecrawl for U
 AI-optimised search, extract, and crawl with a generous free tier.
 
 ```bash
-# ~/.sinoclaw/.env
+# ~/.anan/.env
 TAVILY_API_KEY=tvly-your-key-here
 ```
 
@@ -211,7 +211,7 @@ Get a key at [app.tavily.com](https://app.tavily.com/home). The free tier includ
 Neural search with semantic understanding. Good for research and finding conceptually related content.
 
 ```bash
-# ~/.sinoclaw/.env
+# ~/.anan/.env
 EXA_API_KEY=your-exa-key-here
 ```
 
@@ -224,7 +224,7 @@ Get a key at [exa.ai](https://exa.ai). The free tier includes 1 000 searches/mon
 AI-native search and extraction with deep research capabilities.
 
 ```bash
-# ~/.sinoclaw/.env
+# ~/.anan/.env
 PARALLEL_API_KEY=your-parallel-key-here
 ```
 
@@ -239,7 +239,7 @@ Get access at [parallel.ai](https://parallel.ai).
 Set one provider for all web capabilities:
 
 ```yaml
-# ~/.sinoclaw/config.yaml
+# ~/.anan/config.yaml
 web:
   backend: "searxng"   # firecrawl | searxng | tavily | exa | parallel
 ```
@@ -249,7 +249,7 @@ web:
 Use different providers for search vs extract. This lets you combine free search (SearXNG) with a paid extract provider, or vice versa:
 
 ```yaml
-# ~/.sinoclaw/config.yaml
+# ~/.anan/config.yaml
 web:
   search_backend: "searxng"     # used by web_search
   extract_backend: "firecrawl"  # used by web_extract and web_crawl
@@ -288,7 +288,7 @@ Or check via the CLI:
 
 ```bash
 # Activate the venv and run the web tools module directly
-source ~/.sinoclaw/sinoclaw-agent/.venv/bin/activate
+source ~/.anan/anan/.venv/bin/activate
 python -m tools.web_tools
 ```
 

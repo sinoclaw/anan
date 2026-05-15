@@ -103,7 +103,7 @@ Generate a setup script (`setup.sh`) and run it. The script:
 4. Writes per-profile `SOUL.md` (personality + role definition)
 5. Configures profile YAML (toolsets, always_load skills, cwd)
 6. Writes `brief.md`, `TEAM.md`, and `taste/` content
-7. Fires the initial `sinoclaw kanban create` task assigned to the director
+7. Fires the initial `anan kanban create` task assigned to the director
 
 Use `scripts/bootstrap_pipeline.py` to generate setup.sh from a brief +
 team-design JSON. See **[references/kanban-setup.md](references/kanban-setup.md)**
@@ -174,7 +174,7 @@ task graphs. See **[references/examples.md](references/examples.md)**.
 6. **The director never executes.** Even with the full `kanban + terminal +
    file` toolset, the director's `SOUL.md` rules forbid it from executing
    work itself. It decomposes and routes only — every concrete task becomes
-   a `sinoclaw kanban create` call to a specialist profile. The
+   a `anan kanban create` call to a specialist profile. The
    `kanban-orchestrator` skill spells this out further.
 
 7. **Don't over-decompose.** A 30-second product video does NOT need 20 tasks.
@@ -182,7 +182,7 @@ task graphs. See **[references/examples.md](references/examples.md)**.
    right human-review gates.
 
 8. **Verify API keys BEFORE firing.** External APIs (TTS, image-gen,
-   image-to-video) need keys in `~/.sinoclaw/.env` or the user's secret store.
+   image-to-video) need keys in `~/.anan/.env` or the user's secret store.
    A worker that hits a missing-key error wastes a task slot. The setup
    script's `check_key` helper aborts cleanly if a required key is missing.
 

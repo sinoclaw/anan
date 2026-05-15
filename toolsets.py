@@ -307,13 +307,13 @@ TOOLSETS = {
     },
     
     # ==========================================================================
-    # Full Sinoclaw toolsets (CLI + messaging platforms)
+    # Full Anan toolsets (CLI + messaging platforms)
     #
     # All platforms share the same core tools (including send_message,
     # which is gated on gateway running via its check_fn).
     # ==========================================================================
 
-    "sinoclaw-acp": {
+    "anan-acp": {
         "description": "Editor integration (VS Code, Zed, JetBrains) — coding-focused tools without messaging, audio, or clarify UI",
         "tools": [
             "web_search", "web_extract",
@@ -332,7 +332,7 @@ TOOLSETS = {
         "includes": []
     },
 
-    "sinoclaw-api-server": {
+    "anan-api-server": {
         "description": "OpenAI-compatible API server — full agent tools accessible via HTTP (no interactive UI tools like clarify or send_message)",
         "tools": [
             # Web
@@ -365,30 +365,30 @@ TOOLSETS = {
         "includes": []
     },
     
-    "sinoclaw-cli": {
+    "anan-cli": {
         "description": "Full interactive CLI toolset - all default tools plus cronjob management",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-cron": {
-        # Mirrors sinoclaw-cli so cron's "default" toolset is the same set of
-        # core tools users see interactively — then `sinoclaw tools` filters
+    "anan-cron": {
+        # Mirrors anan-cli so cron's "default" toolset is the same set of
+        # core tools users see interactively — then `anan tools` filters
         # them down per the platform config. _DEFAULT_OFF_TOOLSETS (moa,
         # homeassistant, rl) are excluded by _get_platform_tools() unless
         # the user explicitly enables them.
-        "description": "Default cron toolset - same core tools as sinoclaw-cli; gated by `sinoclaw tools`",
+        "description": "Default cron toolset - same core tools as anan-cli; gated by `anan tools`",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-telegram": {
+    "anan-telegram": {
         "description": "Telegram bot toolset - full access for personal use (terminal has safety checks)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
     
-    "sinoclaw-discord": {
+    "anan-discord": {
         "description": "Discord bot toolset - full access (terminal has safety checks via dangerous command approval)",
         "tools": _SINOCLAW_CORE_TOOLS + [
             "discord",
@@ -397,61 +397,61 @@ TOOLSETS = {
         "includes": []
     },
     
-    "sinoclaw-whatsapp": {
+    "anan-whatsapp": {
         "description": "WhatsApp bot toolset - similar to Telegram (personal messaging, more trusted)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
     
-    "sinoclaw-slack": {
+    "anan-slack": {
         "description": "Slack bot toolset - full access for workspace use (terminal has safety checks)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
     
-    "sinoclaw-signal": {
+    "anan-signal": {
         "description": "Signal bot toolset - encrypted messaging platform (full access)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-bluebubbles": {
+    "anan-bluebubbles": {
         "description": "BlueBubbles iMessage bot toolset - Apple iMessage via local BlueBubbles server",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-homeassistant": {
+    "anan-homeassistant": {
         "description": "Home Assistant bot toolset - smart home event monitoring and control",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-email": {
-        "description": "Email bot toolset - interact with Sinoclaw via email (IMAP/SMTP)",
+    "anan-email": {
+        "description": "Email bot toolset - interact with Anan via email (IMAP/SMTP)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-mattermost": {
+    "anan-mattermost": {
         "description": "Mattermost bot toolset - self-hosted team messaging (full access)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-matrix": {
+    "anan-matrix": {
         "description": "Matrix bot toolset - decentralized encrypted messaging (full access)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-dingtalk": {
+    "anan-dingtalk": {
         "description": "DingTalk bot toolset - enterprise messaging platform (full access)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-feishu": {
+    "anan-feishu": {
         "description": "Feishu/Lark bot toolset - enterprise messaging via Feishu/Lark (full access)",
         "tools": _SINOCLAW_CORE_TOOLS + [
             "feishu_doc_read",
@@ -463,31 +463,31 @@ TOOLSETS = {
         "includes": []
     },
 
-    "sinoclaw-weixin": {
+    "anan-weixin": {
         "description": "Weixin bot toolset - personal WeChat messaging via iLink (full access)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-qqbot": {
+    "anan-qqbot": {
         "description": "QQBot toolset - QQ messaging via Official Bot API v2 (full access)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-wecom": {
+    "anan-wecom": {
         "description": "WeCom bot toolset - enterprise WeChat messaging (full access)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-wecom-callback": {
+    "anan-wecom-callback": {
         "description": "WeCom callback toolset - enterprise self-built app messaging (full access)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-yuanbao": {
+    "anan-yuanbao": {
         "description": "Yuanbao Bot 元宝消息平台工具集 - 群信息、成员查询、私聊、贴纸表情",
         "tools": _SINOCLAW_CORE_TOOLS + [
             "yb_query_group_info",
@@ -500,22 +500,22 @@ TOOLSETS = {
         "includes": []
     },
 
-    "sinoclaw-sms": {
-        "description": "SMS bot toolset - interact with Sinoclaw via SMS (Twilio)",
+    "anan-sms": {
+        "description": "SMS bot toolset - interact with Anan via SMS (Twilio)",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-webhook": {
+    "anan-webhook": {
         "description": "Webhook toolset - receive and process external webhook events",
         "tools": _SINOCLAW_CORE_TOOLS,
         "includes": []
     },
 
-    "sinoclaw-gateway": {
+    "anan-gateway": {
         "description": "Gateway toolset - union of all messaging platform tools",
         "tools": [],
-        "includes": ["sinoclaw-telegram", "sinoclaw-discord", "sinoclaw-whatsapp", "sinoclaw-slack", "sinoclaw-signal", "sinoclaw-bluebubbles", "sinoclaw-homeassistant", "sinoclaw-email", "sinoclaw-sms", "sinoclaw-mattermost", "sinoclaw-matrix", "sinoclaw-dingtalk", "sinoclaw-feishu", "sinoclaw-wecom", "sinoclaw-wecom-callback", "sinoclaw-weixin", "sinoclaw-qqbot", "sinoclaw-webhook", "sinoclaw-yuanbao"]
+        "includes": ["anan-telegram", "anan-discord", "anan-whatsapp", "anan-slack", "anan-signal", "anan-bluebubbles", "anan-homeassistant", "anan-email", "anan-sms", "anan-mattermost", "anan-matrix", "anan-dingtalk", "anan-feishu", "anan-wecom", "anan-wecom-callback", "anan-weixin", "anan-qqbot", "anan-webhook", "anan-yuanbao"]
     }
 }
 
@@ -613,8 +613,8 @@ def resolve_toolset(name: str, visited: Set[str] = None) -> List[str]:
         # Auto-generate a toolset for plugin platforms (sinoclaw-<name>).
         # Gives them _SINOCLAW_CORE_TOOLS plus any tools the plugin registered
         # into a toolset matching the platform name.
-        if name.startswith("sinoclaw-"):
-            platform_name = name[len("sinoclaw-"):]
+        if name.startswith("anan-"):
+            platform_name = name[len("anan-"):]
             try:
                 from gateway.platform_registry import platform_registry
                 if platform_registry.is_registered(platform_name):

@@ -8,7 +8,7 @@ description: "On-demand knowledge documents — progressive disclosure, agent-ma
 
 Skills are on-demand knowledge documents the agent can load when needed. They follow a **progressive disclosure** pattern to minimize token usage and are compatible with the [agentskills.io](https://agentskills.io/specification) open standard.
 
-All skills live in **`~/.sinoclaw/skills/`** — the primary directory and source of truth. On fresh install, bundled skills are copied from the repo. Hub-installed and agent-created skills also go here. The agent can modify or delete any skill.
+All skills live in **`~/.anan/skills/`** — the primary directory and source of truth. On fresh install, bundled skills are copied from the repo. Hub-installed and agent-created skills also go here. The agent can modify or delete any skill.
 
 You can also point Hermes at **external skill directories** — additional folders scanned alongside the local one. See [External Skill Directories](#external-skill-directories) below.
 
@@ -143,7 +143,7 @@ required_environment_variables:
     required_for: full functionality
 ```
 
-When a missing value is encountered, Hermes asks for it securely only when the skill is actually loaded in the local CLI. You can skip setup and keep using the skill. Messaging surfaces never ask for secrets in chat — they tell you to use `sinoclaw setup` or `~/.sinoclaw/.env` locally instead.
+When a missing value is encountered, Hermes asks for it securely only when the skill is actually loaded in the local CLI. You can skip setup and keep using the skill. Messaging surfaces never ask for secrets in chat — they tell you to use `sinoclaw setup` or `~/.anan/.env` locally instead.
 
 Once set, declared env vars are **automatically passed through** to `execute_code` and `terminal` sandboxes — the skill's scripts can use `$TENOR_API_KEY` directly. For non-skill env vars, use the `terminal.env_passthrough` config option. See [Environment Variable Passthrough](/docs/user-guide/security#environment-variable-passthrough) for details.
 
@@ -168,7 +168,7 @@ See [Skill Settings](/docs/user-guide/configuration#skill-settings) and [Creatin
 ## Skill Directory Structure
 
 ```text
-~/.sinoclaw/skills/                  # Single source of truth
+~/.anan/skills/                  # Single source of truth
 ├── mlops/                         # Category directory
 │   ├── axolotl/
 │   │   ├── SKILL.md               # Main instructions (required)
@@ -193,7 +193,7 @@ See [Skill Settings](/docs/user-guide/configuration#skill-settings) and [Creatin
 
 If you maintain skills outside of Hermes — for example, a shared `~/.agents/skills/` directory used by multiple AI tools — you can tell Hermes to scan those directories too.
 
-Add `external_dirs` under the `skills` section in `~/.sinoclaw/config.yaml`:
+Add `external_dirs` under the `skills` section in `~/.anan/config.yaml`:
 
 ```yaml
 skills:
@@ -207,7 +207,7 @@ Paths support `~` expansion and `${VAR}` environment variable substitution.
 
 ### How it works
 
-- **Read-only**: External dirs are only scanned for skill discovery. When the agent creates or edits a skill, it always writes to `~/.sinoclaw/skills/`.
+- **Read-only**: External dirs are only scanned for skill discovery. When the agent creates or edits a skill, it always writes to `~/.anan/skills/`.
 - **Local precedence**: If the same skill name exists in both the local dir and an external dir, the local version wins.
 - **Full integration**: External skills appear in the system prompt index, `skills_list`, `skill_view`, and as `/skill-name` slash commands — no different from local skills.
 - **Non-existent paths are silently skipped**: If a configured directory doesn't exist, Hermes ignores it without errors. Useful for optional shared directories that may not be present on every machine.
@@ -215,7 +215,7 @@ Paths support `~` expansion and `${VAR}` environment variable substitution.
 ### Example
 
 ```text
-~/.sinoclaw/skills/               # Local (primary, read-write)
+~/.anan/skills/               # Local (primary, read-write)
 ├── devops/deploy-k8s/
 │   └── SKILL.md
 └── mlops/axolotl/
@@ -533,7 +533,7 @@ sinoclaw skills install my-org/sinoclaw-skills/deploy-runbook
 
 #### Non-default paths
 
-If your skills don't live under `skills/` (common when you're adding a `skills/` subtree to an existing project), edit the tap entry in `~/.sinoclaw/.hub/taps.json`:
+If your skills don't live under `skills/` (common when you're adding a `skills/` subtree to an existing project), edit the tap entry in `~/.anan/.hub/taps.json`:
 
 ```json
 {
@@ -575,18 +575,18 @@ Inside a running session:
 /skills tap remove myorg/skills-repo
 ```
 
-Taps are stored in `~/.sinoclaw/.hub/taps.json` (created on demand).
+Taps are stored in `~/.anan/.hub/taps.json` (created on demand).
 
 ## Bundled skill updates (`sinoclaw skills reset`)
 
-Hermes ships with a set of bundled skills in `skills/` inside the repo. On install and on every `sinoclaw update`, a sync pass copies those into `~/.sinoclaw/skills/` and records a manifest at `~/.sinoclaw/skills/.bundled_manifest` mapping each skill name to the content hash at the time it was synced (the **origin hash**).
+Hermes ships with a set of bundled skills in `skills/` inside the repo. On install and on every `anan update`, a sync pass copies those into `~/.anan/skills/` and records a manifest at `~/.anan/skills/.bundled_manifest` mapping each skill name to the content hash at the time it was synced (the **origin hash**).
 
 On each sync, Hermes recomputes the hash of your local copy and compares it to the origin hash:
 
 - **Unchanged** → safe to pull upstream changes, copy the new bundled version in, record the new origin hash.
 - **Changed** → treated as **user-modified** and skipped forever, so your edits never get stomped.
 
-The protection is good, but it has one sharp edge. If you edit a bundled skill and then later want to abandon your changes and go back to the bundled version by just copy-pasting from `~/.sinoclaw/sinoclaw-agent/skills/`, the manifest still holds the *old* origin hash from whenever the last successful sync ran. Your fresh copy-paste contents (current bundled hash) won't match that stale origin hash, so sync keeps flagging it as user-modified.
+The protection is good, but it has one sharp edge. If you edit a bundled skill and then later want to abandon your changes and go back to the bundled version by just copy-pasting from `~/.anan/anan/skills/`, the manifest still holds the *old* origin hash from whenever the last successful sync ran. Your fresh copy-paste contents (current bundled hash) won't match that stale origin hash, so sync keeps flagging it as user-modified.
 
 `sinoclaw skills reset` is the escape hatch:
 
@@ -611,7 +611,7 @@ The same command works in chat as a slash command:
 ```
 
 :::note Profiles
-Each profile has its own `.bundled_manifest` under its own `SINOCLAW_HOME`, so `sinoclaw -p coder skills reset <name>` only affects that profile.
+Each profile has its own `.bundled_manifest` under its own `ANAN_HOME`, so `sinoclaw -p coder skills reset <name>` only affects that profile.
 :::
 
 ### Slash commands (inside chat)

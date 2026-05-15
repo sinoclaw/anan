@@ -53,7 +53,7 @@ If you have a public endpoint available, check out [Automated GitHub PR Comments
 - **Messaging configured** (optional) — [Telegram](/docs/user-guide/messaging/telegram) or [Discord](/docs/user-guide/messaging/discord)
 
 :::tip No messaging? No problem
-Use `deliver: "local"` to save reviews to `~/.sinoclaw/cron/output/`. Great for testing before wiring up notifications.
+Use `deliver: "local"` to save reviews to `~/.anan/cron/output/`. Great for testing before wiring up notifications.
 :::
 
 ---
@@ -69,7 +69,7 @@ hermes
 Test with a simple command:
 
 ```
-Run: gh pr list --repo sinoclaw/sinoclaw-agent --state open --limit 3
+Run: gh pr list --repo sinoclaw/anan --state open --limit 3
 ```
 
 You should see a list of open PRs. If this works, you're ready.
@@ -84,7 +84,7 @@ Still in the chat, ask Hermes to review a real PR:
 Review this pull request. Read the diff, check for bugs, security issues,
 and code quality. Be specific about line numbers and quote problematic code.
 
-Run: gh pr diff 3888 --repo sinoclaw/sinoclaw-agent
+Run: gh pr diff 3888 --repo sinoclaw/anan
 ```
 
 Hermes will:
@@ -101,10 +101,10 @@ If you're happy with the quality, time to automate it.
 A skill gives Hermes consistent review guidelines that persist across sessions and cron runs. Without one, review quality varies.
 
 ```bash
-mkdir -p ~/.sinoclaw/skills/code-review
+mkdir -p ~/.anan/skills/code-review
 ```
 
-Create `~/.sinoclaw/skills/code-review/SKILL.md`:
+Create `~/.anan/skills/code-review/SKILL.md`:
 
 ```markdown
 ---

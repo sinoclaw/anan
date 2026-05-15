@@ -27,7 +27,7 @@ hermes kanban show <task-id>
 hermes kanban tail <task-id>
 ```
 
-Verify available subcommands with `sinoclaw kanban --help` — the kanban CLI
+Verify available subcommands with `anan kanban --help` — the kanban CLI
 ships with `init / create / list / show / assign / link / unlink / claim /
 comment / complete / block / unblock / archive / tail / dispatch / watch /
 stats / heartbeat / log / runs / context / gc`.
@@ -51,9 +51,9 @@ deadlocks).
 
 | Symptom | Likely cause | Action |
 |---------|--------------|--------|
-| Task RUNNING but no heartbeat in 2+ min | Worker stuck, infinite loop, blocked on input | `sinoclaw kanban show <id>` — read the worker's last events. The dispatcher SIGTERMs tasks that exceed their `max-runtime`; if you need to stop one earlier, `sinoclaw kanban block <id>` then `sinoclaw kanban archive <id>`, and create a re-run task. |
-| Same task retried 2+ times | Reproducible failure (missing key, bad spec, broken tool) | `sinoclaw kanban show <id>` to read failure events. Fix root cause before re-running. |
-| RUNNING longer than max_runtime | Task is slow but progressing OR genuinely stuck | Check heartbeats with `sinoclaw kanban tail <id>`. If progressing, the dispatcher will SIGTERM eventually anyway — raise `max-runtime` on a re-created task. |
+| Task RUNNING but no heartbeat in 2+ min | Worker stuck, infinite loop, blocked on input | `anan kanban show <id>` — read the worker's last events. The dispatcher SIGTERMs tasks that exceed their `max-runtime`; if you need to stop one earlier, `anan kanban block <id>` then `anan kanban archive <id>`, and create a re-run task. |
+| Same task retried 2+ times | Reproducible failure (missing key, bad spec, broken tool) | `anan kanban show <id>` to read failure events. Fix root cause before re-running. |
+| RUNNING longer than max_runtime | Task is slow but progressing OR genuinely stuck | Check heartbeats with `anan kanban tail <id>`. If progressing, the dispatcher will SIGTERM eventually anyway — raise `max-runtime` on a re-created task. |
 | Child task READY but parents still RUNNING for >2× expected | Cascade slow, dependency miswired | Check the dependency graph. Inspect the parent: sometimes it completed but its handoff fields (summary, metadata) were empty so the child has nothing to consume. |
 | New tasks not appearing | Director is hung in decomposition | Inspect director task with `kanban show`. Often a malformed `kanban_create` call. |
 | Specialist tasks completing instantly | Decomposition created tasks without bodies | Director didn't pass enough context. Re-create with explicit body content. |
@@ -126,7 +126,7 @@ If during execution the user wants something fundamentally different:
 
 1. Cancel the active director task and all RUNNING children
 2. Edit `brief.md` and `TEAM.md`
-3. Re-fire the initial `sinoclaw kanban create` for the director
+3. Re-fire the initial `anan kanban create` for the director
 
 Don't try to "edit while running" — the kanban's audit trail makes a clean
 pivot more legible than mid-stream changes.
@@ -138,14 +138,14 @@ A simple polling pattern for hands-off monitoring:
 ```bash
 while true; do
     clear
-    sinoclaw kanban list --tenant <slug>
+    anan kanban list --tenant <slug>
     echo "---"
-    sinoclaw kanban stats --tenant <slug>
+    anan kanban stats --tenant <slug>
     sleep 30
 done
 ```
 
-For a live event feed, run `sinoclaw kanban watch --tenant <slug>` in a
+For a live event feed, run `anan kanban watch --tenant <slug>` in a
 separate terminal — it streams task lifecycle events as they happen.
 
 For automated intervention (auto-restart stuck tasks, auto-create re-render on

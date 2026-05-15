@@ -8,7 +8,7 @@ Unlike TerminalBench2 (which evaluates per-task coding ability with binary pass/
 
 ```bash
 # Install yc-bench (optional dependency)
-pip install "sinoclaw-agent[yc-bench]"
+pip install "anan[yc-bench]"
 
 # Or install from source
 git clone https://github.com/collinear-ai/yc-bench

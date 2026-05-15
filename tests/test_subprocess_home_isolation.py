@@ -4,7 +4,7 @@ Verifies that subprocesses (terminal, execute_code, background processes)
 receive a per-profile HOME directory while the Python process's own HOME
 and Path.home() remain unchanged.
 
-See: https://github.com/NousResearch/sinoclaw-agent/issues/4426
+See: https://github.com/NousResearch/anan/issues/4426
 """
 
 import os
@@ -19,53 +19,53 @@ import pytest
 # ---------------------------------------------------------------------------
 
 class TestGetSubprocessHome:
-    """Unit tests for sinoclaw_constants.get_subprocess_home()."""
+    """Unit tests for anan_constants.get_subprocess_home()."""
 
-    def test_returns_none_when_sinoclaw_home_unset(self, monkeypatch):
-        monkeypatch.delenv("SINOCLAW_HOME", raising=False)
-        from sinoclaw_constants import get_subprocess_home
+    def test_returns_none_when_anan_home_unset(self, monkeypatch):
+        monkeypatch.delenv("ANAN_HOME", raising=False)
+        from anan_constants import get_subprocess_home
         assert get_subprocess_home() is None
 
     def test_returns_none_when_home_dir_missing(self, tmp_path, monkeypatch):
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        anan_home = tmp_path / ".anan"
+        anan_home.mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
         # No home/ subdirectory created
-        from sinoclaw_constants import get_subprocess_home
+        from anan_constants import get_subprocess_home
         assert get_subprocess_home() is None
 
     def test_returns_path_when_home_dir_exists(self, tmp_path, monkeypatch):
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        profile_home = sinoclaw_home / "home"
+        anan_home = tmp_path / ".anan"
+        anan_home.mkdir()
+        profile_home = anan_home / "home"
         profile_home.mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
-        from sinoclaw_constants import get_subprocess_home
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
+        from anan_constants import get_subprocess_home
         assert get_subprocess_home() == str(profile_home)
 
     def test_returns_profile_specific_path(self, tmp_path, monkeypatch):
         """Named profiles get their own isolated HOME."""
-        profile_dir = tmp_path / ".sinoclaw" / "profiles" / "coder"
+        profile_dir = tmp_path / ".anan" / "profiles" / "coder"
         profile_dir.mkdir(parents=True)
         profile_home = profile_dir / "home"
         profile_home.mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(profile_dir))
-        from sinoclaw_constants import get_subprocess_home
+        monkeypatch.setenv("ANAN_HOME", str(profile_dir))
+        from anan_constants import get_subprocess_home
         assert get_subprocess_home() == str(profile_home)
 
     def test_two_profiles_get_different_homes(self, tmp_path, monkeypatch):
-        base = tmp_path / ".sinoclaw" / "profiles"
+        base = tmp_path / ".anan" / "profiles"
         for name in ("alpha", "beta"):
             p = base / name
             p.mkdir(parents=True)
             (p / "home").mkdir()
 
-        from sinoclaw_constants import get_subprocess_home
+        from anan_constants import get_subprocess_home
 
-        monkeypatch.setenv("SINOCLAW_HOME", str(base / "alpha"))
+        monkeypatch.setenv("ANAN_HOME", str(base / "alpha"))
         home_a = get_subprocess_home()
 
-        monkeypatch.setenv("SINOCLAW_HOME", str(base / "beta"))
+        monkeypatch.setenv("ANAN_HOME", str(base / "beta"))
         home_b = get_subprocess_home()
 
         assert home_a != home_b
@@ -81,23 +81,23 @@ class TestMakeRunEnvHomeInjection:
     """Verify _make_run_env() injects HOME into subprocess envs."""
 
     def test_injects_home_when_profile_home_exists(self, tmp_path, monkeypatch):
-        sinoclaw_home = tmp_path / "hermes"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "home").mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        anan_home = tmp_path / "hermes"
+        anan_home.mkdir()
+        (anan_home / "home").mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setenv("HOME", "/root")
         monkeypatch.setenv("PATH", "/usr/bin:/bin")
 
         from tools.environments.local import _make_run_env
         result = _make_run_env({})
 
-        assert result["HOME"] == str(sinoclaw_home / "home")
+        assert result["HOME"] == str(anan_home / "home")
 
     def test_no_injection_when_home_dir_missing(self, tmp_path, monkeypatch):
-        sinoclaw_home = tmp_path / "hermes"
-        sinoclaw_home.mkdir()
+        anan_home = tmp_path / "hermes"
+        anan_home.mkdir()
         # No home/ subdirectory
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setenv("HOME", "/root")
         monkeypatch.setenv("PATH", "/usr/bin:/bin")
 
@@ -106,8 +106,8 @@ class TestMakeRunEnvHomeInjection:
 
         assert result["HOME"] == "/root"
 
-    def test_no_injection_when_sinoclaw_home_unset(self, monkeypatch):
-        monkeypatch.delenv("SINOCLAW_HOME", raising=False)
+    def test_no_injection_when_anan_home_unset(self, monkeypatch):
+        monkeypatch.delenv("ANAN_HOME", raising=False)
         monkeypatch.setenv("HOME", "/home/user")
         monkeypatch.setenv("PATH", "/usr/bin:/bin")
 
@@ -125,21 +125,21 @@ class TestSanitizeSubprocessEnvHomeInjection:
     """Verify _sanitize_subprocess_env() injects HOME for background procs."""
 
     def test_injects_home_when_profile_home_exists(self, tmp_path, monkeypatch):
-        sinoclaw_home = tmp_path / "hermes"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "home").mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        anan_home = tmp_path / "hermes"
+        anan_home.mkdir()
+        (anan_home / "home").mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
         base_env = {"HOME": "/root", "PATH": "/usr/bin", "USER": "root"}
         from tools.environments.local import _sanitize_subprocess_env
         result = _sanitize_subprocess_env(base_env)
 
-        assert result["HOME"] == str(sinoclaw_home / "home")
+        assert result["HOME"] == str(anan_home / "home")
 
     def test_no_injection_when_home_dir_missing(self, tmp_path, monkeypatch):
-        sinoclaw_home = tmp_path / "hermes"
-        sinoclaw_home.mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        anan_home = tmp_path / "hermes"
+        anan_home.mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
         base_env = {"HOME": "/root", "PATH": "/usr/bin"}
         from tools.environments.local import _sanitize_subprocess_env
@@ -156,17 +156,17 @@ class TestProfileBootstrap:
     """Verify new profiles get a home/ subdirectory."""
 
     def test_profile_dirs_includes_home(self):
-        from sinoclaw_cli.profiles import _PROFILE_DIRS
+        from anan_cli.profiles import _PROFILE_DIRS
         assert "home" in _PROFILE_DIRS
 
     def test_create_profile_bootstraps_home_dir(self, tmp_path, monkeypatch):
         """create_profile() should create home/ inside the profile dir."""
-        home = tmp_path / ".sinoclaw"
+        home = tmp_path / ".anan"
         home.mkdir()
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
-        monkeypatch.setenv("SINOCLAW_HOME", str(home))
+        monkeypatch.setenv("ANAN_HOME", str(home))
 
-        from sinoclaw_cli.profiles import create_profile
+        from anan_cli.profiles import create_profile
         profile_dir = create_profile("testbot", no_alias=True)
         assert (profile_dir / "home").is_dir()
 
@@ -181,15 +181,15 @@ class TestPythonProcessUnchanged:
     def test_path_home_unchanged_after_subprocess_home_resolved(
         self, tmp_path, monkeypatch
     ):
-        sinoclaw_home = tmp_path / "hermes"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "home").mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        anan_home = tmp_path / "hermes"
+        anan_home.mkdir()
+        (anan_home / "home").mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
         original_home = os.environ.get("HOME")
         original_path_home = str(Path.home())
 
-        from sinoclaw_constants import get_subprocess_home
+        from anan_constants import get_subprocess_home
         sub_home = get_subprocess_home()
 
         # Subprocess home is set but Python HOME stays the same

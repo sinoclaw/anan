@@ -1,12 +1,12 @@
 #
-# docker-compose.yml for Sinoclaw Agent
+# docker-compose.yml for Anan Agent
 #
 # Usage:
 #   SINOCLAW_UID=$(id -u) SINOCLAW_GID=$(id -g) docker compose up -d
 #
-# Set SINOCLAW_UID / SINOCLAW_GID to the host user that owns ~/.sinoclaw so
+# Set SINOCLAW_UID / SINOCLAW_GID to the host user that owns ~/.anan so
 # files created inside the container stay readable/writable on the host.
-# The entrypoint remaps the internal `sinoclaw` user to these values via
+# The entrypoint remaps the internal `anan` user to these values via
 # usermod/groupmod + gosu.
 #
 # Security notes:
@@ -14,8 +14,8 @@
 #     keys; exposing it on LAN without auth is unsafe. If you want remote
 #     access, use an SSH tunnel or put it behind a reverse proxy that
 #     adds authentication — do NOT pass --insecure --host 0.0.0.0.
-#   - If you override entrypoint, keep /opt/sinoclaw/docker/entrypoint.sh in
-#     the command chain. It drops root to the sinoclaw user before gateway
+#   - If you override entrypoint, keep /opt/anan/docker/entrypoint.sh in
+#     the command chain. It drops root to the anan user before gateway
 #     files such as gateway.lock are created.
 #   - The gateway's API server is off unless you uncomment API_SERVER_KEY
 #     and API_SERVER_HOST. See docs/user-guide/api-server.md before doing
@@ -24,12 +24,12 @@
 services:
   gateway:
     build: .
-    image: sinoclaw-agent
-    container_name: sinoclaw-gateway
+    image: anan
+    container_name: anan-gateway
     restart: unless-stopped
     network_mode: host
     volumes:
-      - ~/.sinoclaw:/opt/data
+      - ~/.anan:/opt/data
     environment:
       - SINOCLAW_UID=${SINOCLAW_UID:-10000}
       - SINOCLAW_GID=${SINOCLAW_GID:-10000}
@@ -47,7 +47,7 @@ services:
       # Google Chat — uncomment and fill in to enable the Google Chat gateway.
       # See website/docs/user-guide/messaging/google_chat.md for the full setup.
       # The SA JSON path must point to a file mounted into the container —
-      # add a volume entry above (e.g. ``- ~/.sinoclaw/google-chat-sa.json:/secrets/google-chat-sa.json:ro``)
+      # add a volume entry above (e.g. ``- ~/.anan/google-chat-sa.json:/secrets/google-chat-sa.json:ro``)
       # then set GOOGLE_CHAT_SERVICE_ACCOUNT_JSON to that mount path.
       # - GOOGLE_CHAT_PROJECT_ID=${GOOGLE_CHAT_PROJECT_ID}
       # - GOOGLE_CHAT_SUBSCRIPTION_NAME=${GOOGLE_CHAT_SUBSCRIPTION_NAME}
@@ -56,14 +56,14 @@ services:
     command: ["gateway", "run"]
 
   dashboard:
-    image: sinoclaw-agent
+    image: anan
     container_name: sinoclaw-dashboard
     restart: unless-stopped
     network_mode: host
     depends_on:
       - gateway
     volumes:
-      - ~/.sinoclaw:/opt/data
+      - ~/.anan:/opt/data
     environment:
       - SINOCLAW_UID=${SINOCLAW_UID:-10000}
       - SINOCLAW_GID=${SINOCLAW_GID:-10000}

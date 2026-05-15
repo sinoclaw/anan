@@ -20,13 +20,13 @@ Usage:
     python batch_runner.py --dataset_file=data.jsonl --batch_size=10 --run_name=my_run --distribution=image_gen
 """
 
-# IMPORTANT: sinoclaw_bootstrap must be the very first import — UTF-8 stdio
-# on Windows.  No-op on POSIX.  See sinoclaw_bootstrap.py for full rationale.
+# IMPORTANT: anan_bootstrap must be the very first import — UTF-8 stdio
+# on Windows.  No-op on POSIX.  See anan_bootstrap.py for full rationale.
 try:
-    import sinoclaw_bootstrap  # noqa: F401
+    import anan_bootstrap  # noqa: F401
 except ModuleNotFoundError:
-    # Graceful fallback when sinoclaw_bootstrap isn't registered in the venv
-    # yet — happens during partial ``sinoclaw update`` where git-reset landed
+    # Graceful fallback when anan_bootstrap isn't registered in the venv
+    # yet — happens during partial ``anan update`` where git-reset landed
     # new code but ``uv pip install -e .`` didn't finish.  Missing bootstrap
     # means UTF-8 stdio setup is skipped on Windows; POSIX is unaffected.
     pass

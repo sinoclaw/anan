@@ -10,12 +10,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from cli import SinoclawCLI
+from cli import AnanCLI
 
 
 def _make_cli():
-    """Create a minimal SinoclawCLI instance for testing."""
-    cli_obj = SinoclawCLI.__new__(SinoclawCLI)
+    """Create a minimal AnanCLI instance for testing."""
+    cli_obj = AnanCLI.__new__(AnanCLI)
     cli_obj.model = "test-model"
     cli_obj._background_tasks = {}
     cli_obj._background_task_counter = 0

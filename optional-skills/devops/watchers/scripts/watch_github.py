@@ -5,10 +5,10 @@ Usage (via cron with --no-agent):
 
     sinoclaw cron create sinoclaw-issues \\
       --schedule "*/5 * * * *" --no-agent \\
-      --script "$SINOCLAW_HOME/skills/devops/watchers/scripts/watch_github.py" \\
-      --script-args "--name sinoclaw-issues --repo NousResearch/sinoclaw-agent --scope issues"
+      --script "$ANAN_HOME/skills/devops/watchers/scripts/watch_github.py" \\
+      --script-args "--name sinoclaw-issues --repo NousResearch/anan --scope issues"
 
-Set GITHUB_TOKEN (or GH_TOKEN) in ~/.sinoclaw/.env to avoid the 60 req/hr
+Set GITHUB_TOKEN (or GH_TOKEN) in ~/.anan/.env to avoid the 60 req/hr
 anonymous rate limit.
 
 Scopes: issues | pulls | releases | commits.  Or pass --search QUERY to

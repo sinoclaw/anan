@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Skills Hub — Source adapters and hub state management for the Sinoclaw Skills Hub.
+Skills Hub — Source adapters and hub state management for the Anan Skills Hub.
 
 This is a library module (not an agent tool). It provides:
   - GitHubAuth: Shared GitHub API authentication (PAT, gh CLI, GitHub App)
@@ -10,7 +10,7 @@ This is a library module (not an agent tool). It provides:
   - HubLockFile: Track provenance of installed hub skills
   - Hub state directory management (quarantine, audit log, taps, index cache)
 
-Used by sinoclaw_cli/skills_hub.py for CLI commands and the /skills slash command.
+Used by anan_cli/skills_hub.py for CLI commands and the /skills slash command.
 """
 
 import hashlib
@@ -25,7 +25,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
-from sinoclaw_constants import get_sinoclaw_home
+from anan_constants import get_anan_home
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse, urlunparse
 
@@ -43,8 +43,8 @@ logger = logging.getLogger(__name__)
 # Paths
 # ---------------------------------------------------------------------------
 
-SINOCLAW_HOME = get_sinoclaw_home()
-SKILLS_DIR = SINOCLAW_HOME / "skills"
+ANAN_HOME = get_anan_home()
+SKILLS_DIR = ANAN_HOME / "skills"
 HUB_DIR = SKILLS_DIR / ".hub"
 LOCK_FILE = HUB_DIR / "lock.json"
 QUARANTINE_DIR = HUB_DIR / "quarantine"
@@ -396,9 +396,9 @@ class GitHubSource(SkillSource):
         tags = []
         metadata = fm.get("metadata", {})
         if isinstance(metadata, dict):
-            sinoclaw_meta = metadata.get("hermes", {})
-            if isinstance(sinoclaw_meta, dict):
-                tags = sinoclaw_meta.get("tags", [])
+            anan_meta = metadata.get("hermes", {})
+            if isinstance(anan_meta, dict):
+                tags = anan_meta.get("tags", [])
         if not tags:
             raw_tags = fm.get("tags", [])
             tags = raw_tags if isinstance(raw_tags, list) else []
@@ -994,9 +994,9 @@ class UrlSource(SkillSource):
         tags: List[str] = []
         metadata = fm.get("metadata", {})
         if isinstance(metadata, dict):
-            sinoclaw_meta = metadata.get("hermes", {})
-            if isinstance(sinoclaw_meta, dict):
-                raw_tags = sinoclaw_meta.get("tags", [])
+            anan_meta = metadata.get("hermes", {})
+            if isinstance(anan_meta, dict):
+                raw_tags = anan_meta.get("tags", [])
                 if isinstance(raw_tags, list):
                     tags = [str(t) for t in raw_tags]
         return SkillMeta(
@@ -2327,12 +2327,12 @@ class OptionalSkillSource(SkillSource):
 
     These skills are official (maintained by Nous Research) but not activated
     by default — they don't appear in the system prompt and aren't copied to
-    ~/.sinoclaw/skills/ during setup.  They are discoverable via the Skills Hub
+    ~/.anan/skills/ during setup.  They are discoverable via the Skills Hub
     (search / install / inspect) and labelled "official" with "builtin" trust.
     """
 
     def __init__(self):
-        from sinoclaw_constants import get_optional_skills_dir
+        from anan_constants import get_optional_skills_dir
 
         self._optional_dir = get_optional_skills_dir(
             Path(__file__).parent.parent / "optional-skills"
@@ -2456,9 +2456,9 @@ class OptionalSkillSource(SkillSource):
             tags = []
             meta_block = fm.get("metadata", {})
             if isinstance(meta_block, dict):
-                sinoclaw_meta = meta_block.get("hermes", {})
-                if isinstance(sinoclaw_meta, dict):
-                    tags = sinoclaw_meta.get("tags", [])
+                anan_meta = meta_block.get("hermes", {})
+                if isinstance(anan_meta, dict):
+                    tags = anan_meta.get("tags", [])
 
             rel_path = str(parent.relative_to(self._optional_dir))
 
@@ -2874,15 +2874,15 @@ def check_for_skill_updates(
 
 
 # ---------------------------------------------------------------------------
-# Sinoclaw centralized index source
+# Anan centralized index source
 # ---------------------------------------------------------------------------
 
-SINOCLAW_INDEX_URL = "https://sinoclaw-agent.nousresearch.com/docs/api/skills-index.json"
-SINOCLAW_INDEX_CACHE_FILE = INDEX_CACHE_DIR / "sinoclaw-index.json"
+SINOCLAW_INDEX_URL = "https://anan.nousresearch.com/docs/api/skills-index.json"
+ANAN_INDEX_CACHE_FILE = INDEX_CACHE_DIR / "anan-index.json"
 SINOCLAW_INDEX_TTL = 6 * 3600  # 6 hours
 
 
-def _load_sinoclaw_index() -> Optional[dict]:
+def _load_anan_index() -> Optional[dict]:
     """Fetch the centralized skills index, with local cache.
 
     The index is a JSON file hosted on the docs site, rebuilt daily by CI.
@@ -2890,11 +2890,11 @@ def _load_sinoclaw_index() -> Optional[dict]:
     downloads within a session.
     """
     # Check local cache
-    if SINOCLAW_INDEX_CACHE_FILE.exists():
+    if ANAN_INDEX_CACHE_FILE.exists():
         try:
-            age = time.time() - SINOCLAW_INDEX_CACHE_FILE.stat().st_mtime
+            age = time.time() - ANAN_INDEX_CACHE_FILE.stat().st_mtime
             if age < SINOCLAW_INDEX_TTL:
-                return json.loads(SINOCLAW_INDEX_CACHE_FILE.read_text())
+                return json.loads(ANAN_INDEX_CACHE_FILE.read_text())
         except (OSError, json.JSONDecodeError):
             pass
 
@@ -2902,11 +2902,11 @@ def _load_sinoclaw_index() -> Optional[dict]:
     try:
         resp = httpx.get(SINOCLAW_INDEX_URL, timeout=15, follow_redirects=True)
         if resp.status_code != 200:
-            logger.debug("Sinoclaw index fetch returned %d", resp.status_code)
+            logger.debug("Anan index fetch returned %d", resp.status_code)
             return _load_stale_index_cache()
         data = resp.json()
     except (httpx.HTTPError, json.JSONDecodeError) as e:
-        logger.debug("Sinoclaw index fetch failed: %s", e)
+        logger.debug("Anan index fetch failed: %s", e)
         return _load_stale_index_cache()
 
     # Validate structure
@@ -2915,8 +2915,8 @@ def _load_sinoclaw_index() -> Optional[dict]:
 
     # Cache locally
     try:
-        SINOCLAW_INDEX_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        SINOCLAW_INDEX_CACHE_FILE.write_text(json.dumps(data))
+        ANAN_INDEX_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        ANAN_INDEX_CACHE_FILE.write_text(json.dumps(data))
     except OSError:
         pass
 
@@ -2925,16 +2925,16 @@ def _load_sinoclaw_index() -> Optional[dict]:
 
 def _load_stale_index_cache() -> Optional[dict]:
     """Fall back to stale cache when the network fetch fails."""
-    if SINOCLAW_INDEX_CACHE_FILE.exists():
+    if ANAN_INDEX_CACHE_FILE.exists():
         try:
-            return json.loads(SINOCLAW_INDEX_CACHE_FILE.read_text())
+            return json.loads(ANAN_INDEX_CACHE_FILE.read_text())
         except (OSError, json.JSONDecodeError):
             pass
     return None
 
 
-class SinoclawIndexSource(SkillSource):
-    """Skill source backed by the centralized Sinoclaw Skills Index.
+class AnanIndexSource(SkillSource):
+    """Skill source backed by the centralized Anan Skills Index.
 
     The index is a JSON catalog published to the docs site and rebuilt
     daily by CI.  It contains metadata + resolved GitHub paths for every
@@ -2955,7 +2955,7 @@ class SinoclawIndexSource(SkillSource):
 
     def _ensure_loaded(self) -> dict:
         if not self._loaded:
-            self._index = _load_sinoclaw_index()
+            self._index = _load_anan_index()
             self._loaded = True
         return self._index or {}
 
@@ -2965,7 +2965,7 @@ class SinoclawIndexSource(SkillSource):
         return self._github
 
     def source_id(self) -> str:
-        return "sinoclaw-index"
+        return "anan-index"
 
     @property
     def is_available(self) -> bool:
@@ -3019,7 +3019,7 @@ class SinoclawIndexSource(SkillSource):
         if resolved:
             bundle = self._get_github().fetch(resolved)
             if bundle:
-                bundle.source = entry.get("source", "sinoclaw-index")
+                bundle.source = entry.get("source", "anan-index")
                 bundle.identifier = identifier
                 return bundle
 
@@ -3030,7 +3030,7 @@ class SinoclawIndexSource(SkillSource):
             github_id = f"{repo}/{path}"
             bundle = self._get_github().fetch(github_id)
             if bundle:
-                bundle.source = entry.get("source", "sinoclaw-index")
+                bundle.source = entry.get("source", "anan-index")
                 bundle.identifier = identifier
                 return bundle
 
@@ -3079,7 +3079,7 @@ class SinoclawIndexSource(SkillSource):
         return SkillMeta(
             name=entry.get("name", ""),
             description=entry.get("description", ""),
-            source=entry.get("source", "sinoclaw-index"),
+            source=entry.get("source", "anan-index"),
             identifier=entry.get("identifier", ""),
             trust_level=entry.get("trust_level", "community"),
             repo=entry.get("repo"),
@@ -3102,7 +3102,7 @@ def create_source_router(auth: Optional[GitHubAuth] = None) -> List[SkillSource]
 
     sources: List[SkillSource] = [
         OptionalSkillSource(),        # Official optional skills (highest priority)
-        SinoclawIndexSource(auth=auth), # Centralized index (search + resolved install paths)
+        AnanIndexSource(auth=auth), # Centralized index (search + resolved install paths)
         SkillsShSource(auth=auth),
         WellKnownSkillSource(),
         UrlSource(),                  # Direct HTTP(S) URL to a SKILL.md file
@@ -3155,7 +3155,7 @@ def parallel_search_sources(
                                   "claude-marketplace", "lobehub", "well-known"})
     if source_filter == "all":
         for src in sources:
-            if (src.source_id() == "sinoclaw-index"
+            if (src.source_id() == "anan-index"
                     and getattr(src, "is_available", False)):
                 _index_available = True
                 break

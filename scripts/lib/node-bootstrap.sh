@@ -7,10 +7,10 @@
 #
 # Strategy (first hit wins — respects the user's existing tooling):
 #   1. modern `node` already on PATH
-#   2. ~/.sinoclaw/node/ from a prior Sinoclaw-managed install
+#   2. ~/.anan/node/ from a prior Anan-managed install
 #   3. fnm, proto, nvm (in that order) if the user already uses a version manager
 #   4. Termux `pkg`, macOS Homebrew
-#   5. pinned nodejs.org tarball into ~/.sinoclaw/node/ (always works, zero shell rc edits)
+#   5. pinned nodejs.org tarball into ~/.anan/node/ (always works, zero shell rc edits)
 #
 # Usage:
 #   source scripts/lib/node-bootstrap.sh
@@ -20,12 +20,12 @@
 # Env inputs (set before sourcing to override defaults):
 #   SINOCLAW_NODE_MIN_VERSION   (default: 20)   — accepted on PATH
 #   SINOCLAW_NODE_TARGET_MAJOR  (default: 22)   — installed when we install
-#   SINOCLAW_HOME               (default: $HOME/.hermes)
+#   ANAN_HOME               (default: $HOME/.hermes)
 # ============================================================================
 
 SINOCLAW_NODE_MIN_VERSION="${SINOCLAW_NODE_MIN_VERSION:-20}"
 SINOCLAW_NODE_TARGET_MAJOR="${SINOCLAW_NODE_TARGET_MAJOR:-22}"
-SINOCLAW_HOME="${SINOCLAW_HOME:-$HOME/.hermes}"
+ANAN_HOME="${ANAN_HOME:-$HOME/.hermes}"
 SINOCLAW_NODE_AVAILABLE=false
 
 # ---------------------------------------------------------------------------
@@ -167,7 +167,7 @@ _nb_install_bundled_node() {
         _nb_warn "Download failed"; rm -rf "$tmp"; return 1
     }
 
-    _nb_log "Extracting to $SINOCLAW_HOME/node/..."
+    _nb_log "Extracting to $ANAN_HOME/node/..."
     if [[ "$tarball" == *.tar.xz ]]; then
         tar xf  "$tmp/$tarball" -C "$tmp" || { rm -rf "$tmp"; return 1; }
     else
@@ -182,19 +182,19 @@ _nb_install_bundled_node() {
         return 1
     fi
 
-    mkdir -p "$SINOCLAW_HOME"
-    rm -rf "$SINOCLAW_HOME/node"
-    mv "$extracted" "$SINOCLAW_HOME/node"
+    mkdir -p "$ANAN_HOME"
+    rm -rf "$ANAN_HOME/node"
+    mv "$extracted" "$ANAN_HOME/node"
     rm -rf "$tmp"
 
     mkdir -p "$HOME/.local/bin"
-    ln -sf "$SINOCLAW_HOME/node/bin/node" "$HOME/.local/bin/node"
-    ln -sf "$SINOCLAW_HOME/node/bin/npm"  "$HOME/.local/bin/npm"
-    ln -sf "$SINOCLAW_HOME/node/bin/npx"  "$HOME/.local/bin/npx"
-    export PATH="$SINOCLAW_HOME/node/bin:$PATH"
+    ln -sf "$ANAN_HOME/node/bin/node" "$HOME/.local/bin/node"
+    ln -sf "$ANAN_HOME/node/bin/npm"  "$HOME/.local/bin/npm"
+    ln -sf "$ANAN_HOME/node/bin/npx"  "$HOME/.local/bin/npx"
+    export PATH="$ANAN_HOME/node/bin:$PATH"
 
     _nb_have_modern_node || return 1
-    _nb_ok "Node $(node --version) installed to $SINOCLAW_HOME/node/"
+    _nb_ok "Node $(node --version) installed to $ANAN_HOME/node/"
     return 0
 }
 
@@ -211,10 +211,10 @@ ensure_node() {
         return 0
     fi
 
-    if [ -x "$SINOCLAW_HOME/node/bin/node" ]; then
-        export PATH="$SINOCLAW_HOME/node/bin:$PATH"
+    if [ -x "$ANAN_HOME/node/bin/node" ]; then
+        export PATH="$ANAN_HOME/node/bin:$PATH"
         if _nb_have_modern_node; then
-            _nb_ok "Node $(node --version) found (Sinoclaw-managed)"
+            _nb_ok "Node $(node --version) found (Anan-managed)"
             SINOCLAW_NODE_AVAILABLE=true
             return 0
         fi

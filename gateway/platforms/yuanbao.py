@@ -98,7 +98,7 @@ logger = logging.getLogger(__name__)
 # Version / platform constants (used in AUTH_BIND and sign-token headers)
 # ---------------------------------------------------------------------------
 try:
-    from sinoclaw_cli import __version__ as _SINOCLAW_VERSION
+    from anan_cli import __version__ as _SINOCLAW_VERSION
 except ImportError:
     _SINOCLAW_VERSION = "0.0.0"
 
@@ -1582,11 +1582,11 @@ class AutoSetHomeMiddleware(InboundMiddleware):
                 adapter._auto_sethome_done = True  # DM seen — no further upgrades needed
             if _should_set:
                 try:
-                    from sinoclaw_constants import get_sinoclaw_home
+                    from anan_constants import get_anan_home
                     from utils import atomic_yaml_write
                     import yaml
 
-                    _home = get_sinoclaw_home()
+                    _home = get_anan_home()
                     config_path = _home / "config.yaml"
                     user_config: dict = {}
                     if config_path.exists():

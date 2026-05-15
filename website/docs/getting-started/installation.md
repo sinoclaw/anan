@@ -13,22 +13,22 @@ Get Sinoclaw Agent up and running in under two minutes with the one-line install
 ### Linux / macOS / WSL2
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
 ```
 
 ### Windows (native, PowerShell) — Early Beta
 
 :::warning Early BETA
-Native Windows support is **early beta**. It installs and works for the common paths, but hasn't been road-tested as broadly as our POSIX installers. Please [file issues](https://github.com/sinoclaw/sinoclaw-agent/issues) when you hit rough edges. For the most battle-tested setup on Windows today, use the Linux/macOS one-liner above inside **WSL2** instead.
+Native Windows support is **early beta**. It installs and works for the common paths, but hasn't been road-tested as broadly as our POSIX installers. Please [file issues](https://github.com/sinoclaw/anan/issues) when you hit rough edges. For the most battle-tested setup on Windows today, use the Linux/macOS one-liner above inside **WSL2** instead.
 :::
 
 Open PowerShell and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.ps1 | iex
 ```
 
-The installer handles **everything**: `uv`, Python 3.11, Node.js 22, `ripgrep`, `ffmpeg`, **and a portable Git Bash** (MinGit — a slim, self-contained Git for Windows distribution that Hermes uses for shell commands).  It clones the repo under `%LOCALAPPDATA%\hermes\sinoclaw-agent`, creates a virtualenv, and adds `hermes` to your **User PATH**.  Restart your terminal (or open a new PowerShell window) after the install so PATH picks up.
+The installer handles **everything**: `uv`, Python 3.11, Node.js 22, `ripgrep`, `ffmpeg`, **and a portable Git Bash** (MinGit — a slim, self-contained Git for Windows distribution that Hermes uses for shell commands).  It clones the repo under `%LOCALAPPDATA%\hermes\anan`, creates a virtualenv, and adds `hermes` to your **User PATH**.  Restart your terminal (or open a new PowerShell window) after the install so PATH picks up.
 
 **How Git is handled:**
 1. If `git` is already on your PATH, the installer uses your existing install.
@@ -45,7 +45,7 @@ If you prefer WSL2, the Linux installer above works inside it; both native and W
 Hermes now ships a Termux-aware installer path too:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
 ```
 
 The installer detects Termux automatically and switches to a tested Android flow:
@@ -80,10 +80,10 @@ Where the installer puts things depends on whether you're installing as a normal
 
 | Installer | Code lives at | `hermes` binary | Data directory |
 |---|---|---|---|
-| Per-user (normal) | `~/.sinoclaw/sinoclaw-agent/` | `~/.local/bin/hermes` (symlink) | `~/.sinoclaw/` |
-| Root-mode (`sudo curl … \| sudo bash`) | `/usr/local/lib/sinoclaw-agent/` | `/usr/local/bin/hermes` | `/root/.sinoclaw/` (or `$SINOCLAW_HOME`) |
+| Per-user (normal) | `~/.anan/anan/` | `~/.local/bin/hermes` (symlink) | `~/.anan/` |
+| Root-mode (`sudo curl … \| sudo bash`) | `/usr/local/lib/anan/` | `/usr/local/bin/hermes` | `/root/.anan/` (or `$ANAN_HOME`) |
 
-The root-mode **FHS layout** (`/usr/local/lib/…`, `/usr/local/bin/hermes`) matches where other system-wide developer tools land on Linux. It's useful for shared-machine deployments where one system install should serve every user. Per-user config (auth, skills, sessions) still lives under each user's `~/.sinoclaw/` or explicit `SINOCLAW_HOME`.
+The root-mode **FHS layout** (`/usr/local/lib/…`, `/usr/local/bin/hermes`) matches where other system-wide developer tools land on Linux. It's useful for shared-machine deployments where one system install should serve every user. Per-user config (auth, skills, sessions) still lives under each user's `~/.anan/` or explicit `ANAN_HOME`.
 
 ### After Installation
 
@@ -100,7 +100,7 @@ To reconfigure individual settings later, use the dedicated commands:
 hermes model          # Choose your LLM provider and model
 sinoclaw tools          # Configure which tools are enabled
 sinoclaw gateway setup  # Set up messaging platforms
-sinoclaw config set     # Set individual config values
+anan config set     # Set individual config values
 sinoclaw setup          # Or run the full setup wizard to configure everything at once
 ```
 
@@ -137,7 +137,7 @@ If you want to clone the repo and install from source — for contributing, runn
 | Problem | Solution |
 |---------|----------|
 | `hermes: command not found` | Reload your shell (`source ~/.bashrc`) or check PATH |
-| `API key not set` | Run `sinoclaw model` to configure your provider, or `sinoclaw config set OPENROUTER_API_KEY your_key` |
+| `API key not set` | Run `sinoclaw model` to configure your provider, or `anan config set OPENROUTER_API_KEY your_key` |
 | Missing config after update | Run `sinoclaw config check` then `sinoclaw config migrate` |
 
 For more diagnostics, run `sinoclaw doctor` — it will tell you exactly what's missing and how to fix it.

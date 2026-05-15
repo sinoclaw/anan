@@ -1,5 +1,5 @@
 ---
-name: sinoclaw-agent-skill-authoring
+name: anan-skill-authoring
 description: "Author in-repo SKILL.md: frontmatter, validator, structure."
 version: 1.0.0
 author: Sinoclaw Agent
@@ -7,7 +7,7 @@ license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
-    tags: [skills, authoring, sinoclaw-agent, conventions, skill-md]
+    tags: [skills, authoring, anan, conventions, skill-md]
     related_skills: [writing-plans, requesting-code-review]
 ---
 
@@ -17,14 +17,14 @@ metadata:
 
 There are two places a SKILL.md can live:
 
-1. **User-local:** `~/.sinoclaw/skills/<maybe-category>/<name>/SKILL.md` — personal, not shared. Created via `skill_manage(action='create')`.
-2. **In-repo (this skill is about this case):** `/home/bb/sinoclaw-agent/skills/<category>/<name>/SKILL.md` — committed, shipped with the package. Use `write_file` + `git add`. `skill_manage(action='create')` does NOT target this tree.
+1. **User-local:** `~/.anan/skills/<maybe-category>/<name>/SKILL.md` — personal, not shared. Created via `skill_manage(action='create')`.
+2. **In-repo (this skill is about this case):** `/home/bb/anan/skills/<category>/<name>/SKILL.md` — committed, shipped with the package. Use `write_file` + `git add`. `skill_manage(action='create')` does NOT target this tree.
 
 ## When to Use
 
 - User asks you to add a skill "in this branch / repo / commit"
-- You're committing a reusable workflow that should ship with sinoclaw-agent
-- You're editing an existing skill under `/home/bb/sinoclaw-agent/skills/` (use `patch` for small edits, `write_file` for rewrites; `skill_manage` still works for patch on in-repo skills, but not for `create`)
+- You're committing a reusable workflow that should ship with anan
+- You're editing an existing skill under `/home/bb/anan/skills/` (use `patch` for small edits, `write_file` for rewrites; `skill_manage` still works for patch on in-repo skills, but not for `create`)
 
 ## Required Frontmatter
 
@@ -127,7 +127,7 @@ Pick the closest existing category. Don't invent new top-level categories casual
 
 ## Cross-Referencing Other Skills
 
-`metadata.hermes.related_skills` unions both trees (`skills/` in-repo and `~/.sinoclaw/skills/`) at load time. You CAN reference a user-local skill from an in-repo skill, but it won't resolve for other users who clone the repo fresh. Prefer referencing only in-repo skills from in-repo skills. If a frequently-referenced skill lives only in `~/.sinoclaw/skills/`, consider promoting it to the repo.
+`metadata.hermes.related_skills` unions both trees (`skills/` in-repo and `~/.anan/skills/`) at load time. You CAN reference a user-local skill from an in-repo skill, but it won't resolve for other users who clone the repo fresh. Prefer referencing only in-repo skills from in-repo skills. If a frequently-referenced skill lives only in `~/.anan/skills/`, consider promoting it to the repo.
 
 ## Editing Existing In-Repo Skills
 
@@ -138,7 +138,7 @@ Pick the closest existing category. Don't invent new top-level categories casual
 
 ## Common Pitfalls
 
-1. **Using `skill_manage(action='create')` for an in-repo skill.** It writes to `~/.sinoclaw/skills/`, not the repo tree. Use `write_file` for in-repo creation.
+1. **Using `skill_manage(action='create')` for an in-repo skill.** It writes to `~/.anan/skills/`, not the repo tree. Use `write_file` for in-repo creation.
 
 2. **Leading whitespace before `---`.** The validator checks `content.startswith("---")`; any leading blank line or BOM fails validation.
 
@@ -154,7 +154,7 @@ Pick the closest existing category. Don't invent new top-level categories casual
 
 ## Verification Checklist
 
-- [ ] File is at `skills/<category>/<name>/SKILL.md` (not in `~/.sinoclaw/skills/`)
+- [ ] File is at `skills/<category>/<name>/SKILL.md` (not in `~/.anan/skills/`)
 - [ ] Frontmatter starts at byte 0 with `---`, closes with `\n---\n`
 - [ ] `name`, `description`, `version`, `author`, `license`, `metadata.hermes.{tags, related_skills}` all present
 - [ ] Name ≤ 64 chars, lowercase + hyphens

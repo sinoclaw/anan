@@ -60,8 +60,8 @@ _SENSITIVE_BODY_KEYS = frozenset({
 # mid-session.  ON by default — secure default per issue #17691. Users who
 # need raw credential values in tool output (e.g. working on the redactor
 # itself) can opt out via `security.redact_secrets: false` in config.yaml
-# (bridged to this env var in sinoclaw_cli/main.py, gateway/run.py, and
-# cli.py) or `SINOCLAW_REDACT_SECRETS=false` in ~/.sinoclaw/.env. An opt-out
+# (bridged to this env var in anan_cli/main.py, gateway/run.py, and
+# cli.py) or `SINOCLAW_REDACT_SECRETS=false` in ~/.anan/.env. An opt-out
 # warning is logged at gateway and CLI startup so operators see the
 # downgrade — see `_log_redaction_status()` in gateway/run.py and cli.py.
 _REDACT_ENABLED = os.getenv("SINOCLAW_REDACT_SECRETS", "true").lower() in ("1", "true", "yes", "on")
@@ -198,8 +198,8 @@ def mask_secret(
 ) -> str:
     """Mask a secret for display, preserving ``head`` and ``tail`` characters.
 
-    Canonical helper for display-time redaction across Sinoclaw — used by
-    ``sinoclaw config``, ``sinoclaw status``, ``sinoclaw dump``, and anywhere
+    Canonical helper for display-time redaction across Anan — used by
+    ``anan config``, ``anan status``, ``anan dump``, and anywhere
     a secret needs to be shown truncated for debuggability while still
     keeping the bulk hidden.
 

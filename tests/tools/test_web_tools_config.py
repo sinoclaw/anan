@@ -137,14 +137,14 @@ class TestFirecrawlClientConfig:
                     api_url="https://firecrawl-gateway.nousresearch.com",
                 )
 
-    def test_nous_auth_token_respects_sinoclaw_home_override(self, tmp_path):
-        """Auth lookup should read from SINOCLAW_HOME/auth.json, not ~/.sinoclaw/auth.json."""
+    def test_nous_auth_token_respects_anan_home_override(self, tmp_path):
+        """Auth lookup should read from ANAN_HOME/auth.json, not ~/.anan/auth.json."""
         real_home = tmp_path / "real-home"
         (real_home / ".sinoclaw").mkdir(parents=True)
 
-        sinoclaw_home = tmp_path / "sinoclaw-home"
-        sinoclaw_home.mkdir()
-        (sinoclaw_home / "auth.json").write_text(json.dumps({
+        anan_home = tmp_path / "anan-home"
+        anan_home.mkdir()
+        (anan_home / "auth.json").write_text(json.dumps({
             "providers": {
                 "nous": {
                     "access_token": "nous-token",
@@ -154,7 +154,7 @@ class TestFirecrawlClientConfig:
 
         with patch.dict(os.environ, {
             "HOME": str(real_home),
-            "SINOCLAW_HOME": str(sinoclaw_home),
+            "ANAN_HOME": str(anan_home),
         }, clear=False):
             import tools.web_tools
             importlib.reload(tools.web_tools)

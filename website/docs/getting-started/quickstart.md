@@ -52,7 +52,7 @@ Run the one-line installer:
 
 ```bash
 # Linux / macOS / WSL2 / Android (Termux)
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/sinoclaw-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
 ```
 
 :::tip Android / Termux
@@ -122,15 +122,15 @@ You can switch providers at any time with `sinoclaw model` — no lock-in. For a
 
 Hermes separates secrets from normal config:
 
-- **Secrets and tokens** → `~/.sinoclaw/.env`
-- **Non-secret settings** → `~/.sinoclaw/config.yaml`
+- **Secrets and tokens** → `~/.anan/.env`
+- **Non-secret settings** → `~/.anan/config.yaml`
 
 The easiest way to set values correctly is through the CLI:
 
 ```bash
-sinoclaw config set model anthropic/claude-opus-4.6
-sinoclaw config set terminal.backend docker
-sinoclaw config set OPENROUTER_API_KEY sk-or-...
+anan config set model anthropic/claude-opus-4.6
+anan config set terminal.backend docker
+anan config set OPENROUTER_API_KEY sk-or-...
 ```
 
 The right value goes to the right file automatically.
@@ -233,14 +233,14 @@ Connect [Telegram](/docs/user-guide/messaging/telegram), [Discord](/docs/user-gu
 For safety, run the agent in a Docker container or on a remote server:
 
 ```bash
-sinoclaw config set terminal.backend docker    # Docker isolation
-sinoclaw config set terminal.backend ssh       # Remote server
+anan config set terminal.backend docker    # Docker isolation
+anan config set terminal.backend ssh       # Remote server
 ```
 
 ### Voice mode
 
 ```bash
-pip install "sinoclaw-agent[voice]"
+pip install "anan[voice]"
 # Includes faster-whisper for free local speech-to-text
 ```
 
@@ -258,7 +258,7 @@ Or use `/skills` inside a chat session.
 ### MCP servers
 
 ```yaml
-# Add to ~/.sinoclaw/config.yaml
+# Add to ~/.anan/config.yaml
 mcp_servers:
   github:
     command: npx
@@ -315,7 +315,7 @@ That sequence gets you from "broken vibes" back to a known state fast.
 | `sinoclaw tools` | Configure which tools are enabled per platform |
 | `sinoclaw setup` | Full setup wizard (configures everything at once) |
 | `sinoclaw doctor` | Diagnose issues |
-| `sinoclaw update` | Update to latest version |
+| `anan update` | Update to latest version |
 | `sinoclaw gateway` | Start the messaging gateway |
 | `sinoclaw --continue` | Resume last session |
 

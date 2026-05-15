@@ -5,12 +5,12 @@ A walkthrough of the four use-cases the Hermes Kanban system was designed for, w
 ## Setup
 
 ```bash
-hermes kanban init           # optional; first `sinoclaw kanban <anything>` auto-inits
+hermes kanban init           # optional; first `anan kanban <anything>` auto-inits
 hermes dashboard             # opens http://127.0.0.1:9119 in your browser
 # click Kanban in the left nav
 ```
 
-The dashboard is the most comfortable place for **you** to watch the system. Agent workers the dispatcher spawns never see the dashboard or the CLI — they drive the board through a dedicated `kanban_*` [toolset](./kanban#how-workers-interact-with-the-board) (`kanban_show`, `kanban_complete`, `kanban_block`, `kanban_heartbeat`, `kanban_comment`, `kanban_create`, `kanban_link`). All three surfaces — dashboard, CLI, worker tools — route through the same per-board SQLite DB (`~/.sinoclaw/kanban.db` for the default board, `~/.sinoclaw/kanban/boards/<slug>/kanban.db` for any board you create later), so each board is consistent no matter which side of the fence a change came from.
+The dashboard is the most comfortable place for **you** to watch the system. Agent workers the dispatcher spawns never see the dashboard or the CLI — they drive the board through a dedicated `kanban_*` [toolset](./kanban#how-workers-interact-with-the-board) (`kanban_show`, `kanban_complete`, `kanban_block`, `kanban_heartbeat`, `kanban_comment`, `kanban_create`, `kanban_link`). All three surfaces — dashboard, CLI, worker tools — route through the same per-board SQLite DB (`~/.anan/kanban.db` for the default board, `~/.anan/kanban/boards/<slug>/kanban.db` for any board you create later), so each board is consistent no matter which side of the fence a change came from.
 
 This tutorial uses the `default` board throughout. If you want multiple isolated queues (one per project / repo / domain), see [Boards (multi-project)](./kanban#boards-multi-project) in the overview — the same CLI / dashboard / worker flows apply per board, and workers physically cannot see tasks on other boards.
 
@@ -22,7 +22,7 @@ Throughout the tutorial, **code blocks labelled `bash` are commands *you* run.**
 
 Six columns, left to right:
 
-- **Triage** — raw ideas, a specifier will flesh out the spec before anyone works on them. Click the **✨ Specify** button on any triage card (or run `sinoclaw kanban specify <id>` / `/kanban specify <id>` from a chat) to have the auxiliary LLM turn a one-liner into a full spec (goal, approach, acceptance criteria) and promote it to `todo` in one shot. Configure which model runs it under `auxiliary.triage_specifier` in `config.yaml`.
+- **Triage** — raw ideas, a specifier will flesh out the spec before anyone works on them. Click the **✨ Specify** button on any triage card (or run `anan kanban specify <id>` / `/kanban specify <id>` from a chat) to have the auxiliary LLM turn a one-liner into a full spec (goal, approach, acceptance criteria) and promote it to `todo` in one shot. Configure which model runs it under `auxiliary.triage_specifier` in `config.yaml`.
 - **Todo** — created but waiting on dependencies, or not yet assigned.
 - **Ready** — assigned and waiting for the dispatcher to claim.
 - **In progress** — a worker is actively running the task. With "Lanes by profile" on (the default), this column sub-groups by assignee so you can see at a glance what each worker is doing.
@@ -112,15 +112,15 @@ Create the work:
 
 ```bash
 for lang in Spanish French German; do
-    sinoclaw kanban create "Translate homepage to $lang" \
+    anan kanban create "Translate homepage to $lang" \
         --assignee translator --tenant content-ops
 done
 for i in 1 2 3 4 5; do
-    sinoclaw kanban create "Transcribe Q3 customer call #$i" \
+    anan kanban create "Transcribe Q3 customer call #$i" \
         --assignee transcriber --tenant content-ops
 done
 for sku in 1001 1002 1003 1004; do
-    sinoclaw kanban create "Generate product description: SKU-$sku" \
+    anan kanban create "Generate product description: SKU-$sku" \
         --assignee copywriter --tenant content-ops
 done
 ```
@@ -291,7 +291,7 @@ When a worker on task B is spawned and calls `kanban_show()`, the `worker_contex
 
 This replaces the "dig through comments and the work output" dance that plagues flat kanban systems. A PM writes acceptance criteria in the spec's metadata, and the engineer's worker sees them structurally in the parent handoff. An engineer records which tests they ran and how many passed, and the reviewer's worker has that list in hand before opening a diff.
 
-The bulk-close guard exists because this data is per-run. `sinoclaw kanban complete a b c --summary X` (you, from the CLI) is refused — copy-pasting the same summary to three tasks is almost always wrong. Bulk close without the handoff flags still works for the common "I finished a pile of admin tasks" case. The tool surface doesn't expose a bulk variant at all; `kanban_complete` is always single-task-at-a-time for the same reason.
+The bulk-close guard exists because this data is per-run. `anan kanban complete a b c --summary X` (you, from the CLI) is refused — copy-pasting the same summary to three tasks is almost always wrong. Bulk close without the handoff flags still works for the common "I finished a pile of admin tasks" case. The tool surface doesn't expose a bulk variant at all; `kanban_complete` is always single-task-at-a-time for the same reason.
 
 ## Inspecting a task currently running
 
@@ -304,6 +304,6 @@ Status is `Running`. The active run appears in the Run History section with outc
 ## Next steps
 
 - [Kanban overview](./kanban) — the full data model, event vocabulary, and CLI reference.
-- `sinoclaw kanban --help` — every subcommand, every flag.
-- `sinoclaw kanban watch --kinds completed,gave_up,timed_out` — live stream terminal events across the whole board.
-- `sinoclaw kanban notify-subscribe <task> --platform telegram --chat-id <id>` — get a gateway ping when a specific task finishes.
+- `anan kanban --help` — every subcommand, every flag.
+- `anan kanban watch --kinds completed,gave_up,timed_out` — live stream terminal events across the whole board.
+- `anan kanban notify-subscribe <task> --platform telegram --chat-id <id>` — get a gateway ping when a specific task finishes.

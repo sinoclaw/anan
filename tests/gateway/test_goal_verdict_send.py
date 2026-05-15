@@ -21,13 +21,13 @@ from gateway.session import SessionEntry, SessionSource, build_session_key
 
 
 @pytest.fixture()
-def sinoclaw_home(tmp_path, monkeypatch):
+def anan_home(tmp_path, monkeypatch):
     home = tmp_path / ".sinoclaw"
     home.mkdir()
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    monkeypatch.setenv("SINOCLAW_HOME", str(home))
+    monkeypatch.setenv("ANAN_HOME", str(home))
 
-    from sinoclaw_cli import goals
+    from anan_cli import goals
 
     goals._DB_CACHE.clear()
     yield home
@@ -77,7 +77,7 @@ def _make_runner_with_adapter(session_id: str = None):
     src = _make_source()
     # Default to a unique session_id so xdist parallel runs on the same worker
     # don't see each other's GoalManager state (DEFAULT_DB_PATH gets frozen at
-    # module-import time, defeating per-test SINOCLAW_HOME monkeypatches).
+    # module-import time, defeating per-test ANAN_HOME monkeypatches).
     session_entry = SessionEntry(
         session_key=build_session_key(src),
         session_id=session_id or f"goal-sess-{uuid.uuid4().hex[:8]}",
@@ -97,17 +97,17 @@ def _make_runner_with_adapter(session_id: str = None):
 
 
 @pytest.mark.asyncio
-async def test_goal_verdict_done_sent_via_adapter_send(sinoclaw_home):
+async def test_goal_verdict_done_sent_via_adapter_send(anan_home):
     """When the judge says done, the '✓ Goal achieved' message must reach
     the user through the adapter's ``send()`` method."""
     runner, adapter, session_entry, src = _make_runner_with_adapter()
 
-    from sinoclaw_cli.goals import GoalManager
+    from anan_cli.goals import GoalManager
 
     mgr = GoalManager(session_entry.session_id)
     mgr.set("ship the feature")
 
-    with patch("sinoclaw_cli.goals.judge_goal", return_value=("done", "the feature shipped", False)):
+    with patch("anan_cli.goals.judge_goal", return_value=("done", "the feature shipped", False)):
         await runner._post_turn_goal_continuation(
             session_entry=session_entry,
             source=src,
@@ -124,19 +124,19 @@ async def test_goal_verdict_done_sent_via_adapter_send(sinoclaw_home):
 
 
 @pytest.mark.asyncio
-async def test_goal_verdict_continue_enqueues_continuation(sinoclaw_home):
+async def test_goal_verdict_continue_enqueues_continuation(anan_home):
     """When the judge says continue, both the 'continuing' status and the
     continuation-prompt event must be delivered. The continuation prompt is
     routed through the adapter's pending-messages FIFO so the goal loop
     proceeds on the next turn."""
     runner, adapter, session_entry, src = _make_runner_with_adapter()
 
-    from sinoclaw_cli.goals import GoalManager
+    from anan_cli.goals import GoalManager
 
     mgr = GoalManager(session_entry.session_id)
     mgr.set("polish the docs")
 
-    with patch("sinoclaw_cli.goals.judge_goal", return_value=("continue", "still needs work", False)):
+    with patch("anan_cli.goals.judge_goal", return_value=("continue", "still needs work", False)):
         await runner._post_turn_goal_continuation(
             session_entry=session_entry,
             source=src,
@@ -152,19 +152,19 @@ async def test_goal_verdict_continue_enqueues_continuation(sinoclaw_home):
 
 
 @pytest.mark.asyncio
-async def test_goal_verdict_budget_exhausted_sends_pause(sinoclaw_home):
+async def test_goal_verdict_budget_exhausted_sends_pause(anan_home):
     """When the budget is exhausted, a '⏸ Goal paused' message must be sent
     and no further continuation enqueued."""
     runner, adapter, session_entry, src = _make_runner_with_adapter()
 
-    from sinoclaw_cli.goals import GoalManager, save_goal
+    from anan_cli.goals import GoalManager, save_goal
 
     mgr = GoalManager(session_entry.session_id, default_max_turns=2)
     state = mgr.set("tiny goal", max_turns=2)
     state.turns_used = 2
     save_goal(session_entry.session_id, state)
 
-    with patch("sinoclaw_cli.goals.judge_goal", return_value=("continue", "keep going", False)):
+    with patch("anan_cli.goals.judge_goal", return_value=("continue", "keep going", False)):
         await runner._post_turn_goal_continuation(
             session_entry=session_entry,
             source=src,
@@ -181,7 +181,7 @@ async def test_goal_verdict_budget_exhausted_sends_pause(sinoclaw_home):
 
 
 @pytest.mark.asyncio
-async def test_goal_verdict_skipped_when_no_active_goal(sinoclaw_home):
+async def test_goal_verdict_skipped_when_no_active_goal(anan_home):
     """No goal set → the hook is a no-op. Nothing is sent, nothing enqueued."""
     runner, adapter, session_entry, src = _make_runner_with_adapter()
 
@@ -197,11 +197,11 @@ async def test_goal_verdict_skipped_when_no_active_goal(sinoclaw_home):
 
 
 @pytest.mark.asyncio
-async def test_goal_verdict_survives_adapter_without_send(sinoclaw_home):
+async def test_goal_verdict_survives_adapter_without_send(anan_home):
     """Bad adapter (no ``send`` attribute) must not crash the judge hook."""
     runner, _adapter, session_entry, src = _make_runner_with_adapter()
 
-    from sinoclaw_cli.goals import GoalManager
+    from anan_cli.goals import GoalManager
 
     GoalManager(session_entry.session_id).set("survive missing send")
 
@@ -211,7 +211,7 @@ async def test_goal_verdict_survives_adapter_without_send(sinoclaw_home):
 
     runner.adapters[Platform.TELEGRAM] = _NoSendAdapter()
 
-    with patch("sinoclaw_cli.goals.judge_goal", return_value=("done", "ok", False)):
+    with patch("anan_cli.goals.judge_goal", return_value=("done", "ok", False)):
         # must not raise
         await runner._post_turn_goal_continuation(
             session_entry=session_entry,

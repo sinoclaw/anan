@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Sinoclaw Agent Setup Script
+# Anan Agent Setup Script
 # ============================================================================
 # Quick setup for developers who cloned the repo manually.
 # Uses uv for desktop/server setup and Python's stdlib venv + pip on Termux.
@@ -56,7 +56,7 @@ get_command_link_display_dir() {
 }
 
 echo ""
-echo -e "${CYAN}⚕ Sinoclaw Agent Setup${NC}"
+echo -e "${CYAN}⚕ Anan Agent Setup${NC}"
 echo ""
 
 # ============================================================================
@@ -283,17 +283,17 @@ else
 fi
 
 # ============================================================================
-# PATH setup — symlink sinoclaw into a user-facing bin dir
+# PATH setup — symlink anan into a user-facing bin dir
 # ============================================================================
 
-echo -e "${CYAN}→${NC} Setting up sinoclaw command..."
+echo -e "${CYAN}→${NC} Setting up anan command..."
 
-SINOCLAW_BIN="$SCRIPT_DIR/venv/bin/sinoclaw"
+SINOCLAW_BIN="$SCRIPT_DIR/venv/bin/anan"
 COMMAND_LINK_DIR="$(get_command_link_dir)"
 COMMAND_LINK_DISPLAY_DIR="$(get_command_link_display_dir)"
 mkdir -p "$COMMAND_LINK_DIR"
-ln -sf "$SINOCLAW_BIN" "$COMMAND_LINK_DIR/sinoclaw"
-echo -e "${GREEN}✓${NC} Symlinked sinoclaw → $COMMAND_LINK_DISPLAY_DIR/sinoclaw"
+ln -sf "$SINOCLAW_BIN" "$COMMAND_LINK_DIR/anan"
+echo -e "${GREEN}✓${NC} Symlinked anan → $COMMAND_LINK_DISPLAY_DIR/anan"
 
 if is_termux; then
     export PATH="$COMMAND_LINK_DIR:$PATH"
@@ -324,7 +324,7 @@ else
         if ! echo "$PATH" | tr ':' '\n' | grep -q "^$HOME/.local/bin$"; then
             if ! grep -q '\.local/bin' "$SHELL_CONFIG" 2>/dev/null; then
                 echo "" >> "$SHELL_CONFIG"
-                echo "# Sinoclaw Agent — ensure ~/.local/bin is on PATH" >> "$SHELL_CONFIG"
+                echo "# Anan Agent — ensure ~/.local/bin is on PATH" >> "$SHELL_CONFIG"
                 echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_CONFIG"
                 echo -e "${GREEN}✓${NC} Added ~/.local/bin to PATH in $SHELL_CONFIG"
             else
@@ -337,14 +337,14 @@ else
 fi
 
 # ============================================================================
-# Seed bundled skills into ~/.sinoclaw/skills/
+# Seed bundled skills into ~/.anan/skills/
 # ============================================================================
 
-SINOCLAW_SKILLS_DIR="${SINOCLAW_HOME:-$HOME/.hermes}/skills"
+SINOCLAW_SKILLS_DIR="${ANAN_HOME:-$HOME/.hermes}/skills"
 mkdir -p "$SINOCLAW_SKILLS_DIR"
 
 echo ""
-echo "Syncing bundled skills to ~/.sinoclaw/skills/ ..."
+echo "Syncing bundled skills to ~/.anan/skills/ ..."
 if "$SCRIPT_DIR/venv/bin/python" "$SCRIPT_DIR/tools/skills_sync.py" 2>/dev/null; then
     echo -e "${GREEN}✓${NC} Skills synced"
 else
@@ -366,7 +366,7 @@ echo "Next steps:"
 echo ""
 if is_termux; then
     echo "  1. Run the setup wizard to configure API keys:"
-    echo "     sinoclaw setup"
+    echo "     anan setup"
     echo ""
     echo "  2. Start chatting:"
     echo "     hermes"
@@ -376,21 +376,21 @@ else
     echo "     source $SHELL_CONFIG"
     echo ""
     echo "  2. Run the setup wizard to configure API keys:"
-    echo "     sinoclaw setup"
+    echo "     anan setup"
     echo ""
     echo "  3. Start chatting:"
     echo "     hermes"
     echo ""
 fi
 echo "Other commands:"
-echo "  sinoclaw status        # Check configuration"
+echo "  anan status        # Check configuration"
 if is_termux; then
-    echo "  sinoclaw gateway       # Run gateway in foreground"
+    echo "  anan gateway       # Run gateway in foreground"
 else
-    echo "  sinoclaw gateway install # Install gateway service (messaging + cron)"
+    echo "  anan gateway install # Install gateway service (messaging + cron)"
 fi
-echo "  sinoclaw cron list     # View scheduled jobs"
-echo "  sinoclaw doctor        # Diagnose issues"
+echo "  anan cron list     # View scheduled jobs"
+echo "  anan doctor        # Diagnose issues"
 echo ""
 
 # Ask if they want to run setup wizard now
@@ -399,5 +399,5 @@ echo
 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     echo ""
     # Run directly with venv Python (no activation needed)
-    "$SCRIPT_DIR/venv/bin/python" -m sinoclaw_cli.main setup
+    "$SCRIPT_DIR/venv/bin/python" -m anan_cli.main setup
 fi

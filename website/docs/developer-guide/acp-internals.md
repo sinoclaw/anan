@@ -24,9 +24,9 @@ Key implementation files:
 ```text
 hermes acp / sinoclaw-acp / python -m acp_adapter
   -> acp_adapter.entry.main()
-  -> load ~/.sinoclaw/.env
+  -> load ~/.anan/.env
   -> configure stderr logging
-  -> construct SinoclawACPAgent
+  -> construct AnanACPAgent
   -> acp.run_agent(agent, use_unstable_protocol=True)
 ```
 
@@ -34,7 +34,7 @@ Stdout is reserved for ACP JSON-RPC transport. Human-readable logs go to stderr.
 
 ## Major components
 
-### `SinoclawACPAgent`
+### `AnanACPAgent`
 
 `acp_adapter/server.py` implements the ACP agent protocol.
 
@@ -114,7 +114,7 @@ Examples:
 ```text
 new_session(cwd)
   -> create SessionState
-  -> create AIAgent(platform="acp", enabled_toolsets=["sinoclaw-acp"])
+  -> create AIAgent(platform="acp", enabled_toolsets=["anan-acp"])
   -> bind task_id/session_id to cwd override
 
 prompt(..., session_id)
@@ -145,7 +145,7 @@ ACP does not implement its own auth store.
 Instead it reuses Hermes' runtime resolver:
 
 - `acp_adapter/auth.py`
-- `sinoclaw_cli/runtime_provider.py`
+- `anan_cli/runtime_provider.py`
 
 So ACP advertises and uses the currently configured Sinoclaw provider/credentials.
 
@@ -170,7 +170,7 @@ ACP temporarily installs an approval callback on the terminal tool during prompt
 
 ## Current limitations
 
-- ACP sessions are persisted to the shared `~/.sinoclaw/state.db` (SessionDB) and transparently restored across process restarts; they appear in `session_search`
+- ACP sessions are persisted to the shared `~/.anan/state.db` (SessionDB) and transparently restored across process restarts; they appear in `session_search`
 - non-text prompt blocks are currently ignored for request text extraction
 - editor-specific UX varies by ACP client implementation
 
@@ -178,5 +178,5 @@ ACP temporarily installs an approval callback on the terminal tool during prompt
 
 - `tests/acp/` — ACP test suite
 - `toolsets.py` — `sinoclaw-acp` toolset definition
-- `sinoclaw_cli/main.py` — `sinoclaw acp` CLI subcommand
+- `anan_cli/main.py` — `sinoclaw acp` CLI subcommand
 - `pyproject.toml` — `[acp]` optional dependency + `sinoclaw-acp` script

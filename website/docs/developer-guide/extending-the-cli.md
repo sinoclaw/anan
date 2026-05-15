@@ -6,7 +6,7 @@ description: "Build wrapper CLIs that extend the Hermes TUI with custom widgets,
 
 # Extending the CLI
 
-Hermes exposes protected extension hooks on `SinoclawCLI` so wrapper CLIs can add widgets, keybindings, and layout customizations without overriding the 1000+ line `run()` method. This keeps your extension decoupled from internal changes.
+Hermes exposes protected extension hooks on `AnanCLI` so wrapper CLIs can add widgets, keybindings, and layout customizations without overriding the 1000+ line `run()` method. This keeps your extension decoupled from internal changes.
 
 ## Extension points
 
@@ -28,12 +28,12 @@ The first three are new protected hooks. The last two already existed.
 #!/usr/bin/env python3
 """my_cli.py — Example wrapper CLI that extends Hermes."""
 
-from cli import SinoclawCLI
+from cli import AnanCLI
 from prompt_toolkit.layout import FormattedTextControl, Window
 from prompt_toolkit.filters import Condition
 
 
-class MyCLI(SinoclawCLI):
+class MyCLI(AnanCLI):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 Run it:
 
 ```bash
-cd ~/.sinoclaw/sinoclaw-agent
+cd ~/.anan/anan
 source .venv/bin/activate
 python my_cli.py
 ```

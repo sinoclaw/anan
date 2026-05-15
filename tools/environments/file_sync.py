@@ -24,7 +24,7 @@ except ImportError:
 from pathlib import Path
 from typing import Callable
 
-from sinoclaw_constants import get_sinoclaw_home
+from anan_constants import get_anan_home
 from tools.environments.base import _file_mtime_key
 
 logger = logging.getLogger(__name__)
@@ -46,12 +46,12 @@ DeleteFn = Callable[[list[str]], None]  # (remote_paths) -> raises on failure
 GetFilesFn = Callable[[], list[tuple[str, str]]]  # () -> [(host_path, remote_path), ...]
 
 
-def iter_sync_files(container_base: str = "/root/.sinoclaw") -> list[tuple[str, str]]:
+def iter_sync_files(container_base: str = "/root/.anan") -> list[tuple[str, str]]:
     """Enumerate all files that should be synced to a remote environment.
 
     Combines credentials, skills, and cache into a single flat list of
     (host_path, remote_path) pairs.  Credential paths are remapped from
-    the hardcoded /root/.sinoclaw to *container_base* because the remote
+    the hardcoded /root/.anan to *container_base* because the remote
     user's home may differ (e.g. /home/daytona, /home/user).
     """
     # Late import: credential_files imports agent modules that create
@@ -65,7 +65,7 @@ def iter_sync_files(container_base: str = "/root/.sinoclaw") -> list[tuple[str, 
     files: list[tuple[str, str]] = []
     for entry in get_credential_file_mounts():
         remote = entry["container_path"].replace(
-            "/root/.sinoclaw", container_base, 1
+            "/root/.anan", container_base, 1
         )
         files.append((entry["host_path"], remote))
     for entry in iter_skills_files(container_base=container_base):
@@ -213,10 +213,10 @@ class FileSyncManager:
     # Sync-back: pull remote changes to host on teardown
     # ------------------------------------------------------------------
 
-    def sync_back(self, sinoclaw_home: Path | None = None) -> None:
+    def sync_back(self, anan_home: Path | None = None) -> None:
         """Pull remote changes back to the host filesystem.
 
-        Downloads the remote ``.sinoclaw/`` directory as a tar archive,
+        Downloads the remote ``.anan/`` directory as a tar archive,
         unpacks it, and applies only files that differ from what was
         originally pushed (based on SHA-256 content hashes).
 
@@ -228,12 +228,12 @@ class FileSyncManager:
 
         # Nothing was ever committed through this manager — the initial
         # push failed or never ran. Skip sync_back to avoid retry storms
-        # against an uninitialized remote .sinoclaw/ directory.
+        # against an uninitialized remote .anan/ directory.
         if not self._pushed_hashes and not self._synced_files:
             logger.debug("sync_back: no prior push state — skipping")
             return
 
-        lock_path = (sinoclaw_home or get_sinoclaw_home()) / ".sync.lock"
+        lock_path = (anan_home or get_anan_home()) / ".sync.lock"
         lock_path.parent.mkdir(parents=True, exist_ok=True)
 
         last_exc: Exception | None = None
@@ -319,7 +319,7 @@ class FileSyncManager:
                 )
                 return
 
-            with tempfile.TemporaryDirectory(prefix="sinoclaw-sync-back-") as staging:
+            with tempfile.TemporaryDirectory(prefix="anan-sync-back-") as staging:
                 with tarfile.open(tf.name) as tar:
                     tar.extractall(staging, filter="data")
 
@@ -385,9 +385,9 @@ class FileSyncManager:
 
         Uses the existing file mapping to find a remote->host directory
         pair, then applies the same prefix substitution to the new file.
-        For example, if the mapping has ``/root/.sinoclaw/skills/a.md`` →
-        ``~/.sinoclaw/skills/a.md``, a new remote file at
-        ``/root/.sinoclaw/skills/b.md`` maps to ``~/.sinoclaw/skills/b.md``.
+        For example, if the mapping has ``/root/.anan/skills/a.md`` →
+        ``~/.anan/skills/a.md``, a new remote file at
+        ``/root/.anan/skills/b.md`` maps to ``~/.anan/skills/b.md``.
         """
         mapping = file_mapping if file_mapping is not None else []
         for host, remote in mapping:

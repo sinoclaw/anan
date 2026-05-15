@@ -179,7 +179,7 @@ def test_voice_record_start_handles_non_dict_voice_cfg(monkeypatch):
 
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.voice",
+        "anan_cli.voice",
         types.SimpleNamespace(
             start_continuous=fake_start_continuous, stop_continuous=lambda: None
         ),
@@ -244,7 +244,7 @@ def test_voice_record_stop_forces_transcription(monkeypatch):
 
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.voice",
+        "anan_cli.voice",
         types.SimpleNamespace(
             start_continuous=lambda **_kwargs: None,
             stop_continuous=fake_stop_continuous,
@@ -266,7 +266,7 @@ def test_voice_record_stop_forces_transcription(monkeypatch):
 def test_voice_record_stop_updates_event_session_id(monkeypatch):
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.voice",
+        "anan_cli.voice",
         types.SimpleNamespace(
             start_continuous=lambda **_kwargs: True,
             stop_continuous=lambda **_kwargs: None,
@@ -289,7 +289,7 @@ def test_voice_record_stop_updates_event_session_id(monkeypatch):
 def test_voice_record_start_reports_busy_when_stop_is_in_progress(monkeypatch):
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.voice",
+        "anan_cli.voice",
         types.SimpleNamespace(
             start_continuous=lambda **_kwargs: False,
             stop_continuous=lambda **_kwargs: None,
@@ -351,7 +351,7 @@ def test_load_enabled_toolsets_filters_invalid_tui_env(monkeypatch, capsys):
     monkeypatch.setenv("SINOCLAW_TUI_TOOLSETS", "web, nope")
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.plugins",
+        "anan_cli.plugins",
         types.SimpleNamespace(discover_plugins=lambda: None),
     )
 
@@ -373,7 +373,7 @@ def test_load_enabled_toolsets_accepts_plugin_env_after_discovery(monkeypatch):
     monkeypatch.setattr(toolsets, "validate_toolset", fake_validate)
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.plugins",
+        "anan_cli.plugins",
         types.SimpleNamespace(
             discover_plugins=lambda: discovered.update({"ready": True})
         ),
@@ -386,11 +386,11 @@ def test_load_enabled_toolsets_rejects_disabled_mcp_env(monkeypatch, capsys):
     monkeypatch.setenv("SINOCLAW_TUI_TOOLSETS", "mcp-off")
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.plugins",
+        "anan_cli.plugins",
         types.SimpleNamespace(discover_plugins=lambda: None),
     )
 
-    import sinoclaw_cli.config as config_mod
+    import anan_cli.config as config_mod
 
     monkeypatch.setattr(
         config_mod,
@@ -403,7 +403,7 @@ def test_load_enabled_toolsets_rejects_disabled_mcp_env(monkeypatch, capsys):
 
     # Sorted: ["kanban", "memory"]. `kanban` is auto-recovered by
     # _get_platform_tools because it's a non-configurable platform toolset
-    # whose tools live in sinoclaw-cli's universe (see toolsets.py).
+    # whose tools live in anan-cli's universe (see toolsets.py).
     assert server._load_enabled_toolsets() == ["kanban", "memory"]
     err = capsys.readouterr().err
     assert "ignoring disabled MCP servers" in err
@@ -415,11 +415,11 @@ def test_load_enabled_toolsets_falls_back_when_tui_env_invalid(monkeypatch, caps
     monkeypatch.setenv("SINOCLAW_TUI_TOOLSETS", "nope")
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.plugins",
+        "anan_cli.plugins",
         types.SimpleNamespace(discover_plugins=lambda: None),
     )
 
-    import sinoclaw_cli.config as config_mod
+    import anan_cli.config as config_mod
 
     monkeypatch.setattr(
         config_mod, "load_config", lambda: {"platform_toolsets": {"cli": ["memory"]}}
@@ -433,11 +433,11 @@ def test_load_enabled_toolsets_warns_when_config_fallback_fails(monkeypatch, cap
     monkeypatch.setenv("SINOCLAW_TUI_TOOLSETS", "nope")
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.plugins",
+        "anan_cli.plugins",
         types.SimpleNamespace(discover_plugins=lambda: None),
     )
 
-    import sinoclaw_cli.config as config_mod
+    import anan_cli.config as config_mod
 
     monkeypatch.setattr(
         config_mod, "load_config", lambda: (_ for _ in ()).throw(RuntimeError("boom"))
@@ -450,7 +450,7 @@ def test_load_enabled_toolsets_warns_when_config_fallback_fails(monkeypatch, cap
 def test_load_enabled_toolsets_honors_builtin_env_if_config_fails(monkeypatch):
     monkeypatch.setenv("SINOCLAW_TUI_TOOLSETS", "web")
 
-    import sinoclaw_cli.config as config_mod
+    import anan_cli.config as config_mod
 
     monkeypatch.setattr(
         config_mod, "load_config", lambda: (_ for _ in ()).throw(RuntimeError("boom"))
@@ -478,11 +478,11 @@ def test_load_enabled_toolsets_reports_disabled_mcp_separately(monkeypatch, caps
     monkeypatch.setenv("SINOCLAW_TUI_TOOLSETS", "web,mcp-off,nope")
     monkeypatch.setitem(
         sys.modules,
-        "sinoclaw_cli.plugins",
+        "anan_cli.plugins",
         types.SimpleNamespace(discover_plugins=lambda: None),
     )
 
-    import sinoclaw_cli.config as config_mod
+    import anan_cli.config as config_mod
 
     monkeypatch.setattr(
         config_mod,
@@ -648,7 +648,7 @@ def test_startup_runtime_does_not_treat_inference_provider_as_explicit(monkeypat
     monkeypatch.delenv("SINOCLAW_TUI_PROVIDER", raising=False)
     monkeypatch.setenv("SINOCLAW_INFERENCE_PROVIDER", "nous")
     monkeypatch.setattr(
-        "sinoclaw_cli.models.detect_static_provider_for_model",
+        "anan_cli.models.detect_static_provider_for_model",
         lambda model, provider: None,
     )
 
@@ -667,7 +667,7 @@ def test_startup_runtime_detects_provider_for_model_env(monkeypatch):
         return "anthropic", "anthropic/claude-sonnet-4.6"
 
     monkeypatch.setattr(
-        "sinoclaw_cli.models.detect_static_provider_for_model", fake_detect
+        "anan_cli.models.detect_static_provider_for_model", fake_detect
     )
 
     assert server._resolve_startup_runtime() == (
@@ -682,7 +682,7 @@ def test_startup_runtime_resolves_short_alias_without_network(monkeypatch):
     monkeypatch.delenv("SINOCLAW_INFERENCE_PROVIDER", raising=False)
     monkeypatch.setattr(server, "_load_cfg", lambda: {"model": {"provider": "auto"}})
     monkeypatch.setattr(
-        "sinoclaw_cli.models.fetch_openrouter_models",
+        "anan_cli.models.fetch_openrouter_models",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             AssertionError("network lookup should not run")
         ),
@@ -700,7 +700,7 @@ def test_startup_runtime_does_not_call_network_detector(monkeypatch):
     monkeypatch.delenv("SINOCLAW_INFERENCE_PROVIDER", raising=False)
     monkeypatch.setattr(server, "_load_cfg", lambda: {"model": {"provider": "auto"}})
     monkeypatch.setattr(
-        "sinoclaw_cli.models.detect_provider_for_model",
+        "anan_cli.models.detect_provider_for_model",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             AssertionError("network detector called")
         ),
@@ -1155,7 +1155,7 @@ def test_config_set_fast_updates_live_agent_and_config(monkeypatch):
     monkeypatch.setattr(server, "_session_info", lambda _agent: {"model": "x"})
     monkeypatch.setattr(server, "_emit", lambda *args: emits.append(args))
     monkeypatch.setattr(
-        "sinoclaw_cli.models.resolve_fast_mode_overrides",
+        "anan_cli.models.resolve_fast_mode_overrides",
         lambda _model_id: {"service_tier": "priority"},
     )
 
@@ -1230,7 +1230,7 @@ def test_config_set_fast_rejects_unsupported_model(monkeypatch):
         server, "_write_config_key", lambda path, value: writes.append((path, value))
     )
     monkeypatch.setattr(
-        "sinoclaw_cli.models.resolve_fast_mode_overrides",
+        "anan_cli.models.resolve_fast_mode_overrides",
         lambda _model_id: None,
     )
 
@@ -1349,7 +1349,7 @@ def test_config_set_statusbar_survives_non_dict_display(tmp_path, monkeypatch):
 
     cfg_path = tmp_path / "config.yaml"
     cfg_path.write_text(yaml.safe_dump({"display": "broken"}))
-    monkeypatch.setattr(server, "_sinoclaw_home", tmp_path)
+    monkeypatch.setattr(server, "_anan_home", tmp_path)
 
     resp = server.handle_request(
         {
@@ -1373,7 +1373,7 @@ def test_config_set_details_mode_pins_all_sections(tmp_path, monkeypatch):
             {"display": {"sections": {"tools": "expanded", "activity": "hidden"}}}
         )
     )
-    monkeypatch.setattr(server, "_sinoclaw_home", tmp_path)
+    monkeypatch.setattr(server, "_anan_home", tmp_path)
 
     resp = server.handle_request(
         {
@@ -1398,7 +1398,7 @@ def test_config_set_section_writes_per_section_override(tmp_path, monkeypatch):
     import yaml
 
     cfg_path = tmp_path / "config.yaml"
-    monkeypatch.setattr(server, "_sinoclaw_home", tmp_path)
+    monkeypatch.setattr(server, "_anan_home", tmp_path)
 
     resp = server.handle_request(
         {
@@ -1422,7 +1422,7 @@ def test_config_set_section_clears_override_on_empty_value(tmp_path, monkeypatch
             {"display": {"sections": {"activity": "hidden", "tools": "expanded"}}}
         )
     )
-    monkeypatch.setattr(server, "_sinoclaw_home", tmp_path)
+    monkeypatch.setattr(server, "_anan_home", tmp_path)
 
     resp = server.handle_request(
         {
@@ -1438,7 +1438,7 @@ def test_config_set_section_clears_override_on_empty_value(tmp_path, monkeypatch
 
 
 def test_config_set_section_rejects_unknown_section_or_mode(tmp_path, monkeypatch):
-    monkeypatch.setattr(server, "_sinoclaw_home", tmp_path)
+    monkeypatch.setattr(server, "_anan_home", tmp_path)
 
     bad_section = server.handle_request(
         {
@@ -1505,7 +1505,7 @@ def test_enable_gateway_prompts_sets_gateway_env(monkeypatch):
 
 
 def test_setup_status_reports_provider_config(monkeypatch):
-    monkeypatch.setattr("sinoclaw_cli.main._has_any_provider_configured", lambda: False)
+    monkeypatch.setattr("anan_cli.main._has_any_provider_configured", lambda: False)
 
     resp = server.handle_request({"id": "1", "method": "setup.status", "params": {}})
 
@@ -1558,7 +1558,7 @@ def test_complete_slash_details_args():
 
 
 def test_config_set_reasoning_updates_live_session_and_agent(tmp_path, monkeypatch):
-    monkeypatch.setattr(server, "_sinoclaw_home", tmp_path)
+    monkeypatch.setattr(server, "_anan_home", tmp_path)
     agent = types.SimpleNamespace(reasoning_config=None)
     server._sessions["sid"] = _session(agent=agent)
 
@@ -1596,7 +1596,7 @@ def test_config_set_reasoning_updates_live_session_and_agent(tmp_path, monkeypat
 
 
 def test_config_set_verbose_updates_session_mode_and_agent(tmp_path, monkeypatch):
-    monkeypatch.setattr(server, "_sinoclaw_home", tmp_path)
+    monkeypatch.setattr(server, "_anan_home", tmp_path)
     agent = types.SimpleNamespace(verbose_logging=False)
     server._sessions["sid"] = _session(agent=agent)
 
@@ -1662,10 +1662,10 @@ def test_config_set_model_global_persists(monkeypatch):
         return result
 
     server._sessions["sid"] = _session(agent=_Agent())
-    monkeypatch.setattr("sinoclaw_cli.model_switch.switch_model", _switch_model)
+    monkeypatch.setattr("anan_cli.model_switch.switch_model", _switch_model)
     monkeypatch.setattr(server, "_restart_slash_worker", lambda session: None)
     monkeypatch.setattr(server, "_emit", lambda *args, **kwargs: None)
-    monkeypatch.setattr("sinoclaw_cli.config.save_config", lambda cfg: saved.update(cfg))
+    monkeypatch.setattr("anan_cli.config.save_config", lambda cfg: saved.update(cfg))
 
     resp = server.handle_request(
         {
@@ -1719,7 +1719,7 @@ def test_config_set_model_syncs_inference_provider_env(monkeypatch):
     server._sessions["sid"] = _session(agent=_Agent())
     monkeypatch.setenv("SINOCLAW_INFERENCE_PROVIDER", "openrouter")
     monkeypatch.setattr(
-        "sinoclaw_cli.model_switch.switch_model", lambda **_kwargs: result
+        "anan_cli.model_switch.switch_model", lambda **_kwargs: result
     )
     monkeypatch.setattr(server, "_restart_slash_worker", lambda session: None)
     monkeypatch.setattr(server, "_emit", lambda *args, **kwargs: None)
@@ -1770,7 +1770,7 @@ def test_config_set_model_syncs_tui_provider_unconditionally(monkeypatch):
     monkeypatch.delenv("SINOCLAW_TUI_PROVIDER", raising=False)
     monkeypatch.delenv("SINOCLAW_INFERENCE_PROVIDER", raising=False)
     monkeypatch.setattr(
-        "sinoclaw_cli.model_switch.switch_model", lambda **_kwargs: result
+        "anan_cli.model_switch.switch_model", lambda **_kwargs: result
     )
     monkeypatch.setattr(server, "_restart_slash_worker", lambda session: None)
     monkeypatch.setattr(server, "_emit", lambda *args, **kwargs: None)
@@ -1822,7 +1822,7 @@ def test_config_set_model_syncs_tui_provider_env(monkeypatch):
             warning_message="",
         )
 
-    monkeypatch.setattr("sinoclaw_cli.model_switch.switch_model", fake_switch_model)
+    monkeypatch.setattr("anan_cli.model_switch.switch_model", fake_switch_model)
 
     try:
         resp = server.handle_request(
@@ -1937,7 +1937,7 @@ def test_session_compress_syncs_session_key_after_rotation(monkeypatch):
     """When AIAgent._compress_context rotates session_id (compression split),
     the gateway session_key must follow so subsequent approval routing,
     DB title/history lookups, and slash worker resume target the new
-    continuation session — mirrors SinoclawCLI._manual_compress's
+    continuation session — mirrors AnanCLI._manual_compress's
     session_id sync (cli.py).
     """
     agent = types.SimpleNamespace(session_id="rotated-id")
@@ -2225,7 +2225,7 @@ def test_session_status_reads_live_gateway_agent(monkeypatch):
         server._sessions.pop("sid", None)
 
     out = resp["result"]["output"]
-    assert "Sinoclaw TUI Status" in out
+    assert "Anan TUI Status" in out
     assert "Session ID: session-key" in out
     assert "Title: Live TUI" in out
     assert "Model: live-model (live-provider)" in out
@@ -2314,7 +2314,7 @@ def test_command_dispatch_exec_nonzero_surfaces_error(monkeypatch):
 
 
 def test_plugins_list_surfaces_loader_error(monkeypatch):
-    with patch("sinoclaw_cli.plugins.get_plugin_manager", side_effect=Exception("boom")):
+    with patch("anan_cli.plugins.get_plugin_manager", side_effect=Exception("boom")):
         resp = server.handle_request(
             {"id": "1", "method": "plugins.list", "params": {}}
         )
@@ -2325,7 +2325,7 @@ def test_plugins_list_surfaces_loader_error(monkeypatch):
 
 def test_complete_slash_surfaces_completer_error(monkeypatch):
     with patch(
-        "sinoclaw_cli.commands.SlashCommandCompleter",
+        "anan_cli.commands.SlashCommandCompleter",
         side_effect=Exception("no completer"),
     ):
         resp = server.handle_request(
@@ -3217,14 +3217,14 @@ def test_session_create_no_race_keeps_worker_alive(monkeypatch):
 
 
 def test_get_db_degrades_cleanly_when_sessiondb_init_fails(monkeypatch):
-    fake_mod = types.ModuleType("sinoclaw_state")
+    fake_mod = types.ModuleType("anan_state")
 
     class _BrokenSessionDB:
         def __init__(self):
             raise RuntimeError("locking protocol")
 
     fake_mod.SessionDB = _BrokenSessionDB
-    monkeypatch.setitem(sys.modules, "sinoclaw_state", fake_mod)
+    monkeypatch.setitem(sys.modules, "anan_state", fake_mod)
     monkeypatch.setattr(server, "_db", None)
     monkeypatch.setattr(server, "_db_error", None)
 
@@ -3428,21 +3428,21 @@ def test_session_delete_success_returns_deleted_id(monkeypatch):
     assert resp["result"] == {"deleted": "old-1"}
     assert captured["sid"] == "old-1"
     # sessions_dir must be forwarded so transcript files get cleaned up
-    # too — not just the SQLite row.  The autouse _isolate_sinoclaw_home
-    # fixture pins SINOCLAW_HOME to a temp dir; the handler should append
+    # too — not just the SQLite row.  The autouse _isolate_anan_home
+    # fixture pins ANAN_HOME to a temp dir; the handler should append
     # /sessions to it.
     assert captured["sessions_dir"] is not None
     assert str(captured["sessions_dir"]).endswith("sessions")
 
 
 # --------------------------------------------------------------------------
-# model.options — curated-list parity with `sinoclaw model` and classic /model
+# model.options — curated-list parity with `anan model` and classic /model
 # --------------------------------------------------------------------------
 
 
 def test_model_options_does_not_overwrite_curated_models(monkeypatch):
     """The TUI model.options handler must surface the same curated model
-    list as `sinoclaw model` and the classic CLI /model picker.
+    list as `anan model` and the classic CLI /model picker.
 
     Regression: earlier versions of this handler unconditionally replaced
     each provider's curated ``models`` field with ``provider_model_ids()``
@@ -3469,13 +3469,13 @@ def test_model_options_does_not_overwrite_curated_models(monkeypatch):
     )
 
     with patch(
-        "sinoclaw_cli.model_switch.list_authenticated_providers",
+        "anan_cli.model_switch.list_authenticated_providers",
         return_value=curated_providers,
     ) as listing:
         # If provider_model_ids gets called at all, the handler is still
         # overwriting curated with live — that's the regression we're
         # guarding against.
-        with patch("sinoclaw_cli.models.provider_model_ids") as live_fetch:
+        with patch("anan_cli.models.provider_model_ids") as live_fetch:
             resp = server._methods["model.options"](99, {"session_id": ""})
 
     assert "result" in resp, resp
@@ -3502,7 +3502,7 @@ def test_model_options_propagates_list_exception(monkeypatch):
         lambda: {"providers": {}, "custom_providers": []},
     )
     with patch(
-        "sinoclaw_cli.model_switch.list_authenticated_providers",
+        "anan_cli.model_switch.list_authenticated_providers",
         side_effect=RuntimeError("catalog blew up"),
     ):
         resp = server._methods["model.options"](77, {"session_id": ""})
@@ -3857,7 +3857,7 @@ def test_browser_manage_status_falls_back_to_config_cdp_url(monkeypatch):
     fake_cfg = types.SimpleNamespace(
         read_raw_config=lambda: {"browser": {"cdp_url": "http://lan:9222"}}
     )
-    with patch.dict(sys.modules, {"sinoclaw_cli.config": fake_cfg}):
+    with patch.dict(sys.modules, {"anan_cli.config": fake_cfg}):
         resp = server.handle_request(
             {"id": "1", "method": "browser.manage", "params": {"action": "status"}}
         )
@@ -3951,10 +3951,10 @@ def test_browser_manage_connect_default_local_reports_launch_hint(monkeypatch):
         _stub_urlopen(monkeypatch, ok=False)
         with (
             patch(
-                "sinoclaw_cli.browser_connect.try_launch_chrome_debug", return_value=False
+                "anan_cli.browser_connect.try_launch_chrome_debug", return_value=False
             ),
             patch(
-                "sinoclaw_cli.browser_connect.get_chrome_debug_candidates",
+                "anan_cli.browser_connect.get_chrome_debug_candidates",
                 return_value=[],
             ),
         ):
@@ -4007,10 +4007,10 @@ def test_browser_manage_connect_no_session_skips_progress_events(monkeypatch):
         _stub_urlopen(monkeypatch, ok=False)
         with (
             patch(
-                "sinoclaw_cli.browser_connect.try_launch_chrome_debug", return_value=False
+                "anan_cli.browser_connect.try_launch_chrome_debug", return_value=False
             ),
             patch(
-                "sinoclaw_cli.browser_connect.get_chrome_debug_candidates",
+                "anan_cli.browser_connect.get_chrome_debug_candidates",
                 return_value=[],
             ),
         ):
@@ -4095,7 +4095,7 @@ def test_browser_manage_connect_default_local_retries_after_launch(monkeypatch):
     monkeypatch.setattr(urllib.request, "urlopen", _opener)
     with patch.dict(sys.modules, {"tools.browser_tool": fake}):
         with patch(
-            "sinoclaw_cli.browser_connect.try_launch_chrome_debug", return_value=True
+            "anan_cli.browser_connect.try_launch_chrome_debug", return_value=True
         ):
             resp = server.handle_request(
                 {"id": "1", "method": "browser.manage", "params": {"action": "connect"}}
@@ -4485,8 +4485,8 @@ def test_config_set_indicator_none_keeps_blank_repr(monkeypatch):
 # ── reload.env ───────────────────────────────────────────────────────
 
 
-def test_reload_env_rpc_calls_sinoclaw_cli_reload_env(monkeypatch):
-    """reload.env mirrors classic CLI's `/reload` — re-reads ~/.sinoclaw/.env
+def test_reload_env_rpc_calls_anan_cli_reload_env(monkeypatch):
+    """reload.env mirrors classic CLI's `/reload` — re-reads ~/.anan/.env
     into the gateway process and reports the count of vars updated."""
     calls = {"n": 0}
 
@@ -4495,7 +4495,7 @@ def test_reload_env_rpc_calls_sinoclaw_cli_reload_env(monkeypatch):
         return 7
 
     fake = types.SimpleNamespace(reload_env=_fake_reload)
-    with patch.dict(sys.modules, {"sinoclaw_cli.config": fake}):
+    with patch.dict(sys.modules, {"anan_cli.config": fake}):
         resp = server.handle_request({"id": "1", "method": "reload.env", "params": {}})
 
     assert resp["result"] == {"updated": 7}
@@ -4507,7 +4507,7 @@ def test_reload_env_rpc_surfaces_errors(monkeypatch):
         raise RuntimeError("env path locked")
 
     fake = types.SimpleNamespace(reload_env=_broken)
-    with patch.dict(sys.modules, {"sinoclaw_cli.config": fake}):
+    with patch.dict(sys.modules, {"anan_cli.config": fake}):
         resp = server.handle_request({"id": "1", "method": "reload.env", "params": {}})
 
     assert "error" in resp
@@ -4523,7 +4523,7 @@ def _setup_make_agent_mocks(monkeypatch, cfg):
         server, "_resolve_startup_runtime", lambda: ("test-model", None)
     )
     monkeypatch.setattr(
-        "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+        "anan_cli.runtime_provider.resolve_runtime_provider",
         lambda requested=None, target_model=None: {
             "provider": None,
             "base_url": None,

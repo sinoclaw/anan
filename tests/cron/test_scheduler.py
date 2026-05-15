@@ -814,12 +814,12 @@ class TestRunJobSessionPersistence:
         }
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "test-key",
                      "base_url": "https://example.invalid/v1",
@@ -861,12 +861,12 @@ class TestRunJobSessionPersistence:
         }
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -898,12 +898,12 @@ class TestRunJobSessionPersistence:
         }
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -926,12 +926,12 @@ class TestRunJobSessionPersistence:
         """Common patches for run_job tests."""
         fake_db = MagicMock()
         return fake_db, [
-            patch("cron.scheduler._sinoclaw_home", tmp_path),
+            patch("cron.scheduler._anan_home", tmp_path),
             patch("cron.scheduler._resolve_origin", return_value=None),
             patch("dotenv.load_dotenv"),
             patch("sinoclaw_state.SessionDB", return_value=fake_db),
             patch(
-                "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                "anan_cli.runtime_provider.resolve_runtime_provider",
                 return_value={
                     "api_key": "test-key",
                     "base_url": "https://example.invalid/v1",
@@ -1005,7 +1005,7 @@ class TestRunJobSessionPersistence:
         with patches[0], patches[1], patches[2], patches[3], patches[4], \
              patch("run_agent.AIAgent") as mock_agent_cls, \
              patch(
-                 "sinoclaw_cli.tools_config._get_platform_tools",
+                 "anan_cli.tools_config._get_platform_tools",
                  return_value={"web", "file"},
              ):
             mock_agent = MagicMock()
@@ -1029,12 +1029,12 @@ class TestRunJobSessionPersistence:
         }
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1105,12 +1105,12 @@ class TestRunJobSessionPersistence:
         }
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1144,12 +1144,12 @@ class TestRunJobSessionPersistence:
         }
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1192,7 +1192,7 @@ class TestRunJobSessionPersistence:
 
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler.get_due_jobs", return_value=[job]), \
              patch("cron.scheduler.advance_next_run"), \
              patch("cron.scheduler.mark_job_run") as mock_mark, \
@@ -1235,10 +1235,10 @@ class TestRunJobSessionPersistence:
                 seen["thread_id"] = get_session_env("SINOCLAW_CRON_AUTO_DELIVER_THREAD_ID") or None
                 return {"final_response": "ok"}
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1301,10 +1301,10 @@ class TestRunJobSessionPersistence:
                 )
                 return {"final_response": "ok"}
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1352,7 +1352,7 @@ class TestRunJobConfigLogging:
             "prompt": "hello",
         }
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("run_agent.AIAgent") as mock_agent_cls:
@@ -1381,7 +1381,7 @@ class TestRunJobConfigLogging:
             "prompt": "hello",
         }
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("run_agent.AIAgent") as mock_agent_cls:
@@ -1414,11 +1414,11 @@ class TestRunJobConfigEnvVarExpansion:
         job = {"id": "env-job", "name": "env test", "prompt": "hi"}
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
-             patch("sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+             patch("anan_cli.runtime_provider.resolve_runtime_provider",
                    return_value=self._RUNTIME), \
              patch("run_agent.AIAgent") as mock_agent_cls:
             mock_agent = MagicMock()
@@ -1446,11 +1446,11 @@ class TestRunJobConfigEnvVarExpansion:
         job = {"id": "fb-job", "name": "fallback test", "prompt": "hi"}
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
-             patch("sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+             patch("anan_cli.runtime_provider.resolve_runtime_provider",
                    return_value=self._RUNTIME), \
              patch("run_agent.AIAgent") as mock_agent_cls:
             mock_agent = MagicMock()
@@ -1475,11 +1475,11 @@ class TestRunJobConfigEnvVarExpansion:
         job = {"id": "unset-job", "name": "unset var test", "prompt": "hi"}
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
-             patch("sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+             patch("anan_cli.runtime_provider.resolve_runtime_provider",
                    return_value=self._RUNTIME), \
              patch("run_agent.AIAgent") as mock_agent_cls:
             mock_agent = MagicMock()
@@ -1517,12 +1517,12 @@ class TestRunJobSkillBacked:
             assert "NOTION_API_KEY" in get_all_passthrough()
             return {"final_response": "ok"}
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1576,13 +1576,13 @@ class TestRunJobSkillBacked:
             assert any("google_token.json" in v for v in registered.values())
             return {"final_response": "ok"}
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
-             patch("tools.credential_files._resolve_sinoclaw_home", return_value=tmp_path), \
+             patch("tools.credential_files._resolve_anan_home", return_value=tmp_path), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1615,12 +1615,12 @@ class TestRunJobSkillBacked:
 
         fake_db = MagicMock()
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1661,12 +1661,12 @@ class TestRunJobSkillBacked:
         def _skill_view(name):
             return json.dumps({"success": True, "content": f"# {name}\nInstructions for {name}."})
 
-        with patch("cron.scheduler._sinoclaw_home", tmp_path), \
+        with patch("cron.scheduler._anan_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
              patch("sinoclaw_state.SessionDB", return_value=fake_db), \
              patch(
-                 "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+                 "anan_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1892,7 +1892,7 @@ class TestRunJobWakeGate:
             "requested_provider": None,
         }
         with patch(
-            "sinoclaw_cli.runtime_provider.resolve_runtime_provider",
+            "anan_cli.runtime_provider.resolve_runtime_provider",
             return_value=fake_runtime,
         ):
             yield

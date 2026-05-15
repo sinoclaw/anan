@@ -20,13 +20,13 @@ Usage:
     response = agent.run_conversation("Tell me about the latest Python updates")
 """
 
-# IMPORTANT: sinoclaw_bootstrap must be the very first import — UTF-8 stdio
-# on Windows.  No-op on POSIX.  See sinoclaw_bootstrap.py for full rationale.
+# IMPORTANT: anan_bootstrap must be the very first import — UTF-8 stdio
+# on Windows.  No-op on POSIX.  See anan_bootstrap.py for full rationale.
 try:
-    import sinoclaw_bootstrap  # noqa: F401
+    import anan_bootstrap  # noqa: F401
 except ModuleNotFoundError:
-    # Graceful fallback when sinoclaw_bootstrap isn't registered in the venv
-    # yet — happens during partial ``sinoclaw update`` where git-reset landed
+    # Graceful fallback when anan_bootstrap isn't registered in the venv
+    # yet — happens during partial ``anan update`` where git-reset landed
     # new code but ``uv pip install -e .`` didn't finish.  Missing bootstrap
     # means UTF-8 stdio setup is skipped on Windows; POSIX is unaffected.
     pass
@@ -68,7 +68,7 @@ from urllib.parse import urlparse, parse_qs, urlunparse
 from datetime import datetime
 from pathlib import Path
 
-from sinoclaw_constants import get_sinoclaw_home
+from anan_constants import get_anan_home
 
 
 _OPENAI_CLS_CACHE: Optional[type] = None
@@ -100,17 +100,17 @@ class _OpenAIProxy:
 
 OpenAI = _OpenAIProxy()
 
-# Load .env from ~/.sinoclaw/.env first, then project root as dev fallback.
+# Load .env from ~/.anan/.env first, then project root as dev fallback.
 # User-managed env files should override stale shell exports on restart.
-from sinoclaw_cli.env_loader import load_sinoclaw_dotenv
-from sinoclaw_cli.timeouts import (
+from anan_cli.env_loader import load_anan_dotenv
+from anan_cli.timeouts import (
     get_provider_request_timeout,
     get_provider_stale_timeout,
 )
 
-_sinoclaw_home = get_sinoclaw_home()
+_anan_home = get_anan_home()
 _project_env = Path(__file__).parent / '.env'
-_loaded_env_paths = load_sinoclaw_dotenv(sinoclaw_home=_sinoclaw_home, project_env=_project_env)
+_loaded_env_paths = load_anan_dotenv(anan_home=_anan_home, project_env=_project_env)
 if _loaded_env_paths:
     for _env_path in _loaded_env_paths:
         logger.info("Loaded environment variables from %s", _env_path)
@@ -186,14 +186,14 @@ from agent.trajectory import (
     save_trajectory as _save_trajectory_to_file,
 )
 from utils import atomic_json_write, base_url_host_matches, base_url_hostname, env_var_enabled, normalize_proxy_url
-from sinoclaw_cli.config import cfg_get
+from anan_cli.config import cfg_get
 
 
 
 class _SafeWriter:
     """Transparent stdio wrapper that catches OSError/ValueError from broken pipes.
 
-    When sinoclaw-agent runs as a systemd service, Docker container, or headless
+    When anan runs as a systemd service, Docker container, or headless
     daemon, the stdout/stderr pipe can become unavailable (idle timeout, buffer
     exhaustion, socket reset). Any print() call then raises
     ``OSError: [Errno 5] Input/output error``, which can crash agent setup or
@@ -970,10 +970,10 @@ _QWEN_CODE_VERSION = "0.14.1"
 
 def _routermint_headers() -> dict:
     """Return the User-Agent RouterMint needs to avoid Cloudflare 1010 blocks."""
-    from sinoclaw_cli import __version__ as _SINOCLAW_VERSION
+    from anan_cli import __version__ as _SINOCLAW_VERSION
 
     return {
-        "User-Agent": f"SinoclawAgent/{_SINOCLAW_VERSION}",
+        "User-Agent": f"AnanAgent/{_SINOCLAW_VERSION}",
     }
 
 
@@ -1034,7 +1034,7 @@ class AIAgent:
     """
 
     _TOOL_CALL_ARGUMENTS_CORRUPTION_MARKER = (
-        "[sinoclaw-agent: tool call arguments were corrupted in this session and "
+        "[anan: tool call arguments were corrupted in this session and "
         "have been dropped to keep the conversation alive. See issue #15236.]"
     )
 
@@ -1155,7 +1155,7 @@ class AIAgent:
             skip_context_files (bool): If True, skip auto-injection of SOUL.md, AGENTS.md, and .cursorrules
                 into the system prompt. Use this for batch processing and data generation to avoid
                 polluting trajectories with user-specific persona or project instructions.
-            load_soul_identity (bool): If True, still use ~/.sinoclaw/SOUL.md as the primary
+            load_soul_identity (bool): If True, still use ~/.anan/SOUL.md as the primary
                 identity even when skip_context_files=True. Project context files from the cwd
                 remain skipped.
         """
@@ -1238,7 +1238,7 @@ class AIAgent:
             pass  # Non-fatal — transport may not exist for all modes yet
 
         try:
-            from sinoclaw_cli.model_normalize import (
+            from anan_cli.model_normalize import (
                 _AGGREGATOR_PROVIDERS,
                 normalize_model_for_provider,
             )
@@ -1384,7 +1384,7 @@ class AIAgent:
         # sessions with >5-minute pauses between turns (#14971).
         self._cache_ttl = "5m"
         try:
-            from sinoclaw_cli.config import load_config as _load_pc_cfg
+            from anan_cli.config import load_config as _load_pc_cfg
 
             _pc_cfg = _load_pc_cfg().get("prompt_caching", {}) or {}
             _ttl = _pc_cfg.get("cache_ttl", "5m")
@@ -1420,10 +1420,10 @@ class AIAgent:
         self._or_cache_hits: int = 0
 
         # Centralized logging — agent.log (INFO+) and errors.log (WARNING+)
-        # both live under ~/.sinoclaw/logs/.  Idempotent, so gateway mode
+        # both live under ~/.anan/logs/.  Idempotent, so gateway mode
         # (which creates a new AIAgent per message) won't duplicate handlers.
-        from sinoclaw_logging import setup_logging, setup_verbose_logging
-        setup_logging(sinoclaw_home=_sinoclaw_home)
+        from anan_logging import setup_logging, setup_verbose_logging
+        setup_logging(anan_home=_anan_home)
 
         if self.verbose_logging:
             setup_verbose_logging()
@@ -1439,7 +1439,7 @@ class AIAgent:
                     'run_agent',            # agent runner internals
                     'trajectory_compressor',
                     'cron',                 # scheduler (only relevant in daemon mode)
-                    'sinoclaw_cli',           # CLI helpers
+                    'anan_cli',           # CLI helpers
                 ]:
                     logging.getLogger(quiet_logger).setLevel(logging.ERROR)
         
@@ -1544,7 +1544,7 @@ class AIAgent:
             # Guardrail config — read from config.yaml at init time.
             self._bedrock_guardrail_config = None
             try:
-                from sinoclaw_cli.config import load_config as _load_br_cfg
+                from anan_cli.config import load_config as _load_br_cfg
                 _gr = _load_br_cfg().get("bedrock", {}).get("guardrail", {})
                 if _gr.get("guardrail_identifier") and _gr.get("guardrail_version"):
                     self._bedrock_guardrail_config = {
@@ -1594,7 +1594,7 @@ class AIAgent:
                 elif base_url_host_matches(effective_base, "api.routermint.com"):
                     client_kwargs["default_headers"] = _routermint_headers()
                 elif base_url_host_matches(effective_base, "api.githubcopilot.com"):
-                    from sinoclaw_cli.models import copilot_default_headers
+                    from anan_cli.models import copilot_default_headers
 
                     client_kwargs["default_headers"] = copilot_default_headers()
                 elif base_url_host_matches(effective_base, "api.kimi.com"):
@@ -1643,7 +1643,7 @@ class AIAgent:
                         # (e.g. alibaba → DASHSCOPE_API_KEY, not ALIBABA_API_KEY).
                         _env_hint = f"{_explicit.upper()}_API_KEY"
                         try:
-                            from sinoclaw_cli.auth import PROVIDER_REGISTRY
+                            from anan_cli.auth import PROVIDER_REGISTRY
                             _pcfg = PROVIDER_REGISTRY.get(_explicit)
                             if _pcfg and _pcfg.api_key_env_vars:
                                 _env_hint = _pcfg.api_key_env_vars[0]
@@ -1683,13 +1683,13 @@ class AIAgent:
                             raise RuntimeError(
                                 f"Provider '{_explicit}' is set in config.yaml but no API key "
                                 f"was found. Set the {_env_hint} environment "
-                                f"variable, or switch to a different provider with `sinoclaw model`."
+                                f"variable, or switch to a different provider with `anan model`."
                             )
                     if not getattr(self, "_fallback_activated", False):
                         # No provider configured — reject with a clear message.
                         raise RuntimeError(
-                            "No LLM provider configured. Run `sinoclaw model` to "
-                            "select a provider, or run `sinoclaw setup` for first-time "
+                            "No LLM provider configured. Run `anan model` to "
+                            "select a provider, or run `anan setup` for first-time "
                             "configuration."
                         )
             
@@ -1815,9 +1815,9 @@ class AIAgent:
             short_uuid = uuid.uuid4().hex[:6]
             self.session_id = f"{timestamp_str}_{short_uuid}"
         
-        # Session logs go into ~/.sinoclaw/sessions/ alongside gateway sessions
-        sinoclaw_home = get_sinoclaw_home()
-        self.logs_dir = sinoclaw_home / "sessions"
+        # Session logs go into ~/.anan/sessions/ alongside gateway sessions
+        anan_home = get_anan_home()
+        self.logs_dir = anan_home / "sessions"
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         self.session_log_file = self.logs_dir / f"session_{self.session_id}.json"
         
@@ -1855,7 +1855,7 @@ class AIAgent:
         
         # Load config once for memory, skills, and compression sections
         try:
-            from sinoclaw_cli.config import load_config as _load_agent_config
+            from anan_cli.config import load_config as _load_agent_config
             _agent_cfg = _load_agent_config()
         except Exception:
             _agent_cfg = {}
@@ -1915,7 +1915,7 @@ class AIAgent:
                         _init_kwargs = {
                             "session_id": self.session_id,
                             "platform": platform or "cli",
-                            "sinoclaw_home": str(get_sinoclaw_home()),
+                            "anan_home": str(get_anan_home()),
                             "agent_context": "primary",
                         }
                         # Thread session title for memory provider scoping
@@ -1945,7 +1945,7 @@ class AIAgent:
                             _init_kwargs["gateway_session_key"] = self._gateway_session_key
                         # Profile identity for per-profile provider scoping
                         try:
-                            from sinoclaw_cli.profiles import get_active_profile_name
+                            from anan_cli.profiles import get_active_profile_name
                             _profile = get_active_profile_name()
                             _init_kwargs["agent_identity"] = _profile
                             _init_kwargs["agent_workspace"] = "hermes"
@@ -2098,7 +2098,7 @@ class AIAgent:
         # Resolve custom_providers list once for reuse below (startup
         # context-length override and plugin context-engine init).
         try:
-            from sinoclaw_cli.config import get_compatible_custom_providers
+            from anan_cli.config import get_compatible_custom_providers
             _custom_providers = get_compatible_custom_providers(_agent_cfg)
         except Exception:
             _custom_providers = _agent_cfg.get("custom_providers")
@@ -2108,7 +2108,7 @@ class AIAgent:
         # Check custom_providers per-model context_length
         if _config_context_length is None and _custom_providers:
             try:
-                from sinoclaw_cli.config import get_custom_provider_context_length
+                from anan_cli.config import get_custom_provider_context_length
                 _cp_ctx_resolved = get_custom_provider_context_length(
                     model=self.model,
                     base_url=self.base_url,
@@ -2186,7 +2186,7 @@ class AIAgent:
             # Try general plugin system as fallback
             if _selected_engine is None:
                 try:
-                    from sinoclaw_cli.plugins import get_plugin_context_engine
+                    from anan_cli.plugins import get_plugin_context_engine
                     _candidate = get_plugin_context_engine()
                     if _candidate and _candidate.name == _engine_name:
                         _selected_engine = _candidate
@@ -2246,7 +2246,7 @@ class AIAgent:
             raise ValueError(
                 f"Model {self.model} has a context window of {_ctx:,} tokens, "
                 f"which is below the minimum {MINIMUM_CONTEXT_LENGTH:,} required "
-                f"by Sinoclaw Agent.  Choose a model with at least "
+                f"by Anan Agent.  Choose a model with at least "
                 f"{MINIMUM_CONTEXT_LENGTH // 1000}K context, or set "
                 f"model.context_length in config.yaml to override."
             )
@@ -2282,7 +2282,7 @@ class AIAgent:
             try:
                 self.context_compressor.on_session_start(
                     self.session_id,
-                    sinoclaw_home=str(get_sinoclaw_home()),
+                    anan_home=str(get_anan_home()),
                     platform=self.platform or "cli",
                     model=self.model,
                     context_length=getattr(self.context_compressor, "context_length", 0),
@@ -2459,13 +2459,13 @@ class AIAgent:
 
     def _ensure_lmstudio_runtime_loaded(self, config_context_length: Optional[int] = None) -> None:
         """
-        Preload the LM Studio model with at least Sinoclaw' minimum context.
+        Preload the LM Studio model with at least Anan' minimum context.
         """
         if (self.provider or "").strip().lower() != "lmstudio":
             return
         try:
             from agent.model_metadata import MINIMUM_CONTEXT_LENGTH
-            from sinoclaw_cli.models import ensure_lmstudio_model_loaded
+            from anan_cli.models import ensure_lmstudio_model_loaded
             if config_context_length is None:
                 config_context_length = getattr(self, "_config_context_length", None)
             target_ctx = max(config_context_length or 0, MINIMUM_CONTEXT_LENGTH)
@@ -2504,7 +2504,7 @@ class AIAgent:
         change persists across turns (unlike fallback which is
         turn-scoped).
         """
-        from sinoclaw_cli.providers import determine_api_mode
+        from anan_cli.providers import determine_api_mode
 
         # ── Determine api_mode if not provided ──
         if not api_mode:
@@ -2602,7 +2602,7 @@ class AIAgent:
             # custom provider mid-session (closes #15779).
             _sm_custom_providers = None
             try:
-                from sinoclaw_cli.config import load_config, get_compatible_custom_providers
+                from anan_cli.config import load_config, get_compatible_custom_providers
                 _sm_cfg = load_config()
                 _sm_custom_providers = get_compatible_custom_providers(_sm_cfg)
             except Exception:
@@ -2712,7 +2712,7 @@ class AIAgent:
         all non-forced output is suppressed.
 
         ``suppress_status_output`` is a stricter CLI automation mode used by
-        parseable single-query flows such as ``sinoclaw chat -q``. In that mode,
+        parseable single-query flows such as ``anan chat -q``. In that mode,
         all status/diagnostic prints routed through ``_vprint`` are suppressed
         so stdout stays machine-readable.
         """
@@ -2857,7 +2857,7 @@ class AIAgent:
                 msg = (
                     "⚠ No auxiliary LLM provider configured — context "
                     "compression will drop middle turns without a summary. "
-                    "Run `sinoclaw setup` or set OPENROUTER_API_KEY."
+                    "Run `anan setup` or set OPENROUTER_API_KEY."
                 )
                 self._compression_warning = msg
                 self._emit_status(msg)
@@ -2891,7 +2891,7 @@ class AIAgent:
                 raise ValueError(
                     f"Auxiliary compression model {aux_model} has a context "
                     f"window of {aux_context:,} tokens, which is below the "
-                    f"minimum {MINIMUM_CONTEXT_LENGTH:,} required by Sinoclaw "
+                    f"minimum {MINIMUM_CONTEXT_LENGTH:,} required by Anan "
                     f"Agent.  Choose a compression model with at least "
                     f"{MINIMUM_CONTEXT_LENGTH // 1000}K context (set "
                     f"auxiliary.compression.model in config.yaml), or set "
@@ -3220,7 +3220,7 @@ class AIAgent:
             return False
         if normalized_provider == "copilot":
             try:
-                from sinoclaw_cli.models import _should_use_copilot_responses_api
+                from anan_cli.models import _should_use_copilot_responses_api
                 return _should_use_copilot_responses_api(model)
             except Exception:
                 # Fall back to the generic GPT-5 rule if Copilot-specific
@@ -5290,7 +5290,7 @@ class AIAgent:
         #   7. Platform-specific formatting hint
 
         # Try SOUL.md as primary identity unless the caller explicitly skipped it.
-        # Some execution modes (cron) still want SINOCLAW_HOME persona while keeping
+        # Some execution modes (cron) still want ANAN_HOME persona while keeping
         # cwd project instructions disabled.
         _soul_loaded = False
         if self.load_soul_identity or not self.skip_context_files:
@@ -5303,7 +5303,7 @@ class AIAgent:
             # Fallback to hardcoded identity
             prompt_parts = [DEFAULT_AGENT_IDENTITY]
 
-        # Pointer to the sinoclaw-agent skill + docs for user questions about Sinoclaw itself.
+        # Pointer to the anan skill + docs for user questions about Anan itself.
         prompt_parts.append(SINOCLAW_AGENT_HELP_GUIDANCE)
 
         # Tool-aware behavioral guidance: only inject when the tools are loaded
@@ -5412,7 +5412,7 @@ class AIAgent:
 
         if not self.skip_context_files:
             # Use TERMINAL_CWD for context file discovery when set (gateway
-            # mode).  The gateway process runs from the sinoclaw-agent install
+            # mode).  The gateway process runs from the anan install
             # dir, so os.getcwd() would pick up the repo's AGENTS.md and
             # other dev files — inflating token usage by ~10k for no benefit.
             _context_cwd = os.getenv("TERMINAL_CWD") or None
@@ -5421,8 +5421,8 @@ class AIAgent:
             if context_files_prompt:
                 prompt_parts.append(context_files_prompt)
 
-        from sinoclaw_time import now as _sinoclaw_now
-        now = _sinoclaw_now()
+        from anan_time import now as _anan_now
+        now = _anan_now()
         timestamp_line = f"Conversation started: {now.strftime('%A, %B %d, %Y %I:%M %p')}"
         if self.pass_session_id and self.session_id:
             timestamp_line += f"\nSession ID: {self.session_id}"
@@ -6242,7 +6242,7 @@ class AIAgent:
         return any(_contains_image(item) for item in candidates)
 
     def _copilot_headers_for_request(self, *, is_vision: bool) -> dict:
-        from sinoclaw_cli.copilot_auth import copilot_request_headers
+        from anan_cli.copilot_auth import copilot_request_headers
 
         return copilot_request_headers(is_agent_turn=True, is_vision=is_vision)
 
@@ -6483,7 +6483,7 @@ class AIAgent:
             return False
 
         try:
-            from sinoclaw_cli.auth import resolve_codex_runtime_credentials
+            from anan_cli.auth import resolve_codex_runtime_credentials
 
             creds = resolve_codex_runtime_credentials(force_refresh=force)
         except Exception as exc:
@@ -6512,7 +6512,7 @@ class AIAgent:
             return False
 
         try:
-            from sinoclaw_cli.auth import resolve_nous_runtime_credentials
+            from anan_cli.auth import resolve_nous_runtime_credentials
 
             creds = resolve_nous_runtime_credentials(
                 min_key_ttl_seconds=max(60, int(os.getenv("SINOCLAW_NOUS_MIN_KEY_TTL_SECONDS", "1800"))),
@@ -6554,7 +6554,7 @@ class AIAgent:
             return False
 
         try:
-            from sinoclaw_cli.copilot_auth import resolve_copilot_token
+            from anan_cli.copilot_auth import resolve_copilot_token
 
             new_token, token_source = resolve_copilot_token()
         except Exception as exc:
@@ -6638,7 +6638,7 @@ class AIAgent:
         elif base_url_host_matches(base_url, "api.routermint.com"):
             self._client_kwargs["default_headers"] = _routermint_headers()
         elif base_url_host_matches(base_url, "api.githubcopilot.com"):
-            from sinoclaw_cli.models import copilot_default_headers
+            from anan_cli.models import copilot_default_headers
 
             self._client_kwargs["default_headers"] = copilot_default_headers()
         elif base_url_host_matches(base_url, "api.kimi.com"):
@@ -8058,7 +8058,7 @@ class AIAgent:
                     fb_provider)
                 return self._try_activate_fallback()  # try next in chain
             try:
-                from sinoclaw_cli.model_normalize import normalize_model_for_provider
+                from anan_cli.model_normalize import normalize_model_for_provider
 
                 fb_model = normalize_model_for_provider(fb_model, fb_provider)
             except Exception:
@@ -8641,7 +8641,7 @@ class AIAgent:
                     "image/jpeg": ".jpg", "image/jpg": ".jpg", "image/bmp": ".bmp",
                 }.get(mime, ".jpg")
                 tmp = tempfile.NamedTemporaryFile(
-                    prefix="sinoclaw_shrink_", suffix=suffix, delete=False,
+                    prefix="anan_shrink_", suffix=suffix, delete=False,
                 )
                 try:
                     tmp.write(raw)
@@ -9025,7 +9025,7 @@ class AIAgent:
             or base_url_host_matches(self._base_url_lower, "api.githubcopilot.com")
         ):
             try:
-                from sinoclaw_cli.models import github_model_reasoning_efforts
+                from anan_cli.models import github_model_reasoning_efforts
 
                 return bool(github_model_reasoning_efforts(self.model))
             except Exception:
@@ -9077,7 +9077,7 @@ class AIAgent:
             if opts or (_time.monotonic() - ts) < 60:
                 return opts
         try:
-            from sinoclaw_cli.models import lmstudio_model_reasoning_options
+            from anan_cli.models import lmstudio_model_reasoning_options
             opts = lmstudio_model_reasoning_options(
                 self.model, self.base_url, getattr(self, "api_key", ""),
             )
@@ -9102,7 +9102,7 @@ class AIAgent:
     def _github_models_reasoning_extra_body(self) -> dict | None:
         """Format reasoning payload for GitHub Models/OpenAI-compatible routes."""
         try:
-            from sinoclaw_cli.models import github_model_reasoning_efforts
+            from anan_cli.models import github_model_reasoning_efforts
         except Exception:
             return None
 
@@ -9851,7 +9851,7 @@ class AIAgent:
         block_message: Optional[str] = None
         if not pre_tool_block_checked:
             try:
-                from sinoclaw_cli.plugins import get_pre_tool_call_block_message
+                from anan_cli.plugins import get_pre_tool_call_block_message
                 block_message = get_pre_tool_call_block_message(
                     function_name, function_args, task_id=effective_task_id or "",
                 )
@@ -9869,7 +9869,7 @@ class AIAgent:
             )
         elif function_name == "session_search":
             if not self._session_db:
-                from sinoclaw_state import format_session_db_unavailable
+                from anan_state import format_session_db_unavailable
                 return json.dumps({"success": False, "error": format_session_db_unavailable()})
             from tools.session_search_tool import session_search as _session_search
             return _session_search(
@@ -10013,7 +10013,7 @@ class AIAgent:
             block_result = None
             blocked_by_guardrail = False
             try:
-                from sinoclaw_cli.plugins import get_pre_tool_call_block_message
+                from anan_cli.plugins import get_pre_tool_call_block_message
                 block_message = get_pre_tool_call_block_message(
                     function_name, function_args, task_id=effective_task_id or "",
                 )
@@ -10384,7 +10384,7 @@ class AIAgent:
             # Check plugin hooks for a block directive before executing.
             _block_msg: Optional[str] = None
             try:
-                from sinoclaw_cli.plugins import get_pre_tool_call_block_message
+                from anan_cli.plugins import get_pre_tool_call_block_message
                 _block_msg = get_pre_tool_call_block_message(
                     function_name, function_args, task_id=effective_task_id or "",
                 )
@@ -10493,7 +10493,7 @@ class AIAgent:
                     self._vprint(f"  {_get_cute_tool_message_impl('todo', function_args, tool_duration, result=function_result)}")
             elif function_name == "session_search":
                 if not self._session_db:
-                    from sinoclaw_state import format_session_db_unavailable
+                    from anan_state import format_session_db_unavailable
                     function_result = json.dumps({"success": False, "error": format_session_db_unavailable()})
                 else:
                     from tools.session_search_tool import session_search as _session_search
@@ -10864,7 +10864,7 @@ class AIAgent:
                         "effort": "medium"
                     }
             if _is_nous:
-                summary_extra_body["tags"] = ["product=sinoclaw-agent"]
+                summary_extra_body["tags"] = ["product=anan"]
 
             if self.api_mode == "codex_responses":
                 codex_kwargs = self._build_api_kwargs(api_messages)
@@ -11012,8 +11012,8 @@ class AIAgent:
         self._ensure_db_session()
 
         # Tag all log records on this thread with the session ID so
-        # ``sinoclaw logs --session <id>`` can filter a single conversation.
-        from sinoclaw_logging import set_session_context
+        # ``anan logs --session <id>`` can filter a single conversation.
+        from anan_logging import set_session_context
         set_session_context(self.session_id)
 
         # Bind the skill write-origin ContextVar for this thread so tool
@@ -11193,7 +11193,7 @@ class AIAgent:
                 # continuation).  Plugins can use this to initialise
                 # session-scoped state (e.g. warm a memory cache).
                 try:
-                    from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+                    from anan_cli.plugins import invoke_hook as _invoke_hook
                     _invoke_hook(
                         "on_session_start",
                         session_id=self.session_id,
@@ -11288,13 +11288,13 @@ class AIAgent:
         # Context is ALWAYS injected into the user message, never the
         # system prompt.  This preserves the prompt cache prefix — the
         # system prompt stays identical across turns so cached tokens
-        # are reused.  The system prompt is Sinoclaw's territory; plugins
+        # are reused.  The system prompt is Anan's territory; plugins
         # contribute context alongside the user's input.
         #
         # All injected context is ephemeral (not persisted to session DB).
         _plugin_user_context = ""
         try:
-            from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+            from anan_cli.plugins import invoke_hook as _invoke_hook
             _pre_results = _invoke_hook(
                 "pre_llm_call",
                 session_id=self.session_id,
@@ -11565,7 +11565,7 @@ class AIAgent:
             # NOTE: Plugin context from pre_llm_call hooks is injected into the
             # user message (see injection block above), NOT the system prompt.
             # This is intentional — system prompt modifications break the prompt
-            # cache prefix.  The system prompt is reserved for Sinoclaw internals.
+            # cache prefix.  The system prompt is reserved for Anan internals.
             if effective_system:
                 api_messages = [{"role": "system", "content": effective_system}] + api_messages
 
@@ -11755,7 +11755,7 @@ class AIAgent:
                         api_kwargs = self._get_transport().preflight_kwargs(api_kwargs, allow_stream=False)
 
                     try:
-                        from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+                        from anan_cli.plugins import invoke_hook as _invoke_hook
                         _invoke_hook(
                             "pre_api_request",
                             task_id=effective_task_id,
@@ -12775,7 +12775,7 @@ class AIAgent:
                         # Credential refresh didn't help — show diagnostic info.
                         # Most common causes: Portal OAuth expired/revoked,
                         # account out of credits, or agent key blocked.
-                        from sinoclaw_constants import display_sinoclaw_home as _dhh_fn
+                        from anan_constants import display_anan_home as _dhh_fn
                         _dhh = _dhh_fn()
                         _body_text = ""
                         try:
@@ -12789,7 +12789,7 @@ class AIAgent:
                             print(f"{self.log_prefix}   Response: {_body_text}")
                         print(f"{self.log_prefix}   Most likely: Portal OAuth expired, account out of credits, or agent key revoked.")
                         print(f"{self.log_prefix}   Troubleshooting:")
-                        print(f"{self.log_prefix}     • Re-authenticate: sinoclaw login --provider nous")
+                        print(f"{self.log_prefix}     • Re-authenticate: anan login --provider nous")
                         print(f"{self.log_prefix}     • Check credits / billing: https://portal.nousresearch.com")
                         print(f"{self.log_prefix}     • Verify stored credentials: {_dhh}/auth.json")
                         print(f"{self.log_prefix}     • Switch providers temporarily: /model <model> --provider openrouter")
@@ -12820,14 +12820,14 @@ class AIAgent:
                         print(f"{self.log_prefix}   Auth method: {auth_method}")
                         print(f"{self.log_prefix}   Token prefix: {key[:12]}..." if key and len(key) > 12 else f"{self.log_prefix}   Token: (empty or short)")
                         print(f"{self.log_prefix}   Troubleshooting:")
-                        from sinoclaw_constants import display_sinoclaw_home as _dhh_fn
+                        from anan_constants import display_anan_home as _dhh_fn
                         _dhh = _dhh_fn()
-                        print(f"{self.log_prefix}     • Check ANTHROPIC_TOKEN in {_dhh}/.env for Sinoclaw-managed OAuth/setup tokens")
+                        print(f"{self.log_prefix}     • Check ANTHROPIC_TOKEN in {_dhh}/.env for Anan-managed OAuth/setup tokens")
                         print(f"{self.log_prefix}     • Check ANTHROPIC_API_KEY in {_dhh}/.env for API keys or legacy token values")
                         print(f"{self.log_prefix}     • For API keys: verify at https://platform.claude.com/settings/keys")
                         print(f"{self.log_prefix}     • For Claude Code: run 'claude /login' to refresh, then retry")
-                        print(f"{self.log_prefix}     • Legacy cleanup: sinoclaw config set ANTHROPIC_TOKEN \"\"")
-                        print(f"{self.log_prefix}     • Clear stale keys: sinoclaw config set ANTHROPIC_API_KEY \"\"")
+                        print(f"{self.log_prefix}     • Legacy cleanup: anan config set ANTHROPIC_TOKEN \"\"")
+                        print(f"{self.log_prefix}     • Clear stale keys: anan config set ANTHROPIC_API_KEY \"\"")
 
                     # ── Thinking block signature recovery ─────────────────
                     # Anthropic signs thinking blocks against the full turn
@@ -13070,7 +13070,7 @@ class AIAgent:
                     # this on the next pass and try fallback or bail.
                     #
                     # IMPORTANT: Nous Portal multiplexes multiple upstream
-                    # providers (DeepSeek, Kimi, MiMo, Sinoclaw).  A 429 can
+                    # providers (DeepSeek, Kimi, MiMo, Anan).  A 429 can
                     # also mean an UPSTREAM provider is out of capacity
                     # for one specific model -- transient, clears in
                     # seconds, nothing to do with the caller's quota.
@@ -13404,10 +13404,10 @@ class AIAgent:
                                 self._vprint(f"{self.log_prefix}   💡 Codex OAuth token was rejected (HTTP 401). Your token may have been", force=True)
                                 self._vprint(f"{self.log_prefix}      refreshed by another client (Codex CLI, VS Code). To fix:", force=True)
                                 self._vprint(f"{self.log_prefix}      1. Run `codex` in your terminal to generate fresh tokens.", force=True)
-                                self._vprint(f"{self.log_prefix}      2. Then run `sinoclaw auth` to re-authenticate.", force=True)
+                                self._vprint(f"{self.log_prefix}      2. Then run `anan auth` to re-authenticate.", force=True)
                             else:
                                 self._vprint(f"{self.log_prefix}   💡 Your API key was rejected by the provider. Check:", force=True)
-                                self._vprint(f"{self.log_prefix}      • Is the key valid? Run: sinoclaw setup", force=True)
+                                self._vprint(f"{self.log_prefix}      • Is the key valid? Run: anan setup", force=True)
                                 self._vprint(f"{self.log_prefix}      • Does your account have access to {_model}?", force=True)
                                 if base_url_host_matches(str(_base), "openrouter.ai"):
                                     self._vprint(f"{self.log_prefix}      • Check credits: https://openrouter.ai/settings/credits", force=True)
@@ -13633,7 +13633,7 @@ class AIAgent:
                         assistant_message.content = str(raw)
 
                 try:
-                    from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+                    from anan_cli.plugins import invoke_hook as _invoke_hook
                     _assistant_tool_calls = getattr(assistant_message, "tool_calls", None) or []
                     _assistant_text = assistant_message.content or ""
                     _invoke_hook(
@@ -14561,7 +14561,7 @@ class AIAgent:
         # First hook to return a string wins; None/empty return leaves text unchanged.
         if final_response and not interrupted:
             try:
-                from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+                from anan_cli.plugins import invoke_hook as _invoke_hook
                 _transform_results = _invoke_hook(
                     "transform_llm_output",
                     response_text=final_response,
@@ -14582,7 +14582,7 @@ class AIAgent:
         # to an external memory system).
         if final_response and not interrupted:
             try:
-                from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+                from anan_cli.plugins import invoke_hook as _invoke_hook
                 _invoke_hook(
                     "post_llm_call",
                     session_id=self.session_id,
@@ -14697,7 +14697,7 @@ class AIAgent:
         # Fired at the very end of every run_conversation call.
         # Plugins can use this for cleanup, flushing buffers, etc.
         try:
-            from sinoclaw_cli.plugins import invoke_hook as _invoke_hook
+            from anan_cli.plugins import invoke_hook as _invoke_hook
             _invoke_hook(
                 "on_session_end",
                 session_id=self.session_id,

@@ -99,8 +99,8 @@ class TestModalBulkUpload:
         src_b.write_text("skill_content")
 
         files = [
-            (str(src_a), "/root/.sinoclaw/credentials/a.json"),
-            (str(src_b), "/root/.sinoclaw/skills/b.py"),
+            (str(src_a), "/root/.anan/credentials/a.json"),
+            (str(src_b), "/root/.anan/skills/b.py"),
         ]
 
         exec_calls, _, stdin_mock = _wire_async_exec(env)
@@ -143,16 +143,16 @@ class TestModalBulkUpload:
         src.write_text("data")
 
         files = [
-            (str(src), "/root/.sinoclaw/credentials/f.txt"),
-            (str(src), "/root/.sinoclaw/skills/deep/nested/f.txt"),
+            (str(src), "/root/.anan/credentials/f.txt"),
+            (str(src), "/root/.anan/skills/deep/nested/f.txt"),
         ]
 
         exec_calls, _, _ = _wire_async_exec(env)
         env._modal_bulk_upload(files)
 
         cmd = exec_calls[0][2]
-        assert "/root/.sinoclaw/credentials" in cmd
-        assert "/root/.sinoclaw/skills/deep/nested" in cmd
+        assert "/root/.anan/credentials" in cmd
+        assert "/root/.anan/skills/deep/nested" in cmd
 
     def test_single_exec_call(self, monkeypatch, tmp_path):
         """Bulk upload should use exactly one exec call regardless of file count."""
@@ -162,7 +162,7 @@ class TestModalBulkUpload:
         for i in range(20):
             src = tmp_path / f"file_{i}.txt"
             src.write_text(f"content_{i}")
-            files.append((str(src), f"/root/.sinoclaw/cache/file_{i}.txt"))
+            files.append((str(src), f"/root/.anan/cache/file_{i}.txt"))
 
         exec_calls, _, _ = _wire_async_exec(env)
         env._modal_bulk_upload(files)
@@ -206,7 +206,7 @@ class TestModalBulkUpload:
 
         src = tmp_path / "f.txt"
         src.write_text("data")
-        files = [(str(src), "/root/.sinoclaw/f.txt")]
+        files = [(str(src), "/root/.anan/f.txt")]
 
         _, run_kwargs, _ = _wire_async_exec(env)
         env._modal_bulk_upload(files)
@@ -219,7 +219,7 @@ class TestModalBulkUpload:
 
         src = tmp_path / "f.txt"
         src.write_text("data")
-        files = [(str(src), "/root/.sinoclaw/f.txt")]
+        files = [(str(src), "/root/.anan/f.txt")]
 
         stdin_mock = _make_mock_stdin()
 
@@ -258,7 +258,7 @@ class TestModalBulkUpload:
 
         src = tmp_path / "f.txt"
         src.write_text("some data to upload")
-        files = [(str(src), "/root/.sinoclaw/f.txt")]
+        files = [(str(src), "/root/.anan/f.txt")]
 
         exec_calls, _, stdin_mock = _wire_async_exec(env)
         env._modal_bulk_upload(files)
@@ -278,7 +278,7 @@ class TestModalBulkUpload:
         import os as _os
         src = tmp_path / "large.bin"
         src.write_bytes(_os.urandom(1024 * 1024 + 512 * 1024))
-        files = [(str(src), "/root/.sinoclaw/large.bin")]
+        files = [(str(src), "/root/.anan/large.bin")]
 
         exec_calls, _, stdin_mock = _wire_async_exec(env)
         env._modal_bulk_upload(files)

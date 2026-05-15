@@ -64,7 +64,7 @@ Both are free for the volumes a personal bot generates.
 
 After creation, open the SA, go to **Keys → Add Key → Create new key → JSON** and
 download the file. Save it somewhere only Hermes can read (e.g.,
-`~/.sinoclaw/google-chat-sa.json`, `chmod 600`).
+`~/.anan/google-chat-sa.json`, `chmod 600`).
 
 :::caution There is NO "Chat Bot Caller" role
 A common mistake is to search for a Chat-specific IAM role and grant it at the
@@ -79,12 +79,12 @@ the subscription you create in the next step.
 
 **Pub/Sub → Topics → Create topic.**
 
-- Topic ID: `sinoclaw-chat-events`
+- Topic ID: `anan-chat-events`
 - Leave the defaults for everything else.
 
 After creation, the topic's detail page has a **Subscriptions** tab. Create one:
 
-- Subscription ID: `sinoclaw-chat-events-sub`
+- Subscription ID: `anan-chat-events-sub`
 - Delivery type: **Pull**
 - Message retention: **7 days** (so backlog survives a sinoclaw restart)
 - Leave the rest default.
@@ -125,7 +125,7 @@ Go to **APIs & Services → Google Chat API → Configuration**.
 - **Functionality**: enable **Receive 1:1 messages** and **Join spaces and group
   conversations**.
 - **Connection settings**: select **Cloud Pub/Sub**, enter the topic name
-  `projects/<your-project>/topics/sinoclaw-chat-events`.
+  `projects/<your-project>/topics/anan-chat-events`.
 - **Visibility**: restrict to your workspace (or specific users) — do not publish
   to everyone while you're testing.
 
@@ -144,12 +144,12 @@ self-message filtering.
 
 ## Step 9: Configure Hermes
 
-Add the Google Chat section to `~/.sinoclaw/.env`:
+Add the Google Chat section to `~/.anan/.env`:
 
 ```bash
 # Required
 GOOGLE_CHAT_PROJECT_ID=my-chat-bot-123
-GOOGLE_CHAT_SUBSCRIPTION_NAME=projects/my-chat-bot-123/subscriptions/sinoclaw-chat-events-sub
+GOOGLE_CHAT_SUBSCRIPTION_NAME=projects/my-chat-bot-123/subscriptions/anan-chat-events-sub
 GOOGLE_CHAT_SERVICE_ACCOUNT_JSON=/home/you/.sinoclaw/google-chat-sa.json
 
 # Authorization — paste the emails of people allowed to talk to the bot
@@ -167,7 +167,7 @@ back to `GOOGLE_APPLICATION_CREDENTIALS` — use whichever convention you prefer
 Install Hermes with the optional dependencies:
 
 ```bash
-pip install 'sinoclaw-agent[google_chat]'
+pip install 'anan[google_chat]'
 ```
 
 Start the gateway:
@@ -241,7 +241,7 @@ python -m gateway.platforms.google_chat_user_oauth \
     --client-secret /path/to/client_secret.json
 ```
 
-That writes `~/.sinoclaw/google_chat_user_client_secret.json`. This is shared
+That writes `~/.anan/google_chat_user_client_secret.json`. This is shared
 infrastructure — it identifies the OAuth *app*, not any individual user. One
 file per host is enough no matter how many users authorize later.
 
@@ -259,7 +259,7 @@ Each user runs the flow once, in their own DM with the bot:
    into chat as `/setup-files <PASTED_URL>`. The bot exchanges it for a
    refresh token.
 
-The token lands at `~/.sinoclaw/google_chat_user_tokens/<sanitized_email>.json`.
+The token lands at `~/.anan/google_chat_user_tokens/<sanitized_email>.json`.
 Subsequent file requests in that user's DM use *their* token, so the bot
 uploads as them and the message lands in their space.
 
@@ -276,7 +276,7 @@ on purpose.
 ### Multi-user behavior
 
 When the asker has no per-user token yet, the bot falls back to a legacy
-single-user token at `~/.sinoclaw/google_chat_user_token.json` (if present from
+single-user token at `~/.anan/google_chat_user_token.json` (if present from
 a pre-multi-user install). When neither is available, the bot posts a clear
 text notice telling the asker to run `/setup-files`.
 
@@ -365,6 +365,6 @@ The auth code is single-use and short-lived (typically a few minutes). Send
 - **User OAuth scope**: the per-user attachment flow requests *only*
   `chat.messages.create` — the minimum that covers `media.upload` plus the
   follow-up `messages.create`. Tokens are persisted as plain JSON at
-  `~/.sinoclaw/google_chat_user_tokens/<sanitized_email>.json` (filesystem
+  `~/.anan/google_chat_user_tokens/<sanitized_email>.json` (filesystem
   permissions are the protection — same model as the SA key file). Each
   token is owned by exactly one user; revoke is scoped to that user.

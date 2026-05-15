@@ -29,9 +29,9 @@ pkgs.buildNpmPackage (npm // {
     # runtime node_modules
     cp -r node_modules $out/lib/sinoclaw-tui/node_modules
 
-    # @sinoclaw/ink is a file: dependency, we need to copy it in fr
-    rm -f $out/lib/sinoclaw-tui/node_modules/@sinoclaw/ink
-    cp -r packages/sinoclaw-ink $out/lib/sinoclaw-tui/node_modules/@sinoclaw/ink
+    # @anan/ink is a file: dependency, we need to copy it in fr
+    rm -f $out/lib/sinoclaw-tui/node_modules/@anan/ink
+    cp -r packages/sinoclaw-ink $out/lib/sinoclaw-tui/node_modules/@anan/ink
 
     # package.json needed for "type": "module" resolution
     cp package.json $out/lib/sinoclaw-tui/

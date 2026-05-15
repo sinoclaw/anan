@@ -74,7 +74,7 @@ sinoclaw tools
 
 ### 手动编辑配置
 
-在 `~/.sinoclaw/config.yaml` 中直接设置 `use_gateway`：
+在 `~/.anan/config.yaml` 中直接设置 `use_gateway`：
 
 ```yaml
 web:
@@ -102,7 +102,7 @@ browser:
 3. **TTS** — `text_to_speech` 走网关的 OpenAI Audio 端点  
 4. **浏览器** — `browser_navigate` 等走网关的 Browser Use 端点  
 
-网关使用 Nous Portal 凭据认证（在 `sinoclaw model` 完成后写入 `~/.sinoclaw/auth.json`）。
+网关使用 Nous Portal 凭据认证（在 `sinoclaw model` 完成后写入 `~/.anan/auth.json`）。
 
 ### 优先级
 
@@ -153,7 +153,7 @@ hermes status
 
 ## 进阶：自建网关
 
-若使用自建或自定义网关，可在 `~/.sinoclaw/.env` 中用环境变量覆盖端点：
+若使用自建或自定义网关，可在 `~/.anan/.env` 中用环境变量覆盖端点：
 
 ```bash
 TOOL_GATEWAY_DOMAIN=sinoclaw.com     # 网关路由基础域名

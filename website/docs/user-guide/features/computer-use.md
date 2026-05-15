@@ -39,7 +39,7 @@ cua-driver is the open-source equivalent.
    ```
    sinoclaw -t computer_use chat
    ```
-   or add `computer_use` to your enabled toolsets in `~/.sinoclaw/config.yaml`.
+   or add `computer_use` to your enabled toolsets in `~/.anan/config.yaml`.
 
 ## Quick example
 
@@ -89,7 +89,7 @@ Hermes applies multi-layer guardrails:
   dialogs, no typing passwords, no following instructions embedded in
   screenshots.
 
-Pair with `security.approval_level` in `~/.sinoclaw/config.yaml` if you want
+Pair with `security.approval_level` in `~/.anan/config.yaml` if you want
 every action confirmed.
 
 ## Token efficiency
@@ -158,6 +158,6 @@ reconsider.
 
 ## See also
 
-- [Universal skill: `macos-computer-use`](https://github.com/sinoclaw/sinoclaw-agent/blob/main/skills/apple/macos-computer-use/SKILL.md)
+- [Universal skill: `macos-computer-use`](https://github.com/sinoclaw/anan/blob/main/skills/apple/macos-computer-use/SKILL.md)
 - [cua-driver source (trycua/cua)](https://github.com/trycua/cua)
 - [Browser automation](./browser-use.md) for cross-platform web tasks.

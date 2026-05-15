@@ -20,7 +20,7 @@ def _make_adapter(routes=None, extra=None):
 
 @pytest.fixture(autouse=True)
 def _isolate(tmp_path, monkeypatch):
-    monkeypatch.setenv("SINOCLAW_HOME", str(tmp_path))
+    monkeypatch.setenv("ANAN_HOME", str(tmp_path))
 
 
 class TestDynamicRouteLoading:

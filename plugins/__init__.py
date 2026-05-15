@@ -1,1 +1,1 @@
-# Sinoclaw plugins package
+# Anan plugins package

@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-"""Drive the Sinoclaw TUI under SINOCLAW_DEV_PERF and summarize the pipeline.
+"""Drive the Anan TUI under SINOCLAW_DEV_PERF and summarize the pipeline.
 
 Usage:
   scripts/profile-tui.py [--session SID] [--hold KEY] [--seconds N] [--rate HZ]
 
 Defaults: picks the session with the most messages, holds PageUp for 8s at
-~30 Hz (matching xterm key-repeat), summarizes ~/.sinoclaw/perf.log on exit.
+~30 Hz (matching xterm key-repeat), summarizes ~/.anan/perf.log on exit.
 
 The --tui build must exist (run `npm run build` in ui-tui first). This script
 launches `node dist/entry.js` directly with SINOCLAW_TUI_RESUME set so it
-bypasses the sinoclaw_cli wrapper — we want repeatable timing, not the CLI's
+bypasses the anan_cli wrapper — we want repeatable timing, not the CLI's
 session-picker flow.
 
 Environment overrides:
-  SINOCLAW_PERF_LOG     (default ~/.sinoclaw/perf.log)
+  SINOCLAW_PERF_LOG     (default ~/.anan/perf.log)
   SINOCLAW_PERF_NODE    (default node from $PATH)
-  SINOCLAW_TUI_DIR      (default /home/bb/sinoclaw-agent/ui-tui)
+  SINOCLAW_TUI_DIR      (default /home/bb/anan/ui-tui)
 
 Exit code is 0 if the harness ran and parsed results, 2 if the TUI crashed
 or produced no perf data (suggests SINOCLAW_DEV_PERF wiring is broken).
@@ -38,15 +38,15 @@ from typing import Any
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 try:
-    from sinoclaw_constants import get_sinoclaw_home
+    from anan_constants import get_anan_home
 except ImportError:
-    def get_sinoclaw_home() -> Path:  # type: ignore[misc]
-        val = (os.environ.get("SINOCLAW_HOME") or "").strip()
-        return Path(val) if val else Path.home() / ".sinoclaw"
+    def get_anan_home() -> Path:  # type: ignore[misc]
+        val = (os.environ.get("ANAN_HOME") or "").strip()
+        return Path(val) if val else Path.home() / ".anan"
 
-DEFAULT_TUI_DIR = Path(os.environ.get("SINOCLAW_TUI_DIR", "/home/bb/sinoclaw-agent/ui-tui"))
-DEFAULT_LOG = Path(os.environ.get("SINOCLAW_PERF_LOG", str(get_sinoclaw_home() / "perf.log")))
-DEFAULT_STATE_DB = get_sinoclaw_home() / "state.db"
+DEFAULT_TUI_DIR = Path(os.environ.get("SINOCLAW_TUI_DIR", "/home/bb/anan/ui-tui"))
+DEFAULT_LOG = Path(os.environ.get("SINOCLAW_PERF_LOG", str(get_anan_home() / "perf.log")))
+DEFAULT_STATE_DB = get_anan_home() / "state.db"
 
 # Keystroke escape sequences.  Matches what xterm/VT220 send when the
 # terminal has bracketed-paste disabled and the key-repeat handler fires.
@@ -533,7 +533,7 @@ def loop_mode(args: argparse.Namespace) -> int:
 
     tui_dir = Path(args.tui_dir).resolve()
     src_root = tui_dir / "src"
-    pkg_root = tui_dir / "packages" / "sinoclaw-ink" / "src"
+    pkg_root = tui_dir / "packages" / "anan-ink" / "src"
 
     def collect_mtimes() -> dict[str, float]:
         mtimes: dict[str, float] = {}

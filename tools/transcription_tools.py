@@ -45,12 +45,12 @@ logger = logging.getLogger(__name__)
 def get_env_value(name, default=None):
     """Read env values through the live config module.
 
-    Tests may monkeypatch and later restore ``sinoclaw_cli.config.get_env_value``
+    Tests may monkeypatch and later restore ``anan_cli.config.get_env_value``
     before this module is imported. Resolve the helper at call time so STT does
     not keep a stale imported function for the rest of the test process.
     """
     try:
-        from sinoclaw_cli.config import get_env_value as _get_env_value
+        from anan_cli.config import get_env_value as _get_env_value
     except ImportError:
         return os.getenv(name, default)
     value = _get_env_value(name)
@@ -113,7 +113,7 @@ _local_model_name: Optional[str] = None
 def _load_stt_config() -> dict:
     """Load the ``stt`` section from user config, falling back to defaults."""
     try:
-        from sinoclaw_cli.config import load_config
+        from anan_cli.config import load_config
         return load_config().get("stt", {})
     except Exception:
         return {}
@@ -490,7 +490,7 @@ def _transcribe_local_command(file_path: str, model_name: str) -> Dict[str, Any]
     normalized_model = _normalize_local_command_model(model_name)
 
     try:
-        with tempfile.TemporaryDirectory(prefix="sinoclaw-local-stt-") as output_dir:
+        with tempfile.TemporaryDirectory(prefix="anan-local-stt-") as output_dir:
             prepared_input, prep_error = _prepare_local_audio(file_path, output_dir)
             if prep_error:
                 return {"success": False, "transcript": "", "error": prep_error}
@@ -717,7 +717,7 @@ def _transcribe_xai(file_path: str, model_name: str) -> Dict[str, Any]:
 
     try:
         import requests
-        from tools.xai_http import sinoclaw_xai_user_agent
+        from tools.xai_http import anan_xai_user_agent
 
         data: Dict[str, str] = {}
         if language:
@@ -732,7 +732,7 @@ def _transcribe_xai(file_path: str, model_name: str) -> Dict[str, Any]:
                 f"{base_url}/stt",
                 headers={
                     "Authorization": f"Bearer {api_key}",
-                    "User-Agent": sinoclaw_xai_user_agent(),
+                    "User-Agent": anan_xai_user_agent(),
                 },
                 files={
                     "file": (Path(file_path).name, audio_file),

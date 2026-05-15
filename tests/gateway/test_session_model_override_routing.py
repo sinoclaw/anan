@@ -184,11 +184,11 @@ fallback_providers:
 """.lstrip(),
         encoding="utf-8",
     )
-    monkeypatch.setattr(gateway_run, "_sinoclaw_home", tmp_path)
+    monkeypatch.setattr(gateway_run, "_anan_home", tmp_path)
 
     def fake_resolve_runtime_provider(*, requested=None, explicit_base_url=None, explicit_api_key=None):
         if requested in (None, "", "openai-codex"):
-            from sinoclaw_cli.auth import AuthError
+            from anan_cli.auth import AuthError
             raise AuthError("No Codex credentials stored. Run `sinoclaw auth` to authenticate.")
         assert requested == "openrouter"
         return {
@@ -201,7 +201,7 @@ fallback_providers:
             "credential_pool": None,
         }
 
-    import sinoclaw_cli.runtime_provider as runtime_provider
+    import anan_cli.runtime_provider as runtime_provider
 
     monkeypatch.setattr(runtime_provider, "resolve_runtime_provider", fake_resolve_runtime_provider)
 

@@ -3,7 +3,7 @@
 Mounted at /api/plugins/kanban/ by the dashboard plugin system.
 
 This layer is intentionally thin: every handler is a small wrapper around
-``sinoclaw_cli.kanban_db`` or a direct SQL query. Writes use the same code
+``anan_cli.kanban_db`` or a direct SQL query. Writes use the same code
 paths the CLI and gateway ``/kanban`` command use, so the three surfaces
 cannot drift.
 
@@ -19,7 +19,7 @@ design because the dashboard binds to localhost by default. For the
 WebSocket we still require the session token as a ``?token=`` query
 parameter (browsers cannot set the ``Authorization`` header on an upgrade
 request), matching the established pattern used by the in-browser PTY
-bridge in ``sinoclaw_cli/web_server.py``. If you run the dashboard with
+bridge in ``anan_cli/web_server.py``. If you run the dashboard with
 ``--host 0.0.0.0``, every plugin route — kanban included — becomes
 reachable from the network. Don't do that on a shared host.
 """
@@ -39,7 +39,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect, status as http_status
 from pydantic import BaseModel, Field
 
-from sinoclaw_cli import kanban_db
+from anan_cli import kanban_db
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ def _check_ws_token(provided: Optional[str]) -> bool:
     if not provided:
         return False
     try:
-        from sinoclaw_cli import web_server as _ws
+        from anan_cli import web_server as _ws
     except Exception:
         # No dashboard context (tests). Accept so the tail loop is still
         # testable; in production the dashboard module always imports
@@ -208,10 +208,10 @@ def _compute_task_diagnostics(
     and return ``{task_id: [diagnostic_dict, ...]}``.
 
     Tasks with no active diagnostics are omitted from the result.
-    Uses ``sinoclaw_cli.kanban_diagnostics`` — see that module for the
+    Uses ``anan_cli.kanban_diagnostics`` — see that module for the
     rule definitions.
     """
-    from sinoclaw_cli import kanban_diagnostics as kd
+    from anan_cli import kanban_diagnostics as kd
 
     # Build the candidate task list. We need each task's row + its
     # events + its runs. Doing N separate queries works but scales
@@ -276,7 +276,7 @@ def _warnings_summary_from_diagnostics(
     """
     if not diagnostics:
         return None
-    from sinoclaw_cli.kanban_diagnostics import SEVERITY_ORDER
+    from anan_cli.kanban_diagnostics import SEVERITY_ORDER
 
     kinds: dict[str, int] = {}
     latest = 0
@@ -535,7 +535,7 @@ def create_task(payload: CreateTaskBody, board: Optional[str] = Query(None)):
         # and unassigned tasks can't be dispatched regardless.
         if task and task.status == "ready" and task.assignee:
             try:
-                from sinoclaw_cli.kanban import _check_dispatcher_presence
+                from anan_cli.kanban import _check_dispatcher_presence
                 running, message = _check_dispatcher_presence()
                 if not running and message:
                     body["warning"] = message
@@ -562,7 +562,7 @@ class UpdateTaskBody(BaseModel):
     result: Optional[str] = None
     block_reason: Optional[str] = None
     # Structured handoff fields — forwarded to complete_task when status
-    # transitions to 'done'. Dashboard parity with ``sinoclaw kanban
+    # transitions to 'done'. Dashboard parity with ``anan kanban
     # complete --summary ... --metadata ...``.
     summary: Optional[str] = None
     metadata: Optional[dict] = None
@@ -893,7 +893,7 @@ def bulk_update(payload: BulkTaskBody, board: Optional[str] = Query(None)):
 
 # ---------------------------------------------------------------------------
 # Diagnostics — fleet-wide distress signals (hallucinations, crashes,
-# spawn failures, stuck-blocked). See sinoclaw_cli.kanban_diagnostics for
+# spawn failures, stuck-blocked). See anan_cli.kanban_diagnostics for
 # the rule engine.
 # ---------------------------------------------------------------------------
 
@@ -911,7 +911,7 @@ def list_diagnostics(
 
     Severity-filterable so the UI can render "just the critical ones"
     or the CLI can grep. Useful for the board-header attention strip
-    AND for ``sinoclaw kanban diagnostics`` which shells to this
+    AND for ``anan kanban diagnostics`` which shells to this
     endpoint when the dashboard's running, or invokes the engine
     directly when it isn't.
     """
@@ -956,7 +956,7 @@ def list_diagnostics(
                 "diagnostics": dl,
             })
         # Sort: highest severity first, then most recent.
-        from sinoclaw_cli.kanban_diagnostics import SEVERITY_ORDER
+        from anan_cli.kanban_diagnostics import SEVERITY_ORDER
         sev_idx = {s: i for i, s in enumerate(SEVERITY_ORDER)}
         def _sort_key(row):
             top = row["diagnostics"][0]
@@ -993,7 +993,7 @@ def reclaim_task_endpoint(
     Used by the dashboard recovery popover when an operator wants to
     abort a stuck worker (e.g. one that keeps hallucinating card ids)
     without waiting for the claim TTL. Maps 1:1 to
-    ``sinoclaw kanban reclaim <task_id> --reason ...``.
+    ``anan kanban reclaim <task_id> --reason ...``.
     """
     board = _resolve_board(board)
     conn = _conn(board=board)
@@ -1027,7 +1027,7 @@ def specify_task_endpoint(
     board: Optional[str] = Query(None),
 ):
     """Flesh out a triage-column task via the auxiliary LLM and promote
-    it to ``todo``. Maps 1:1 to ``sinoclaw kanban specify <task_id>``.
+    it to ``todo``. Maps 1:1 to ``anan kanban specify <task_id>``.
 
     Returns the outcome shape used by the CLI: ``{ok, task_id, reason,
     new_title}``. A non-OK outcome is NOT an HTTP error — the UI renders
@@ -1047,7 +1047,7 @@ def specify_task_endpoint(
         os.environ["SINOCLAW_KANBAN_BOARD"] = board or kanban_db.DEFAULT_BOARD
         # Import lazily so a missing auxiliary client at import time
         # doesn't break plugin load.
-        from sinoclaw_cli import kanban_specify  # noqa: WPS433 (intentional)
+        from anan_cli import kanban_specify  # noqa: WPS433 (intentional)
 
         outcome = kanban_specify.specify_task(
             task_id,
@@ -1084,7 +1084,7 @@ def reassign_task_endpoint(
     Used by the dashboard recovery popover when an operator wants to
     retry a task with a different worker profile (e.g. switch to a
     smarter model after the assigned profile keeps hallucinating).
-    Maps 1:1 to ``sinoclaw kanban reassign <task_id> <profile> [--reclaim]``.
+    Maps 1:1 to ``anan kanban reassign <task_id> <profile> [--reclaim]``.
     """
     board = _resolve_board(board)
     conn = _conn(board=board)
@@ -1114,14 +1114,14 @@ def reassign_task_endpoint(
 
 @router.get("/config")
 def get_config():
-    """Return kanban dashboard preferences from ~/.sinoclaw/config.yaml.
+    """Return kanban dashboard preferences from ~/.anan/config.yaml.
 
     Reads the ``dashboard.kanban`` section if present; defaults otherwise.
     Used by the UI to pre-select tenant filters, toggle markdown rendering,
     or set column-width preferences without a round-trip per page load.
     """
     try:
-        from sinoclaw_cli.config import load_config
+        from anan_cli.config import load_config
         cfg = load_config() or {}
     except Exception:
         cfg = {}
@@ -1309,7 +1309,7 @@ def get_stats(board: Optional[str] = Query(None)):
 def get_assignees(board: Optional[str] = Query(None)):
     """Known profiles + per-profile task counts.
 
-    Returns the union of ``~/.sinoclaw/profiles/*`` on disk and every
+    Returns the union of ``~/.anan/profiles/*`` on disk and every
     distinct assignee currently used on the board. The dashboard uses
     this to populate its assignee dropdown so a freshly-created profile
     appears in the picker before it's been given any task.
@@ -1519,7 +1519,7 @@ _EVENT_POLL_SECONDS = 0.3
 async def stream_events(ws: WebSocket):
     # Enforce the dashboard session token as a query param — browsers can't
     # set Authorization on a WS upgrade. This matches how the PTY bridge
-    # authenticates in sinoclaw_cli/web_server.py.
+    # authenticates in anan_cli/web_server.py.
     token = ws.query_params.get("token")
     if not _check_ws_token(token):
         await ws.close(code=http_status.WS_1008_POLICY_VIOLATION)

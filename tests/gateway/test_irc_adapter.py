@@ -38,13 +38,13 @@ class TestIRCProtocolHelpers:
         assert msg["params"] == ["#channel", "Hello world"]
 
     def test_parse_numeric_reply(self):
-        msg = _parse_irc_message(":server 001 sinoclaw-bot :Welcome to IRC")
+        msg = _parse_irc_message(":server 001 anan-bot :Welcome to IRC")
         assert msg["prefix"] == "server"
         assert msg["command"] == "001"
-        assert msg["params"] == ["sinoclaw-bot", "Welcome to IRC"]
+        assert msg["params"] == ["anan-bot", "Welcome to IRC"]
 
     def test_parse_nick_collision(self):
-        msg = _parse_irc_message(":server 433 * sinoclaw-bot :Nickname is already in use")
+        msg = _parse_irc_message(":server 433 * anan-bot :Nickname is already in use")
         assert msg["command"] == "433"
 
     def test_extract_nick_full_prefix(self):
@@ -87,7 +87,7 @@ class TestIRCAdapterInit:
             extra={
                 "server": "irc.libera.chat",
                 "port": 6697,
-                "nickname": "sinoclaw",
+                "nickname": "anan",
                 "channel": "#sinoclaw-dev",
                 "use_tls": True,
             },
@@ -96,7 +96,7 @@ class TestIRCAdapterInit:
 
         assert adapter.server == "irc.libera.chat"
         assert adapter.port == 6697
-        assert adapter.nickname == "sinoclaw"
+        assert adapter.nickname == "anan"
         assert adapter.channel == "#sinoclaw-dev"
         assert adapter.use_tls is True
 
@@ -313,14 +313,14 @@ class TestIRCAdapterMessageParsing:
             extra={
                 "server": "localhost",
                 "port": 6667,
-                "nickname": "sinoclaw",
+                "nickname": "anan",
                 "channel": "#test",
                 "use_tls": False,
                 "allowed_users": ["Admin", "BOB"],
             },
         )
         adapter = IRCAdapter(cfg)
-        adapter._current_nick = "sinoclaw"
+        adapter._current_nick = "anan"
         adapter._registered = True
         dispatched = []
 
@@ -346,14 +346,14 @@ class TestIRCAdapterMessageParsing:
             extra={
                 "server": "localhost",
                 "port": 6667,
-                "nickname": "sinoclaw",
+                "nickname": "anan",
                 "channel": "#test",
                 "use_tls": False,
                 "allowed_users": ["Admin", "BOB"],
             },
         )
         adapter = IRCAdapter(cfg)
-        adapter._current_nick = "sinoclaw"
+        adapter._current_nick = "anan"
         adapter._registered = True
         dispatched = []
 

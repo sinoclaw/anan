@@ -64,7 +64,7 @@ Each import triggers the module's `registry.register()` calls. Errors in optiona
 After core tool discovery, MCP tools and plugin tools are also discovered:
 
 1. **MCP tools** — `tools.mcp_tool.discover_mcp_tools()` reads MCP server config and registers tools from external servers.
-2. **Plugin tools** — `sinoclaw_cli.plugins.discover_plugins()` loads user/project/pip plugins that may register additional tools.
+2. **Plugin tools** — `anan_cli.plugins.discover_plugins()` loads user/project/pip plugins that may register additional tools.
 
 ## Tool availability checking (`check_fn`)
 
@@ -97,7 +97,7 @@ Key behaviors:
 Toolsets are named bundles of tools. Hermes resolves them through:
 
 - explicit enabled/disabled toolset lists
-- platform presets (`sinoclaw-cli`, `sinoclaw-telegram`, etc.)
+- platform presets (`anan-cli`, `sinoclaw-telegram`, etc.)
 - dynamic MCP toolsets
 - curated special-purpose sets like `sinoclaw-acp`
 

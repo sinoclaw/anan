@@ -16,18 +16,18 @@ from gateway import run as gateway_run
 
 
 def test_reload_runtime_env_preserves_config_max_turns(tmp_path: Path, monkeypatch) -> None:
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    (sinoclaw_home / "config.yaml").write_text(
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    (anan_home / "config.yaml").write_text(
         yaml.safe_dump({"agent": {"max_turns": 9000}}),
         encoding="utf-8",
     )
-    (sinoclaw_home / ".env").write_text(
+    (anan_home / ".env").write_text(
         "SINOCLAW_MAX_ITERATIONS=90\nOPENROUTER_API_KEY=fresh-key\n",
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(gateway_run, "_sinoclaw_home", sinoclaw_home)
+    monkeypatch.setattr(gateway_run, "_anan_home", anan_home)
     monkeypatch.setenv("SINOCLAW_MAX_ITERATIONS", "9000")
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
 
@@ -40,12 +40,12 @@ def test_reload_runtime_env_preserves_config_max_turns(tmp_path: Path, monkeypat
 def test_reload_runtime_env_keeps_env_max_iterations_when_config_omits_key(
     tmp_path: Path, monkeypatch
 ) -> None:
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    (sinoclaw_home / "config.yaml").write_text(yaml.safe_dump({"agent": {}}), encoding="utf-8")
-    (sinoclaw_home / ".env").write_text("SINOCLAW_MAX_ITERATIONS=123\n", encoding="utf-8")
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    (anan_home / "config.yaml").write_text(yaml.safe_dump({"agent": {}}), encoding="utf-8")
+    (anan_home / ".env").write_text("SINOCLAW_MAX_ITERATIONS=123\n", encoding="utf-8")
 
-    monkeypatch.setattr(gateway_run, "_sinoclaw_home", sinoclaw_home)
+    monkeypatch.setattr(gateway_run, "_anan_home", anan_home)
     monkeypatch.delenv("SINOCLAW_MAX_ITERATIONS", raising=False)
 
     gateway_run._reload_runtime_env_preserving_config_authority()

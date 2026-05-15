@@ -1,4 +1,4 @@
-"""Tests for sinoclaw_constants module."""
+"""Tests for anan_constants module."""
 
 import os
 from pathlib import Path
@@ -6,67 +6,67 @@ from unittest.mock import patch
 
 import pytest
 
-import sinoclaw_constants
-from sinoclaw_constants import (
+import anan_constants
+from anan_constants import (
     VALID_REASONING_EFFORTS,
-    get_default_sinoclaw_root,
+    get_default_anan_root,
     is_container,
     parse_reasoning_effort,
 )
 
 
-class TestGetDefaultSinoclawRoot:
-    """Tests for get_default_sinoclaw_root() — Docker/custom deployment awareness."""
+class TestGetDefaultAnanRoot:
+    """Tests for get_default_anan_root() — Docker/custom deployment awareness."""
 
-    def test_no_sinoclaw_home_returns_native(self, tmp_path, monkeypatch):
-        """When SINOCLAW_HOME is not set, returns ~/.sinoclaw."""
-        monkeypatch.delenv("SINOCLAW_HOME", raising=False)
+    def test_no_anan_home_returns_native(self, tmp_path, monkeypatch):
+        """When ANAN_HOME is not set, returns ~/.anan."""
+        monkeypatch.delenv("ANAN_HOME", raising=False)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
-        assert get_default_sinoclaw_root() == tmp_path / ".sinoclaw"
+        assert get_default_anan_root() == tmp_path / ".anan"
 
-    def test_sinoclaw_home_is_native(self, tmp_path, monkeypatch):
-        """When SINOCLAW_HOME = ~/.sinoclaw, returns ~/.sinoclaw."""
-        native = tmp_path / ".sinoclaw"
+    def test_anan_home_is_native(self, tmp_path, monkeypatch):
+        """When ANAN_HOME = ~/.anan, returns ~/.anan."""
+        native = tmp_path / ".anan"
         native.mkdir()
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
-        monkeypatch.setenv("SINOCLAW_HOME", str(native))
-        assert get_default_sinoclaw_root() == native
+        monkeypatch.setenv("ANAN_HOME", str(native))
+        assert get_default_anan_root() == native
 
-    def test_sinoclaw_home_is_profile(self, tmp_path, monkeypatch):
-        """When SINOCLAW_HOME is a profile under ~/.sinoclaw, returns ~/.sinoclaw."""
-        native = tmp_path / ".sinoclaw"
+    def test_anan_home_is_profile(self, tmp_path, monkeypatch):
+        """When ANAN_HOME is a profile under ~/.anan, returns ~/.anan."""
+        native = tmp_path / ".anan"
         profile = native / "profiles" / "coder"
         profile.mkdir(parents=True)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
-        monkeypatch.setenv("SINOCLAW_HOME", str(profile))
-        assert get_default_sinoclaw_root() == native
+        monkeypatch.setenv("ANAN_HOME", str(profile))
+        assert get_default_anan_root() == native
 
-    def test_sinoclaw_home_is_docker(self, tmp_path, monkeypatch):
-        """When SINOCLAW_HOME points outside ~/.sinoclaw (Docker), returns SINOCLAW_HOME."""
+    def test_anan_home_is_docker(self, tmp_path, monkeypatch):
+        """When ANAN_HOME points outside ~/.anan (Docker), returns ANAN_HOME."""
         docker_home = tmp_path / "opt" / "data"
         docker_home.mkdir(parents=True)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
-        monkeypatch.setenv("SINOCLAW_HOME", str(docker_home))
-        assert get_default_sinoclaw_root() == docker_home
+        monkeypatch.setenv("ANAN_HOME", str(docker_home))
+        assert get_default_anan_root() == docker_home
 
-    def test_sinoclaw_home_is_custom_path(self, tmp_path, monkeypatch):
-        """Any SINOCLAW_HOME outside ~/.sinoclaw is treated as the root."""
+    def test_anan_home_is_custom_path(self, tmp_path, monkeypatch):
+        """Any ANAN_HOME outside ~/.anan is treated as the root."""
         custom = tmp_path / "my-sinoclaw-data"
         custom.mkdir()
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
-        monkeypatch.setenv("SINOCLAW_HOME", str(custom))
-        assert get_default_sinoclaw_root() == custom
+        monkeypatch.setenv("ANAN_HOME", str(custom))
+        assert get_default_anan_root() == custom
 
     def test_docker_profile_active(self, tmp_path, monkeypatch):
-        """When a Docker profile is active (SINOCLAW_HOME=<root>/profiles/<name>),
+        """When a Docker profile is active (ANAN_HOME=<root>/profiles/<name>),
         returns the Docker root, not the profile dir."""
         docker_root = tmp_path / "opt" / "data"
         profile = docker_root / "profiles" / "coder"
         profile.mkdir(parents=True)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
-        monkeypatch.setenv("SINOCLAW_HOME", str(profile))
-        assert get_default_sinoclaw_root() == docker_root
+        monkeypatch.setenv("ANAN_HOME", str(profile))
+        assert get_default_anan_root() == docker_root
 
 
 class TestIsContainer:
@@ -74,7 +74,7 @@ class TestIsContainer:
 
     def _reset_cache(self, monkeypatch):
         """Reset the cached detection result before each test."""
-        monkeypatch.setattr(sinoclaw_constants, "_container_detected", None)
+        monkeypatch.setattr(anan_constants, "_container_detected", None)
 
     def test_detects_dockerenv(self, monkeypatch, tmp_path):
         """/.dockerenv triggers container detection."""
@@ -112,7 +112,7 @@ class TestIsContainer:
 
     def test_caches_result(self, monkeypatch):
         """Second call uses cached value without re-probing."""
-        monkeypatch.setattr(sinoclaw_constants, "_container_detected", True)
+        monkeypatch.setattr(anan_constants, "_container_detected", True)
         assert is_container() is True
         # Even if we make os.path.exists return False, cached value wins
         monkeypatch.setattr(os.path, "exists", lambda p: False)

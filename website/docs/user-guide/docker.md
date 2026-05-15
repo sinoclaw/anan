@@ -21,10 +21,10 @@ If this is your first time running Sinoclaw Agent, create a data directory on th
 mkdir -p ~/.sinoclaw
 docker run -it --rm \
   -v ~/.sinoclaw:/opt/data \
-  sinoclaw/sinoclaw-agent setup
+  sinoclaw/anan setup
 ```
 
-This drops you into the setup wizard, which will prompt you for your API keys and write them to `~/.sinoclaw/.env`. You only need to do this once. It is highly recommended to set up a chat system for the gateway to work with at this point.
+This drops you into the setup wizard, which will prompt you for your API keys and write them to `~/.anan/.env`. You only need to do this once. It is highly recommended to set up a chat system for the gateway to work with at this point.
 
 ## Running in gateway mode
 
@@ -36,7 +36,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.sinoclaw:/opt/data \
   -p 8642:8642 \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 ```
 
 Port 8642 exposes the gateway's [OpenAI-compatible API server](./features/api-server.md) and health endpoint. It's optional if you only use chat platforms (Telegram, Discord, etc.), but required if you want the dashboard or external tools to reach the gateway.
@@ -53,7 +53,7 @@ docker run -d \
   -e API_SERVER_HOST=0.0.0.0 \
   -e API_SERVER_KEY=your_api_key_here \
   -e API_SERVER_CORS_ORIGINS='*' \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 ```
 
 Opening any port on an internet facing machine is a security risk. You should not do it unless you understand the risks.
@@ -70,7 +70,7 @@ docker run -d \
   -p 8642:8642 \
   -p 9119:9119 \
   -e SINOCLAW_DASHBOARD=1 \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 ```
 
 The entrypoint starts `sinoclaw dashboard` in the background (running as the non-root `hermes` user) before `exec`-ing the main command. Dashboard output is prefixed with `[dashboard]` in `docker logs` so it's easy to separate from gateway logs.
@@ -95,7 +95,7 @@ To open an interactive chat session against a running data directory:
 ```sh
 docker run -it --rm \
   -v ~/.sinoclaw:/opt/data \
-  sinoclaw/sinoclaw-agent
+  sinoclaw/anan
 ```
 
 Or if you have already opened a terminal in your running container (via Docker Desktop for instance), just run:
@@ -106,7 +106,7 @@ Or if you have already opened a terminal in your running container (via Docker D
 
 ## Persistent volumes
 
-The `/opt/data` volume is the single source of truth for all Hermes state. It maps to your host's `~/.sinoclaw/` directory and contains:
+The `/opt/data` volume is the single source of truth for all Hermes state. It maps to your host's `~/.anan/` directory and contains:
 
 | Path | Contents |
 |------|----------|
@@ -127,7 +127,7 @@ Never run two Hermes **gateway** containers against the same data directory simu
 
 ## Multi-profile support
 
-Hermes supports [multiple profiles](../reference/profile-commands.md) — separate `~/.sinoclaw/` directories that let you run independent agents (different SOUL, skills, memory, sessions, credentials) from a single installation. **When running under Docker, using Hermes' built-in multi-profile feature is not recommended.**
+Hermes supports [multiple profiles](../reference/profile-commands.md) — separate `~/.anan/` directories that let you run independent agents (different SOUL, skills, memory, sessions, credentials) from a single installation. **When running under Docker, using Hermes' built-in multi-profile feature is not recommended.**
 
 Instead, the recommended pattern is **one container per profile**, with each container bind-mounting its own host directory as `/opt/data`:
 
@@ -138,7 +138,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.sinoclaw-work:/opt/data \
   -p 8642:8642 \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 
 # Personal profile
 docker run -d \
@@ -146,7 +146,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.sinoclaw-personal:/opt/data \
   -p 8643:8642 \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 ```
 
 Why separate containers over profiles in Docker:
@@ -162,7 +162,7 @@ In Docker Compose, this just means declaring one service per profile with distin
 ```yaml
 services:
   sinoclaw-work:
-    image: sinoclaw/sinoclaw-agent:latest
+    image: sinoclaw/anan:latest
     container_name: sinoclaw-work
     restart: unless-stopped
     command: gateway run
@@ -172,7 +172,7 @@ services:
       - ~/.sinoclaw-work:/opt/data
 
   sinoclaw-personal:
-    image: sinoclaw/sinoclaw-agent:latest
+    image: sinoclaw/anan:latest
     container_name: sinoclaw-personal
     restart: unless-stopped
     command: gateway run
@@ -191,7 +191,7 @@ docker run -it --rm \
   -v ~/.sinoclaw:/opt/data \
   -e ANTHROPIC_API_KEY="sk-ant-..." \
   -e OPENAI_API_KEY="sk-..." \
-  sinoclaw/sinoclaw-agent
+  sinoclaw/anan
 ```
 
 Direct `-e` flags override values from `.env`. This is useful for CI/CD or secrets-manager integrations where you don't want keys on disk.
@@ -203,7 +203,7 @@ For persistent deployment with both the gateway and dashboard, a `docker-compose
 ```yaml
 services:
   hermes:
-    image: sinoclaw/sinoclaw-agent:latest
+    image: sinoclaw/anan:latest
     container_name: hermes
     restart: unless-stopped
     command: gateway run
@@ -247,7 +247,7 @@ docker run -d \
   --restart unless-stopped \
   --memory=4g --cpus=2 \
   -v ~/.sinoclaw:/opt/data \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 ```
 
 ## What the Dockerfile does
@@ -280,13 +280,13 @@ Do not override the image entrypoint unless you keep `/opt/hermes/docker/entrypo
 Pull the latest image and recreate the container. Your data directory is untouched.
 
 ```sh
-docker pull sinoclaw/sinoclaw-agent:latest
+docker pull sinoclaw/anan:latest
 docker rm -f hermes
 docker run -d \
   --name sinoclaw \
   --restart unless-stopped \
   -v ~/.sinoclaw:/opt/data \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 ```
 
 Or with Docker Compose:
@@ -298,7 +298,7 @@ docker compose up -d
 
 ## Skills and credential files
 
-When using Docker as the execution environment (not the methods above, but when the agent runs commands inside a Docker sandbox — see [Configuration → Docker Backend](./configuration.md#docker-backend)), Hermes reuses a single long-lived container for all tool calls and automatically bind-mounts the skills directory (`~/.sinoclaw/skills/`) and any credential files declared by skills into that container as read-only volumes. Skill scripts, templates, and references are available inside the sandbox without manual configuration, and because the container persists for the life of the Hermes process, any dependencies you install or files you write stay around for the next tool call.
+When using Docker as the execution environment (not the methods above, but when the agent runs commands inside a Docker sandbox — see [Configuration → Docker Backend](./configuration.md#docker-backend)), Hermes reuses a single long-lived container for all tool calls and automatically bind-mounts the skills directory (`~/.anan/skills/`) and any credential files declared by skills into that container as read-only volumes. Skill scripts, templates, and references are available inside the sandbox without manual configuration, and because the container persists for the life of the Hermes process, any dependencies you install or files you write stay around for the next tool call.
 
 The same syncing happens for SSH and Modal backends — skills and credential files are uploaded via rsync or the Modal mount API before each command.
 
@@ -331,7 +331,7 @@ services:
             - capabilities: [gpu]
 
   hermes:
-    image: sinoclaw/sinoclaw-agent:latest
+    image: sinoclaw/anan:latest
     container_name: hermes
     restart: unless-stopped
     command: gateway run
@@ -347,7 +347,7 @@ networks:
     driver: bridge
 ```
 
-Then in your `~/.sinoclaw/config.yaml`, use the **container name** as the hostname:
+Then in your `~/.anan/config.yaml`, use the **container name** as the hostname:
 
 ```yaml
 model:
@@ -375,7 +375,7 @@ docker run -d \
   --name sinoclaw \
   -v ~/.sinoclaw:/opt/data \
   -p 8642:8642 \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 ```
 
 ```yaml
@@ -394,7 +394,7 @@ docker run -d \
   --name sinoclaw \
   --network host \
   -v ~/.sinoclaw:/opt/data \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 ```
 
 ```yaml
@@ -445,7 +445,7 @@ Check logs: `docker logs hermes`. Common causes:
 
 ### "Permission denied" errors
 
-The container's entrypoint drops privileges to the non-root `hermes` user (UID 10000) via `gosu`. If your host `~/.sinoclaw/` is owned by a different UID, set `SINOCLAW_UID`/`SINOCLAW_GID` to match your host user, or ensure the data directory is writable:
+The container's entrypoint drops privileges to the non-root `hermes` user (UID 10000) via `gosu`. If your host `~/.anan/` is owned by a different UID, set `SINOCLAW_UID`/`SINOCLAW_GID` to match your host user, or ensure the data directory is writable:
 
 ```sh
 chmod -R 755 ~/.sinoclaw
@@ -460,7 +460,7 @@ docker run -d \
   --name sinoclaw \
   --shm-size=1g \
   -v ~/.sinoclaw:/opt/data \
-  sinoclaw/sinoclaw-agent gateway run
+  sinoclaw/anan gateway run
 ```
 
 ### Gateway not reconnecting after network issues
@@ -475,6 +475,6 @@ docker restart hermes
 
 ```sh
 docker logs --tail 50 sinoclaw          # Recent logs
-docker run -it --rm sinoclaw/sinoclaw-agent:latest version     # Verify version
+docker run -it --rm sinoclaw/anan:latest version     # Verify version
 docker stats sinoclaw                    # Resource usage
 ```

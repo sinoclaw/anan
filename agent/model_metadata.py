@@ -18,7 +18,7 @@ import yaml
 
 from utils import base_url_host_matches, base_url_hostname
 
-from sinoclaw_constants import OPENROUTER_MODELS_URL
+from anan_constants import OPENROUTER_MODELS_URL
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def _resolve_requests_verify() -> bool | str:
     """Resolve SSL verify setting for `requests` calls from env vars.
 
     The `requests` library only honours REQUESTS_CA_BUNDLE / CURL_CA_BUNDLE
-    by default. Sinoclaw also honours SINOCLAW_CA_BUNDLE (its own convention)
+    by default. Anan also honours SINOCLAW_CA_BUNDLE (its own convention)
     and SSL_CERT_FILE (used by the stdlib `ssl` module and by httpx), so
     that a single env var can cover both `requests` and `httpx` callsites
     inside the same process.
@@ -125,7 +125,7 @@ CONTEXT_PROBE_TIERS = [
 # Default context length when no detection method succeeds.
 DEFAULT_FALLBACK_CONTEXT = CONTEXT_PROBE_TIERS[0]
 
-# Minimum context length required to run Sinoclaw Agent.  Models with fewer
+# Minimum context length required to run Anan Agent.  Models with fewer
 # tokens cannot maintain enough working memory for tool-calling workflows.
 # Sessions, model switches, and cron jobs should reject models below this.
 MINIMUM_CONTEXT_LENGTH = 64_000
@@ -194,7 +194,7 @@ DEFAULT_CONTEXT_LENGTHS = {
     # GLM
     "glm": 202752,
     # xAI Grok — xAI /v1/models does not return context_length metadata,
-    # so these hardcoded fallbacks prevent Sinoclaw from probing-down to
+    # so these hardcoded fallbacks prevent Anan from probing-down to
     # the default 128k when the user points at https://api.x.ai/v1
     # via a custom provider. Values sourced from models.dev (2026-04).
     # Keys use substring matching (longest-first), so e.g. "grok-4.20"
@@ -744,8 +744,8 @@ def _resolve_endpoint_context_length(
 
 def _get_context_cache_path() -> Path:
     """Return path to the persistent context length cache file."""
-    from sinoclaw_constants import get_sinoclaw_home
-    return get_sinoclaw_home() / "context_length_cache.yaml"
+    from anan_constants import get_anan_home
+    return get_anan_home() / "context_length_cache.yaml"
 
 
 def _load_context_cache() -> Dict[str, int]:
@@ -990,7 +990,7 @@ def _query_local_context_length(model: str, base_url: str, api_key: str = "") ->
                     # the *runtime* context Ollama will actually allocate KV cache
                     # for. The GGUF model_info.context_length is the training max,
                     # which can be larger than num_ctx — using it here would let
-                    # Sinoclaw grow conversations past the runtime limit and Ollama
+                    # Anan grow conversations past the runtime limit and Ollama
                     # would silently truncate. Matches query_ollama_num_ctx().
                     params = data.get("parameters", "")
                     if "num_ctx" in params:
@@ -1270,7 +1270,7 @@ def get_model_context_length(
     # See #15779.
     if custom_providers and base_url and model:
         try:
-            from sinoclaw_cli.config import get_custom_provider_context_length
+            from anan_cli.config import get_custom_provider_context_length
             cp_ctx = get_custom_provider_context_length(
                 model=model,
                 base_url=base_url,
@@ -1382,7 +1382,7 @@ def get_model_context_length(
     # returns the provider-enforced limit which is what users can actually use.
     if effective_provider in ("copilot", "copilot-acp", "github-copilot"):
         try:
-            from sinoclaw_cli.models import get_copilot_model_context
+            from anan_cli.models import get_copilot_model_context
             ctx = get_copilot_model_context(model, api_key=api_key)
             if ctx:
                 return ctx
@@ -1538,7 +1538,7 @@ def estimate_request_tokens_rough(
 ) -> int:
     """Rough token estimate for a full chat-completions request.
 
-    Includes the major payload buckets Sinoclaw sends to providers:
+    Includes the major payload buckets Anan sends to providers:
     system prompt, conversation messages, and tool schemas.  With 50+
     tools enabled, schemas alone can add 20-30K tokens — a significant
     blind spot when only counting messages. Image content is counted

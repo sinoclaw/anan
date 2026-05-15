@@ -1,4 +1,4 @@
-"""Tests for SinoclawCLI initialization -- catches configuration bugs
+"""Tests for AnanCLI initialization -- catches configuration bugs
 that only manifest at runtime (not in mocked unit tests)."""
 
 import os
@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 def _make_cli(env_overrides=None, config_overrides=None, **kwargs):
-    """Create a SinoclawCLI instance with minimal mocking."""
+    """Create a AnanCLI instance with minimal mocking."""
     import importlib
 
     _clean_config = {
@@ -51,7 +51,7 @@ def _make_cli(env_overrides=None, config_overrides=None, **kwargs):
         _cli_mod = importlib.reload(_cli_mod)
         with patch.object(_cli_mod, "get_tool_definitions", return_value=[]), \
              patch.dict(_cli_mod.__dict__, {"CLI_CONFIG": _clean_config}):
-            return _cli_mod.SinoclawCLI(**kwargs)
+            return _cli_mod.AnanCLI(**kwargs)
 
 
 class TestMaxTurnsResolution:
@@ -265,7 +265,7 @@ class TestHistoryDisplay:
             {
                 "id": "20260401_201329_d85961",
                 "title": "Checking Running Sinoclaw Agent",
-                "preview": "check running gateways for sinoclaw agent",
+                "preview": "check running gateways for anan agent",
                 "last_active": 0,
             },
         ]
@@ -293,7 +293,7 @@ class TestHistoryDisplay:
             {
                 "id": "20260401_201329_d85961",
                 "title": "Checking Running Sinoclaw Agent",
-                "preview": "check running gateways for sinoclaw agent",
+                "preview": "check running gateways for anan agent",
                 "last_active": 0,
             },
         ]
@@ -313,11 +313,11 @@ class TestRootLevelProviderOverride:
         """model.provider takes priority — root-level provider is only a fallback."""
         import yaml
 
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
-        config_path = sinoclaw_home / "config.yaml"
+        config_path = anan_home / "config.yaml"
         config_path.write_text(yaml.safe_dump({
             "provider": "opencode-go",  # stale root-level key
             "model": {
@@ -327,7 +327,7 @@ class TestRootLevelProviderOverride:
         }))
 
         import cli
-        monkeypatch.setattr(cli, "_sinoclaw_home", sinoclaw_home)
+        monkeypatch.setattr(cli, "_anan_home", anan_home)
         cfg = cli.load_cli_config()
 
         assert cfg["model"]["provider"] == "openrouter"
@@ -336,11 +336,11 @@ class TestRootLevelProviderOverride:
         """Even when model.provider is the default 'auto', root-level provider is ignored."""
         import yaml
 
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
-        config_path = sinoclaw_home / "config.yaml"
+        config_path = anan_home / "config.yaml"
         config_path.write_text(yaml.safe_dump({
             "provider": "opencode-go",  # stale root key
             "model": {
@@ -350,7 +350,7 @@ class TestRootLevelProviderOverride:
         }))
 
         import cli
-        monkeypatch.setattr(cli, "_sinoclaw_home", sinoclaw_home)
+        monkeypatch.setattr(cli, "_anan_home", anan_home)
         cfg = cli.load_cli_config()
 
         # Root-level "opencode-go" must NOT leak through
@@ -360,12 +360,12 @@ class TestRootLevelProviderOverride:
         """Classic CLI must expose terminal.vercel_runtime to terminal_tool.py."""
         import yaml
 
-        sinoclaw_home = tmp_path / ".sinoclaw"
-        sinoclaw_home.mkdir()
-        monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+        anan_home = tmp_path / ".sinoclaw"
+        anan_home.mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.delenv("TERMINAL_VERCEL_RUNTIME", raising=False)
 
-        config_path = sinoclaw_home / "config.yaml"
+        config_path = anan_home / "config.yaml"
         config_path.write_text(yaml.safe_dump({
             "terminal": {
                 "backend": "vercel_sandbox",
@@ -374,7 +374,7 @@ class TestRootLevelProviderOverride:
         }))
 
         import cli
-        monkeypatch.setattr(cli, "_sinoclaw_home", sinoclaw_home)
+        monkeypatch.setattr(cli, "_anan_home", anan_home)
         cfg = cli.load_cli_config()
 
         assert cfg["terminal"]["vercel_runtime"] == "python3.13"
@@ -382,7 +382,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_model_keys_moves_to_model(self):
         """_normalize_root_model_keys migrates root keys into model section."""
-        from sinoclaw_cli.config import _normalize_root_model_keys
+        from anan_cli.config import _normalize_root_model_keys
 
         config = {
             "provider": "opencode-go",
@@ -401,7 +401,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_model_keys_does_not_override_existing(self):
         """Existing model.provider is never overridden by root-level key."""
-        from sinoclaw_cli.config import _normalize_root_model_keys
+        from anan_cli.config import _normalize_root_model_keys
 
         config = {
             "provider": "stale-provider",
@@ -416,7 +416,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_context_length_migrates_to_model(self):
         """Root-level context_length is migrated into the model section."""
-        from sinoclaw_cli.config import _normalize_root_model_keys
+        from anan_cli.config import _normalize_root_model_keys
 
         config = {
             "context_length": 128000,
@@ -430,7 +430,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_context_length_does_not_override_existing(self):
         """Existing model.context_length is not overridden by root-level key."""
-        from sinoclaw_cli.config import _normalize_root_model_keys
+        from anan_cli.config import _normalize_root_model_keys
 
         config = {
             "context_length": 256000,
@@ -445,7 +445,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_context_length_with_string_model(self):
         """Root-level context_length is migrated even when model is a string."""
-        from sinoclaw_cli.config import _normalize_root_model_keys
+        from anan_cli.config import _normalize_root_model_keys
 
         config = {
             "context_length": 128000,

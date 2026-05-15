@@ -1,4 +1,4 @@
-# Hermes → Sinoclaw 品牌更名完整指南
+# Hermes → Anan 品牌更名完整指南
 
 > 📅 更新日期: 2026-05-09
 > 🎯 目标: 从 hermes-agent 上游拉取最新代码，一次性完成所有品牌更名，零残留，零错误
@@ -17,13 +17,13 @@ git clone --recurse-submodules https://gitcode.com/GitHub_Trending/he/hermes-age
 git clone --recurse-submodules https://github.com/nousresearch/hermes-agent.git
 ```
 
-### 2. 复制到 sinoclaw 目录
+### 2. 复制到 anan 目录
 
 ```bash
 cd /data
-rm -rf sinoclaw
-cp -r hermes-agent sinoclaw
-cd sinoclaw
+rm -rf anan
+cp -r hermes-agent anan
+cd anan
 ```
 
 ### 3. **运行品牌更名脚本（核心，一次性搞定！）**
@@ -31,7 +31,7 @@ cd sinoclaw
 ```python
 #!/usr/bin/env python3
 """
-Hermes → Sinoclaw 品牌更名脚本
+Hermes → Anan 品牌更名脚本
 一键运行，零残留，零错误！
 """
 import os
@@ -41,7 +41,7 @@ import subprocess
 # 黑名单：不改模型名和 Meta 三方库
 # ========================================
 BLACKLIST_STRINGS = [
-    "facebook/sinoclaw",      # Meta 的 JS 引擎
+    "facebook/anan",      # Meta 的 JS 引擎
     "meta-llama/Hermes",    # 模型名
     "hermes-2-pro",         # 模型名
     "hermes-3",             # 模型名
@@ -57,99 +57,99 @@ REPLACEMENTS = [
     # --------------------------
     # 第一优先级：核心类名和模块名
     # --------------------------
-    ('HermesCLI', 'SinoclawCLI'),
-    ('HermesACPAgent', 'SinoclawACPAgent'),
-    ('HermesAgent', 'SinoclawAgent'),
+    ('HermesCLI', 'AnanCLI'),
+    ('HermesACPAgent', 'AnanACPAgent'),
+    ('HermesAgent', 'AnanAgent'),
     
     # --------------------------
     # 第二优先级：常量和环境变量
     # --------------------------
     ('HERMES_', 'SINOCLAW_'),
     ('_HERMES_', '_SINOCLAW_'),
-    ('HERMES-', 'SINOCLAW-'),
+    ('HERMES-', 'ANAN-'),
     
     # --------------------------
     # 第三优先级：函数名
     # --------------------------
-    ('get_hermes_', 'get_sinoclaw_'),
-    ('load_hermes_', 'load_sinoclaw_'),
-    ('ensure_hermes_', 'ensure_sinoclaw_'),
-    ('display_hermes_', 'display_sinoclaw_'),
+    ('get_hermes_', 'get_anan_'),
+    ('load_hermes_', 'load_anan_'),
+    ('ensure_hermes_', 'ensure_anan_'),
+    ('display_hermes_', 'display_anan_'),
     
     # --------------------------
     # 第四优先级：模块和目录名
     # --------------------------
-    ('hermes_cli', 'sinoclaw_cli'),
-    ('hermes_state', 'sinoclaw_state'),
-    ('hermes_logging', 'sinoclaw_logging'),
-    ('hermes_time', 'sinoclaw_time'),
-    ('hermes_bootstrap', 'sinoclaw_bootstrap'),
+    ('hermes_cli', 'anan_cli'),
+    ('hermes_state', 'anan_state'),
+    ('hermes_logging', 'anan_logging'),
+    ('hermes_time', 'anan_time'),
+    ('hermes_bootstrap', 'anan_bootstrap'),
     
     # --------------------------
     # 第五优先级：路径和配置
     # --------------------------
-    ('~/.hermes', '~/.sinoclaw'),
-    ('/.hermes/', '/.sinoclaw/'),
+    ('~/.hermes', '~/.anan'),
+    ('/.hermes/', '/.anan/'),
     
     # --------------------------
     # 第六优先级：产品名称
     # --------------------------
-    ('hermes-agent', 'sinoclaw-agent'),
-    ('hermes_agent', 'sinoclaw_agent'),
-    ('Hermes Agent', 'Sinoclaw Agent'),
-    ('Hermes agent', 'Sinoclaw agent'),
-    ('hermes-bot', 'sinoclaw-bot'),
-    ('hermes_bot', 'sinoclaw_bot'),
-    ('hermes gateway', 'sinoclaw gateway'),
-    ('hermes ink', 'sinoclaw ink'),
-    ('hermes-achievements', 'sinoclaw-achievements'),
-    ('hermes_achievements', 'sinoclaw_achievements'),
+    ('hermes-agent', 'anan'),
+    ('hermes_agent', 'anan_agent'),
+    ('Hermes Agent', 'Anan Agent'),
+    ('Hermes agent', 'Anan agent'),
+    ('hermes-bot', 'anan-bot'),
+    ('hermes_bot', 'anan_bot'),
+    ('hermes gateway', 'anan gateway'),
+    ('hermes ink', 'anan ink'),
+    ('hermes-achievements', 'anan-achievements'),
+    ('hermes_achievements', 'anan_achievements'),
     
     # --------------------------
     # 第七优先级：HTTP Header
     # --------------------------
-    ('X-Hermes-', 'X-Sinoclaw-'),
+    ('X-Hermes-', 'X-Anan-'),
     ('x-hermes-', 'x-sinoclaw-'),
     
     # --------------------------
     # 第八优先级：测试类名
     # --------------------------
-    ('TestHermes', 'TestSinoclaw'),
+    ('TestHermes', 'TestAnan'),
     
     # --------------------------
     # 第九优先级：Bot 名称
     # --------------------------
-    ('HermesBot', 'SinoclawBot'),
-    ('hermesBot', 'sinoclawBot'),
-    ('HermesLang', 'SinoclawLang'),
-    ('hermesLang', 'sinoclawLang'),
+    ('HermesBot', 'AnanBot'),
+    ('hermesBot', 'ananBot'),
+    ('HermesLang', 'AnanLang'),
+    ('hermesLang', 'ananLang'),
     
     # --------------------------
     # 第十优先级：通用品牌（最后执行）
     # --------------------------
-    ('Hermes-', 'Sinoclaw-'),
-    ('Hermes_', 'Sinoclaw_'),
-    ('hermes-', 'sinoclaw-'),
-    ('hermes_', 'sinoclaw_'),
+    ('Hermes-', 'Anan-'),
+    ('Hermes_', 'Anan_'),
+    ('hermes-', 'anan-'),
+    ('hermes_', 'anan_'),
     
     # --------------------------
     # 最后处理：各种边界情况的字符串（注释、文档等）
     # --------------------------
-    (' Hermes ', ' Sinoclaw '),
-    (' Hermes,', ' Sinoclaw,'),
-    (' Hermes!', ' Sinoclaw!'),
-    (' Hermes?', ' Sinoclaw?'),
-    (' Hermes:', ' Sinoclaw:'),
-    (' Hermes.', ' Sinoclaw.'),
-    (' Hermes/', ' Sinoclaw/'),
-    (' Hermes(', ' Sinoclaw('),
-    (' Hermes)', ' Sinoclaw)'),
-    (' Hermes"', ' Sinoclaw"'),
-    (" Hermes'", " Sinoclaw'"),
+    (' Hermes ', ' Anan '),
+    (' Hermes,', ' Anan,'),
+    (' Hermes!', ' Anan!'),
+    (' Hermes?', ' Anan?'),
+    (' Hermes:', ' Anan:'),
+    (' Hermes.', ' Anan.'),
+    (' Hermes/', ' Anan/'),
+    (' Hermes(', ' Anan('),
+    (' Hermes)', ' Anan)'),
+    (' Hermes"', ' Anan"'),
+    (" Hermes'", " Anan'"),
     
-    ('@Hermes', '@Sinoclaw'),
-    ('@sinoclaw:', '@sinoclaw:'),
-    ('@hermes_', '@sinoclaw_'),
+    ('@Hermes', '@Anan'),
+    ('@anan:', '@anan:'),
+    ('@hermes_', '@anan_'),
 ]
 
 # ========================================
@@ -167,39 +167,39 @@ FILE_EXTENSIONS = [
 # ========================================
 RENAMES = [
     # 目录
-    ('hermes_cli', 'sinoclaw_cli'),
-    ('tests/hermes_cli', 'tests/sinoclaw_cli'),
-    ('tests/hermes_state', 'tests/sinoclaw_state'),
-    ('plugins/hermes-achievements', 'plugins/sinoclaw-achievements'),
-    ('environments/hermes_swe_env', 'environments/sinoclaw_swe_env'),
+    ('hermes_cli', 'anan_cli'),
+    ('tests/hermes_cli', 'tests/anan_cli'),
+    ('tests/hermes_state', 'tests/anan_state'),
+    ('plugins/hermes-achievements', 'plugins/anan-achievements'),
+    ('environments/hermes_swe_env', 'environments/anan_swe_env'),
     ('optional-skills/mlops/hermes-atropos-environments', 'optional-skills/mlops/sinoclaw-atropos-environments'),
-    ('skills/autonomous-ai-agents/hermes-agent', 'skills/autonomous-ai-agents/sinoclaw-agent'),
-    ('skills/software-development/debugging-hermes-tui-commands', 'skills/software-development/debugging-sinoclaw-tui-commands'),
+    ('skills/autonomous-ai-agents/hermes-agent', 'skills/autonomous-ai-agents/anan'),
+    ('skills/software-development/debugging-hermes-tui-commands', 'skills/software-development/debugging-anan-tui-commands'),
     ('skills/software-development/hermes-agent-skill-authoring', 'skills/software-development/hermes-agent-skill-authoring'),
     
     # 文件
-    ('hermes', 'sinoclaw'),  # 根目录的 sinoclaw 可执行文件
-    ('hermes_bootstrap.py', 'sinoclaw_bootstrap.py'),
-    ('hermes_constants.py', 'sinoclaw_constants.py'),
-    ('hermes_logging.py', 'sinoclaw_logging.py'),
-    ('hermes_state.py', 'sinoclaw_state.py'),
-    ('hermes_time.py', 'sinoclaw_time.py'),
-    ('setup-hermes.sh', 'setup-sinoclaw.sh'),
-    ('nix/hermes-agent.nix', 'nix/sinoclaw-agent.nix'),
-    ('packaging/homebrew/hermes-agent.rb', 'packaging/homebrew/sinoclaw-agent.rb'),
-    ('scripts/hermes-gateway', 'scripts/sinoclaw-gateway'),
-    ('ui-tui/src/types/hermes-ink.d.ts', 'ui-tui/src/types/sinoclaw-ink.d.ts'),
-    ('website/static/img/hermes-agent-banner.png', 'website/static/img/sinoclaw-agent-banner.png'),
+    ('hermes', 'anan'),  # 根目录的 anan 可执行文件
+    ('hermes_bootstrap.py', 'anan_bootstrap.py'),
+    ('hermes_constants.py', 'anan_constants.py'),
+    ('hermes_logging.py', 'anan_logging.py'),
+    ('hermes_state.py', 'anan_state.py'),
+    ('hermes_time.py', 'anan_time.py'),
+    ('setup-hermes.sh', 'setup-anan.sh'),
+    ('nix/hermes-agent.nix', 'nix/anan.nix'),
+    ('packaging/homebrew/hermes-agent.rb', 'packaging/homebrew/anan.rb'),
+    ('scripts/hermes-gateway', 'scripts/anan-gateway'),
+    ('ui-tui/src/types/hermes-ink.d.ts', 'ui-tui/src/types/anan-ink.d.ts'),
+    ('website/static/img/hermes-agent-banner.png', 'website/static/img/anan-banner.png'),
 ]
 
 # ========================================
 # 主程序
 # ========================================
 def main():
-    os.chdir('/data/sinoclaw')
+    os.chdir('/data/anan')
     
     print("=" * 60)
-    print("🚀 Hermes → Sinoclaw 品牌更名开始")
+    print("🚀 Hermes → Anan 品牌更名开始")
     print("=" * 60)
     
     # --------------------------
@@ -282,7 +282,7 @@ def main():
                 remaining.append(line)
     
     if len(remaining) == 0:
-        print("✅ 完美！没有任何 sinoclaw 残留！")
+        print("✅ 完美！没有任何 anan 残留！")
     else:
         print(f"⚠️  还有 {len(remaining)} 处残留：")
         for line in remaining[:20]:
@@ -291,12 +291,12 @@ def main():
     # 验证核心导入
     print("\n🔍 验证核心导入：")
     modules = [
-        "from sinoclaw_cli import *",
-        "from sinoclaw_constants import *",
-        "from sinoclaw_state import *",
-        "from sinoclaw_logging import *",
-        "from sinoclaw_time import *",
-        "from sinoclaw_bootstrap import *",
+        "from anan_cli import *",
+        "from anan_constants import *",
+        "from anan_state import *",
+        "from anan_logging import *",
+        "from anan_time import *",
+        "from anan_bootstrap import *",
         "from gateway import *",
         "from cron import *",
         "from agent import *",
@@ -342,7 +342,7 @@ if __name__ == "__main__":
 **解决：** BLACKLIST_STRINGS 一定要加！
 
 ### ❌ 坑 3：替换顺序很重要！
-**问题：** 先改 `HermesCLI` 再改 `Hermes`，否则会变成 `SinoclawCLI` → `SinoclawCLI`（没问题），但如果反过来会出问题
+**问题：** 先改 `HermesCLI` 再改 `Hermes`，否则会变成 `AnanCLI` → `AnanCLI`（没问题），但如果反过来会出问题
 **解决：** 严格按 REPLACEMENTS 的顺序！
 
 ### ❌ 坑 4：注释和文档也要改！
@@ -350,8 +350,8 @@ if __name__ == "__main__":
 **解决：** 全量替换，包括所有 `.md`、注释、字符串常量
 
 ### ❌ 坑 5：不要向后兼容！
-**问题：** 之前加了 `get_hermes_home = get_sinoclaw_home` 这种别名，结果代码混乱
-**解决：** 品牌更名就是独立项目，所有地方统一成 Sinoclaw，不要 sinoclaw 的任何东西
+**问题：** 之前加了 `get_hermes_home = get_anan_home` 这种别名，结果代码混乱
+**解决：** 品牌更名就是独立项目，所有地方统一成 Anan，不要 anan 的任何东西
 
 ---
 
@@ -370,7 +370,7 @@ if __name__ == "__main__":
 
 ## 🎯 最佳实践
 
-1. **永远从干净的上游开始** — 不要在旧的 sinoclaw 代码上 patch
+1. **永远从干净的上游开始** — 不要在旧的 anan 代码上 patch
 2. **先重命名目录/文件，再改内容** — 避免路径问题
 3. **黑名单一定要加** — 模型名和三方库名绝对不能改
 4. **替换顺序很重要** — 从具体到通用
@@ -386,16 +386,16 @@ if __name__ == "__main__":
    git pull
    ```
 
-2. 删除旧的 sinoclaw，重新复制
+2. 删除旧的 anan，重新复制
    ```bash
    cd /data
-   rm -rf sinoclaw
-   cp -r hermes-agent sinoclaw
+   rm -rf anan
+   cp -r hermes-agent anan
    ```
 
 3. 运行本脚本，5 秒搞定！
    ```bash
-   cd /data/sinoclaw
+   cd /data/anan
    python3 BRAND_RENAME_GUIDE.md  # 把上面的脚本存成 .py 文件运行
    ```
 

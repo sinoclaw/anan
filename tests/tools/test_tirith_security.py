@@ -827,7 +827,7 @@ class TestDiskFailureMarker:
         _tirith_mod._resolved_path = None
 
     def test_install_failed_recovers_from_sinoclaw_bin(self):
-        """After _INSTALL_FAILED, manual install in SINOCLAW_HOME/bin is picked up."""
+        """After _INSTALL_FAILED, manual install in ANAN_HOME/bin is picked up."""
         from tools.tirith_security import _resolve_tirith_path, _INSTALL_FAILED
         import tempfile
         tmpdir = tempfile.mkdtemp()
@@ -969,41 +969,41 @@ class TestDiskFailureMarker:
 
 
 # ---------------------------------------------------------------------------
-# SINOCLAW_HOME isolation
+# ANAN_HOME isolation
 # ---------------------------------------------------------------------------
 
 class TestSinoclawHomeIsolation:
-    def test_sinoclaw_bin_dir_respects_sinoclaw_home(self):
-        """_sinoclaw_bin_dir must use SINOCLAW_HOME, not hardcoded ~/.sinoclaw."""
+    def test_sinoclaw_bin_dir_respects_anan_home(self):
+        """_sinoclaw_bin_dir must use ANAN_HOME, not hardcoded ~/.sinoclaw."""
         from tools.tirith_security import _sinoclaw_bin_dir
         import tempfile
         tmpdir = tempfile.mkdtemp()
-        with patch.dict(os.environ, {"SINOCLAW_HOME": tmpdir}):
+        with patch.dict(os.environ, {"ANAN_HOME": tmpdir}):
             result = _sinoclaw_bin_dir()
         assert result == os.path.join(tmpdir, "bin")
         assert os.path.isdir(result)
 
-    def test_failure_marker_respects_sinoclaw_home(self):
-        """_failure_marker_path must use SINOCLAW_HOME, not hardcoded ~/.sinoclaw."""
+    def test_failure_marker_respects_anan_home(self):
+        """_failure_marker_path must use ANAN_HOME, not hardcoded ~/.sinoclaw."""
         from tools.tirith_security import _failure_marker_path
-        with patch.dict(os.environ, {"SINOCLAW_HOME": "/custom/sinoclaw"}):
+        with patch.dict(os.environ, {"ANAN_HOME": "/custom/sinoclaw"}):
             result = _failure_marker_path()
         assert result == "/custom/sinoclaw/.tirith-install-failed"
 
     def test_conftest_isolation_prevents_real_home_writes(self):
-        """The conftest autouse fixture sets SINOCLAW_HOME; verify it's active."""
-        sinoclaw_home = os.getenv("SINOCLAW_HOME")
-        assert sinoclaw_home is not None, "SINOCLAW_HOME should be set by conftest"
-        assert "sinoclaw_test" in sinoclaw_home, "Should point to test temp dir"
+        """The conftest autouse fixture sets ANAN_HOME; verify it's active."""
+        anan_home = os.getenv("ANAN_HOME")
+        assert anan_home is not None, "ANAN_HOME should be set by conftest"
+        assert "sinoclaw_test" in anan_home, "Should point to test temp dir"
 
-    def test_get_sinoclaw_home_fallback(self):
-        """Without SINOCLAW_HOME set, falls back to the active OS home."""
-        from tools.tirith_security import _get_sinoclaw_home
+    def test_get_anan_home_fallback(self):
+        """Without ANAN_HOME set, falls back to the active OS home."""
+        from tools.tirith_security import _get_anan_home
         with patch.dict(os.environ, {}, clear=True):
-            # Remove SINOCLAW_HOME entirely. With HOME also absent, expanduser
+            # Remove ANAN_HOME entirely. With HOME also absent, expanduser
             # falls back to the account database; compute expected under the
             # same environment instead of after patch.dict restores HOME.
-            os.environ.pop("SINOCLAW_HOME", None)
+            os.environ.pop("ANAN_HOME", None)
             expected = os.path.join(os.path.expanduser("~"), ".sinoclaw")
-            result = _get_sinoclaw_home()
+            result = _get_anan_home()
         assert result == expected

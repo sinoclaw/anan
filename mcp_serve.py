@@ -1,5 +1,5 @@
 """
-Sinoclaw MCP Server — expose messaging conversations as MCP tools.
+Anan MCP Server — expose messaging conversations as MCP tools.
 
 Starts a stdio MCP server that lets any MCP client (Claude Code, Cursor, Codex,
 etc.) list conversations, read message history, send messages, poll for live
@@ -10,11 +10,11 @@ Matches OpenClaw's 9-tool MCP channel bridge surface:
   events_poll, events_wait, messages_send, permissions_list_open,
   permissions_respond
 
-Plus: channels_list (Sinoclaw-specific extra)
+Plus: channels_list (Anan-specific extra)
 
 Usage:
-    sinoclaw mcp serve
-    sinoclaw mcp serve --verbose
+    anan mcp serve
+    anan mcp serve --verbose
 
 MCP client config (e.g. claude_desktop_config.json):
     {
@@ -60,18 +60,18 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 def _get_sessions_dir() -> Path:
-    """Return the sessions directory using SINOCLAW_HOME."""
+    """Return the sessions directory using ANAN_HOME."""
     try:
-        from sinoclaw_constants import get_sinoclaw_home
-        return get_sinoclaw_home() / "sessions"
+        from anan_constants import get_anan_home
+        return get_anan_home() / "sessions"
     except ImportError:
-        return Path(os.environ.get("SINOCLAW_HOME", Path.home() / ".sinoclaw")) / "sessions"
+        return Path(os.environ.get("ANAN_HOME", Path.home() / ".anan")) / "sessions"
 
 
 def _get_session_db():
     """Get a SessionDB instance for reading message transcripts."""
     try:
-        from sinoclaw_state import SessionDB
+        from anan_state import SessionDB
         return SessionDB()
     except Exception as e:
         logger.debug("SessionDB unavailable: %s", e)
@@ -98,11 +98,11 @@ def _load_sessions_index() -> dict:
 def _load_channel_directory() -> dict:
     """Load the cached channel directory for available targets."""
     try:
-        from sinoclaw_constants import get_sinoclaw_home
-        directory_file = get_sinoclaw_home() / "channel_directory.json"
+        from anan_constants import get_anan_home
+        directory_file = get_anan_home() / "channel_directory.json"
     except ImportError:
         directory_file = Path(
-            os.environ.get("SINOCLAW_HOME", Path.home() / ".sinoclaw")
+            os.environ.get("ANAN_HOME", Path.home() / ".anan")
         ) / "channel_directory.json"
 
     if not directory_file.exists():
@@ -205,7 +205,7 @@ class EventBridge:
     """Background poller that watches SessionDB for new messages and
     maintains an in-memory event queue with waiter support.
 
-    This is the Sinoclaw equivalent of OpenClaw's WebSocket gateway bridge.
+    This is the Anan equivalent of OpenClaw's WebSocket gateway bridge.
     Instead of WebSocket events, we poll the SQLite database for changes.
     """
 
@@ -362,10 +362,10 @@ class EventBridge:
 
         # Check if state.db has changed
         try:
-            from sinoclaw_constants import get_sinoclaw_home
-            db_file = get_sinoclaw_home() / "state.db"
+            from anan_constants import get_anan_home
+            db_file = get_anan_home() / "state.db"
         except ImportError:
-            db_file = Path(os.environ.get("SINOCLAW_HOME", Path.home() / ".sinoclaw")) / "state.db"
+            db_file = Path(os.environ.get("ANAN_HOME", Path.home() / ".anan")) / "state.db"
 
         try:
             db_mtime = db_file.stat().st_mtime if db_file.exists() else 0.0
@@ -448,7 +448,7 @@ class EventBridge:
 # ---------------------------------------------------------------------------
 
 def create_mcp_server(event_bridge: Optional[EventBridge] = None) -> "FastMCP":
-    """Create and return the Sinoclaw MCP server with all tools registered."""
+    """Create and return the Anan MCP server with all tools registered."""
     if not _MCP_SERVER_AVAILABLE:
         raise ImportError(
             "MCP server requires the 'mcp' package. "
@@ -458,7 +458,7 @@ def create_mcp_server(event_bridge: Optional[EventBridge] = None) -> "FastMCP":
     mcp = FastMCP(
         "hermes",
         instructions=(
-            "Sinoclaw Agent messaging bridge. Use these tools to interact with "
+            "Anan Agent messaging bridge. Use these tools to interact with "
             "conversations across Telegram, Discord, Slack, WhatsApp, Signal, "
             "Matrix, and other connected platforms."
         ),
@@ -864,7 +864,7 @@ def create_mcp_server(event_bridge: Optional[EventBridge] = None) -> "FastMCP":
 # ---------------------------------------------------------------------------
 
 def run_mcp_server(verbose: bool = False) -> None:
-    """Start the Sinoclaw MCP server on stdio."""
+    """Start the Anan MCP server on stdio."""
     if not _MCP_SERVER_AVAILABLE:
         print(
             "Error: MCP server requires the 'mcp' package.\n"

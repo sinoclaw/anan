@@ -1,8 +1,8 @@
 # Terminal Test Environment -- Default Configuration
 #
-# Simple file-creation tasks for validating the full Atropos + sinoclaw-agent stack.
+# Simple file-creation tasks for validating the full Atropos + anan stack.
 # Uses Modal terminal backend and OpenRouter (Claude) for inference.
-# API keys loaded from ~/sinoclaw-agent/.env
+# API keys loaded from ~/anan/.env
 #
 # Usage:
 #   run-api

@@ -51,13 +51,13 @@ This page is the top-level map of Sinoclaw Agent internals. Use it to orient you
 ## Directory Structure
 
 ```text
-sinoclaw-agent/
+anan/
 ├── run_agent.py              # AIAgent — core conversation loop (~13,700 lines)
-├── cli.py                    # SinoclawCLI — interactive terminal UI (~11,500 lines)
+├── cli.py                    # AnanCLI — interactive terminal UI (~11,500 lines)
 ├── model_tools.py            # Tool discovery, schema collection, dispatch
 ├── toolsets.py               # Tool groupings and platform presets
 ├── sinoclaw_state.py           # SQLite session/state database with FTS5
-├── sinoclaw_constants.py       # SINOCLAW_HOME, profile-aware paths
+├── sinoclaw_constants.py       # ANAN_HOME, profile-aware paths
 ├── batch_runner.py           # Batch trajectory generation
 │
 ├── agent/                    # Agent internals
@@ -75,7 +75,7 @@ sinoclaw-agent/
 │   ├── memory_provider.py   # Memory provider ABC
 │   └── trajectory.py         # Trajectory saving helpers
 │
-├── sinoclaw_cli/               # CLI subcommands and setup
+├── anan_cli/               # CLI subcommands and setup
 │   ├── main.py               # Entry point — all `hermes` subcommands (~10,400 lines)
 │   ├── config.py             # DEFAULT_CONFIG, OPTIONAL_ENV_VARS, migration
 │   ├── commands.py           # COMMAND_REGISTRY — central slash command definitions
@@ -139,7 +139,7 @@ sinoclaw-agent/
 ### CLI Session
 
 ```text
-User input → SinoclawCLI.process_input()
+User input → AnanCLI.process_input()
   → AIAgent.run_conversation()
     → prompt_builder.build_system_prompt()
     → runtime_provider.resolve_runtime_provider()
@@ -231,7 +231,7 @@ Long-running process with 20 platform adapters, unified session routing, user au
 
 ### Plugin System
 
-Three discovery sources: `~/.sinoclaw/plugins/` (user), `.hermes/plugins/` (project), and pip entry points. Plugins register tools, hooks, and CLI commands through a context API. Two specialized plugin types exist: memory providers (`plugins/memory/`) and context engines (`plugins/context_engine/`). Both are single-select — only one of each can be active at a time, configured via `sinoclaw plugins` or `config.yaml`.
+Three discovery sources: `~/.anan/plugins/` (user), `.hermes/plugins/` (project), and pip entry points. Plugins register tools, hooks, and CLI commands through a context API. Two specialized plugin types exist: memory providers (`plugins/memory/`) and context engines (`plugins/context_engine/`). Both are single-select — only one of each can be active at a time, configured via `sinoclaw plugins` or `config.yaml`.
 
 → [Plugin Guide](/docs/guides/build-a-sinoclaw-plugin), [Memory Provider Plugin](./memory-provider-plugin.md)
 
@@ -262,7 +262,7 @@ Full environment framework for evaluation and RL training. Integrates with Atrop
 | **Interruptible** | API calls and tool execution can be cancelled mid-flight by user input or signals. |
 | **Platform-agnostic core** | One AIAgent class serves CLI, gateway, ACP, batch, and API server. Platform differences live in the entry point, not the agent. |
 | **Loose coupling** | Optional subsystems (MCP, plugins, memory providers, RL environments) use registry patterns and check_fn gating, not hard dependencies. |
-| **Profile isolation** | Each profile (`sinoclaw -p <name>`) gets its own SINOCLAW_HOME, config, memory, sessions, and gateway PID. Multiple profiles run concurrently. |
+| **Profile isolation** | Each profile (`sinoclaw -p <name>`) gets its own ANAN_HOME, config, memory, sessions, and gateway PID. Multiple profiles run concurrently. |
 
 ## File Dependency Chain
 

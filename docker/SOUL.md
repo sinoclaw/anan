@@ -1,4 +1,4 @@
-# Sinoclaw Agent Persona
+# Anan Agent Persona
 
 <!--
 This file defines the agent's personality and tone.

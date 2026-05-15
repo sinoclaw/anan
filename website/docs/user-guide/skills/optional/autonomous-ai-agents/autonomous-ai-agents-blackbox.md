@@ -20,7 +20,7 @@ Delegate coding tasks to Blackbox AI CLI agent. Multi-model agent with built-in 
 | Author | Sinoclaw Agent (Sinoclaw Team) |
 | License | MIT |
 | Tags | `Coding-Agent`, `Blackbox`, `Multi-Agent`, `Judge`, `Multi-Model` |
-| Related skills | [`claude-code`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-claude-code), [`codex`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-codex), [`sinoclaw-agent`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-sinoclaw-agent) |
+| Related skills | [`claude-code`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-claude-code), [`codex`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-codex), [`anan`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-anan) |
 
 ## Reference: full SKILL.md
 

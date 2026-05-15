@@ -32,7 +32,7 @@ MAX_SUMMARY_TOKENS = 10000
 def _get_session_search_max_concurrency(default: int = 3) -> int:
     """Read auxiliary.session_search.max_concurrency with sane bounds."""
     try:
-        from sinoclaw_cli.config import load_config
+        from anan_cli.config import load_config
         config = load_config()
     except ImportError:
         return default
@@ -337,7 +337,7 @@ def session_search(
     The current session is excluded from results since the agent already has that context.
     """
     if db is None:
-        from sinoclaw_state import format_session_db_unavailable
+        from anan_state import format_session_db_unavailable
         return tool_error(format_session_db_unavailable(), success=False)
 
     # Defensive: models (especially open-source) may send non-int limit values
@@ -535,7 +535,7 @@ def session_search(
 def check_session_search_requirements() -> bool:
     """Requires SQLite state database and an auxiliary text model."""
     try:
-        from sinoclaw_state import DEFAULT_DB_PATH
+        from anan_state import DEFAULT_DB_PATH
         return DEFAULT_DB_PATH.parent.exists()
     except ImportError:
         return False

@@ -239,7 +239,7 @@ Select **Discord** when prompted, then paste your bot token and user ID when ask
 
 ### Option B: Manual Configuration
 
-Add the following to your `~/.sinoclaw/.env` file:
+Add the following to your `~/.anan/.env` file:
 
 ```bash
 # Required
@@ -264,7 +264,7 @@ You can run `sinoclaw gateway` in the background or as a systemd service for per
 
 ## Configuration Reference
 
-Discord behavior is controlled through two files: **`~/.sinoclaw/.env`** for credentials and env-level toggles, and **`~/.sinoclaw/config.yaml`** for structured settings. Environment variables always take precedence over config.yaml values when both are set.
+Discord behavior is controlled through two files: **`~/.anan/.env`** for credentials and env-level toggles, and **`~/.anan/config.yaml`** for structured settings. Environment variables always take precedence over config.yaml values when both are set.
 
 ### Environment Variables (`.env`)
 
@@ -296,7 +296,7 @@ Discord behavior is controlled through two files: **`~/.sinoclaw/.env`** for cre
 
 ### Config File (`config.yaml`)
 
-The `discord` section in `~/.sinoclaw/config.yaml` mirrors the env vars above. Config.yaml settings are applied as defaults — if the equivalent env var is already set, the env var wins.
+The `discord` section in `~/.anan/config.yaml` mirrors the env vars above. Config.yaml settings are applied as defaults — if the equivalent env var is already set, the env var wins.
 
 ```yaml
 # Discord-specific settings
@@ -520,7 +520,7 @@ Type `/sethome` in any Discord channel where the bot is present. That channel be
 
 ### Manual Configuration
 
-Add these to your `~/.sinoclaw/.env`:
+Add these to your `~/.anan/.env`:
 
 ```bash
 DISCORD_HOME_CHANNEL=123456789012345678
@@ -588,13 +588,13 @@ Refreshing the directory (`/channels refresh` on platforms that expose it, or a 
 
 **Cause**: Your User ID isn't in `DISCORD_ALLOWED_USERS`.
 
-**Fix**: Add your User ID to `DISCORD_ALLOWED_USERS` in `~/.sinoclaw/.env` and restart the gateway.
+**Fix**: Add your User ID to `DISCORD_ALLOWED_USERS` in `~/.anan/.env` and restart the gateway.
 
 ### People in the same channel are sharing context unexpectedly
 
 **Cause**: `group_sessions_per_user` is disabled, or the platform cannot provide a user ID for the messages in that context.
 
-**Fix**: Set this in `~/.sinoclaw/config.yaml` and restart the gateway:
+**Fix**: Set this in `~/.anan/config.yaml` and restart the gateway:
 
 ```yaml
 group_sessions_per_user: true
@@ -613,7 +613,7 @@ Always set `DISCORD_ALLOWED_USERS` (or `DISCORD_ALLOWED_ROLES`) to restrict who 
 For servers where access is managed by roles instead of individual user lists (moderator teams, support staff, internal tooling), use `DISCORD_ALLOWED_ROLES` — a comma-separated list of role IDs. Any member with one of those roles is authorized.
 
 ```bash
-# ~/.sinoclaw/.env — works alongside or instead of DISCORD_ALLOWED_USERS
+# ~/.anan/.env — works alongside or instead of DISCORD_ALLOWED_USERS
 DISCORD_ALLOWED_ROLES=987654321098765432,876543210987654321
 ```
 
@@ -633,7 +633,7 @@ By default, Hermes blocks the bot from pinging `@everyone`, `@here`, and role me
 You can relax these defaults via either env vars or `config.yaml`:
 
 ```yaml
-# ~/.sinoclaw/config.yaml
+# ~/.anan/config.yaml
 discord:
   allow_mentions:
     everyone: false      # allow the bot to ping @everyone / @here
@@ -643,7 +643,7 @@ discord:
 ```
 
 ```bash
-# ~/.sinoclaw/.env — env vars win over config.yaml
+# ~/.anan/.env — env vars win over config.yaml
 DISCORD_ALLOW_MENTION_EVERYONE=false
 DISCORD_ALLOW_MENTION_ROLES=false
 DISCORD_ALLOW_MENTION_USERS=true

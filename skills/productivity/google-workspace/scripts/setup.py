@@ -30,17 +30,17 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Ensure sibling modules (_sinoclaw_home) are importable when run standalone.
+# Ensure sibling modules (_anan_home) are importable when run standalone.
 _SCRIPTS_DIR = str(Path(__file__).resolve().parent)
 if _SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, _SCRIPTS_DIR)
 
-from _sinoclaw_home import display_sinoclaw_home, get_sinoclaw_home
+from _anan_home import display_anan_home, get_anan_home
 
-SINOCLAW_HOME = get_sinoclaw_home()
-TOKEN_PATH = SINOCLAW_HOME / "google_token.json"
-CLIENT_SECRET_PATH = SINOCLAW_HOME / "google_client_secret.json"
-PENDING_AUTH_PATH = SINOCLAW_HOME / "google_oauth_pending.json"
+ANAN_HOME = get_anan_home()
+TOKEN_PATH = ANAN_HOME / "google_token.json"
+CLIENT_SECRET_PATH = ANAN_HOME / "google_client_secret.json"
+PENDING_AUTH_PATH = ANAN_HOME / "google_oauth_pending.json"
 
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
@@ -115,7 +115,7 @@ def install_deps():
         print(
             "On environments without pip (e.g. Nix), install the optional extra instead:"
         )
-        print("  pip install 'sinoclaw-agent[google]'")
+        print("  pip install 'anan[google]'")
         print(f"Or manually: {sys.executable} -m pip install {' '.join(REQUIRED_PACKAGES)}")
         return False
 
@@ -387,7 +387,7 @@ def exchange_auth_code(code: str):
     TOKEN_PATH.write_text(json.dumps(token_payload, indent=2))
     PENDING_AUTH_PATH.unlink(missing_ok=True)
     print(f"OK: Authenticated. Token saved to {TOKEN_PATH}")
-    print(f"Profile-scoped token location: {display_sinoclaw_home()}/google_token.json")
+    print(f"Profile-scoped token location: {display_anan_home()}/google_token.json")
 
 
 def revoke():

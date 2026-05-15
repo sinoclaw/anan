@@ -17,7 +17,7 @@
         export HOME=$TMPDIR
         ${hermesVenv}/bin/python3 -c '
 import json, sys
-from sinoclaw_cli.config import DEFAULT_CONFIG
+from anan_cli.config import DEFAULT_CONFIG
 
 def leaf_paths(d, prefix=""):
     paths = []
@@ -67,7 +67,7 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
           echo "PASS: All binaries present"
 
           echo "=== Checking version ==="
-          ${sinoclaw-agent}/bin/sinoclaw version 2>&1 | grep -qi "sinoclaw" || (echo "FAIL: version check"; exit 1)
+          ${sinoclaw-agent}/bin/anan version 2>&1 | grep -qi "anan" || (echo "FAIL: version check"; exit 1)
           echo "PASS: Version check"
 
           echo "=== All checks passed ==="
@@ -79,7 +79,7 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
         entry-points-sync = pkgs.runCommand "sinoclaw-entry-points-sync" { } ''
           set -e
           echo "=== Checking entry points match pyproject.toml [project.scripts] ==="
-          for bin in sinoclaw sinoclaw-agent sinoclaw-acp; do
+          for bin in anan sinoclaw-agent sinoclaw-acp; do
             test -x ${sinoclaw-agent}/bin/$bin || (echo "FAIL: $bin binary missing from Nix package"; exit 1)
             echo "PASS: $bin present"
           done
@@ -93,9 +93,9 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
           set -e
           export HOME=$(mktemp -d)
 
-          echo "=== Checking sinoclaw --help ==="
-          ${sinoclaw-agent}/bin/sinoclaw --help 2>&1 | grep -q "gateway" || (echo "FAIL: gateway subcommand missing"; exit 1)
-          ${sinoclaw-agent}/bin/sinoclaw --help 2>&1 | grep -q "config" || (echo "FAIL: config subcommand missing"; exit 1)
+          echo "=== Checking anan --help ==="
+          ${sinoclaw-agent}/bin/anan --help 2>&1 | grep -q "gateway" || (echo "FAIL: gateway subcommand missing"; exit 1)
+          ${sinoclaw-agent}/bin/anan --help 2>&1 | grep -q "config" || (echo "FAIL: config subcommand missing"; exit 1)
           echo "PASS: All subcommands accessible"
 
           echo "=== All CLI checks passed ==="
@@ -202,8 +202,8 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
           }
 
           echo "=== Checking SINOCLAW_MANAGED guards ==="
-          check_blocked "config set" ${sinoclaw-agent}/bin/sinoclaw config set model foo
-          check_blocked "config edit" ${sinoclaw-agent}/bin/sinoclaw config edit
+          check_blocked "config set" ${sinoclaw-agent}/bin/anan config set model foo
+          check_blocked "config edit" ${sinoclaw-agent}/bin/anan config edit
 
           echo "=== All guard checks passed ==="
           mkdir -p $out
@@ -213,18 +213,18 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
         # Verify extraPythonPackages PYTHONPATH injection
         extra-python-packages = let
           testPkg = pkgs.python312Packages.pyfiglet;
-          sinoclawWithExtra = sinoclaw-agent.override {
+          ananWithExtra = sinoclaw-agent.override {
             extraPythonPackages = [ testPkg ];
           };
         in pkgs.runCommand "sinoclaw-extra-python-packages" { } ''
           set -e
           echo "=== Checking extraPythonPackages PYTHONPATH injection ==="
 
-          grep -q "PYTHONPATH" ${sinoclawWithExtra}/bin/sinoclaw-agent || \
+          grep -q "PYTHONPATH" ${ananWithExtra}/bin/sinoclaw-agent || \
             (echo "FAIL: PYTHONPATH not in wrapper"; exit 1)
           echo "PASS: PYTHONPATH present in wrapper"
 
-          grep -q "${testPkg}" ${sinoclawWithExtra}/bin/sinoclaw-agent || \
+          grep -q "${testPkg}" ${ananWithExtra}/bin/sinoclaw-agent || \
             (echo "FAIL: test package path not in PYTHONPATH"; exit 1)
           echo "PASS: test package path found in wrapper"
 
@@ -310,12 +310,12 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
 
           # Helper: run merge then load with Python, output merged JSON
           merge_and_load() {
-            local sinoclaw_home="$1"
-            export SINOCLAW_HOME="$sinoclaw_home"
-            ${configMergeScript} ${nixSettings} "$sinoclaw_home/config.yaml"
+            local anan_home="$1"
+            export SINOCLAW_HOME="$anan_home"
+            ${configMergeScript} ${nixSettings} "$anan_home/config.yaml"
             ${hermesVenv}/bin/python3 -c '
 import json, sys
-from sinoclaw_cli.config import load_config
+from anan_cli.config import load_config
 json.dump(load_config(), sys.stdout, default=str)
 '
           }

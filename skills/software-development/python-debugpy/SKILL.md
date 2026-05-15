@@ -8,7 +8,7 @@ platforms: [linux, macos]
 metadata:
   hermes:
     tags: [debugging, python, pdb, debugpy, breakpoints, dap, post-mortem]
-    related_skills: [systematic-debugging, node-inspect-debugger, debugging-sinoclaw-tui-commands]
+    related_skills: [systematic-debugging, node-inspect-debugger, debugging-anan-tui-commands]
 ---
 
 # Python Debugger (pdb + debugpy)
@@ -151,7 +151,7 @@ For long-lived processes: Sinoclaw gateway, tui_gateway, a daemon, a process tha
 ### Setup
 
 ```bash
-source /home/bb/sinoclaw-agent/.venv/bin/activate
+source /home/bb/anan/.venv/bin/activate
 pip install debugpy
 ```
 
@@ -248,7 +248,7 @@ This is fine for one-off automation but painful as an interactive UX.
   "connect": { "host": "127.0.0.1", "port": 5678 },
   "justMyCode": false,
   "pathMappings": [
-    { "localRoot": "${workspaceFolder}", "remoteRoot": "/home/bb/sinoclaw-agent" }
+    { "localRoot": "${workspaceFolder}", "remoteRoot": "/home/bb/anan" }
   ]
 }
 ```

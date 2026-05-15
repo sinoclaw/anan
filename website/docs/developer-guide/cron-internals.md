@@ -16,7 +16,7 @@ The cron subsystem provides scheduled task execution — from simple one-shot de
 | `cron/scheduler.py` | Scheduler loop — due-job detection, execution, repeat tracking |
 | `tools/cronjob_tools.py` | Model-facing `cronjob` tool registration and handler |
 | `gateway/run.py` | Gateway integration — cron ticking in the long-running loop |
-| `sinoclaw_cli/cron.py` | CLI `sinoclaw cron` subcommands |
+| `anan_cli/cron.py` | CLI `sinoclaw cron` subcommands |
 
 ## Scheduling Model
 
@@ -33,7 +33,7 @@ The model-facing surface is a single `cronjob` tool with action-style operations
 
 ## Job Storage
 
-Jobs are stored in `~/.sinoclaw/cron/jobs.json` with atomic write semantics (write to temp file, then rename). Each job record contains:
+Jobs are stored in `~/.anan/cron/jobs.json` with atomic write semantics (write to temp file, then rename). Each job record contains:
 
 ```json
 {
@@ -135,7 +135,7 @@ Create a daily funding report → attach "ai-funding-daily-report" skill
 Jobs can also attach a Python script via the `script` field. The script runs *before* each agent turn, and its stdout is injected into the prompt as context. This enables data collection and change detection patterns:
 
 ```python
-# ~/.sinoclaw/scripts/check_competitors.py
+# ~/.anan/scripts/check_competitors.py
 import requests, json
 # Fetch competitor release notes, diff against last run
 # Print summary to stdout — agent analyzes and reports
@@ -164,7 +164,7 @@ Cron job results can be delivered to any supported platform:
 | Target | Syntax | Example |
 |--------|--------|---------|
 | Origin chat | `origin` | Deliver to the chat where the job was created |
-| Local file | `local` | Save to `~/.sinoclaw/cron/output/` |
+| Local file | `local` | Save to `~/.anan/cron/output/` |
 | Telegram | `telegram` or `telegram:<chat_id>` | `telegram:-1001234567890` |
 | Discord | `discord` or `discord:#channel` | `discord:#engineering` |
 | Slack | `slack` | Deliver to Slack home channel |

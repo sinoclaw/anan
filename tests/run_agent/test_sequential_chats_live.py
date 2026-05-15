@@ -1,6 +1,6 @@
 """Live regression guardrail for the keepalive/transport bug class (#10933).
 
-AlexKucera reported on Discord (2026-04-16) that after ``sinoclaw update`` pulled
+AlexKucera reported on Discord (2026-04-16) that after ``anan update`` pulled
 #10933, the FIRST chat in a session worked and EVERY subsequent chat failed
 with ``APIConnectionError('Connection error.')`` whose cause was
 ``RuntimeError: Cannot send a request, as the client has been closed``.
@@ -13,7 +13,7 @@ for any future keepalive / transport plumbing.
 Opt-in — not part of default CI:
     SINOCLAW_LIVE_TESTS=1 pytest tests/run_agent/test_sequential_chats_live.py -v
 
-Requires ``OPENROUTER_API_KEY`` to be set (or sourced via ~/.sinoclaw/.env).
+Requires ``OPENROUTER_API_KEY`` to be set (or sourced via ~/.anan/.env).
 """
 from __future__ import annotations
 
@@ -23,10 +23,10 @@ from pathlib import Path
 import pytest
 
 
-# Load ~/.sinoclaw/.env so live runs pick up OPENROUTER_API_KEY without
+# Load ~/.anan/.env so live runs pick up OPENROUTER_API_KEY without
 # needing the runner to shell-source it first. Silent if the file is absent.
 def _load_user_env() -> None:
-    env_file = Path.home() / ".sinoclaw" / ".env"
+    env_file = Path.home() / ".anan" / ".env"
     if not env_file.exists():
         return
     for raw in env_file.read_text().splitlines():

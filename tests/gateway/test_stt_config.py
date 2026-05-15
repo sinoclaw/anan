@@ -17,14 +17,14 @@ def test_gateway_config_stt_disabled_from_dict_nested():
 
 
 def test_load_gateway_config_bridges_stt_enabled_from_config_yaml(tmp_path, monkeypatch):
-    sinoclaw_home = tmp_path / ".sinoclaw"
-    sinoclaw_home.mkdir()
-    (sinoclaw_home / "config.yaml").write_text(
+    anan_home = tmp_path / ".sinoclaw"
+    anan_home.mkdir()
+    (anan_home / "config.yaml").write_text(
         yaml.dump({"stt": {"enabled": False}}),
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("SINOCLAW_HOME", str(sinoclaw_home))
+    monkeypatch.setenv("ANAN_HOME", str(anan_home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
     config = load_gateway_config()
