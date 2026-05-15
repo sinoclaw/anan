@@ -216,7 +216,8 @@ class MindStackRunner:
             logger.warning("  ✗ L9 SelfModel 启动失败: %s (使用 stub)", exc)
             self_model = None
 
-        # L5 PatternMiner（依赖 L9 SelfModel）
+        # L5 PatternMiner + PredictiveReasoner（依赖 L9 SelfModel）
+        # PatternMiner 负责挖掘因果规则，PredictiveReasoner 负责执行预测
         try:
             from layers.L5_reasoning.pattern_miner import PatternMiner
             self._pattern_miner = PatternMiner(
@@ -229,6 +230,25 @@ class MindStackRunner:
             logger.info("  ✓ L5 PatternMiner 就绪")
         except Exception as exc:
             logger.warning("  ✗ L5 PatternMiner 启动失败: %s", exc)
+
+        # L5 PredictiveReasoner — 基于 PatternMiner 发现的链路做预测
+        try:
+            from layers.L5_prediction.predictor import PredictiveReasoner
+            causal_fn = None
+            if hasattr(self, '_pattern_miner') and self._pattern_miner is not None:
+                pm = self._pattern_miner
+                causal_fn = lambda: list(pm.causal_reasoner.discovered_links.values()) \
+                    if hasattr(pm, 'causal_reasoner') else []
+            self._predictor = PredictiveReasoner(
+                bus=self._bus,
+                causal_links_fn=causal_fn or (lambda: []),
+                self_model=self_model,
+            )
+            await self._predictor.attach()
+            self._layers.append(self._predictor)
+            logger.info("  ✓ L5 PredictiveReasoner 就绪")
+        except Exception as exc:
+            logger.warning("  ✗ L5 PredictiveReasoner 启动失败: %s", exc)
 
         # L1 Sleep
         try:
@@ -262,13 +282,30 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ L4 Consciousness 启动失败: %s", exc)
 
-        # L6 Metacognition
+        # L6 Metacognition：PredictionMonitor + SelfTuner
+        # PredictionMonitor 监控 L5 预测准确率并触发链路衰减
+        try:
+            from layers.L6_metacognition.prediction_monitor import PredictionMonitor
+            pm = PredictionMonitor(
+                bus=self._bus,
+                predictor=self._predictor if hasattr(self, '_predictor') else None,
+            )
+            await pm.attach()
+            self._layers.append(pm)
+            logger.info("  ✓ L6 PredictionMonitor 就绪")
+        except Exception as exc:
+            logger.warning("  ✗ L6 PredictionMonitor 启动失败: %s", exc)
+
+        # SelfTuner 订阅 L6.metacognition.warn 做元认知调参
         try:
             from layers.L6_metacognition.self_tuner import SelfTuner
-            self._layers.append(SelfTuner(bus=self._bus))
-            logger.info("  ✓ L6 Metacognition 就绪")
+            self._layers.append(SelfTuner(
+                bus=self._bus,
+                predictor=self._predictor if hasattr(self, '_predictor') else None,
+            ))
+            logger.info("  ✓ L6 SelfTuner 就绪")
         except Exception as exc:
-            logger.warning("  ✗ L6 Metacognition 启动失败: %s", exc)
+            logger.warning("  ✗ L6 SelfTuner 启动失败: %s", exc)
 
         # L7 Goals
         try:
