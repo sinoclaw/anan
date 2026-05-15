@@ -581,7 +581,7 @@ class TestIRCStandaloneSend:
         # NICK uses the cron-suffixed identity to avoid colliding with the
         # long-running gateway adapter that may already hold the nickname.
         assert any(line.startswith("NICK ananbot-cron") for line in sent_lines)
-        assert any(line.startswith("USER ananbot-cron 0 * :anan Agent (cron)")
+        assert any(line.startswith("USER ananbot-cron 0 * :Anan Agent (cron)")
                    for line in sent_lines)
         assert any(line == "PRIVMSG #cron :hello from cron" for line in sent_lines)
         assert any(line.startswith("QUIT ") for line in sent_lines)
