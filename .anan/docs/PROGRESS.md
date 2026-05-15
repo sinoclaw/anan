@@ -1,8 +1,8 @@
 # anan 九层进度报告
 
-> 更新时间：2026-05-15 15:05
+> 更新时间：2026-05-15 15:20
 > 调研范围：`layers/` 全部源文件 + `kernel/mind_stack_runner.py`
-> 最新提交：637702d — fix: 九层联动闭环全接通（P0-1~P0-4）
+> 最新提交：3b56dd9 — feat: P1 完成 — Mirror加入+IntentStack stop+L1 sleep_fn传参
 
 ---
 
@@ -20,7 +20,7 @@
 | L5 | PredictiveReasoner | ✅ | ✅ | ✅ | 预测完成 |
 | L6 | PredictionMonitor | ✅ | ✅ | ✅ | 追踪准确率完成 |
 | L6 | SelfTuner | ✅ | ✅ | ✅ | 调参闭环接通 PatternMiner + PredictiveReasoner |
-| L6 | Mirror | 🟡 | ❌ | ❌ | 未加入 MindStackRunner |
+| L6 | Mirror | ✅ | ✅ | ✅ | 发 HealthReport 事件，L7 Goals 消费 |
 | L7 | GoalGenerator | ✅ | ✅ | ✅ | L8驱动触发 + L0.tick周期生成目标 |
 | L7 | SelfRegulator | 🟡 | ✅ | ✅ | 框架在，未连接 L7 Goals |
 | L8 | DriveSystem | ✅ | ✅ | ✅ | L0.tick 周期性触发 CURIOSITY |
@@ -254,11 +254,11 @@ gateway.message.sent
 4. ✅ **DriveSystem 从未被触发**：L0.tick 周期性触发
 5. ✅ **GoalGenerator 从未被触发**：L8.drive.suggestion + L0.tick 触发
 
-### P1 — 重要
-6. **L1 DreamingPlugin sleep_fn 参数**：传真实的 workspace_dir 和 phase
+### P1 — 重要 ✅ 部分完成
+6. ✅ **L1 DreamingPlugin sleep_fn 参数**：传真实 workspace_dir + phase
 7. **L2 MemoryTier promote 链路**：连上 L1 sleep 事件
-8. **Mirror 加入 MindStackRunner**：启动 L6 元认知报告 → L7 Goals
-9. **IntentStack 确认启动状态**：验证 `_start_layers()` 是否正确启动
+8. ✅ **Mirror 加入 MindStackRunner**：启动 L6 元认知报告 → L7 Goals
+9. ✅ **IntentStack 确认启动**：stop() 方法已加
 
 ### P2 — 完善
 10. **L7 Goals → SelfRegulator 连接**：目标状态变化触发自我调节
