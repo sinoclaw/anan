@@ -157,12 +157,20 @@ class MindStackRunner:
         await self._start_layers()
         logger.info("  ✓ %d 个层启动完成", len(self._layers))
 
-        # 4. Gateway 事件 → EventBus
+        # 4. 统一调用所有层的 attach()（订阅事件总线）
+        for layer in self._layers:
+            if hasattr(layer, 'attach') and callable(getattr(layer, 'attach')):
+                try:
+                    await layer.attach()
+                except Exception as exc:
+                    logger.warning("  层 %s.attach() 失败: %s", type(layer).__name__, exc)
+
+        # 5. Gateway 事件 → EventBus
         if self._gateway_events:
             self._wire_gateway_events()
             logger.info("  ✓ Gateway 事件注入就绪")
 
-        # 5. 启动 CircadianLoop（非阻塞，在后台运转）
+        # 6. 启动 CircadianLoop（非阻塞，在后台运转）
         loop_task = asyncio.create_task(self._circadian_loop.run())
         loop_task.add_done_callback(self._tasks.remove)
         self._tasks.append(loop_task)
@@ -225,7 +233,6 @@ class MindStackRunner:
                 mine_on_event="L0.circadian.bedtime",
                 self_model=self_model,
             )
-            await self._pattern_miner.attach()
             self._layers.append(self._pattern_miner)
             logger.info("  ✓ L5 PatternMiner 就绪")
         except Exception as exc:
@@ -244,7 +251,6 @@ class MindStackRunner:
                 causal_links_fn=causal_fn or (lambda: []),
                 self_model=self_model,
             )
-            await self._predictor.attach()
             self._layers.append(self._predictor)
             logger.info("  ✓ L5 PredictiveReasoner 就绪")
         except Exception as exc:
@@ -292,7 +298,6 @@ class MindStackRunner:
             )
             await pm.attach()
             self._layers.append(pm)
-            logger.info("  ✓ L6 PredictionMonitor 就绪")
         except Exception as exc:
             logger.warning("  ✗ L6 PredictionMonitor 启动失败: %s", exc)
 
