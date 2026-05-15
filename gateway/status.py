@@ -66,7 +66,9 @@ def _get_lock_dir() -> Path:
     if override:
         return Path(override)
     state_home = Path(os.getenv("XDG_STATE_HOME", Path.home() / ".local" / "state"))
-    return state_home / "hermes" / _LOCKS_DIRNAME
+    # Use anan-specific lock dir to avoid conflicts with sinoclaw gateway
+    anan_home = os.getenv("ANAN_HOME", str(Path.home() / ".anan"))
+    return Path(anan_home) / _LOCKS_DIRNAME
 
 
 def _utc_now_iso() -> str:

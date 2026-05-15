@@ -205,11 +205,10 @@ class MindStackRunner:
 
     async def _start_layers(self) -> None:
         """启动所有认知层。优先真实实现，fallback 到 stub。"""
-        from layers.L5_reasoning.pattern_miner import PatternMiner
-        from layers.L9_self.self_model import SelfModel
 
         # L9 SelfModel — 先启动（其他层会引用）
         try:
+            from layers.L9_self.self_model import SelfModel
             self_model = SelfModel()
             self._layers.append(self_model)
             logger.info("  ✓ L9 SelfModel 就绪")
@@ -222,7 +221,7 @@ class MindStackRunner:
             from layers.L5_reasoning.pattern_miner import PatternMiner
             self._pattern_miner = PatternMiner(
                 bus=self._bus,
-                mine_on_event="L0.circadian.bedtime",  # 睡前挖掘
+                mine_on_event="L0.circadian.bedtime",
                 self_model=self_model,
             )
             await self._pattern_miner.attach()
@@ -231,10 +230,10 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ L5 PatternMiner 启动失败: %s", exc)
 
-        # L1 Sleep — 记录启动成功
+        # L1 Sleep
         try:
-            from layers.L1_sleep.sleep_plugin import SleepPlugin
-            self._layers.append(SleepPlugin(bus=self._bus))
+            from layers.L1_sleep.sleep_plugin import DreamingPlugin
+            self._layers.append(DreamingPlugin(config={}))
             logger.info("  ✓ L1 Sleep 就绪")
         except Exception as exc:
             logger.warning("  ✗ L1 Sleep 启动失败: %s", exc)
@@ -242,23 +241,23 @@ class MindStackRunner:
         # L2 Memory
         try:
             from layers.L2_memory.memory_tier import MemoryTier
-            self._layers.append(MemoryTier(bus=self._bus))
+            self._layers.append(MemoryTier())
             logger.info("  ✓ L2 Memory 就绪")
         except Exception as exc:
             logger.warning("  ✗ L2 Memory 启动失败: %s", exc)
 
         # L3 Attention
         try:
-            from layers.L3_attention.attention import Attention
-            self._layers.append(Attention(bus=self._bus))
+            from layers.L3_attention.attention import VigilanceMonitor
+            self._layers.append(VigilanceMonitor())
             logger.info("  ✓ L3 Attention 就绪")
         except Exception as exc:
             logger.warning("  ✗ L3 Attention 启动失败: %s", exc)
 
         # L4 Consciousness
         try:
-            from layers.L4_consciousness.consciousness import Consciousness
-            self._layers.append(Consciousness(bus=self._bus))
+            from layers.L4_consciousness.consciousness import ThoughtStream
+            self._layers.append(ThoughtStream(max_size=50))
             logger.info("  ✓ L4 Consciousness 就绪")
         except Exception as exc:
             logger.warning("  ✗ L4 Consciousness 启动失败: %s", exc)
@@ -273,16 +272,16 @@ class MindStackRunner:
 
         # L7 Goals
         try:
-            from layers.L7_goals.goal_engine import GoalEngine
-            self._layers.append(GoalEngine(bus=self._bus))
+            from layers.L7_goals.goal_engine import GoalGenerator
+            self._layers.append(GoalGenerator())
             logger.info("  ✓ L7 Goals 就绪")
         except Exception as exc:
             logger.warning("  ✗ L7 Goals 启动失败: %s", exc)
 
         # L7 Will
         try:
-            from layers.L7_will.regulator import Regulator
-            self._layers.append(Regulator(bus=self._bus))
+            from layers.L7_will.regulator import SelfRegulator
+            self._layers.append(SelfRegulator())
             logger.info("  ✓ L7 Will 就绪")
         except Exception as exc:
             logger.warning("  ✗ L7 Will 启动失败: %s", exc)
@@ -290,7 +289,7 @@ class MindStackRunner:
         # L8 Drives
         try:
             from layers.L8_drives.drive_system import DriveSystem
-            self._layers.append(DriveSystem(bus=self._bus))
+            self._layers.append(DriveSystem())
             logger.info("  ✓ L8 Drives 就绪")
         except Exception as exc:
             logger.warning("  ✗ L8 Drives 启动失败: %s", exc)
@@ -298,7 +297,7 @@ class MindStackRunner:
         # L8 Intent
         try:
             from layers.L8_intent.intent_stack import IntentStack
-            self._layers.append(IntentStack(bus=self._bus))
+            self._layers.append(IntentStack())
             logger.info("  ✓ L8 Intent 就绪")
         except Exception as exc:
             logger.warning("  ✗ L8 Intent 启动失败: %s", exc)
@@ -355,25 +354,17 @@ class MindStackRunner:
         async def sleep_fn(day: str, bus: EventBus, cycle: int) -> int:
             logger.info("🌙 [Cycle %d] 进入睡眠阶段...", cycle)
             try:
-                from layers.L1_sleep.sleep_plugin import SleepPlugin
-                plugin = SleepPlugin(bus=bus)
-                facts = await plugin.dream()
-                logger.info("🌙 [Cycle %d] 睡眠完成，产生 %d 个 dream facts", cycle, facts)
+                # DreamingPlugin.run_dreaming_sweep 需要 workspace_dir 和 phase，
+                # 完整实现后再接入。这里先记录一次 tick 事件作为占位。
+                await bus.publish(Event(
+                    topic="L0.circadian.bedtime",
+                    source="circadian",
+                    payload={"day": day, "cycle": cycle},
+                ))
+                logger.info("🌙 [Cycle %d] 睡眠阶段完成", cycle)
+                return 0
             except Exception as exc:
                 logger.warning("  L1 Sleep 执行失败: %s", exc)
-                facts = 0
-
-            # 睡眠完成后触发 L5 PatternMiner 挖掘
-            if self._pattern_miner is not None and self._pattern_miner.is_attached:
-                try:
-                    patterns = await self._pattern_miner.mine_now()
-                    if patterns:
-                        logger.info("💡 睡眠后挖掘到 %d 个新因果规律", len(patterns))
-                        for p in patterns:
-                            logger.info("   • %s → %s", p.antecedent, p.consequent)
-                except Exception as exc:
-                    logger.warning("  L5 PatternMiner 睡眠后挖掘失败: %s", exc)
-
-            return facts
+                return 0
 
         return sleep_fn
