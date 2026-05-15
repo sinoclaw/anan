@@ -1856,6 +1856,7 @@ Be specific and actionable. Output ONLY the action items, no preamble."""
     async def start(self) -> None:
         """Start the dreaming plugin."""
         self.running = True
+        await self.attach()
         logger.info("dreaming: plugin started")
 
     async def attach(self) -> None:

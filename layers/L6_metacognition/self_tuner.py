@@ -106,8 +106,16 @@ class SelfTuner:
         async def on_warning(event: Event):
             await self._on_meta_warning(event)
 
+        async def on_report(event: Event):
+            await self._on_meta_report(event)
+
+        # SelfTuner responds to warn events (PredictionMonitor accuracy alerts)
         self._unsub.append(
             self._bus.subscribe("L6.metacognition.warn", on_warning)
+        )
+        # Also track report events (Mirror health reports) for trend analysis
+        self._unsub.append(
+            self._bus.subscribe("L6.metacognition.report", on_report)
         )
 
     async def detach(self) -> None:
@@ -118,6 +126,24 @@ class SelfTuner:
     # ------------------------------------------------------------------
     # Event handlers
     # ------------------------------------------------------------------
+
+    async def _on_meta_report(self, event: Event) -> None:
+        """Track health report trends — adjust if stagnation or decline detected."""
+        payload = event.payload or {}
+        score = payload.get("score", 1.0)
+        issues = payload.get("issues", [])
+        suggestions = payload.get("suggestions", [])
+
+        # If healthy but with suggestions, consider applying them proactively
+        if score >= 0.6 and suggestions:
+            logger.debug(
+                "SelfTuner: health report score=%.2f, %d suggestions available",
+                score, len(suggestions),
+            )
+        # If unhealthy, trigger full tuning review
+        elif score < 0.6 and issues:
+            logger.info("SelfTuner: unhealthy report (score=%.2f), reviewing tuning", score)
+            await self._tune_l5_for_accuracy()
 
     async def _on_meta_warning(self, event: Event) -> None:
         """收到 L6 告警时，分析是否需要调参。"""
