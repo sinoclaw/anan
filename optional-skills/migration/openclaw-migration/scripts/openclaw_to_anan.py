@@ -1593,10 +1593,10 @@ class Migrator:
             "ZAI_API_KEY": "ZAI_API_KEY",
             "MINIMAX_API_KEY": "MINIMAX_API_KEY",
         }
-        for oc_key, sinoclaw_key in env_key_mapping.items():
+        for oc_key, anan_key in env_key_mapping.items():
             val = openclaw_env.get(oc_key, "").strip()
-            if val and sinoclaw_key not in secret_additions:
-                secret_additions[sinoclaw_key] = val
+            if val and anan_key not in secret_additions:
+                secret_additions[anan_key] = val
 
         # Check the openclaw.json "env" sub-object — some OpenClaw setups
         # store API keys here instead of in a separate .env file.
@@ -1608,10 +1608,10 @@ class Migrator:
             if isinstance(env_vars, dict):
                 sources.append(env_vars)
             for src in sources:
-                for oc_key, sinoclaw_key in env_key_mapping.items():
+                for oc_key, anan_key in env_key_mapping.items():
                     val = src.get(oc_key)
-                    if isinstance(val, str) and val.strip() and sinoclaw_key not in secret_additions:
-                        secret_additions[sinoclaw_key] = val.strip()
+                    if isinstance(val, str) and val.strip() and anan_key not in secret_additions:
+                        secret_additions[anan_key] = val.strip()
 
         # Check per-agent auth-profiles.json for additional credentials
         auth_profiles_path = self.source_root / "agents" / "main" / "agent" / "auth-profiles.json"
@@ -2107,8 +2107,8 @@ class Migrator:
             self.record("mcp-servers", None, None, "skipped", "No MCP servers found in OpenClaw config")
             return
 
-        sinoclaw_cfg_path = self.target_root / "config.yaml"
-        sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
+        anan_cfg_path = self.target_root / "config.yaml"
+        anan_cfg = load_yaml_file(anan_cfg_path)
         existing_mcp = anan_cfg.get("mcp_servers") or {}
         added = 0
 
@@ -2120,42 +2120,42 @@ class Migrator:
                             "MCP server already exists in anan config")
                 continue
 
-            sinoclaw_srv: Dict[str, Any] = {}
+            anan_srv: Dict[str, Any] = {}
             # STDIO transport
             if srv.get("command"):
-                sinoclaw_srv["command"] = srv["command"]
+                anan_srv["command"] = srv["command"]
                 if srv.get("args"):
-                    sinoclaw_srv["args"] = srv["args"]
+                    anan_srv["args"] = srv["args"]
                 if srv.get("env"):
-                    sinoclaw_srv["env"] = srv["env"]
+                    anan_srv["env"] = srv["env"]
                 if srv.get("cwd"):
-                    sinoclaw_srv["cwd"] = srv["cwd"]
+                    anan_srv["cwd"] = srv["cwd"]
             # HTTP/SSE transport
             if srv.get("url"):
-                sinoclaw_srv["url"] = srv["url"]
+                anan_srv["url"] = srv["url"]
                 if srv.get("headers"):
-                    sinoclaw_srv["headers"] = srv["headers"]
+                    anan_srv["headers"] = srv["headers"]
                 if srv.get("auth"):
-                    sinoclaw_srv["auth"] = srv["auth"]
+                    anan_srv["auth"] = srv["auth"]
             # Common fields
             if srv.get("enabled") is False:
-                sinoclaw_srv["enabled"] = False
+                anan_srv["enabled"] = False
             if srv.get("timeout"):
-                sinoclaw_srv["timeout"] = srv["timeout"]
+                anan_srv["timeout"] = srv["timeout"]
             if srv.get("connectTimeout"):
-                sinoclaw_srv["connect_timeout"] = srv["connectTimeout"]
+                anan_srv["connect_timeout"] = srv["connectTimeout"]
             # Tool filtering
             tools_cfg = srv.get("tools") or {}
             if tools_cfg.get("include") or tools_cfg.get("exclude"):
-                sinoclaw_srv["tools"] = {}
+                anan_srv["tools"] = {}
                 if tools_cfg.get("include"):
-                    sinoclaw_srv["tools"]["include"] = tools_cfg["include"]
+                    anan_srv["tools"]["include"] = tools_cfg["include"]
                 if tools_cfg.get("exclude"):
-                    sinoclaw_srv["tools"]["exclude"] = tools_cfg["exclude"]
+                    anan_srv["tools"]["exclude"] = tools_cfg["exclude"]
             # Sampling
             sampling = srv.get("sampling")
             if sampling and isinstance(sampling, dict):
-                sinoclaw_srv["sampling"] = {
+                anan_srv["sampling"] = {
                     k: v for k, v in {
                         "enabled": sampling.get("enabled"),
                         "model": sampling.get("model"),
@@ -2165,15 +2165,15 @@ class Migrator:
                     }.items() if v is not None
                 }
 
-            existing_mcp[name] = sinoclaw_srv
+            existing_mcp[name] = anan_srv
             added += 1
             self.record("mcp-servers", f"mcp.servers.{name}", f"config.yaml mcp_servers.{name}",
                         "migrated", servers_added=added)
 
         if added > 0 and self.execute:
-            self.maybe_backup(sinoclaw_cfg_path)
-            sinoclaw_cfg["mcp_servers"] = existing_mcp
-            dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
+            self.maybe_backup(anan_cfg_path)
+            anan_cfg["mcp_servers"] = existing_mcp
+            dump_yaml_file(anan_cfg_path, anan_cfg)
 
     # ── Plugins ───────────────────────────────────────────────
     def migrate_plugins_config(self, config: Optional[Dict[str, Any]] = None) -> None:
@@ -2286,8 +2286,8 @@ class Migrator:
             self.record("agent-config", None, None, "skipped", "No agent configuration found")
             return
 
-        sinoclaw_cfg_path = self.target_root / "config.yaml"
-        sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
+        anan_cfg_path = self.target_root / "config.yaml"
+        anan_cfg = load_yaml_file(anan_cfg_path)
         changes = False
 
         # Map agent defaults
@@ -2326,7 +2326,7 @@ class Migrator:
                 aux = anan_cfg.setdefault("auxiliary", {})
                 aux_comp = aux.setdefault("compression", {})
                 aux_comp["model"] = compaction["model"]
-            sinoclaw_cfg["compression"] = compression
+            anan_cfg["compression"] = compression
             changes = True
 
         # Map humanDelay
@@ -2340,12 +2340,12 @@ class Migrator:
                 hd["min_ms"] = human_delay["minMs"]
             if human_delay.get("maxMs"):
                 hd["max_ms"] = human_delay["maxMs"]
-            sinoclaw_cfg["human_delay"] = hd
+            anan_cfg["human_delay"] = hd
             changes = True
 
         # Map userTimezone
         if defaults.get("userTimezone"):
-            sinoclaw_cfg["timezone"] = defaults["userTimezone"]
+            anan_cfg["timezone"] = defaults["userTimezone"]
             changes = True
 
         # Map terminal/exec settings
@@ -2355,7 +2355,7 @@ class Migrator:
             if exec_cfg.get("timeoutSec") or exec_cfg.get("timeout"):
                 terminal_cfg["timeout"] = exec_cfg.get("timeoutSec") or exec_cfg.get("timeout")
                 changes = True
-            sinoclaw_cfg["terminal"] = terminal_cfg
+            anan_cfg["terminal"] = terminal_cfg
 
         # Map sandbox -> terminal docker settings
         sandbox = defaults.get("sandbox") or {}
@@ -2364,14 +2364,14 @@ class Migrator:
             terminal_cfg["backend"] = "docker"
             if sandbox.get("docker", {}).get("image"):
                 terminal_cfg["docker_image"] = sandbox["docker"]["image"]
-            sinoclaw_cfg["terminal"] = terminal_cfg
+            anan_cfg["terminal"] = terminal_cfg
             changes = True
 
         if changes:
-            sinoclaw_cfg["agent"] = agent_cfg
+            anan_cfg["agent"] = agent_cfg
             if self.execute:
-                self.maybe_backup(sinoclaw_cfg_path)
-                dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
+                self.maybe_backup(anan_cfg_path)
+                dump_yaml_file(anan_cfg_path, anan_cfg)
             self.record("agent-config", "openclaw.json agents.defaults", "config.yaml agent/compression/terminal",
                         "migrated", "Agent defaults mapped to anan config")
 
@@ -2423,8 +2423,8 @@ class Migrator:
             self.record("session-config", None, None, "skipped", "No session configuration found")
             return
 
-        sinoclaw_cfg_path = self.target_root / "config.yaml"
-        sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
+        anan_cfg_path = self.target_root / "config.yaml"
+        anan_cfg = load_yaml_file(anan_cfg_path)
         sr = anan_cfg.get("session_reset") or {}
         changes = False
 
@@ -2459,10 +2459,10 @@ class Migrator:
             changes = True
 
         if changes:
-            sinoclaw_cfg["session_reset"] = sr
+            anan_cfg["session_reset"] = sr
             if self.execute:
-                self.maybe_backup(sinoclaw_cfg_path)
-                dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
+                self.maybe_backup(anan_cfg_path)
+                dump_yaml_file(anan_cfg_path, anan_cfg)
             self.record("session-config", "openclaw.json session.resetTriggers",
                         "config.yaml session_reset", "migrated")
 
@@ -2487,8 +2487,8 @@ class Migrator:
             self.record("full-providers", None, None, "skipped", "No model providers found")
             return
 
-        sinoclaw_cfg_path = self.target_root / "config.yaml"
-        sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
+        anan_cfg_path = self.target_root / "config.yaml"
+        anan_cfg = load_yaml_file(anan_cfg_path)
         custom_providers = anan_cfg.get("custom_providers") or []
         added = 0
 
@@ -2537,9 +2537,9 @@ class Migrator:
                             f"config.yaml custom_providers[{prov_name}]", "migrated")
 
         if added > 0 and self.execute:
-            self.maybe_backup(sinoclaw_cfg_path)
-            sinoclaw_cfg["custom_providers"] = custom_providers
-            dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
+            self.maybe_backup(anan_cfg_path)
+            anan_cfg["custom_providers"] = custom_providers
+            dump_yaml_file(anan_cfg_path, anan_cfg)
 
         # Archive model aliases/catalog
         agent_defaults = (config.get("agents") or {}).get("defaults") or {}
@@ -2606,8 +2606,8 @@ class Migrator:
         # Map Discord-specific settings to anan config
         discord_cfg = channels.get("discord") or {}
         if discord_cfg:
-            sinoclaw_cfg_path = self.target_root / "config.yaml"
-            sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
+            anan_cfg_path = self.target_root / "config.yaml"
+            anan_cfg = load_yaml_file(anan_cfg_path)
             discord_hermes = anan_cfg.get("discord") or {}
             changed = False
             if "requireMention" in discord_cfg:
@@ -2617,8 +2617,8 @@ class Migrator:
                 discord_hermes["auto_thread"] = discord_cfg["autoThread"]
                 changed = True
             if changed and self.execute:
-                sinoclaw_cfg["discord"] = discord_hermes
-                dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
+                anan_cfg["discord"] = discord_hermes
+                dump_yaml_file(anan_cfg_path, anan_cfg)
 
         # Archive complex channel configs (group settings, thread bindings, etc.)
         complex_archive = {}
@@ -2648,8 +2648,8 @@ class Migrator:
             self.record("browser-config", None, None, "skipped", "No browser configuration found")
             return
 
-        sinoclaw_cfg_path = self.target_root / "config.yaml"
-        sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
+        anan_cfg_path = self.target_root / "config.yaml"
+        anan_cfg = load_yaml_file(anan_cfg_path)
         browser_hermes = anan_cfg.get("browser") or {}
         changed = False
 
@@ -2662,10 +2662,10 @@ class Migrator:
             changed = True
 
         if changed:
-            sinoclaw_cfg["browser"] = browser_hermes
+            anan_cfg["browser"] = browser_hermes
             if self.execute:
-                self.maybe_backup(sinoclaw_cfg_path)
-                dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
+                self.maybe_backup(anan_cfg_path)
+                dump_yaml_file(anan_cfg_path, anan_cfg)
             self.record("browser-config", "openclaw.json browser.*", "config.yaml browser",
                         "migrated")
 
@@ -2688,8 +2688,8 @@ class Migrator:
             self.record("tools-config", None, None, "skipped", "No tools configuration found")
             return
 
-        sinoclaw_cfg_path = self.target_root / "config.yaml"
-        sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
+        anan_cfg_path = self.target_root / "config.yaml"
+        anan_cfg = load_yaml_file(anan_cfg_path)
         changed = False
 
         # Map exec timeout -> terminal timeout (field is timeoutSec in OpenClaw)
@@ -2698,7 +2698,7 @@ class Migrator:
         if timeout_val:
             terminal_cfg = anan_cfg.get("terminal") or {}
             terminal_cfg["timeout"] = timeout_val
-            sinoclaw_cfg["terminal"] = terminal_cfg
+            anan_cfg["terminal"] = terminal_cfg
             changed = True
 
         # Map web search API key (path: tools.web.search.brave.apiKey in OpenClaw)
@@ -2710,8 +2710,8 @@ class Migrator:
             self._set_env_var("BRAVE_API_KEY", brave_key, "tools.web.search.brave.apiKey")
 
         if changed and self.execute:
-            self.maybe_backup(sinoclaw_cfg_path)
-            dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
+            self.maybe_backup(anan_cfg_path)
+            dump_yaml_file(anan_cfg_path, anan_cfg)
             self.record("tools-config", "openclaw.json tools.*", "config.yaml terminal",
                         "migrated")
 
@@ -2732,21 +2732,21 @@ class Migrator:
             self.record("approvals-config", None, None, "skipped", "No approvals configuration found")
             return
 
-        sinoclaw_cfg_path = self.target_root / "config.yaml"
-        sinoclaw_cfg = load_yaml_file(sinoclaw_cfg_path)
+        anan_cfg_path = self.target_root / "config.yaml"
+        anan_cfg = load_yaml_file(anan_cfg_path)
 
         # Map approval mode (nested under approvals.exec.mode in OpenClaw)
         exec_approvals = approvals.get("exec") or {}
         mode = (exec_approvals.get("mode") if isinstance(exec_approvals, dict) else None) or approvals.get("mode") or approvals.get("defaultMode")
         if mode:
             mode_map = {"auto": "off", "always": "manual", "smart": "smart", "manual": "manual"}
-            sinoclaw_mode = mode_map.get(mode, "manual")
-            anan_cfg.setdefault("approvals", {})["mode"] = sinoclaw_mode
+            anan_mode = mode_map.get(mode, "manual")
+            anan_cfg.setdefault("approvals", {})["mode"] = anan_mode
             if self.execute:
-                self.maybe_backup(sinoclaw_cfg_path)
-                dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
+                self.maybe_backup(anan_cfg_path)
+                dump_yaml_file(anan_cfg_path, anan_cfg)
             self.record("approvals-config", "openclaw.json approvals.mode",
-                        "config.yaml approvals.mode", "migrated", f"Mapped '{mode}' -> '{sinoclaw_mode}'")
+                        "config.yaml approvals.mode", "migrated", f"Mapped '{mode}' -> '{anan_mode}'")
 
         # Archive full approvals config
         if len(approvals) > 1 and self.archive_dir:

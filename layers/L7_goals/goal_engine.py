@@ -104,7 +104,7 @@ class GoalGenerator:
 
     async def attach(self) -> None:
         self._unsubs.append(
-            self._bus.subscribe("L6.metacognition.report", self._on_metacognition)
+            self._bus.subscribe("L6.metacognition.report", self._on_metacognition_report)
         )
         self._unsubs.append(
             self._bus.subscribe("L9.self.updated", self._on_self_updated)
@@ -351,8 +351,10 @@ class GoalGenerator:
         ))
         return gid
 
-    async def _on_metacognition(self, event: Event) -> None:
+    async def _on_metacognition_report(self, event: Event) -> None:
+        """Handle L6.metacognition.report — log it and generate goals from it."""
         p = event.payload or {}
+        logger.info("Metacognition report received: %s", p)
         issues = p.get("issues", [])
         suggestions = p.get("suggestions", [])
 

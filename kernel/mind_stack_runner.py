@@ -270,7 +270,7 @@ class MindStackRunner:
         # L2 Memory
         try:
             from layers.L2_memory.memory_tier import MemoryTier
-            self._layers.append(MemoryTier())
+            self._layers.append(MemoryTier(bus=self._bus))
             logger.info("  ✓ L2 Memory 就绪")
         except Exception as exc:
             logger.warning("  ✗ L2 Memory 启动失败: %s", exc)

@@ -1,8 +1,8 @@
 # anan 九层进度报告
 
-> 更新时间：2026-05-15 15:35
+> 更新时间：2026-05-15 16:30
 > 调研范围：`layers/` 全部源文件 + `kernel/mind_stack_runner.py`
-> 最新提交：b7696a3 — feat: P2完成 — DriveSystem发updated事件+AttentionBridge接入
+> 最新提交：P3 完成 — Daydreaming/Lucid Dream + L2 memory.persisted + L7 消费 Mirror
 
 ---
 
@@ -226,23 +226,31 @@ PredictiveReasoner
     │               └─→ L6.metacognition.warn ✅
     │                       └─→ SelfTuner ✅
     │                               ├─→ PredictiveReasoner._min_lift ✅
-    │                               └─→ PatternMiner.set_min_lift() ✅ ← 2026-05-15 接通
+    │                               └─→ PatternMiner.set_min_lift() ✅
 
 gateway.message.sent
     └─→ ConsciousnessEngine._on_gateway_message() ✅
             ├─→ set_dialogue_context() ✅
             └─→ note_user_input() ✅ 取消 idle
+
+L2.memory.persisted (2026-05-15 新增)
+    └─→ L9 SelfModel 增量更新 ✅
+
+L6.metacognition.report (2026-05-15 新增)
+    └─→ GoalGenerator._on_metacognition_report() ✅ 生成目标
 ```
 
 ---
 
 ## 未加入 MindStackRunner 的组件
 
-| 组件 | 文件 | 问题 |
-|---|---|---|
-| Mirror | `layers/L6_metacognition/mirror.py` | `_start_layers()` 未实例化 |
-| IntentStack | `layers/L8_intent/intent_stack.py` | 已注册，但未确认是否正常启动 |
-| AttentionBridge | `layers/L8_drives/attention_bridge.py` | 未激活 |
+（2026-05-15 更新：以下问题已全部修复）
+
+| 组件 | 文件 | 原问题 | 状态 |
+|---|---|---|---|
+| Mirror | `layers/L6_metacognition/mirror.py` | `_start_layers()` 未实例化 | ✅ 已加入 |
+| IntentStack | `layers/L8_intent/intent_stack.py` | stop() 方法存在 | ✅ 已确认 |
+| AttentionBridge | `layers/L8_drives/attention_bridge.py` | 未激活 | ✅ 已接入（传入 AttentionQueue 实例） |
 
 ---
 
@@ -255,16 +263,21 @@ gateway.message.sent
 4. ✅ **DriveSystem 从未被触发**：L0.tick 周期性触发
 5. ✅ **GoalGenerator 从未被触发**：L8.drive.suggestion + L0.tick 触发
 
-### P1 — 重要 ✅ 部分完成
+### P1 — 重要 ✅ 全部完成
 6. ✅ **L1 DreamingPlugin sleep_fn 参数**：传真实 workspace_dir + phase
-7. **L2 MemoryTier promote 链路**：连上 L1 sleep 事件
+7. ✅ **L2 MemoryTier promote 链路**：MemoryTier(bus=self._bus) 已传入 bus，promote 后发 L2.memory.persisted 事件
 8. ✅ **Mirror 加入 MindStackRunner**：启动 L6 元认知报告 → L7 Goals
 9. ✅ **IntentStack 确认启动**：stop() 方法已加
 
 ### P2 — 完善 ✅ 全部完成
 10. ✅ **L7 Goals → SelfRegulator 连接**：SelfRegulator 已订阅 L7.goal.achieved/abandoned，GoalGenerator 发事件后自动消费
-11. ✅ **AttentionQueue boost() 被 L8 调用**：DriveSystem 发 L8.drive.updated + AttentionBridge 已接入
-12. **L4 思考质量提升**：`_generate_one_thought()` 从问句改为反思性思考
+11. ✅ **AttentionQueue boost() 被 L8 调用**：DriveSystem 发 L8.drive.updated + AttentionBridge 已接入，MindStackRunner 传入同一个 AttentionQueue 实例
+12. ✅ **L4 思考质量提升**：`_THOUGHT_TEMPLATES` 从问句改为反思性思考模板
+
+### P3 — 新增 ✅ 全部完成
+13. ✅ **L1 Daydreaming**：新增 `run_daydreaming_sweep()` 方法，idle 触发
+14. ✅ **L1 Lucid Dream**：新增 `run_lucid_dream_sweep()` 方法，周末触发
+15. ✅ **L7 Goals 消费 Mirror HealthReport**：GoalGenerator 订阅 `L6.metacognition.report`
 
 ---
 

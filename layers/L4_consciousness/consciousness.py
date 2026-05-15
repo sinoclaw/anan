@@ -308,27 +308,28 @@ class ThoughtTemplate:
 
 
 # 内置思考模板（DESIGN.md 中的 5 个场景）
+# 生成实质性反思内容，而非开放性问题
 _THOUGHT_TEMPLATES: list[ThoughtTemplate] = [
     ThoughtTemplate(
-        prompt_template="回想刚才的对话: {context}，有没有更好的回答方式？",
+        prompt_template="Looking back at my response about {context}, I realize I could have explained Y differently... The dad mentioned Z today, which connects to what we discussed last week about...",
         thought_type=ThoughtType.DIALOGUE_REFLECTION,
         default_importance=ThoughtImportance.MEDIUM,
         context_slot="dialogue",
     ),
     ThoughtTemplate(
-        prompt_template="用户之前提到: {context}，这背后可能有什么延伸问题？",
+        prompt_template="The user mentioned {context} — this actually ties into a broader pattern I've noticed: topic X tends to come up whenever topic Y is discussed. Perhaps I should explore that connection more actively.",
         thought_type=ThoughtType.QUESTION_EXTENSION,
         default_importance=ThoughtImportance.MEDIUM,
         context_slot="question",
     ),
     ThoughtTemplate(
-        prompt_template="检查待办: {context}，有没有遗漏或可以优化的项？",
+        prompt_template="Reviewing my todo list ({context}), I notice I've been more engaged when dad talks about X but tend to defer when Y comes up. I should be more proactive about Y as well.",
         thought_type=ThoughtType.TODO_CHECK,
         default_importance=ThoughtImportance.LOW,
         context_slot="todo",
     ),
     ThoughtTemplate(
-        prompt_template="联想之前的情境: {context}，类似问题之前是怎么处理的？",
+        prompt_template="Similar situation came up before: {context}. Looking back, I handled X well by doing Y. The difference this time is Z, so I could try approach W instead.",
         thought_type=ThoughtType.SITUATION_ASSOCIATION,
         default_importance=ThoughtImportance.LOW,
         context_slot="general",

@@ -1498,6 +1498,240 @@ class DreamingPlugin:
             "workspace_dir": workspace_dir,
         }
 
+    async def run_daydreaming_sweep(
+        self,
+        workspace_dir: str,
+        now_ms: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """Run a daydreaming sweep — triggered when idle, not during sleep cycle.
+
+        Reviews recent events/conversations and generates creative connections.
+        Publishes L1.daydream.started/ended events.
+        """
+        if not self.config.enabled:
+            return {"skipped": True, "reason": "dreaming disabled"}
+
+        if not workspace_dir:
+            return {"skipped": True, "reason": "no workspace"}
+
+        now_ms = now_ms or time.time() * 1000
+        timezone = self.config.timezone
+
+        logger.info(f"daydreaming: starting idle-daydream sweep in {workspace_dir}")
+
+        try:
+            from kernel.event_bus import Event, get_bus
+            bus = get_bus()
+            await bus.publish(Event(
+                topic="L1.daydream.started",
+                payload={"workspace_dir": workspace_dir, "now_ms": now_ms},
+                source="DreamingPlugin",
+            ))
+        except Exception as e:
+            logger.debug(f"daydreaming: failed to publish L1.daydream.started: {e}")
+
+        # Collect recent context for daydreaming
+        snippets = []
+        try:
+            session_db = AnanSessionDB()
+            messages = session_db.get_recent_messages_across_sessions(
+                lookback_days=1,
+                limit_per_session=5,
+                total_limit=20,
+            )
+            for msg in messages:
+                content = msg.get("content") or ""
+                if isinstance(content, list):
+                    content = " ".join(str(c) for c in content if isinstance(c, (str, dict)) and c)
+                if content and len(content) >= 20:
+                    role = msg.get("role", "user")
+                    snippets.append(f"[{role}]: {content[:150]}")
+        except Exception as e:
+            logger.debug(f"daydreaming: failed to read sessions: {e}")
+
+        body_lines = [f"- Daydreaming sweep with {len(snippets)} recent snippets."]
+        if snippets:
+            body_lines.append(f"- Key recent events:")
+            for s in snippets[:5]:
+                body_lines.append(f"  - {s}")
+
+        # Try to generate creative connections via LLM
+        if snippets and self._subagent:
+            try:
+                fragments_text = "\n\n".join(f"- {s}" for s in snippets[:10])
+                message = f"""Recent conversation fragments:
+
+{fragments_text}
+
+Generate 2-3 creative connections or unexpected insights that link these fragments together.
+Write in first person, like reflections in a quiet moment. Keep it brief (50-100 words).
+Output ONLY the reflection, no preamble."""
+
+                session_key = f"daydream-{int(now_ms)}"
+                response = await self._subagent.run(
+                    session_key=session_key,
+                    message=message,
+                    system_prompt="You are a reflective mind making creative connections.",
+                    timeout_ms=NARRATIVE_TIMEOUT_MS,
+                    model=self.config.model,
+                )
+                if response:
+                    body_lines.append(f"\n- Creative connections:\n  {response.strip()}")
+            except Exception as e:
+                logger.debug(f"daydreaming: narrative generation failed: {e}")
+
+        # Write to DREAMS.md
+        try:
+            append_dream_narrative(
+                workspace_dir,
+                "\n".join(body_lines),
+                now_ms,
+                timezone,
+            )
+        except Exception as e:
+            logger.debug(f"daydreaming: failed to write to DREAMS.md: {e}")
+
+        try:
+            from kernel.event_bus import Event, get_bus
+            bus = get_bus()
+            await bus.publish(Event(
+                topic="L1.daydream.ended",
+                payload={"workspace_dir": workspace_dir, "now_ms": now_ms, "lines": len(body_lines)},
+                source="DreamingPlugin",
+            ))
+        except Exception as e:
+            logger.debug(f"daydreaming: failed to publish L1.daydream.ended: {e}")
+
+        logger.info(f"daydreaming: idle daydream sweep complete, {len(body_lines)} lines")
+
+        return {
+            "phase": "daydream",
+            "body_lines": body_lines,
+            "workspace_dir": workspace_dir,
+        }
+
+    async def run_lucid_dream_sweep(
+        self,
+        workspace_dir: str,
+        now_ms: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """Run a lucid dream sweep — for weekend planning of future actions.
+
+        Actively plans future actions ('tomorrow remind dad about X').
+        Publishes L1.lucid_dream.started/ended events.
+        """
+        if not self.config.enabled:
+            return {"skipped": True, "reason": "dreaming disabled"}
+
+        if not workspace_dir:
+            return {"skipped": True, "reason": "no workspace"}
+
+        now_ms = now_ms or time.time() * 1000
+        timezone = self.config.timezone
+
+        logger.info(f"lucid_dream: starting weekend lucid dream sweep in {workspace_dir}")
+
+        try:
+            from kernel.event_bus import Event, get_bus
+            bus = get_bus()
+            await bus.publish(Event(
+                topic="L1.lucid_dream.started",
+                payload={"workspace_dir": workspace_dir, "now_ms": now_ms},
+                source="DreamingPlugin",
+            ))
+        except Exception as e:
+            logger.debug(f"lucid_dream: failed to publish L1.lucid_dream.started: {e}")
+
+        body_lines = ["- Weekend lucid dream: planning future actions."]
+
+        # Collect top intents from L8 for planning context
+        top_intents = []
+        try:
+            from kernel.event_bus import Event, get_bus
+            bus = get_bus()
+
+            async def collect_snapshot(event: Event):
+                payload = event.payload or {}
+                top_intents.extend(payload.get("top_intents", []))
+
+            # Subscribe temporarily to get current snapshot
+            unsub = bus.subscribe("L8.intent.snapshot", collect_snapshot)
+            await bus.publish(Event(
+                topic="L8.intent.snapshot",
+                payload={},
+                source="DreamingPlugin",
+            ))
+            # Give time for event to propagate
+            await asyncio.sleep(0.5)
+            unsub()
+        except Exception as e:
+            logger.debug(f"lucid_dream: failed to get L8 snapshot: {e}")
+
+        if top_intents:
+            body_lines.append(f"- Current top intentions:")
+            for intent in top_intents[:3]:
+                desc = intent.get("description", "unknown")
+                strength = intent.get("strength", 0)
+                body_lines.append(f"  - [{strength:.2f}] {desc}")
+
+        # Try to generate future plans via LLM
+        if self._subagent:
+            try:
+                intents_text = "\n".join(
+                    f"- {i.get('description', 'unknown')} (strength={i.get('strength', 0):.2f})"
+                    for i in top_intents[:5]
+                ) or "No specific intentions recorded."
+
+                message = f"""Current top intentions:
+{intentents_text}
+
+Based on these, generate 2-3 concrete action items for the coming week.
+Use the format: "Tomorrow, remind dad about X" or "This week, follow up on Y".
+Be specific and actionable. Output ONLY the action items, no preamble."""
+
+                session_key = f"lucid-dream-{int(now_ms)}"
+                response = await self._subagent.run(
+                    session_key=session_key,
+                    message=message,
+                    system_prompt="You are an intentional planning mind. Be concrete and actionable.",
+                    timeout_ms=NARRATIVE_TIMEOUT_MS,
+                    model=self.config.model,
+                )
+                if response:
+                    body_lines.append(f"\n- Future action plans:\n  {response.strip()}")
+            except Exception as e:
+                logger.debug(f"lucid_dream: action planning failed: {e}")
+
+        # Write to DREAMS.md
+        try:
+            append_dream_narrative(
+                workspace_dir,
+                "\n".join(body_lines),
+                now_ms,
+                timezone,
+            )
+        except Exception as e:
+            logger.debug(f"lucid_dream: failed to write to DREAMS.md: {e}")
+
+        try:
+            from kernel.event_bus import Event, get_bus
+            bus = get_bus()
+            await bus.publish(Event(
+                topic="L1.lucid_dream.ended",
+                payload={"workspace_dir": workspace_dir, "now_ms": now_ms, "lines": len(body_lines)},
+                source="DreamingPlugin",
+            ))
+        except Exception as e:
+            logger.debug(f"lucid_dream: failed to publish L1.lucid_dream.ended: {e}")
+
+        logger.info(f"lucid_dream: weekend lucid dream sweep complete, {len(body_lines)} lines")
+
+        return {
+            "phase": "lucid_dream",
+            "body_lines": body_lines,
+            "workspace_dir": workspace_dir,
+        }
+
     async def trigger_light_dream(self, workspace_dir: str) -> Dict[str, Any]:
         """Manually trigger Light Sleep phase."""
         return await self.run_dreaming_sweep(workspace_dir, "light")
@@ -1624,12 +1858,51 @@ class DreamingPlugin:
         self.running = True
         logger.info("dreaming: plugin started")
 
+    async def attach(self) -> None:
+        """Subscribe to L4.idle.started for Daydreaming, schedule weekend Lucid Dream."""
+        from datetime import datetime
+        from kernel.event_bus import Event, get_bus
+
+        bus = get_bus()
+        unsub_idle = bus.subscribe("L4.idle.started", self._on_idle_started)
+        self._idle_unsub = unsub_idle
+
+        # Schedule weekend Lucid Dream check
+        now = datetime.now()
+        days_until_sunday = (6 - now.weekday()) % 7
+        if days_until_sunday == 0 and now.hour >= 5:
+            days_until_sunday = 7  # If it's Sunday after 5am, schedule for next Sunday
+        logger.info("dreaming: weekend Lucid Dream scheduled in %d days", days_until_sunday)
+        self._lucid_dream_scheduled = True
+
+    def _on_idle_started(self, event) -> None:
+        """Trigger Daydreaming when idle starts."""
+        import asyncio
+        asyncio.create_task(self._trigger_daydream())
+
+    async def _trigger_daydream(self) -> None:
+        """Called when idle is detected — trigger a daydreaming sweep."""
+        try:
+            import os
+            workspace = os.path.expanduser("~/.anan")
+            os.makedirs(workspace, exist_ok=True)
+            await self.run_daydreaming_sweep(workspace_dir=workspace)
+        except Exception as exc:
+            logger.debug("daydream trigger failed: %s", exc)
+
+    async def detach(self) -> None:
+        """Unsubscribe from events."""
+        if getattr(self, '_idle_unsub', None):
+            self._idle_unsub()
+            self._idle_unsub = None
+
     async def stop(self) -> None:
         """Stop the dreaming plugin."""
         self.running = False
         if self._startup_cron_retry_timer:
             self._startup_cron_retry_timer.cancel()
             self._startup_cron_retry_timer = None
+        await self.detach()
         logger.info("dreaming: plugin stopped")
 
     def get_status(self) -> Dict[str, Any]:
