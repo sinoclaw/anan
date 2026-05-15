@@ -112,6 +112,14 @@ class GoalGenerator:
         self._unsubs.append(
             self._bus.subscribe("L7.goal.request_decompose", self._on_request_decompose)
         )
+        # L8 drive suggestion → 生成对应的目标
+        self._unsubs.append(
+            self._bus.subscribe("L8.drive.suggestion", self._on_drive_suggestion)
+        )
+        # L0 tick 周期性检查是否需要生成新目标
+        self._unsubs.append(
+            self._bus.subscribe("L0.circadian.tick", self._on_circadian_tick)
+        )
         logger.info("GoalGenerator attached")
 
     async def detach(self) -> None:
@@ -383,3 +391,35 @@ class GoalGenerator:
         gid = p.get("goal_id")
         if gid:
             self.decompose(gid)
+
+    async def _on_drive_suggestion(self, event: Event) -> None:
+        """L8 驱动力建议 → 生成对应目标。"""
+        p = event.payload or {}
+        drive_type = p.get("drive_type", "unknown")
+        content = p.get("content", "")
+        importance = p.get("importance", "medium")
+
+        scope = GoalScope.IMMEDIATE if importance == "high" else GoalScope.SHORT
+        tags = [drive_type, "驱动力", "L8"]
+
+        goal = self.propose(
+            description=content or f"响应内在驱动力：{drive_type}",
+            scope=scope,
+            tags=tags,
+            source_event="L8.drive.suggestion",
+        )
+        self.decompose(goal.id)
+
+    async def _on_circadian_tick(self, event: Event) -> None:
+        """L0 tick 周期性触发：如果当前无活跃目标，生成一个探索目标。"""
+        # 只在目标过少时生成新目标（避免频繁创建）
+        if len(self._active_order) >= 2:
+            return
+        # 生成一个短期的"好奇探索"目标
+        goal = self.propose(
+            description="保持对世界的好奇，持续探索新知",
+            scope=GoalScope.SHORT,
+            tags=["好奇", "探索", "周期"],
+            source_event="L0.circadian.tick",
+        )
+        self.decompose(goal.id)

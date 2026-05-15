@@ -432,10 +432,18 @@ class ConsciousnessEngine:
         self._unsubs.append(
             self._bus.subscribe("L8.drive.suggestion", self._on_drive_suggestion)
         )
+        # 监听 gateway 对话事件，注入对话上下文供 idle 反思用
+        self._unsubs.append(
+            self._bus.subscribe("gateway.message.sent", self._on_gateway_message)
+        )
 
         # 启动 idle 检测循环
         self._thinking_task = asyncio.create_task(self._idle_loop())
         logger.info("[L4 ConsciousnessEngine] 已启动")
+
+    async def stop(self) -> None:
+        """供 MindStackRunner 调用，等价于 detach()。"""
+        await self.detach()
 
     async def detach(self) -> None:
         """优雅关闭。"""
@@ -463,6 +471,20 @@ class ConsciousnessEngine:
     async def _on_drive_suggestion(self, event: Event) -> None:
         """收到 L8 驱动力建议，立即生成一个对应的思考。"""
         self._inject_drive_thought(event.payload)
+
+    async def _on_gateway_message(self, event: Event) -> None:
+        """收到 gateway 对话事件，注入上下文供 idle 时反思，并取消 idle 状态。"""
+        p = event.payload or {}
+        text = p.get("text", "") or ""
+        response = p.get("response", "") or ""
+        if text:
+            # 把用户说的最后一段存起来，供 DIALOGUE_REFLECTION 使用
+            self._recent_dialogue_context = f"用户说：{text[-200:]}"
+        if response:
+            # 把 AI 回复也存起来（如果需要评价回复质量）
+            self._recent_dialogue_context += f"\nAI 回复：{response[-200:]}"
+        # 通知 IdleDetector 用户在活跃状态
+        self.note_user_input()
 
     def inject_drive_suggestion_sync(self, payload: dict) -> None:
         """同步版本：供外部（非 async）注入 L8 驱动力建议。"""

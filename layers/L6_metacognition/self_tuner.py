@@ -64,6 +64,8 @@ class SelfTuner:
     分析 L5/L7 的历史表现，自动建议（或执行）参数调整。
     所有调整默认不自动执行，通过 suggest() 报告给人工审批。
     设置 auto_apply=True 可自动执行（生产环境建议关闭）。
+
+    需要注入 PredictiveReasoner（用于_decay_link）和 PatternMiner（用于 set_min_lift）。
     """
 
     def __init__(
@@ -71,6 +73,7 @@ class SelfTuner:
         *,
         bus: Optional[EventBus] = None,
         predictor: Optional[object] = None,   # PredictiveReasoner
+        pattern_miner: Optional[object] = None,  # PatternMiner — for writing back min_lift
         regulator: Optional[object] = None,  # SelfRegulator
         # Thresholds for triggering tuning
         accuracy_low_threshold: float = 0.35,
@@ -81,6 +84,7 @@ class SelfTuner:
     ):
         self._bus = bus or get_bus()
         self._pred = predictor
+        self._miner = pattern_miner
         self._reg = regulator
         self._acc_low = accuracy_low_threshold
         self._acc_high = accuracy_high_threshold
@@ -217,7 +221,11 @@ class SelfTuner:
         """执行一个调参动作。"""
         if action.layer == "L5" and self._pred is not None:
             if action.target == "min_lift":
+                # 同步更新 PredictiveReasoner（影响新预测）
                 self._pred._min_lift = action.new_value
+                # 同步更新 PatternMiner（影响新挖掘结果）
+                if self._miner is not None:
+                    self._miner.set_min_lift(action.new_value)
             elif action.target == "horizon_s":
                 self._pred._horizon_s = action.new_value
             elif action.target.startswith("link_lift:"):

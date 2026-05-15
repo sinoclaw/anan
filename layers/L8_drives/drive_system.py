@@ -115,6 +115,10 @@ class DriveSystem:
         self._unsubs.append(
             self._bus.subscribe("L5.prediction.upcoming", self._on_prediction)
         )
+        # L0 tick 周期性激活 CURIOSITY 驱动力（让 anan 持续对新事物好奇）
+        self._unsubs.append(
+            self._bus.subscribe("L0.circadian.tick", self._on_circadian_tick)
+        )
         logger.info("DriveSystem attached")
 
     async def detach(self) -> None:
@@ -300,3 +304,22 @@ class DriveSystem:
         cause = p.get("cause", "")
         if cause:
             self.trigger(DriveType.CURIOSITY, f"预测到 {cause} 之后会发生某事")
+
+    async def _on_circadian_tick(self, event: Event) -> None:
+        """L0 tick → 周期性激活 Curiosity，让 anan 持续思考"""
+        self.trigger(DriveType.CURIOSITY, "周期节律驱动：持续好奇探索")
+        # 如果当前无其他活跃驱动，发送一个 suggestion 通知 L4
+        if not self.active_drives():
+            top = self.top_drives(1)
+            if top:
+                d = top[0]
+                self._bus.publish_sync(Event(
+                    topic="L8.drive.suggestion",
+                    source="L8.drives",
+                    payload={
+                        "drive_type": d.type.value,
+                        "content": f"我最近比较{d.type.value}，想要{d.type.value}相关的新目标",
+                        "importance": "medium",
+                        "strength": d.strength,
+                    },
+                ))

@@ -19,6 +19,7 @@ L4 求证当下, L5 看历史. anan 第一次能问:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
@@ -225,6 +226,15 @@ class PatternMiner:
     # ------------------------------------------------------------------
     def discovered(self) -> list[Pattern]:
         return [d.pattern for d in self._discovered.values()]
+
+    def set_min_lift(self, value: float) -> None:
+        """被 SelfTuner 调用，调整置信度门槛并触发重新挖掘。"""
+        if value == self._min_lift:
+            return
+        self._min_lift = max(1.0, value)
+        logger.info("PatternMiner min_lift updated to %.2f, triggering re-mine", self._min_lift)
+        # 异步重新挖掘（用 bus 作为协程调度，不阻塞）
+        asyncio.create_task(self.mine_now())
 
     def stats(self) -> dict:
         return {

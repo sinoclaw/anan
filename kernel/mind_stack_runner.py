@@ -280,10 +280,10 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ L3 Attention 启动失败: %s", exc)
 
-        # L4 Consciousness
+        # L4 Consciousness — 用 ConsciousnessEngine（完整引擎），不是 ThoughtStream（数据容器）
         try:
-            from layers.L4_consciousness.consciousness import ThoughtStream
-            self._layers.append(ThoughtStream(max_size=50))
+            from layers.L4_consciousness.consciousness import ConsciousnessEngine
+            self._layers.append(ConsciousnessEngine(bus=self._bus, idle_threshold_s=120.0))
             logger.info("  ✓ L4 Consciousness 就绪")
         except Exception as exc:
             logger.warning("  ✗ L4 Consciousness 启动失败: %s", exc)
@@ -307,6 +307,7 @@ class MindStackRunner:
             self._layers.append(SelfTuner(
                 bus=self._bus,
                 predictor=self._predictor if hasattr(self, '_predictor') else None,
+                pattern_miner=self._pattern_miner if hasattr(self, '_pattern_miner') else None,
             ))
             logger.info("  ✓ L6 SelfTuner 就绪")
         except Exception as exc:
