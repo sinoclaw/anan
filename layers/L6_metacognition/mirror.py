@@ -102,19 +102,35 @@ class Mirror:
 
     # ------------------------------------------------------------------
     async def attach(self) -> None:
-        """Subscribe to L0.circadian.asleep — auto-reflect after each cycle."""
+        """Subscribe to L0.circadian.asleep (after each cycle) and L0.circadian.tick (periodic).
+        
+        After each sleep cycle: reflect_and_emit()
+        During active phase: reflect every N ticks so Mirror is not completely silent
+        """
         async def on_asleep(event: Event):
             await self.reflect_and_emit()
-        self._unsub = self._bus.subscribe("L0.circadian.asleep", on_asleep)
+
+        async def on_tick(event: Event):
+            # Only reflect on every 5th tick to keep overhead low
+            payload = event.payload or {}
+            ticks = payload.get("ticks", 0)
+            if ticks % 5 == 0:
+                await self.reflect_and_emit()
+
+        self._unsub_asleep = self._bus.subscribe("L0.circadian.asleep", on_asleep)
+        self._unsub_tick = self._bus.subscribe("L0.circadian.tick", on_tick)
 
     async def stop(self) -> None:
         """供 MindStackRunner 调用。"""
         await self.detach()
 
     async def detach(self) -> None:
-        if self._unsub:
-            self._unsub()
-            self._unsub = None
+        if self._unsub_asleep:
+            self._unsub_asleep()
+            self._unsub_asleep = None
+        if hasattr(self, '_unsub_tick') and self._unsub_tick:
+            self._unsub_tick()
+            self._unsub_tick = None
 
     # ------------------------------------------------------------------
     async def reflect_and_emit(self) -> HealthReport:

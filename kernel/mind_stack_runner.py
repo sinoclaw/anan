@@ -261,7 +261,7 @@ class MindStackRunner:
         # L1 Sleep
         try:
             from layers.L1_sleep.sleep_plugin import DreamingPlugin
-            self._dreaming_plugin = DreamingPlugin(config={})
+            self._dreaming_plugin = DreamingPlugin(config={"enabled": True})
             self._layers.append(self._dreaming_plugin)
             logger.info("  ✓ L1 Sleep 就绪")
         except Exception as exc:
@@ -276,14 +276,16 @@ class MindStackRunner:
             logger.warning("  ✗ L2 Memory 启动失败: %s", exc)
 
         # L3 Attention — AttentionQueue and VigilanceMonitor
+        # Keep _attention_queue as instance var so DriveSystem can call boost()
         try:
             from layers.L3_attention.attention import AttentionQueue, VigilanceMonitor
-            _attention_queue = AttentionQueue()
-            self._layers.append(_attention_queue)
+            self._attention_queue = AttentionQueue()
+            self._layers.append(self._attention_queue)
             self._layers.append(VigilanceMonitor())
             logger.info("  ✓ L3 Attention (AttentionQueue + VigilanceMonitor) 就绪")
         except Exception as exc:
             logger.warning("  ✗ L3 Attention 启动失败: %s", exc)
+            self._attention_queue = None
 
         # L4 Consciousness — 用 ConsciousnessEngine（完整引擎），不是 ThoughtStream（数据容器）
         try:
@@ -336,15 +338,21 @@ class MindStackRunner:
         # L7 Goals
         try:
             from layers.L7_goals.goal_engine import GoalGenerator
-            self._layers.append(GoalGenerator())
+            goal_generator = GoalGenerator(bus=self._bus, self_model=self_model)
+            self._layers.append(goal_generator)
             logger.info("  ✓ L7 Goals 就绪")
         except Exception as exc:
             logger.warning("  ✗ L7 Goals 启动失败: %s", exc)
+            goal_generator = None
 
-        # L7 Will
+        # L7 Will — SelfRegulator 监听 L6.warn 并调节
+        # 同时监听 L7.goal.achieved / .abandoned（GoalGenerator 发出的）
         try:
             from layers.L7_will.regulator import SelfRegulator
-            self._layers.append(SelfRegulator())
+            self._layers.append(SelfRegulator(
+                bus=self._bus,
+                intent_stack=self._intent_stack if hasattr(self, '_intent_stack') else None,
+            ))
             logger.info("  ✓ L7 Will 就绪")
         except Exception as exc:
             logger.warning("  ✗ L7 Will 启动失败: %s", exc)
@@ -352,32 +360,42 @@ class MindStackRunner:
         # L8 Drives
         try:
             from layers.L8_drives.drive_system import DriveSystem
-            self._drive_system = DriveSystem()
+            self._drive_system = DriveSystem(bus=self._bus)
             self._layers.append(self._drive_system)
             logger.info("  ✓ L8 Drives 就绪")
         except Exception as exc:
             logger.warning("  ✗ L8 Drives 启动失败: %s", exc)
+            self._drive_system = None
 
-        # L8 Intent
+        # L8 Intent — anan 持续在意的渴望
+        # decay_tick() 每 tick 衰减，snapshot() 在 luciddream 时触发
         try:
             from layers.L8_intent.intent_stack import IntentStack
-            self._layers.append(IntentStack())
+            self._intent_stack = IntentStack(bus=self._bus)
+            self._layers.append(self._intent_stack)
             logger.info("  ✓ L8 Intent 就绪")
         except Exception as exc:
             logger.warning("  ✗ L8 Intent 启动失败: %s", exc)
+            self._intent_stack = None
 
         # AttentionBridge — 连接 DriveSystem 和 AttentionQueue
         try:
             from layers.L8_drives.attention_bridge import AttentionBridge
             bridge = AttentionBridge(
                 bus=self._bus,
-                attention_q=_attention_queue,
+                attention_q=self._attention_queue if hasattr(self, '_attention_queue') else None,
                 drive_system=self._drive_system if hasattr(self, '_drive_system') else None,
             )
             self._layers.append(bridge)
             logger.info("  ✓ AttentionBridge 就绪")
         except Exception as exc:
             logger.warning("  ✗ AttentionBridge 启动失败: %s", exc)
+
+        # ---- 层间事件连线（必须在各层 attach() 之后） ----
+        # L0.circadian.tick → L8 IntentStack.decay_tick() (每 tick 自然衰减)
+        # L0.circadian.tick → L8 DriveSystem.decay() (驱动力衰减)
+        # L1.lucid_dream.ended → L8 IntentStack.snapshot() (顶层意图快照供梦境用)
+        await self._wire_layer_events()
 
     def _wire_gateway_events(self) -> None:
         """
@@ -423,24 +441,71 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ 无法注册 gateway 事件注入: %s", exc)
 
+    async def _wire_layer_events(self) -> None:
+        """
+        层间事件连线 — 让各层真正联动起来。
+
+        L0.circadian.tick → L8 IntentStack.decay_tick()   (意图自然衰减)
+        L0.circadian.tick → L8 DriveSystem.decay()         (驱动力自然衰减)
+        L1.lucid_dream.ended → L8 IntentStack.snapshot()  (快照供梦境规划)
+        """
+        intent_stack = getattr(self, '_intent_stack', None)
+        drive_system = getattr(self, '_drive_system', None)
+
+        # L0.circadian.tick → decay
+        async def _on_tick_for_decay(event: Event):
+            if intent_stack is not None:
+                await intent_stack.decay_tick()
+            if drive_system is not None:
+                drive_system.decay()
+
+        self._bus.subscribe("L0.circadian.tick", _on_tick_for_decay)
+        logger.info("  ✓ L0.tick → L8 IntentStack/DriveSystem decay 已连接")
+
+        # L1.lucid_dream.ended → snapshot
+        if intent_stack is not None:
+
+            async def _on_lucid_dream_ended(event: Event):
+                await intent_stack.snapshot()
+
+            self._bus.subscribe("L1.lucid_dream.ended", _on_lucid_dream_ended)
+            logger.info("  ✓ L1.lucid_dream.ended → L8 IntentStack.snapshot() 已连接")
+
     def _make_sleep_fn(self):
         """
         制造 sleep_fn 传给 CircadianLoop。
         在睡前触发 L1 Sleep，唤醒后触发 L5 PatternMiner 挖掘。
         """
+        # Find MemoryTier from already-populated self._layers
+        def _find_memory_tier():
+            for layer in self._layers:
+                from layers.L2_memory.memory_tier import MemoryTier
+                if isinstance(layer, MemoryTier):
+                    return layer
+            return None
+
         async def sleep_fn(day: str, bus: EventBus, cycle: int) -> int:
             logger.info("🌙 [Cycle %d] 进入睡眠阶段...", cycle)
             try:
-                # 触发 L1 DreamingPlugin 进行睡眠阶段处理
+                # 1. 触发 L1 DreamingPlugin — 先 deep 再 light
                 if self._dreaming_plugin is not None:
                     try:
-                        # workspace_dir 使用 ~/.anan
                         import os
                         workspace = os.path.expanduser("~/.anan")
                         os.makedirs(workspace, exist_ok=True)
+                        # Deep Sleep: promote short-term → mid-term → long-term
                         await self._dreaming_plugin.run_dreaming_sweep(
                             workspace_dir=workspace,
-                            phase="sleep",
+                            phase="deep",
+                        )
+                        # 同时手动调用 MemoryTier promote_all_short_to_mid()
+                        memory_tier = _find_memory_tier()
+                        if memory_tier is not None:
+                            await memory_tier.promote_all_short_to_mid()
+                        # Light Sleep: ingest daily/sessions/recall signals
+                        await self._dreaming_plugin.run_dreaming_sweep(
+                            workspace_dir=workspace,
+                            phase="light",
                         )
                     except Exception as exc:
                         logger.warning("  L1 DreamingPlugin 执行失败: %s", exc)
