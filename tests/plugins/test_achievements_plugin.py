@@ -51,7 +51,7 @@ def plugin_api(tmp_path, monkeypatch):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     # Stash monkeypatch so ``_install_fake_session_db`` can use it to
-    # swap ``sys.modules['sinoclaw_state']`` with auto-restoration. Without
+    # swap ``sys.modules['anan_state']`` with auto-restoration. Without
     # this, a raw ``sys.modules[...] = fake`` assignment would leak the
     # fake into later tests in the same xdist worker — breaking every
     # test that does ``from anan_state import SessionDB``.
@@ -60,7 +60,7 @@ def plugin_api(tmp_path, monkeypatch):
 
 
 class _FakeSessionDB:
-    """Stand-in for sinoclaw_state.SessionDB that records scan calls."""
+    """Stand-in for anan_state.SessionDB that records scan calls."""
 
     def __init__(self, session_count: int):
         self.session_count = session_count
@@ -116,12 +116,12 @@ def _install_fake_session_db(plugin_api, fake_db):
     """Inject a fake SessionDB so ``scan_sessions`` finds it via its local import.
 
     Uses the monkeypatch stashed on ``plugin_api`` by the fixture, so the
-    ``sys.modules['sinoclaw_state']`` swap is auto-restored at test teardown
+    ``sys.modules['anan_state']`` swap is auto-restored at test teardown
     and cannot leak into unrelated tests in the same xdist worker.
     """
-    fake_module = type(sys)("sinoclaw_state")
+    fake_module = type(sys)("anan_state")
     fake_module.SessionDB = lambda: fake_db
-    plugin_api._test_monkeypatch.setitem(sys.modules, "sinoclaw_state", fake_module)
+    plugin_api._test_monkeypatch.setitem(sys.modules, "anan_state", fake_module)
 
 
 def test_scan_sessions_default_scans_all_history_not_first_200(plugin_api):

@@ -53,7 +53,7 @@ def test_empty_string_and_dot_removed_from_sys_path():
         sys.path = original
 
 
-def test_sinoclaw_src_root_inserted_at_front():
+def test_anan_src_root_inserted_at_front():
     original = sys.path[:]
     try:
         fake_root = "/fake/hermes/src"

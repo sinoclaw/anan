@@ -29,6 +29,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
+from kernel.event_bus import Event, EventBus
+
 logger = logging.getLogger("anan.L2")
 
 
@@ -182,10 +184,12 @@ class MemoryTier:
     def __init__(
         self,
         *,
+        bus: Optional[EventBus] = None,
         recall_path: Optional[Path] = None,
         midterm_dir: Optional[Path] = None,
         longterm_path: Optional[Path] = None,
     ):
+        self._bus = bus
         self.short = MemoryStore(recall_path or RECALL_PATH)
         self.midterm_dir = (midterm_dir or MIDTERM_DIR)
         self.midterm_dir.mkdir(parents=True, exist_ok=True)
@@ -240,7 +244,7 @@ class MemoryTier:
 
         month_path.write_text(json.dumps(entries, indent=2, ensure_ascii=False))
 
-    def promote_all_short_to_mid(self) -> int:
+    async def promote_all_short_to_mid(self) -> int:
         """Called by L1 Deep Sleep. Returns count of items promoted."""
         items = self.short.all()
         promoted = 0
@@ -249,11 +253,17 @@ class MemoryTier:
             promoted += 1
         self.short.cull(max_items=0)  # clear short-term after promotion
         logger.info("Promoted %d items to mid-term", promoted)
+        if self._bus is not None:
+            await self._bus.publish(Event(
+                topic="L2.memory.persisted",
+                source="L2.memory_tier",
+                payload={"tier": "mid", "count": promoted},
+            ))
         return promoted
 
     # ---- Promotion: mid → long (MEMORY.md append) ----
 
-    def append_longterm(self, insight: str, tags: Optional[list[str]] = None) -> None:
+    async def append_longterm(self, insight: str, tags: Optional[list[str]] = None) -> None:
         """Append a fact/insight to the long-term MEMORY.md (never overwrites)."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
         tag_str = " #" + " #".join(tags) if tags else ""
@@ -261,10 +271,16 @@ class MemoryTier:
         try:
             with open(self._long_path, "a") as f:
                 f.write(entry)
+            if self._bus is not None:
+                await self._bus.publish(Event(
+                    topic="L2.memory.persisted",
+                    source="L2.memory_tier",
+                    payload={"tier": "long", "count": 1},
+                ))
         except Exception as exc:
             logger.error("Failed to append to MEMORY.md: %s", exc)
 
-    def promote_mid_to_long(self, week_filter: Optional[str] = None) -> int:
+    async def promote_mid_to_long(self, week_filter: Optional[str] = None) -> int:
         """Summarize week's mid-term entries into long-term. Returns count appended."""
         count = 0
         for path in sorted(self.midterm_dir.glob("*.json")):
@@ -276,7 +292,7 @@ class MemoryTier:
                     continue
                 summaries = [v["content"][:120] for v in entries.values()]
                 joined = "; ".join(summaries[:10])
-                self.append_longterm(
+                await self.append_longterm(
                     f"[周总结] {path.stem}: {joined}",
                     tags=["midterm", "summary"]
                 )

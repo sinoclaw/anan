@@ -275,11 +275,13 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ L2 Memory 启动失败: %s", exc)
 
-        # L3 Attention
+        # L3 Attention — AttentionQueue and VigilanceMonitor
         try:
-            from layers.L3_attention.attention import VigilanceMonitor
+            from layers.L3_attention.attention import AttentionQueue, VigilanceMonitor
+            _attention_queue = AttentionQueue()
+            self._layers.append(_attention_queue)
             self._layers.append(VigilanceMonitor())
-            logger.info("  ✓ L3 Attention 就绪")
+            logger.info("  ✓ L3 Attention (AttentionQueue + VigilanceMonitor) 就绪")
         except Exception as exc:
             logger.warning("  ✗ L3 Attention 启动失败: %s", exc)
 
@@ -369,6 +371,7 @@ class MindStackRunner:
             from layers.L8_drives.attention_bridge import AttentionBridge
             bridge = AttentionBridge(
                 bus=self._bus,
+                attention_q=_attention_queue,
                 drive_system=self._drive_system if hasattr(self, '_drive_system') else None,
             )
             self._layers.append(bridge)

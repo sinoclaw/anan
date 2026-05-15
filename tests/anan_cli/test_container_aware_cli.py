@@ -35,26 +35,26 @@ def container_env(tmp_path, monkeypatch):
         "backend=podman\n"
         "container_name=anan\n"
         "exec_user=hermes\n"
-        "sinoclaw_bin=/data/current-package/bin/anan\n"
+        "anan_bin=/data/current-package/bin/anan\n"
     )
     return anan_home
 
 
 def test_get_container_exec_info_returns_metadata(container_env):
     """Reads .container-mode and returns all fields including exec_user."""
-    with patch("sinoclaw_constants.is_container", return_value=False):
+    with patch("anan_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info is not None
     assert info["backend"] == "podman"
     assert info["container_name"] == "anan"
     assert info["exec_user"] == "hermes"
-    assert info["sinoclaw_bin"] == "/data/current-package/bin/anan"
+    assert info["anan_bin"] == "/data/current-package/bin/anan"
 
 
 def test_get_container_exec_info_none_inside_container(container_env):
     """Returns None when we're already inside a container."""
-    with patch("sinoclaw_constants.is_container", return_value=True):
+    with patch("anan_constants.is_container", return_value=True):
         info = get_container_exec_info()
 
     assert info is None
@@ -67,27 +67,27 @@ def test_get_container_exec_info_none_without_file(tmp_path, monkeypatch):
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     monkeypatch.delenv("SINOCLAW_DEV", raising=False)
 
-    with patch("sinoclaw_constants.is_container", return_value=False):
+    with patch("anan_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info is None
 
 
-def test_get_container_exec_info_skipped_when_sinoclaw_dev(container_env, monkeypatch):
+def test_get_container_exec_info_skipped_when_anan_dev(container_env, monkeypatch):
     """Returns None when SINOCLAW_DEV=1 is set (dev mode bypass)."""
     monkeypatch.setenv("SINOCLAW_DEV", "1")
 
-    with patch("sinoclaw_constants.is_container", return_value=False):
+    with patch("anan_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info is None
 
 
-def test_get_container_exec_info_not_skipped_when_sinoclaw_dev_zero(container_env, monkeypatch):
+def test_get_container_exec_info_not_skipped_when_anan_dev_zero(container_env, monkeypatch):
     """SINOCLAW_DEV=0 does NOT trigger bypass — only '1' does."""
     monkeypatch.setenv("SINOCLAW_DEV", "0")
 
-    with patch("sinoclaw_constants.is_container", return_value=False):
+    with patch("anan_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info is not None
@@ -104,7 +104,7 @@ def test_get_container_exec_info_defaults():
             "# minimal file with no keys\n"
         )
 
-        with patch("sinoclaw_constants.is_container", return_value=False), \
+        with patch("anan_constants.is_container", return_value=False), \
              patch.dict(get_container_exec_info.__globals__, {"get_anan_home": lambda: anan_home}), \
              patch.dict(os.environ, {}, clear=False):
             os.environ.pop("SINOCLAW_DEV", None)
@@ -114,7 +114,7 @@ def test_get_container_exec_info_defaults():
         assert info["backend"] == "docker"
         assert info["container_name"] == "anan"
         assert info["exec_user"] == "hermes"
-        assert info["sinoclaw_bin"] == "/data/current-package/bin/anan"
+        assert info["anan_bin"] == "/data/current-package/bin/anan"
 
 
 def test_get_container_exec_info_docker_backend(container_env):
@@ -123,21 +123,21 @@ def test_get_container_exec_info_docker_backend(container_env):
         "backend=docker\n"
         "container_name=anan-custom\n"
         "exec_user=myuser\n"
-        "sinoclaw_bin=/opt/hermes/bin/anan\n"
+        "anan_bin=/opt/hermes/bin/anan\n"
     )
 
-    with patch("sinoclaw_constants.is_container", return_value=False):
+    with patch("anan_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info["backend"] == "docker"
     assert info["container_name"] == "anan-custom"
     assert info["exec_user"] == "myuser"
-    assert info["sinoclaw_bin"] == "/opt/hermes/bin/anan"
+    assert info["anan_bin"] == "/opt/hermes/bin/anan"
 
 
 def test_get_container_exec_info_crashes_on_permission_error(container_env):
     """PermissionError propagates instead of being silently swallowed."""
-    with patch("sinoclaw_constants.is_container", return_value=False), \
+    with patch("anan_constants.is_container", return_value=False), \
          patch("builtins.open", side_effect=PermissionError("permission denied")):
         with pytest.raises(PermissionError):
             get_container_exec_info()
@@ -154,7 +154,7 @@ def docker_container_info():
         "backend": "docker",
         "container_name": "anan",
         "exec_user": "hermes",
-        "sinoclaw_bin": "/data/current-package/bin/anan",
+        "anan_bin": "/data/current-package/bin/anan",
     }
 
 
@@ -164,7 +164,7 @@ def podman_container_info():
         "backend": "podman",
         "container_name": "anan",
         "exec_user": "hermes",
-        "sinoclaw_bin": "/data/current-package/bin/anan",
+        "anan_bin": "/data/current-package/bin/anan",
     }
 
 

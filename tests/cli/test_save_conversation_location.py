@@ -1,6 +1,6 @@
 """Tests for /save — the conversation snapshot slash command.
 
-Regression: the old implementation wrote ``sinoclaw_conversation_<ts>.json``
+Regression: the old implementation wrote ``anan_conversation_<ts>.json``
 to the current working directory (CWD). Users who ran /save expected the
 file to be discoverable via ``anan sessions browse``, but CWD-resident
 snapshots are not indexed in the state DB and are generally invisible.
@@ -27,9 +27,9 @@ def anan_home(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("ANAN_HOME", str(home))
     # Clear any cached anan_home computation
-    import sinoclaw_constants
-    if hasattr(sinoclaw_constants, "_anan_home_cache"):
-        sinoclaw_constants._anan_home_cache = None
+    import anan_constants
+    if hasattr(anan_constants, "_anan_home_cache"):
+        anan_constants._anan_home_cache = None
     return home
 
 
@@ -51,7 +51,7 @@ def test_save_conversation_writes_under_anan_home(anan_home, tmp_path, monkeypat
     monkeypatch.chdir(work)
 
     # Import fresh to pick up the ANAN_HOME fixture
-    for mod in [m for m in sys.modules if m.startswith("cli") or m == "sinoclaw_constants"]:
+    for mod in [m for m in sys.modules if m.startswith("cli") or m == "anan_constants"]:
         sys.modules.pop(mod, None)
 
     import cli  # noqa: F401  (module under test)
@@ -65,13 +65,13 @@ def test_save_conversation_writes_under_anan_home(anan_home, tmp_path, monkeypat
     cli.AnanCLI.save_conversation(stub)
 
     # File must NOT be in CWD
-    cwd_leak = list(work.glob("sinoclaw_conversation_*.json"))
+    cwd_leak = list(work.glob("anan_conversation_*.json"))
     assert not cwd_leak, f"snapshot leaked to CWD: {cwd_leak}"
 
     # File MUST be under ~/.anan/sessions/saved/
     saved_dir = anan_home / "sessions" / "saved"
     assert saved_dir.is_dir(), "expected saved/ subdirectory to be created"
-    files = list(saved_dir.glob("sinoclaw_conversation_*.json"))
+    files = list(saved_dir.glob("anan_conversation_*.json"))
     assert len(files) == 1, files
 
     payload = json.loads(files[0].read_text())
@@ -89,7 +89,7 @@ def test_save_conversation_writes_under_anan_home(anan_home, tmp_path, monkeypat
 
 
 def test_save_conversation_empty_history_does_nothing(anan_home, capsys):
-    for mod in [m for m in sys.modules if m.startswith("cli") or m == "sinoclaw_constants"]:
+    for mod in [m for m in sys.modules if m.startswith("cli") or m == "anan_constants"]:
         sys.modules.pop(mod, None)
     import cli
 

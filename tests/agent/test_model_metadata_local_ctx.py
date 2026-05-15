@@ -77,7 +77,7 @@ class TestQueryLocalContextLengthOllama:
         training max — using it would let anan grow conversations past
         the runtime limit and Ollama would silently truncate.
 
-        Concrete example: sinoclaw-brain:qwen3-14b-ctx32k is a Modelfile
+        Concrete example: anan-brain:qwen3-14b-ctx32k is a Modelfile
         derived from qwen3:14b with `num_ctx 32768`, but the underlying
         GGUF reports `qwen3.context_length: 40960` (training max). If
         anan used 40960 it would let the conversation grow past 32768

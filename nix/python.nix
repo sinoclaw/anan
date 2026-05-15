@@ -96,6 +96,6 @@ let
         pythonPackageOverrides
       ]);
 in
-pythonSet.mkVirtualEnv "sinoclaw-agent-env" {
-  sinoclaw-agent = dependency-groups;
+pythonSet.mkVirtualEnv "anan-agent-env" {
+  anan-agent = dependency-groups;
 }

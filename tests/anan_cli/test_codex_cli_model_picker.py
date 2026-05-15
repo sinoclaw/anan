@@ -32,7 +32,7 @@ def _make_fake_jwt(expiry_offset: int = 3600) -> str:
 
 
 @pytest.fixture()
-def sinoclaw_auth_only_env(tmp_path, monkeypatch):
+def anan_auth_only_env(tmp_path, monkeypatch):
     """Tokens already in anan auth store (no Codex CLI needed)."""
     anan_home = tmp_path / ".anan"
     anan_home.mkdir()
@@ -63,7 +63,7 @@ def sinoclaw_auth_only_env(tmp_path, monkeypatch):
     return anan_home
 
 
-def test_normal_path_still_works(sinoclaw_auth_only_env):
+def test_normal_path_still_works(anan_auth_only_env):
     """openai-codex appears when tokens are already in anan auth store."""
     from anan_cli.model_switch import list_authenticated_providers
 

@@ -361,7 +361,7 @@ class TestTeePattern:
         assert dangerous is True
         assert key is not None
 
-    def test_tee_sinoclaw_env(self):
+    def test_tee_anan_env(self):
         dangerous, key, desc = detect_dangerous_command("echo x | tee ~/.anan/.env")
         assert dangerous is True
         assert key is not None
@@ -644,14 +644,14 @@ class TestGatewayProtection:
         assert dangerous is True
         assert "stop/restart" in desc
 
-    def test_pkill_sinoclaw_detected(self):
+    def test_pkill_anan_detected(self):
         """pkill targeting hermes/gateway processes must be caught."""
         cmd = 'pkill -f "cli.py --gateway"'
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True
         assert "self-termination" in desc
 
-    def test_killall_sinoclaw_detected(self):
+    def test_killall_anan_detected(self):
         cmd = "killall hermes"
         dangerous, key, desc = detect_dangerous_command(cmd)
         assert dangerous is True
@@ -810,7 +810,7 @@ class TestPgrepKillExpansion:
         dangerous, _, _ = detect_dangerous_command(cmd)
         assert dangerous is True
 
-    def test_pkill_sinoclaw_still_detected(self):
+    def test_pkill_anan_still_detected(self):
         """Existing pkill pattern must not regress."""
         cmd = "pkill -9 hermes"
         dangerous, _, _ = detect_dangerous_command(cmd)

@@ -49,20 +49,20 @@ def _load_lib():
     import types
     lib_path = Path("/data/plugins/dreaming/dreaming_plugin.py")
 
-    if "sinoclaw_plugins" not in sys.modules:
-        ns = types.ModuleType("sinoclaw_plugins")
+    if "anan_plugins" not in sys.modules:
+        ns = types.ModuleType("anan_plugins")
         ns.__path__ = []
-        sys.modules["sinoclaw_plugins"] = ns
+        sys.modules["anan_plugins"] = ns
 
     spec = importlib.util.spec_from_file_location(
-        "sinoclaw_plugins.dreaming_under_test",
+        "anan_plugins.dreaming_under_test",
         lib_path,
         submodule_search_locations=[str(lib_path.parent)],
     )
     mod = importlib.util.module_from_spec(spec)
-    mod.__package__ = "sinoclaw_plugins"
+    mod.__package__ = "anan_plugins"
     mod.__path__ = [str(lib_path.parent)]
-    sys.modules["sinoclaw_plugins.dreaming_under_test"] = mod
+    sys.modules["anan_plugins.dreaming_under_test"] = mod
     spec.loader.exec_module(mod)
     return mod
 

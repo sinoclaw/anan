@@ -479,7 +479,7 @@ def test_print_tui_exit_summary_includes_resume_and_token_totals(monkeypatch, ca
             return None
 
     monkeypatch.setitem(
-        sys.modules, "sinoclaw_state", types.SimpleNamespace(SessionDB=lambda: _FakeDB())
+        sys.modules, "anan_state", types.SimpleNamespace(SessionDB=lambda: _FakeDB())
     )
 
     main_mod._print_tui_exit_summary("20260409_000001_abc123")
@@ -519,7 +519,7 @@ def test_print_tui_exit_summary_prefers_actual_active_session_file(
     active = tmp_path / "active.json"
     active.write_text('{"session_id":"actual_session"}', encoding="utf-8")
     monkeypatch.setitem(
-        sys.modules, "sinoclaw_state", types.SimpleNamespace(SessionDB=lambda: _FakeDB())
+        sys.modules, "anan_state", types.SimpleNamespace(SessionDB=lambda: _FakeDB())
     )
 
     main_mod._print_tui_exit_summary("startup_resume", str(active))

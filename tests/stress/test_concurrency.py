@@ -118,7 +118,7 @@ def worker_loop(worker_id: int, anan_home: str, result_file: str) -> None:
 
 
 def main():
-    home = tempfile.mkdtemp(prefix="sinoclaw_concurrency_")
+    home = tempfile.mkdtemp(prefix="anan_concurrency_")
     print(f"ANAN_HOME = {home}")
 
     # Seed.

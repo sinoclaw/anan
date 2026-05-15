@@ -23,8 +23,8 @@ def backup_env(monkeypatch, tmp_path):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
     # Reload so get_anan_home picks up the env var fresh.
-    import sinoclaw_constants
-    importlib.reload(sinoclaw_constants)
+    import anan_constants
+    importlib.reload(anan_constants)
     from agent import curator_backup
     importlib.reload(curator_backup)
     return {"home": home, "skills": home / "skills", "cb": curator_backup}
@@ -270,7 +270,7 @@ def test_real_run_takes_pre_snapshot(backup_env, monkeypatch):
     skills = backup_env["skills"]
     _write_skill(skills, "alpha")
 
-    # Reload curator module against the freshly-env'd sinoclaw_constants
+    # Reload curator module against the freshly-env'd anan_constants
     from agent import curator
     importlib.reload(curator)
 
@@ -337,8 +337,8 @@ def _write_cron_jobs(home: Path, jobs: list) -> Path:
 
 def _reload_cron_jobs(home: Path):
     """Reload cron.jobs so its module-level SINOCLAW_DIR picks up the tmp HOME."""
-    import sinoclaw_constants
-    importlib.reload(sinoclaw_constants)
+    import anan_constants
+    importlib.reload(anan_constants)
     if "cron.jobs" in sys.modules:
         import cron.jobs as _cj
         importlib.reload(_cj)

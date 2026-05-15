@@ -32,7 +32,7 @@ class TestWriteDenyExactPaths:
         path = os.path.join(str(Path.home()), ".netrc")
         assert _is_write_denied(path) is True
 
-    def test_sinoclaw_env(self):
+    def test_anan_env(self):
         # ``.env`` under the active ANAN_HOME (profile-aware, not just
         # ``~/.anan``) must be write-denied. The hermetic test conftest
         # points ANAN_HOME at a tempdir — resolve via get_anan_home()

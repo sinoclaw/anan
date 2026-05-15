@@ -125,7 +125,7 @@ class TestBrowserConsoleToolsetWiring:
         from toolsets import TOOLSETS
         assert "browser_console" in TOOLSETS["browser"]["tools"]
 
-    def test_in_sinoclaw_core_tools(self):
+    def test_in_anan_core_tools(self):
         from toolsets import _SINOCLAW_CORE_TOOLS
         assert "browser_console" in _SINOCLAW_CORE_TOOLS
 
@@ -213,7 +213,7 @@ class TestBrowserVisionConfig:
         mock_response.choices = [mock_choice]
 
         with (
-            patch("sinoclaw_constants.get_sinoclaw_dir", return_value=shots_dir),
+            patch("anan_constants.get_anan_dir", return_value=shots_dir),
             patch("tools.browser_tool._cleanup_old_screenshots"),
             patch("tools.browser_tool._run_browser_command", return_value={"success": True, "data": {"path": str(screenshot)}}),
             patch("tools.browser_tool._get_vision_model", return_value="test-model"),
@@ -237,7 +237,7 @@ class TestBrowserVisionConfig:
         mock_response.choices = [mock_choice]
 
         with (
-            patch("sinoclaw_constants.get_sinoclaw_dir", return_value=shots_dir),
+            patch("anan_constants.get_anan_dir", return_value=shots_dir),
             patch("tools.browser_tool._cleanup_old_screenshots"),
             patch("tools.browser_tool._run_browser_command", return_value={"success": True, "data": {"path": str(screenshot)}}),
             patch("tools.browser_tool._get_vision_model", return_value="test-model"),

@@ -401,7 +401,7 @@ class TestCacheDirectoryMounts:
         """Old-style dir names (e.g. document_cache) are resolved correctly."""
         anan_home = tmp_path / ".anan"
         anan_home.mkdir()
-        # Use legacy dir name — get_sinoclaw_dir prefers old if it exists
+        # Use legacy dir name — get_anan_dir prefers old if it exists
         (anan_home / "document_cache").mkdir()
         (anan_home / "image_cache").mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))

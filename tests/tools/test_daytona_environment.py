@@ -162,7 +162,7 @@ class TestPersistence:
         )
         legacy.start.assert_called_once()
         env._mock_client.list.assert_called_once_with(
-            labels={"sinoclaw_task_id": "mytask"}, page=1, limit=1)
+            labels={"anan_task_id": "mytask"}, page=1, limit=1)
         env._mock_client.create.assert_not_called()
 
     def test_persistent_creates_new_when_none_found(self, make_env, daytona_sdk):
@@ -176,7 +176,7 @@ class TestPersistence:
         # by checking get() was called with the right sandbox name
         env._mock_client.get.assert_called_with("anan-mytask")
         env._mock_client.list.assert_called_with(
-            labels={"sinoclaw_task_id": "mytask"}, page=1, limit=1)
+            labels={"anan_task_id": "mytask"}, page=1, limit=1)
 
     def test_non_persistent_skips_lookup(self, make_env):
         env = make_env(persistent=False)

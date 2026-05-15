@@ -76,7 +76,7 @@ class TestParseModelInput:
         assert model == "gpt-5.4"
 
     def test_nous_provider_switch(self):
-        provider, model = parse_model_input("nous:sinoclaw-3", "openrouter")
+        provider, model = parse_model_input("nous:anan-3", "openrouter")
         assert provider == "nous"
         assert model == "anan-3"
 
@@ -793,7 +793,7 @@ class TestProbeApiModelsUserAgent:
         mock_resp.read = MagicMock(return_value=body)
         return mock_resp
 
-    def test_probe_sends_sinoclaw_user_agent(self):
+    def test_probe_sends_anan_user_agent(self):
         from unittest.mock import patch
 
         body = b'{"data":[{"id":"claude-opus-4.7"}]}'

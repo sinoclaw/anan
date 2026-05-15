@@ -150,7 +150,7 @@ class TestGatewayPersonalityNone:
         (tmp_path / "config.yaml").write_text(yaml.dump({"agent": {"personalities": {}}}))
 
         with patch("gateway.run._anan_home", tmp_path), \
-             patch("sinoclaw_constants.display_anan_home", return_value="~/.anan/profiles/coder"):
+             patch("anan_constants.display_anan_home", return_value="~/.anan/profiles/coder"):
             event = self._make_event("")
             result = await runner._handle_personality_command(event)
 

@@ -483,7 +483,7 @@ def test_run_doctor_accepts_bare_custom_provider(monkeypatch, tmp_path):
         ("kimi-coding", "kimi-k2"),
     ],
 )
-def test_run_doctor_accepts_sinoclaw_provider_ids_that_catalog_aliases(
+def test_run_doctor_accepts_anan_provider_ids_that_catalog_aliases(
     monkeypatch, tmp_path, provider, default_model
 ):
     home = tmp_path / ".anan"

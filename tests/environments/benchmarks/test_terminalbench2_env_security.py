@@ -58,8 +58,8 @@ def _load_terminalbench_module(monkeypatch):
             AgentResult=_AgentResult,
             SinoclawAgentLoop=_SinoclawAgentLoop,
         ),
-        "environments.sinoclaw_base_env": _stub_module(
-            "environments.sinoclaw_base_env",
+        "environments.anan_base_env": _stub_module(
+            "environments.anan_base_env",
             SinoclawAgentBaseEnv=_SinoclawAgentBaseEnv,
             SinoclawAgentEnvConfig=_SinoclawAgentEnvConfig,
         ),

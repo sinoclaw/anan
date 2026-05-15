@@ -310,7 +310,7 @@ def test_classic_mode_does_not_double_read_same_file(tmp_path, monkeypatch):
     from anan_cli.auth import read_credential_pool, _global_auth_file_path
 
     # Classic mode: ANAN_HOME is set to a custom path that is NOT under
-    # ~/.anan/profiles/ — get_default_sinoclaw_root() returns ANAN_HOME
+    # ~/.anan/profiles/ — get_default_anan_root() returns ANAN_HOME
     # itself, so the profile root and global root are the same directory,
     # and the helper correctly returns None (no fallback).
     assert _global_auth_file_path() is None

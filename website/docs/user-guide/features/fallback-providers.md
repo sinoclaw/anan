@@ -141,7 +141,7 @@ model:
 
 fallback_model:
   provider: nous
-  model: nous-sinoclaw-3
+  model: nous-anan-3
 ```
 
 **Local model as fallback for cloud:**

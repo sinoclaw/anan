@@ -259,7 +259,7 @@ class TestExchangeAuthCode:
 
 
 class TestSinoclawConstantsFallback:
-    """Tests for _anan_home.py fallback when sinoclaw_constants is unavailable."""
+    """Tests for _anan_home.py fallback when anan_constants is unavailable."""
 
     HELPER_PATH = (
         Path(__file__).resolve().parents[2]
@@ -267,8 +267,8 @@ class TestSinoclawConstantsFallback:
     )
 
     def _load_helper(self, monkeypatch):
-        """Load _anan_home.py with sinoclaw_constants blocked."""
-        monkeypatch.setitem(sys.modules, "sinoclaw_constants", None)
+        """Load _anan_home.py with anan_constants blocked."""
+        monkeypatch.setitem(sys.modules, "anan_constants", None)
         spec = importlib.util.spec_from_file_location("_anan_home_test", self.HELPER_PATH)
         module = importlib.util.module_from_spec(spec)
         assert spec.loader is not None
@@ -276,13 +276,13 @@ class TestSinoclawConstantsFallback:
         return module
 
     def test_fallback_uses_anan_home_env_var(self, monkeypatch, tmp_path):
-        """When sinoclaw_constants is missing, ANAN_HOME comes from env var."""
+        """When anan_constants is missing, ANAN_HOME comes from env var."""
         monkeypatch.setenv("ANAN_HOME", str(tmp_path / "custom-hermes"))
         module = self._load_helper(monkeypatch)
         assert module.get_anan_home() == tmp_path / "custom-hermes"
 
     def test_fallback_defaults_to_dot_hermes(self, monkeypatch):
-        """When sinoclaw_constants is missing and ANAN_HOME unset, default to ~/.anan."""
+        """When anan_constants is missing and ANAN_HOME unset, default to ~/.anan."""
         monkeypatch.delenv("ANAN_HOME", raising=False)
         module = self._load_helper(monkeypatch)
         assert module.get_anan_home() == Path.home() / ".anan"
@@ -311,14 +311,14 @@ class TestSinoclawConstantsFallback:
         module = self._load_helper(monkeypatch)
         assert module.display_anan_home() == "/opt/anan-custom"
 
-    def test_delegates_to_sinoclaw_constants_when_available(self):
-        """When sinoclaw_constants IS importable, _anan_home delegates to it."""
+    def test_delegates_to_anan_constants_when_available(self):
+        """When anan_constants IS importable, _anan_home delegates to it."""
         spec = importlib.util.spec_from_file_location(
             "_anan_home_happy", self.HELPER_PATH
         )
         module = importlib.util.module_from_spec(spec)
         assert spec.loader is not None
         spec.loader.exec_module(module)
-        import sinoclaw_constants
-        assert module.get_anan_home is sinoclaw_constants.get_anan_home
-        assert module.display_anan_home is sinoclaw_constants.display_anan_home
+        import anan_constants
+        assert module.get_anan_home is anan_constants.get_anan_home
+        assert module.display_anan_home is anan_constants.display_anan_home

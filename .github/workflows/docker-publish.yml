@@ -17,7 +17,7 @@ on:
     paths:
       - 'docker/**'
       - '.github/workflows/docker-publish.yml'
-      - '.github/actions/sinoclaw-smoke-test/**'
+      - '.github/actions/anan-smoke-test/**'
       - 'ui-tui/package.json'
       - 'ui-tui/package-lock.json'
   pull_request:
@@ -29,7 +29,7 @@ on:
       - 'Dockerfile'
       - 'docker/**'
       - '.github/workflows/docker-publish.yml'
-      - '.github/actions/sinoclaw-smoke-test/**'
+      - '.github/actions/anan-smoke-test/**'
       - 'ui-tui/package.json'
       - 'ui-tui/package-lock.json'
   release:
@@ -86,7 +86,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=docker-amd64
 
       - name: Smoke test image
-        uses: ./.github/actions/sinoclaw-smoke-test
+        uses: ./.github/actions/anan-smoke-test
         with:
           image: ${{ env.IMAGE_NAME }}:test
 
@@ -174,7 +174,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=docker-arm64
 
       - name: Smoke test image
-        uses: ./.github/actions/sinoclaw-smoke-test
+        uses: ./.github/actions/anan-smoke-test
         with:
           image: ${{ env.IMAGE_NAME }}:test
 

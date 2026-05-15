@@ -28,7 +28,7 @@ def _clear_provider_caches():
     for mod in list(sys.modules.keys()):
         if (
             mod.startswith("plugins.model_providers")
-            or mod.startswith("_sinoclaw_user_provider")
+            or mod.startswith("_anan_user_provider")
         ):
             del sys.modules[mod]
 

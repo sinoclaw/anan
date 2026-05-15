@@ -9,11 +9,11 @@ body:
         Sorry you're having trouble! Please fill out the details below so we can help.
 
         **Quick checks first:**
-        - Run `sinoclaw debug share` and paste the links in the Debug Report section below
+        - Run `anan debug share` and paste the links in the Debug Report section below
         - If you're in a chat session, you can use `/debug` instead — it does the same thing
         - Try `anan update` to get the latest version
-        - Check the [README troubleshooting section](https://github.com/sinoclaw/anan#troubleshooting)
-        - For general questions, consider the [Sinoclaw Community](https://github.com/sinoclaw/anan) for faster help
+        - Check the [README troubleshooting section](https://github.com/anan/anan#troubleshooting)
+        - For general questions, consider the [Sinoclaw Community](https://github.com/anan/anan) for faster help
 
   - type: textarea
     id: description
@@ -21,7 +21,7 @@ body:
       label: What's Going Wrong?
       description: Describe what you're trying to do and where it fails.
       placeholder: |
-        I ran `sinoclaw setup` and selected Nous Portal, but when I try to
+        I ran `anan setup` and selected Nous Portal, but when I try to
         start the gateway I get...
     validations:
       required: true
@@ -33,9 +33,9 @@ body:
       description: What did you do? Include the exact commands you ran.
       placeholder: |
         1. Ran the install script: `curl -fsSL ... | bash`
-        2. Ran `sinoclaw setup` and chose "Quick setup"
+        2. Ran `anan setup` and chose "Quick setup"
         3. Selected OpenRouter, entered API key
-        4. Ran `sinoclaw chat` and got error...
+        4. Ran `anan chat` and got error...
     validations:
       required: true
 
@@ -68,10 +68,10 @@ body:
       placeholder: "3.11.9"
 
   - type: input
-    id: sinoclaw-version
+    id: anan-version
     attributes:
       label: Hermes Version
-      description: Output of `sinoclaw version` (if install got that far)
+      description: Output of `anan version` (if install got that far)
       placeholder: "2.1.0"
 
   - type: textarea
@@ -79,13 +79,13 @@ body:
     attributes:
       label: Debug Report
       description: |
-        Run `sinoclaw debug share` from your terminal and paste the links it prints here.
+        Run `anan debug share` from your terminal and paste the links it prints here.
         This uploads your system info, config, and recent logs to a paste service automatically.
 
         If you're in an interactive chat session, you can also use the `/debug` slash command — it does the same thing.
 
-        If the upload fails or install didn't get that far, run `sinoclaw debug share --local` and paste the output directly.
-        If even that doesn't work, run `sinoclaw doctor` and paste that output instead.
+        If the upload fails or install didn't get that far, run `anan debug share --local` and paste the output directly.
+        If even that doesn't work, run `anan doctor` and paste that output instead.
       placeholder: |
         Report   https://paste.rs/abc123
         agent.log   https://paste.rs/def456

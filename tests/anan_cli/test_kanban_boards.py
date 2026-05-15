@@ -53,10 +53,10 @@ def fresh_home(tmp_path, monkeypatch):
         "SINOCLAW_KANBAN_BOARD",
     ):
         monkeypatch.delenv(var, raising=False)
-    # Also reset sinoclaw_constants cache so get_default_sinoclaw_root() re-reads.
+    # Also reset anan_constants cache so get_default_anan_root() re-reads.
     try:
-        import sinoclaw_constants
-        sinoclaw_constants._cached_default_sinoclaw_root = None  # type: ignore[attr-defined]
+        import anan_constants
+        anan_constants._cached_default_anan_root = None  # type: ignore[attr-defined]
     except Exception:
         pass
     # Kanban module-level init cache must not leak between tests.

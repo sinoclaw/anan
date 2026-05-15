@@ -205,18 +205,18 @@ class TestMacosOsascript:
 
 class TestIsWsl:
     def setup_method(self):
-        # _is_wsl is sinoclaw_constants.is_wsl; reset the function's own module
-        # globals so this stays stable even if sinoclaw_constants was imported
+        # _is_wsl is anan_constants.is_wsl; reset the function's own module
+        # globals so this stays stable even if anan_constants was imported
         # through a different module object earlier in a large xdist run.
-        import sinoclaw_constants
-        sinoclaw_constants._wsl_detected = None
+        import anan_constants
+        anan_constants._wsl_detected = None
         _is_wsl.__globals__["_wsl_detected"] = None
 
     def teardown_method(self):
         # Reset again after the test so we don't leak a cached value
         # (True/False) into whichever test the xdist worker runs next.
-        import sinoclaw_constants
-        sinoclaw_constants._wsl_detected = None
+        import anan_constants
+        anan_constants._wsl_detected = None
         _is_wsl.__globals__["_wsl_detected"] = None
 
     def test_wsl2_detected(self):
@@ -232,7 +232,7 @@ class TestIsWsl:
     def test_regular_linux(self):
         # GHA hosted runners are Azure VMs whose real /proc/version often
         # contains "microsoft". Patching builtins.open with mock_open is
-        # supposed to intercept sinoclaw_constants.is_wsl's `open` call,
+        # supposed to intercept anan_constants.is_wsl's `open` call,
         # but if another test on the same xdist worker already cached
         # _wsl_detected=True, the mock never runs because the function
         # short-circuits on the cache. setup_method resets, so we just

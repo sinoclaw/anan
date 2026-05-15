@@ -226,8 +226,8 @@ def test_setup_gateway_in_container_shows_docker_guidance(monkeypatch, capsys):
     monkeypatch.setattr(gateway_mod, "_is_service_running", lambda: False)
 
     # Patch is_container at the import location in setup.py
-    import sinoclaw_constants
-    monkeypatch.setattr(sinoclaw_constants, "is_container", lambda: True)
+    import anan_constants
+    monkeypatch.setattr(anan_constants, "is_container", lambda: True)
 
     setup_mod.setup_gateway({})
 
@@ -578,7 +578,7 @@ def test_offer_launch_chat_relaunches_via_bin(monkeypatch):
     from anan_cli import relaunch as relaunch_mod
 
     monkeypatch.setattr(setup_mod, "prompt_yes_no", lambda *_args, **_kwargs: True)
-    monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/local/bin/anan")
+    monkeypatch.setattr(relaunch_mod, "resolve_anan_bin", lambda: "/usr/local/bin/anan")
 
     exec_calls = []
 
@@ -599,7 +599,7 @@ def test_offer_launch_chat_falls_back_to_module(monkeypatch):
     from anan_cli import relaunch as relaunch_mod
 
     monkeypatch.setattr(setup_mod, "prompt_yes_no", lambda *_args, **_kwargs: True)
-    monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: None)
+    monkeypatch.setattr(relaunch_mod, "resolve_anan_bin", lambda: None)
 
     exec_calls = []
 

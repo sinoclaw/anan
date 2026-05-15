@@ -64,7 +64,7 @@ def main():
         ("x-exa-integration\", \"anan", "x-exa-integration\", \"anan"),
         ("x-exa-integration', 'anan", "x-exa-integration', 'anan"),
         # Model names that should stay as-is
-        ("nous-sinoclaw-3", "nous-sinoclaw-3"),  # no change
+        ("nous-anan-3", "nous-anan-3"),  # no change
     ]
 
     count = 0

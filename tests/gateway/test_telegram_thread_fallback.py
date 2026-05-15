@@ -412,7 +412,7 @@ async def test_gateway_runner_busy_ack_replies_to_triggering_message_for_telegra
 
 
 @pytest.mark.asyncio
-async def test_send_uses_reply_fallback_for_sinoclaw_dm_topics():
+async def test_send_uses_reply_fallback_for_anan_dm_topics():
     """anan-created Telegram DM topics route with thread id plus reply anchor."""
     adapter = _make_adapter()
     call_log = []

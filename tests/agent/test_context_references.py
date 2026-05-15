@@ -309,15 +309,15 @@ def test_defaults_allowed_root_to_cwd(tmp_path: Path):
 
 
 @pytest.mark.asyncio
-async def test_blocks_sensitive_home_and_sinoclaw_paths(tmp_path: Path, monkeypatch):
+async def test_blocks_sensitive_home_and_anan_paths(tmp_path: Path, monkeypatch):
     from agent.context_references import preprocess_context_references_async
 
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("ANAN_HOME", str(tmp_path / ".anan"))
 
-    sinoclaw_env = tmp_path / ".anan" / ".env"
-    sinoclaw_env.parent.mkdir(parents=True)
-    sinoclaw_env.write_text("API_KEY=super-secret\n", encoding="utf-8")
+    anan_env = tmp_path / ".anan" / ".env"
+    anan_env.parent.mkdir(parents=True)
+    anan_env.write_text("API_KEY=super-secret\n", encoding="utf-8")
 
     ssh_key = tmp_path / ".ssh" / "id_rsa"
     ssh_key.parent.mkdir(parents=True)

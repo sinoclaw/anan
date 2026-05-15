@@ -58,7 +58,7 @@ class TestResolveVerifyFallback:
         result = _resolve_verify(auth_state={"tls": {}})
         assert result is True
 
-    def test_missing_sinoclaw_ca_bundle_env_falls_back(self, monkeypatch):
+    def test_missing_anan_ca_bundle_env_falls_back(self, monkeypatch):
         from anan_cli.auth import _resolve_verify
 
         monkeypatch.setenv("SINOCLAW_CA_BUNDLE", "/nonexistent/anan-ca.pem")

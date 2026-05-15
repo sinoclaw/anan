@@ -22,12 +22,12 @@ def server():
     with patch.dict(
         "sys.modules",
         {
-            "sinoclaw_constants": MagicMock(
-                get_anan_home=MagicMock(return_value="/tmp/sinoclaw_test_review_summary")
+            "anan_constants": MagicMock(
+                get_anan_home=MagicMock(return_value="/tmp/anan_test_review_summary")
             ),
             "anan_cli.env_loader": MagicMock(),
             "anan_cli.banner": MagicMock(),
-            "sinoclaw_state": MagicMock(),
+            "anan_state": MagicMock(),
         },
     ):
         import importlib

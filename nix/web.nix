@@ -7,13 +7,13 @@ let
     hash = "sha256-HWB1piIPglTXbzQHXFYHLgVZIbDb60esupXSQGa1+lI=";
   };
 
-  npm = hermesNpmLib.mkNpmPassthru { folder = "web"; attr = "web"; pname = "sinoclaw-web"; };
+  npm = hermesNpmLib.mkNpmPassthru { folder = "web"; attr = "web"; pname = "anan-web"; };
 
   packageJson = builtins.fromJSON (builtins.readFile (src + "/package.json"));
   version = packageJson.version;
 in
 pkgs.buildNpmPackage (npm // {
-  pname = "sinoclaw-web";
+  pname = "anan-web";
   inherit src npmDeps version;
 
   doCheck = false;

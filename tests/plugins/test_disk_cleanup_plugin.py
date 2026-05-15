@@ -52,20 +52,20 @@ def _load_plugin_init():
     plugin_dir = repo_root / "plugins" / "disk-cleanup"
     # Use the PluginManager's module naming convention so relative imports work.
     spec = importlib.util.spec_from_file_location(
-        "sinoclaw_plugins.disk_cleanup",
+        "anan_plugins.disk_cleanup",
         plugin_dir / "__init__.py",
         submodule_search_locations=[str(plugin_dir)],
     )
     # Ensure parent namespace package exists for the relative `. import disk_cleanup`
     import types
-    if "sinoclaw_plugins" not in sys.modules:
-        ns = types.ModuleType("sinoclaw_plugins")
+    if "anan_plugins" not in sys.modules:
+        ns = types.ModuleType("anan_plugins")
         ns.__path__ = []
-        sys.modules["sinoclaw_plugins"] = ns
+        sys.modules["anan_plugins"] = ns
     mod = importlib.util.module_from_spec(spec)
-    mod.__package__ = "sinoclaw_plugins.disk_cleanup"
+    mod.__package__ = "anan_plugins.disk_cleanup"
     mod.__path__ = [str(plugin_dir)]
-    sys.modules["sinoclaw_plugins.disk_cleanup"] = mod
+    sys.modules["anan_plugins.disk_cleanup"] = mod
     spec.loader.exec_module(mod)
     return mod
 
@@ -86,7 +86,7 @@ class TestIsSafePath:
         dg = _load_lib()
         assert dg.is_safe_path(Path("/etc/passwd")) is False
 
-    def test_accepts_tmp_sinoclaw_prefix(self, _isolate_env, tmp_path):
+    def test_accepts_tmp_anan_prefix(self, _isolate_env, tmp_path):
         dg = _load_lib()
         assert dg.is_safe_path(Path("/tmp/anan-abc/x.log")) is True
 

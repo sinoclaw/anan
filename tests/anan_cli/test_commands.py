@@ -287,7 +287,7 @@ class TestSlackNativeSlashes:
             assert isinstance(desc, str)
             assert isinstance(hint, str)
 
-    def test_sinoclaw_catchall_is_first(self):
+    def test_anan_catchall_is_first(self):
         """``/hermes`` must be reserved as the first slot so the legacy
         ``/hermes <subcommand>`` form keeps working after we add new
         commands and hit the 50-slash cap."""

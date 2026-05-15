@@ -290,7 +290,7 @@ class TestGmiAuxiliary:
         headers = mock_openai.call_args.kwargs.get("default_headers", {})
         assert headers.get("User-Agent", "").startswith("SinoclawAgent/")
 
-    def test_gmi_profile_declares_sinoclaw_user_agent(self):
+    def test_gmi_profile_declares_anan_user_agent(self):
         """The GMI plugin sets a SinoclawAgent/<ver> User-Agent on its profile."""
         from providers import get_provider_profile
 

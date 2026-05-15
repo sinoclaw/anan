@@ -72,7 +72,7 @@ def test_manager_remove_evicts_cache(tmp_path, monkeypatch):
     assert p1 is not p2
 
 
-def test_sinoclaw_provider_subclass_exists():
+def test_anan_provider_subclass_exists():
     """SinoclawMCPOAuthProvider is defined and subclasses OAuthClientProvider."""
     from tools.mcp_oauth_manager import _SINOCLAW_PROVIDER_CLS
     from mcp.client.auth.oauth2 import OAuthClientProvider
@@ -124,7 +124,7 @@ async def test_disk_watch_invalidates_on_mtime_change(tmp_path, monkeypatch):
     assert provider._initialized is False
 
 
-def test_manager_builds_sinoclaw_provider_subclass(tmp_path, monkeypatch):
+def test_manager_builds_anan_provider_subclass(tmp_path, monkeypatch):
     """get_or_build_provider returns SinoclawMCPOAuthProvider, not plain OAuthClientProvider."""
     from tools.mcp_oauth_manager import (
         MCPOAuthManager, _SINOCLAW_PROVIDER_CLS, reset_manager_for_tests,
@@ -137,5 +137,5 @@ def test_manager_builds_sinoclaw_provider_subclass(tmp_path, monkeypatch):
 
     assert _SINOCLAW_PROVIDER_CLS is not None
     assert isinstance(provider, _SINOCLAW_PROVIDER_CLS)
-    assert provider._sinoclaw_server_name == "srv"
+    assert provider._anan_server_name == "srv"
 

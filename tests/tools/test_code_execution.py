@@ -119,8 +119,8 @@ class TestSinoclawToolsGeneration(unittest.TestCase):
     def test_file_transport_uses_tempfile_fallback_for_rpc_dir(self):
         src = generate_anan_tools_module(["terminal"], transport="file")
         self.assertIn("import json, os, shlex, tempfile, threading, time", src)
-        self.assertIn("os.path.join(tempfile.gettempdir(), \"sinoclaw_rpc\")", src)
-        self.assertNotIn('os.environ.get("SINOCLAW_RPC_DIR", "/tmp/sinoclaw_rpc")', src)
+        self.assertIn("os.path.join(tempfile.gettempdir(), \"anan_rpc\")", src)
+        self.assertNotIn('os.environ.get("SINOCLAW_RPC_DIR", "/tmp/anan_rpc")', src)
 
     def test_uds_transport_serializes_concurrent_calls(self):
         """Regression: UDS _call() must hold a lock across send+recv so that
@@ -169,10 +169,10 @@ class TestExecuteCodeRemoteTempDir(unittest.TestCase):
         mkdir_cmd = env.commands[1][0]
         run_cmd = next(cmd for cmd, _, _ in env.commands if "python3 script.py" in cmd)
         cleanup_cmd = env.commands[-1][0]
-        self.assertIn("mkdir -p /data/data/com.termux/files/usr/tmp/sinoclaw_exec_", mkdir_cmd)
-        self.assertIn("SINOCLAW_RPC_DIR=/data/data/com.termux/files/usr/tmp/sinoclaw_exec_", run_cmd)
-        self.assertIn("rm -rf /data/data/com.termux/files/usr/tmp/sinoclaw_exec_", cleanup_cmd)
-        self.assertNotIn("mkdir -p /tmp/sinoclaw_exec_", mkdir_cmd)
+        self.assertIn("mkdir -p /data/data/com.termux/files/usr/tmp/anan_exec_", mkdir_cmd)
+        self.assertIn("SINOCLAW_RPC_DIR=/data/data/com.termux/files/usr/tmp/anan_exec_", run_cmd)
+        self.assertIn("rm -rf /data/data/com.termux/files/usr/tmp/anan_exec_", cleanup_cmd)
+        self.assertNotIn("mkdir -p /tmp/anan_exec_", mkdir_cmd)
 
 
 @unittest.skipIf(sys.platform == "win32", "UDS not available on Windows")
@@ -202,9 +202,9 @@ class TestExecuteCode(unittest.TestCase):
 
     def test_repo_root_modules_are_importable(self):
         """Sandboxed scripts can import modules that live at the repo root."""
-        result = self._run('import sinoclaw_constants; print(sinoclaw_constants.__file__)')
+        result = self._run('import anan_constants; print(anan_constants.__file__)')
         self.assertEqual(result["status"], "success")
-        self.assertIn("sinoclaw_constants.py", result["output"])
+        self.assertIn("anan_constants.py", result["output"])
 
     def test_single_tool_call(self):
         """Script calls terminal and prints the result."""
@@ -737,7 +737,7 @@ class TestEnvVarFiltering(unittest.TestCase):
         child_env = self._get_child_env()
         self.assertIn("HOME", child_env)
 
-    def test_sinoclaw_rpc_socket_injected(self):
+    def test_anan_rpc_socket_injected(self):
         child_env = self._get_child_env()
         self.assertIn("SINOCLAW_RPC_SOCKET", child_env)
 

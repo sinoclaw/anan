@@ -68,8 +68,8 @@ def curator_status_env(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
     import importlib
-    import sinoclaw_constants
-    importlib.reload(sinoclaw_constants)
+    import anan_constants
+    importlib.reload(anan_constants)
     from tools import skill_usage
     importlib.reload(skill_usage)
     from agent import curator

@@ -26,7 +26,7 @@ def test_format_managed_message_homebrew(monkeypatch):
     assert "brew upgrade anan" in message
 
 
-def test_recommended_update_command_defaults_to_sinoclaw_update(monkeypatch):
+def test_recommended_update_command_defaults_to_anan_update(monkeypatch):
     monkeypatch.delenv("SINOCLAW_MANAGED", raising=False)
 
 assert recommended_update_command() == "anan update"

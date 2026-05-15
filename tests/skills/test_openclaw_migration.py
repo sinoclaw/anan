@@ -12,12 +12,12 @@ SCRIPT_PATH = (
     / "migration"
     / "openclaw-migration"
     / "scripts"
-    / "openclaw_to_sinoclaw.py"
+    / "openclaw_to_anan.py"
 )
 
 
 def load_module():
-    spec = importlib.util.spec_from_file_location("openclaw_to_sinoclaw", SCRIPT_PATH)
+    spec = importlib.util.spec_from_file_location("openclaw_to_anan", SCRIPT_PATH)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     sys.modules[spec.name] = module

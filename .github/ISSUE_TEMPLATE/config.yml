@@ -1,11 +1,11 @@
 blank_issues_enabled: true
 contact_links:
   - name: 💬 Sinoclaw Community
-    url: https://github.com/sinoclaw/anan
+    url: https://github.com/anan/anan
     about: For quick questions, showcasing projects, sharing skills, and community chat.
   - name: 📖 Documentation
-    url: https://github.com/sinoclaw/anan/blob/main/README.md
+    url: https://github.com/anan/anan/blob/main/README.md
     about: Check the README and docs before opening an issue.
   - name: 🤝 Contributing Guide
-    url: https://github.com/sinoclaw/anan/blob/main/CONTRIBUTING.md
+    url: https://github.com/anan/anan/blob/main/CONTRIBUTING.md
     about: Read this before submitting a PR.

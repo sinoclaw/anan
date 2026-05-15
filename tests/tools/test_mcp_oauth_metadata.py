@@ -103,7 +103,7 @@ def _manager_provider_with_context(storage: SinoclawTokenStorage, **context_attr
     if _SINOCLAW_PROVIDER_CLS is None:
         pytest.skip("MCP SDK auth not available")
     provider = _SINOCLAW_PROVIDER_CLS.__new__(_SINOCLAW_PROVIDER_CLS)
-    provider._sinoclaw_server_name = context_attrs.get("server_name", "srv")
+    provider._anan_server_name = context_attrs.get("server_name", "srv")
     context = MagicMock()
     context.storage = storage
     context.oauth_metadata = context_attrs.get("oauth_metadata")

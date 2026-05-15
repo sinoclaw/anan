@@ -354,9 +354,9 @@ class TestPostSetup:
         provider.post_setup(str(anan_home), {"memory": {}})
 
         coder_env = user_home / ".hindsight" / "profiles" / "coder.env"
-        sinoclaw_env = user_home / ".hindsight" / "profiles" / "hermes.env"
+        anan_env = user_home / ".hindsight" / "profiles" / "hermes.env"
         assert coder_env.exists()
-        assert not sinoclaw_env.exists()
+        assert not anan_env.exists()
 
     def test_local_embedded_setup_preserves_existing_key_when_input_left_blank(self, tmp_path, monkeypatch):
         anan_home = tmp_path / "anan-home"

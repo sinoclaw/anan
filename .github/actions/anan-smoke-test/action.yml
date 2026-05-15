@@ -1,4 +1,4 @@
-name: Sinoclaw smoke test
+name: Anan smoke test
 description: >
   Run the image's built-in entrypoint against `--help` and `dashboard --help`
   to catch basic runtime regressions before publishing.  Requires the image
@@ -14,10 +14,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Ensure /tmp/anan-test is sinoclaw-writable
+    - name: Ensure /tmp/anan-test is anan-writable
       shell: bash
       run: |
-        # The image runs as the sinoclaw user (UID 10000).  GitHub Actions
+        # The image runs as the anan user (UID 10000).  GitHub Actions
         # creates /tmp/anan-test root-owned by default, which sinoclaw
         # can't write to — chown it to match the in-container UID before
         # bind-mounting.  Real users doing `docker run -v ~/.sinoclaw:...`
@@ -26,7 +26,7 @@ runs:
         mkdir -p /tmp/anan-test
         sudo chown -R 10000:10000 /tmp/anan-test
 
-    - name: sinoclaw --help
+    - name: anan --help
       shell: bash
       run: |
         docker run --rm \

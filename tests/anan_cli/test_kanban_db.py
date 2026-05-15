@@ -656,7 +656,7 @@ class TestSharedBoardPaths:
         self, tmp_path, monkeypatch
     ):
         # Docker / custom deployment: ANAN_HOME points outside ~/.anan.
-        # `get_default_sinoclaw_root()` returns env_home directly when it
+        # `get_default_anan_root()` returns env_home directly when it
         # is not a `<root>/profiles/<name>` shape and not under
         # `Path.home() / ".anan"`.
         custom_root = tmp_path / "opt" / "hermes"
@@ -670,7 +670,7 @@ class TestSharedBoardPaths:
         self, tmp_path, monkeypatch
     ):
         # Docker profile shape: ANAN_HOME=/opt/hermes/profiles/coder;
-        # `get_default_sinoclaw_root()` walks up to /opt/hermes because
+        # `get_default_anan_root()` walks up to /opt/hermes because
         # the immediate parent dir is named "profiles".
         custom_root = tmp_path / "opt" / "hermes"
         profile = custom_root / "profiles" / "coder"
@@ -680,7 +680,7 @@ class TestSharedBoardPaths:
         assert kb.kanban_home() == custom_root
         assert kb.kanban_db_path() == custom_root / "kanban.db"
 
-    def test_explicit_override_via_sinoclaw_kanban_home(
+    def test_explicit_override_via_anan_kanban_home(
         self, tmp_path, monkeypatch
     ):
         # Explicit override: SINOCLAW_KANBAN_HOME beats every other
@@ -733,11 +733,11 @@ class TestSharedBoardPaths:
         assert task is not None
         assert task.title == "cross-profile"
 
-    def test_sinoclaw_kanban_db_pin_beats_kanban_home(
+    def test_anan_kanban_db_pin_beats_kanban_home(
         self, tmp_path, monkeypatch
     ):
         # SINOCLAW_KANBAN_DB pins the file path directly and beats both
-        # SINOCLAW_KANBAN_HOME and the `get_default_sinoclaw_root()` path.
+        # SINOCLAW_KANBAN_HOME and the `get_default_anan_root()` path.
         # This is the env the dispatcher injects into workers.
         default_home = tmp_path / ".anan"
         default_home.mkdir()
@@ -756,7 +756,7 @@ class TestSharedBoardPaths:
         # are independent.
         assert kb.workspaces_root() == umbrella / "kanban" / "workspaces"
 
-    def test_sinoclaw_kanban_workspaces_root_pin_beats_kanban_home(
+    def test_anan_kanban_workspaces_root_pin_beats_kanban_home(
         self, tmp_path, monkeypatch
     ):
         # SINOCLAW_KANBAN_WORKSPACES_ROOT pins the workspaces root directly.
@@ -918,7 +918,7 @@ def test_latest_summaries_batch_omits_tasks_without_summary(kanban_home):
 
 
 # ---------------------------------------------------------------------------
-# NFS / network-filesystem fallback (see sinoclaw_state.apply_wal_with_fallback)
+# NFS / network-filesystem fallback (see anan_state.apply_wal_with_fallback)
 # ---------------------------------------------------------------------------
 
 def test_connect_falls_back_to_delete_on_locking_protocol(kanban_home, caplog):
@@ -949,7 +949,7 @@ def test_connect_falls_back_to_delete_on_locking_protocol(kanban_home, caplog):
         )
 
     with _patch("anan_cli.kanban_db.sqlite3.connect", side_effect=wal_blocking_connect):
-        with caplog.at_level("WARNING", logger="sinoclaw_state"):
+        with caplog.at_level("WARNING", logger="anan_state"):
             conn = kb.connect()
 
     # One fallback warning, naming kanban.db

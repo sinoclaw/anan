@@ -9,11 +9,11 @@ from unittest.mock import patch, MagicMock, mock_open
 import pytest
 
 import anan_cli.gateway as gateway
-import sinoclaw_constants
+import anan_constants
 
 
 # =============================================================================
-# is_wsl() in sinoclaw_constants
+# is_wsl() in anan_constants
 # =============================================================================
 
 class TestIsWsl:
@@ -21,7 +21,7 @@ class TestIsWsl:
 
     def setup_method(self):
         # Reset cached value between tests
-        sinoclaw_constants._wsl_detected = None
+        anan_constants._wsl_detected = None
 
     def test_detects_wsl2(self):
         fake_content = (
@@ -29,7 +29,7 @@ class TestIsWsl:
             "(gcc (GCC) 11.2.0) #1 SMP Thu Jan 11 04:09:03 UTC 2024\n"
         )
         with patch("builtins.open", mock_open(read_data=fake_content)):
-            assert sinoclaw_constants.is_wsl() is True
+            assert anan_constants.is_wsl() is True
 
     def test_detects_wsl1(self):
         fake_content = (
@@ -37,7 +37,7 @@ class TestIsWsl:
             "(Microsoft@Microsoft.com) (gcc version 5.4.0) #1\n"
         )
         with patch("builtins.open", mock_open(read_data=fake_content)):
-            assert sinoclaw_constants.is_wsl() is True
+            assert anan_constants.is_wsl() is True
 
     def test_native_linux(self):
         fake_content = (
@@ -45,18 +45,18 @@ class TestIsWsl:
             "(x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0) #44\n"
         )
         with patch("builtins.open", mock_open(read_data=fake_content)):
-            assert sinoclaw_constants.is_wsl() is False
+            assert anan_constants.is_wsl() is False
 
     def test_no_proc_version(self):
         with patch("builtins.open", side_effect=FileNotFoundError):
-            assert sinoclaw_constants.is_wsl() is False
+            assert anan_constants.is_wsl() is False
 
     def test_result_is_cached(self):
         """After first detection, subsequent calls return the cached value."""
-        sinoclaw_constants._wsl_detected = True
+        anan_constants._wsl_detected = True
         # Even with open raising, cached value is returned
         with patch("builtins.open", side_effect=FileNotFoundError):
-            assert sinoclaw_constants.is_wsl() is True
+            assert anan_constants.is_wsl() is True
 
 
 # =============================================================================

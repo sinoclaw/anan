@@ -19,7 +19,7 @@ from anan_cli.model_switch import list_authenticated_providers
 # -- Copilot slug resolution (env var path) ----------------------------------
 
 @patch.dict(os.environ, {"COPILOT_GITHUB_TOKEN": "fake-ghu"}, clear=False)
-def test_copilot_uses_sinoclaw_slug():
+def test_copilot_uses_anan_slug():
     """github-copilot overlay should resolve to slug='copilot' with curated models."""
     providers = list_authenticated_providers(current_provider="copilot")
 
@@ -57,7 +57,7 @@ def test_kimi_for_coding_alias():
 # -- Generic slug mismatch providers -----------------------------------------
 
 @patch.dict(os.environ, {"KIMI_API_KEY": "fake-key"}, clear=False)
-def test_kimi_for_coding_overlay_uses_sinoclaw_slug():
+def test_kimi_for_coding_overlay_uses_anan_slug():
     """kimi-for-coding overlay should resolve to slug='kimi-coding'."""
     providers = list_authenticated_providers(current_provider="kimi-coding")
 
@@ -71,7 +71,7 @@ def test_kimi_for_coding_overlay_uses_sinoclaw_slug():
 
 
 @patch.dict(os.environ, {"KILOCODE_API_KEY": "fake-key"}, clear=False)
-def test_kilo_overlay_uses_sinoclaw_slug():
+def test_kilo_overlay_uses_anan_slug():
     """kilo overlay should resolve to slug='kilocode'."""
     providers = list_authenticated_providers(current_provider="kilocode")
 

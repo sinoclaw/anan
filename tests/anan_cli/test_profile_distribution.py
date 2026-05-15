@@ -25,7 +25,7 @@ from anan_cli.profile_distribution import (
     _env_template_from_manifest,
     _looks_like_git_url,
     _parse_semver,
-    check_sinoclaw_requires,
+    check_anan_requires,
     describe_distribution,
     install_distribution,
     plan_install,
@@ -94,7 +94,7 @@ class TestManifestParsing:
             "name: telem\n"
             "version: 1.2.3\n"
             "description: Telem monitor\n"
-            "sinoclaw_requires: '>=0.12.0'\n"
+            "anan_requires: '>=0.12.0'\n"
             "author: Kyle\n"
             "license: MIT\n"
             "env_requires:\n"
@@ -179,10 +179,10 @@ class TestVersionRequires:
     ])
     def test_check_matrix(self, spec, cur, ok):
         if ok:
-            check_sinoclaw_requires(spec, cur)
+            check_anan_requires(spec, cur)
         else:
             with pytest.raises(DistributionError, match="requires anan"):
-                check_sinoclaw_requires(spec, cur)
+                check_anan_requires(spec, cur)
 
     def test_parse_semver_handles_prerelease(self):
         assert _parse_semver("0.12.0-rc1") == (0, 12, 0)
@@ -328,7 +328,7 @@ class TestInstall:
         assert example.is_file()
         assert "OPENAI_API_KEY" in example.read_text()
 
-    def test_install_enforces_sinoclaw_requires(self, profile_env, monkeypatch):
+    def test_install_enforces_anan_requires(self, profile_env, monkeypatch):
         # Pin current anan version to something well below the requirement
         import anan_cli
         monkeypatch.setattr(anan_cli, "__version__", "0.1.0", raising=False)
@@ -336,7 +336,7 @@ class TestInstall:
         mf = DistributionManifest(
             name="future",
             version="1.0.0",
-            sinoclaw_requires=">=99.0.0",
+            anan_requires=">=99.0.0",
         )
         staged = _make_staging_dir(profile_env, "future", manifest=mf)
         with pytest.raises(DistributionError, match="requires anan"):

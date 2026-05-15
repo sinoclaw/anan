@@ -70,7 +70,7 @@ def test_auth_add_anthropic_oauth_persists_pool_entry(tmp_path, monkeypatch):
     _write_auth_store(tmp_path, {"version": 1, "providers": {}})
     token = _jwt_with_email("claude@example.com")
     monkeypatch.setattr(
-        "agent.anthropic_adapter.run_sinoclaw_oauth_login_pure",
+        "agent.anthropic_adapter.run_anan_oauth_login_pure",
         lambda: {
             "access_token": token,
             "refresh_token": "refresh-token",
@@ -90,9 +90,9 @@ def test_auth_add_anthropic_oauth_persists_pool_entry(tmp_path, monkeypatch):
 
     payload = json.loads((tmp_path / "hermes" / "auth.json").read_text())
     entries = payload["credential_pool"]["anthropic"]
-    entry = next(item for item in entries if item["source"] == "manual:sinoclaw_pkce")
+    entry = next(item for item in entries if item["source"] == "manual:anan_pkce")
     assert entry["label"] == "claude@example.com"
-    assert entry["source"] == "manual:sinoclaw_pkce"
+    assert entry["source"] == "manual:anan_pkce"
     assert entry["refresh_token"] == "refresh-token"
     assert entry["expires_at_ms"] == 1711234567000
 
@@ -477,7 +477,7 @@ def test_clear_provider_auth_removes_provider_pool_entries(tmp_path, monkeypatch
                         "label": "primary",
                         "auth_type": "oauth",
                         "priority": 0,
-                        "source": "manual:sinoclaw_pkce",
+                        "source": "manual:anan_pkce",
                         "access_token": "pool-token",
                     }
                 ],
@@ -1419,8 +1419,8 @@ def test_seed_from_singletons_respects_qwen_suppression(tmp_path, monkeypatch):
     assert active == set()
 
 
-def test_seed_from_singletons_respects_sinoclaw_pkce_suppression(tmp_path, monkeypatch):
-    """anthropic sinoclaw_pkce must not re-seed from ~/.anan/.anthropic_oauth.json when suppressed."""
+def test_seed_from_singletons_respects_anan_pkce_suppression(tmp_path, monkeypatch):
+    """anthropic anan_pkce must not re-seed from ~/.anan/.anthropic_oauth.json when suppressed."""
     anan_home = tmp_path / "hermes"
     anan_home.mkdir(parents=True, exist_ok=True)
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
@@ -1430,12 +1430,12 @@ def test_seed_from_singletons_respects_sinoclaw_pkce_suppression(tmp_path, monke
     (anan_home / "auth.json").write_text(json.dumps({
         "version": 1,
         "providers": {},
-        "suppressed_sources": {"anthropic": ["sinoclaw_pkce"]},
+        "suppressed_sources": {"anthropic": ["anan_pkce"]},
     }))
 
-    # Stub the readers so only sinoclaw_pkce is "available"; claude_code returns None
+    # Stub the readers so only anan_pkce is "available"; claude_code returns None
     import agent.anthropic_adapter as aa
-    monkeypatch.setattr(aa, "read_sinoclaw_oauth_credentials", lambda: {
+    monkeypatch.setattr(aa, "read_anan_oauth_credentials", lambda: {
         "accessToken": "tok", "refreshToken": "r", "expiresAt": 9999999999000,
     })
     monkeypatch.setattr(aa, "read_claude_code_credentials", lambda: None)
@@ -1443,9 +1443,9 @@ def test_seed_from_singletons_respects_sinoclaw_pkce_suppression(tmp_path, monke
     from agent.credential_pool import _seed_from_singletons
     entries = []
     changed, active = _seed_from_singletons("anthropic", entries)
-    # sinoclaw_pkce suppressed, claude_code returns None → nothing should be seeded
+    # anan_pkce suppressed, claude_code returns None → nothing should be seeded
     assert entries == []
-    assert "sinoclaw_pkce" not in active
+    assert "anan_pkce" not in active
 
 
 def test_seed_custom_pool_respects_config_suppression(tmp_path, monkeypatch):

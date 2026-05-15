@@ -1,4 +1,4 @@
-# nix/nixosModules.nix — NixOS module for sinoclaw-agent
+# nix/nixosModules.nix — NixOS module for anan-agent
 #
 # Two modes:
 #   container.enable = false (default) → native systemd service
@@ -17,7 +17,7 @@
 # writable tool prefixes for npm i -g, pip install, uv tool install, etc.
 #
 # Usage:
-#   services.sinoclaw-agent = {
+#   services.anan-agent = {
 #     enable = true;
 #     settings.model = "anthropic/claude-sonnet-4";
 #     environmentFiles = [ config.sops.secrets."hermes/env".path ];
@@ -27,14 +27,14 @@
   flake.nixosModules.default = { config, lib, pkgs, ... }:
 
   let
-    cfg = config.services.sinoclaw-agent;
+    cfg = config.services.anan-agent;
     effectivePackage = if cfg.extraPythonPackages == [ ] then cfg.package
       else cfg.package.override { inherit (cfg) extraPythonPackages; };
-    sinoclaw-agent = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    anan-agent = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
-    # Deep-merge config type (from 0xrsydn/nix-sinoclaw-agent)
+    # Deep-merge config type (from 0xrsydn/nix-anan-agent)
     deepConfigType = lib.types.mkOptionType {
-      name = "sinoclaw-config-attrs";
+      name = "anan-config-attrs";
       description = "Hermes YAML config (attrset), merged deeply via lib.recursiveUpdate.";
       check = builtins.isAttrs;
       merge = _loc: defs: lib.foldl' lib.recursiveUpdate { } (map (d: d.value) defs);
@@ -42,7 +42,7 @@
 
     # Generate config.yaml from Nix attrset (YAML is a superset of JSON)
     configJson = builtins.toJSON cfg.settings;
-    generatedConfigFile = pkgs.writeText "sinoclaw-config.yaml" configJson;
+    generatedConfigFile = pkgs.writeText "anan-config.yaml" configJson;
     configFile = if cfg.configFile != null then cfg.configFile else generatedConfigFile;
 
     configMergeScript = pkgs.callPackage ./configMergeScript.nix { };
@@ -52,7 +52,7 @@
       lib.mapAttrsToList (k: v: "${k}=${v}") cfg.environment
     );
     # Build documents derivation (from 0xrsydn)
-    documentDerivation = pkgs.runCommand "sinoclaw-documents" { } (
+    documentDerivation = pkgs.runCommand "anan-documents" { } (
       ''
         mkdir -p $out
       '' + lib.concatStringsSep "\n" (
@@ -64,7 +64,7 @@
       )
     );
 
-    containerName = "sinoclaw-agent";
+    containerName = "anan-agent";
     containerDataDir = "/data";     # stateDir mount point inside container
     containerHomeDir = "/home/hermes";
 
@@ -76,7 +76,7 @@
     # Runs as root inside the container on every start. Provisions the
     # hermes user + sudo on first boot (writable layer persists), then
     # drops privileges. Supports arbitrary base images (Debian, Alpine, etc).
-    containerEntrypoint = pkgs.writeShellScript "sinoclaw-container-entrypoint" ''
+    containerEntrypoint = pkgs.writeShellScript "anan-container-entrypoint" ''
       set -eu
 
       SINOCLAW_UID="''${SINOCLAW_UID:?SINOCLAW_UID must be set}"
@@ -125,7 +125,7 @@
       # nodejs/npm: writable node so npm i -g works (nix store copies are read-only)
       #   Node 22 via NodeSource — Ubuntu 24.04 ships Node 18 which is EOL.
       # curl: needed for uv installer + NodeSource setup
-      if [ ! -f /var/lib/sinoclaw-tools-provisioned ] && command -v apt-get >/dev/null 2>&1; then
+      if [ ! -f /var/lib/anan-tools-provisioned ] && command -v apt-get >/dev/null 2>&1; then
         echo "First boot: provisioning agent tools..."
         apt-get update -qq
         apt-get install -y -qq sudo curl ca-certificates gnupg
@@ -136,7 +136,7 @@
           > /etc/apt/sources.list.d/nodesource.list
         apt-get update -qq
         apt-get install -y -qq nodejs
-        touch /var/lib/sinoclaw-tools-provisioned
+        touch /var/lib/anan-tools-provisioned
       fi
 
       if command -v sudo >/dev/null 2>&1 && [ ! -f /etc/sudoers.d/hermes ]; then
@@ -196,14 +196,14 @@
       else cfg.workingDirectory;
 
   in {
-    options.services.sinoclaw-agent = with lib; {
+    options.services.anan-agent = with lib; {
       enable = mkEnableOption "Anan Agent gateway service";
 
       # ── Package ──────────────────────────────────────────────────────────
       package = mkOption {
         type = types.package;
-        default = sinoclaw-agent;
-        description = "The sinoclaw-agent package to use.";
+        default = anan-agent;
+        description = "The anan-agent package to use.";
       };
 
       # ── Service identity ─────────────────────────────────────────────────
@@ -478,8 +478,8 @@
           [
             (pkgs.fetchFromGitHub {
               owner = "stephenschoettler";
-              repo = "sinoclaw-lcm";
-              name = "sinoclaw-lcm";
+              repo = "anan-lcm";
+              name = "anan-lcm";
               rev = "v0.7.0";
               hash = "sha256-...";
             })
@@ -579,7 +579,7 @@
 
       # ── Merge MCP servers into settings ────────────────────────────────
       (lib.mkIf (cfg.mcpServers != { }) {
-        services.sinoclaw-agent.settings.mcp_servers = lib.mapAttrs (_name: srv:
+        services.anan-agent.settings.mcp_servers = lib.mapAttrs (_name: srv:
           # Stdio transport
           lib.optionalAttrs (srv.command != null) { inherit (srv) command args; }
           // lib.optionalAttrs (srv.env != { }) { inherit (srv) env; }
@@ -643,7 +643,7 @@
           names = map lib.getName cfg.extraPlugins;
         in [{
           assertion = (lib.length names) == (lib.length (lib.unique names));
-          message = "services.sinoclaw-agent.extraPlugins: duplicate plugin names detected: ${toString names}. If using fetchFromGitHub, set name = \"plugin-name\" to disambiguate.";
+          message = "services.anan-agent.extraPlugins: duplicate plugin names detected: ${toString names}. If using fetchFromGitHub, set name = \"plugin-name\" to disambiguate.";
         }];
       }
 
@@ -653,7 +653,7 @@
           names = map lib.getName cfg.extraPlugins;
         in [{
           assertion = (lib.length names) == (lib.length (lib.unique names));
-          message = "services.sinoclaw-agent.extraPlugins: duplicate plugin names detected: ${toString names}. If using fetchFromGitHub, set name = \"plugin-name\" to disambiguate.";
+          message = "services.anan-agent.extraPlugins: duplicate plugin names detected: ${toString names}. If using fetchFromGitHub, set name = \"plugin-name\" to disambiguate.";
         }];
       }
 
@@ -672,7 +672,7 @@
       (lib.mkIf (cfg.container.enable && !cfg.addToSystemPackages && cfg.container.hostUsers != []) {
         warnings = [
           ''
-            services.sinoclaw-agent: container.enable is true and container.hostUsers
+            services.anan-agent: container.enable is true and container.hostUsers
             is set, but addToSystemPackages is false. Without a host-installed hermes
             binary, container routing will not work for interactive users.
             Set addToSystemPackages = true or ensure hermes is on PATH.
@@ -697,7 +697,7 @@
 
       # ── Activation: link config + auth + documents ────────────────────
       {
-        system.activationScripts."sinoclaw-agent-setup" = lib.stringAfter ([ "users" ] ++ lib.optional (config.system.activationScripts ? setupSecrets) "setupSecrets") ''
+        system.activationScripts."anan-agent-setup" = lib.stringAfter ([ "users" ] ++ lib.optional (config.system.activationScripts ? setupSecrets) "setupSecrets") ''
           # Ensure directories exist (activation runs before tmpfiles)
           mkdir -p ${cfg.stateDir}/.hermes
           mkdir -p ${cfg.stateDir}/home
@@ -759,7 +759,7 @@
               in ''
                 if [ -L "${symlinkPath}" ] && [ "$(readlink "${symlinkPath}")" = "${cfg.stateDir}/.hermes" ]; then
                   rm -f "${symlinkPath}"
-                  echo "sinoclaw-agent: removed symlink ${symlinkPath}"
+                  echo "anan-agent: removed symlink ${symlinkPath}"
                 fi
               '') cfg.container.hostUsers)}
           ''}
@@ -779,7 +779,7 @@
                   # Real directory — back it up, then create symlink.
                   # (ln -sfn cannot atomically replace a directory.)
                   _backup="${symlinkPath}.bak.$(date +%s)"
-                  echo "sinoclaw-agent: backing up existing ${symlinkPath} to $_backup"
+                  echo "anan-agent: backing up existing ${symlinkPath} to $_backup"
                   mv "${symlinkPath}" "$_backup"
                 fi
                 # For everything else (existing symlink, doesn't exist, etc.)
@@ -843,7 +843,7 @@
       # MODE A: Native systemd service (default)
       # ══════════════════════════════════════════════════════════════════
       (lib.mkIf (!cfg.container.enable) {
-        systemd.services.sinoclaw-agent = {
+        systemd.services.anan-agent = {
           description = "Anan Agent Gateway";
           wantedBy = [ "multi-user.target" ];
           after = [ "network-online.target" ];
@@ -904,7 +904,7 @@
         # Ensure the container runtime is available
         virtualisation.docker.enable = lib.mkDefault (cfg.container.backend == "docker");
 
-        systemd.services.sinoclaw-agent = {
+        systemd.services.anan-agent = {
           description = "Anan Agent Gateway (container)";
           wantedBy = [ "multi-user.target" ];
           after = [ "network-online.target" ]

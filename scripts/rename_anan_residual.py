@@ -12,7 +12,7 @@ ROOT = Path("/data/anan")
 BLACKLIST_RE = re.compile(
     r"anan-[345](?:\.\d+)?|anan_[345]|"
     r"anan-\d+|anan_\d+|"
-    r"anan-brain|sinoclaw-honcho|"
+    r"anan-brain|anan-honcho|"
     r"anan_agent|anan_llm|"
     r"nous-anan|nous_anan",
     re.IGNORECASE

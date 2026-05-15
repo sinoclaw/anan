@@ -22,10 +22,10 @@ def _restore_stdout():
 @pytest.fixture()
 def server():
     with patch.dict("sys.modules", {
-        "sinoclaw_constants": MagicMock(get_anan_home=MagicMock(return_value="/tmp/sinoclaw_test")),
+        "anan_constants": MagicMock(get_anan_home=MagicMock(return_value="/tmp/anan_test")),
         "anan_cli.env_loader": MagicMock(),
         "anan_cli.banner": MagicMock(),
-        "sinoclaw_state": MagicMock(),
+        "anan_state": MagicMock(),
     }):
         import importlib
         mod = importlib.import_module("tui_gateway.server")

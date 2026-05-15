@@ -46,7 +46,7 @@ def scenario(name):
     """
     def wrap(fn):
         def run():
-            home = tempfile.mkdtemp(prefix=f"sinoclaw_atyp_{name}_")
+            home = tempfile.mkdtemp(prefix=f"anan_atyp_{name}_")
             os.environ["ANAN_HOME"] = home
             os.environ["HOME"] = home
             for m in list(sys.modules.keys()):
@@ -559,7 +559,7 @@ def _(home, kb):
 def _(home, kb):
     """ANAN_HOME with non-ASCII chars."""
     # Pre-create directly since tempfile doesn't love unicode prefixes
-    weird = f"/tmp/sinoclaw_héllo_émöji_{os.getpid()}"
+    weird = f"/tmp/anan_héllo_émöji_{os.getpid()}"
     os.makedirs(weird, exist_ok=True)
     os.environ["ANAN_HOME"] = weird
     os.environ["HOME"] = weird
@@ -582,7 +582,7 @@ def _(home, kb):
     """ANAN_HOME is a symlink to the real dir. _INITIALIZED_PATHS
     uses Path.resolve() — two different symlink names pointing at the
     same dir should NOT double-init."""
-    real = tempfile.mkdtemp(prefix="sinoclaw_real_")
+    real = tempfile.mkdtemp(prefix="anan_real_")
     link1 = real + "_link1"
     link2 = real + "_link2"
     os.symlink(real, link1)

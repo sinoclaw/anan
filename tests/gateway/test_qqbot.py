@@ -1630,7 +1630,7 @@ class TestDefaultInteractionDispatch:
         anan_home = tmp_path / "anan_home"
         anan_home.mkdir()
         monkeypatch.setattr(
-            "sinoclaw_constants.get_anan_home",
+            "anan_constants.get_anan_home",
             lambda: anan_home,
         )
 
@@ -1651,7 +1651,7 @@ class TestDefaultInteractionDispatch:
         anan_home = tmp_path / "anan_home"
         anan_home.mkdir()
         monkeypatch.setattr(
-            "sinoclaw_constants.get_anan_home",
+            "anan_constants.get_anan_home",
             lambda: anan_home,
         )
         from gateway.platforms.qqbot.keyboards import parse_interaction_event

@@ -108,11 +108,11 @@ class TestWebServerEndpoints:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        import sinoclaw_state
+        import anan_state
         from anan_constants import get_anan_home
         from anan_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
-        monkeypatch.setattr(sinoclaw_state, "DEFAULT_DB_PATH", get_anan_home() / "state.db")
+        monkeypatch.setattr(anan_state, "DEFAULT_DB_PATH", get_anan_home() / "state.db")
 
         self.client = TestClient(app)
         self.client.headers[_SESSION_HEADER_NAME] = _SESSION_TOKEN
@@ -561,11 +561,11 @@ class TestNewEndpoints:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        import sinoclaw_state
+        import anan_state
         from anan_constants import get_anan_home
         from anan_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
-        monkeypatch.setattr(sinoclaw_state, "DEFAULT_DB_PATH", get_anan_home() / "state.db")
+        monkeypatch.setattr(anan_state, "DEFAULT_DB_PATH", get_anan_home() / "state.db")
 
         self.client = TestClient(app)
         self.client.headers[_SESSION_HEADER_NAME] = _SESSION_TOKEN
@@ -667,7 +667,7 @@ class TestNewEndpoints:
         assert resp.status_code == 200
         assert resp.json()["command"] == "coder setup"
 
-    def test_profile_setup_command_uses_sinoclaw_for_default_profile(self):
+    def test_profile_setup_command_uses_anan_for_default_profile(self):
         from anan_constants import get_anan_home
 
         get_anan_home().mkdir(parents=True, exist_ok=True)

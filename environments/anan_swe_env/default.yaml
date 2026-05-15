@@ -4,7 +4,7 @@
 # Uses terminal + file + web toolsets.
 #
 # Usage:
-#   python environments/sinoclaw_swe_env/sinoclaw_swe_env.py serve \
+#   python environments/anan_swe_env/anan_swe_env.py serve \
 #       --config environments/sinoclaw_swe_env/default.yaml
 
 env:

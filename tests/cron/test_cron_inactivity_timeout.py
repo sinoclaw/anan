@@ -304,13 +304,13 @@ class TestInactivityTimeout:
 class TestSysPathOrdering:
     """Test that sys.path is set before repo-level imports."""
 
-    def test_sinoclaw_time_importable(self):
-        """sinoclaw_time should be importable when cron.scheduler loads."""
+    def test_anan_time_importable(self):
+        """anan_time should be importable when cron.scheduler loads."""
         # This import would fail if sys.path.insert comes after the import
-        from cron.scheduler import _sinoclaw_now
-        assert callable(_sinoclaw_now)
+        from cron.scheduler import _anan_now
+        assert callable(_anan_now)
 
-    def test_sinoclaw_constants_importable(self):
-        """sinoclaw_constants should be importable from cron context."""
+    def test_anan_constants_importable(self):
+        """anan_constants should be importable from cron context."""
         from anan_constants import get_anan_home
         assert callable(get_anan_home)

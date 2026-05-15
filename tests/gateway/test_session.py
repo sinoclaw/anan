@@ -322,7 +322,7 @@ class TestBuildSessionContextPrompt:
         )
         ctx = build_session_context(source, config)
 
-        with patch("sinoclaw_constants.display_anan_home", return_value="~/.anan/profiles/coder"):
+        with patch("anan_constants.display_anan_home", return_value="~/.anan/profiles/coder"):
             prompt = build_session_context_prompt(ctx)
 
         assert "~/.anan/profiles/coder/cron/output/" in prompt
