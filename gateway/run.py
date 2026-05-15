@@ -1268,8 +1268,9 @@ class GatewayRunner:
         self.pairing_store = PairingStore()
         
         # Event hook system
-        from gateway.hooks import HookRegistry
+        from gateway.hooks import HookRegistry, set_global_registry
         self.hooks = HookRegistry()
+        set_global_registry(self.hooks)  # make available to builtin hooks
 
         # Per-chat voice reply mode: "off" | "voice_only" | "all"
         self._voice_mode: Dict[str, str] = self._load_voice_modes()

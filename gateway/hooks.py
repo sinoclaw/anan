@@ -55,11 +55,60 @@ class HookRegistry:
     def _register_builtin_hooks(self) -> None:
         """Register built-in hooks that are always active.
 
-        Currently empty — no shipped built-in hooks. Kept as the extension
-        point for future always-on gateway hooks so they drop in without
-        re-plumbing discover_and_load().
+        Scans gateway/builtin_hooks/ for hook modules and registers their
+        'handle' function for the events declared in their HOOK.yaml.
         """
-        return
+        import os
+        import sys
+        import importlib.util
+        import yaml
+        from pathlib import Path
+
+        builtin_dir = Path(__file__).parent / "builtin_hooks"
+        if not builtin_dir.exists():
+            return
+
+        for hook_file in sorted(builtin_dir.glob("*.py")):
+            if hook_file.stem in ("__init__", "__pycache__"):
+                continue
+
+            try:
+                spec = importlib.util.spec_from_file_location(
+                    f"gateway.builtin_hooks.{hook_file.stem}", hook_file
+                )
+                if spec is None or spec.loader is None:
+                    continue
+                module = importlib.util.module_from_spec(spec)
+                sys.modules[spec.name] = module
+                spec.loader.exec_module(module)
+
+                handle_fn = getattr(module, "handle", None)
+                if handle_fn is None:
+                    continue
+
+                # Get events from module-level EVENTS list or HOOK.yaml
+                events = getattr(module, "EVENTS", None)
+                if events is None:
+                    yaml_path = hook_file.with_name("HOOK.yaml")
+                    if yaml_path.exists():
+                        manifest = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
+                        events = manifest.get("events", []) if manifest else []
+                    else:
+                        events = ["gateway:startup", "gateway:shutdown"]
+
+                for event in events:
+                    self._handlers.setdefault(event, []).append(handle_fn)
+
+                self._loaded_hooks.append({
+                    "name": f"builtin:{hook_file.stem}",
+                    "description": getattr(module, "__doc__", "").strip() or "builtin hook",
+                    "events": events,
+                    "path": str(hook_file),
+                })
+                print(f"[hooks:builtin] Loaded '{hook_file.stem}' for events: {events}", flush=True)
+
+            except Exception as exc:
+                print(f"[hooks:builtin] Failed to load {hook_file.name}: {exc}", flush=True)
 
     def discover_and_load(self) -> None:
         """
@@ -208,3 +257,21 @@ class HookRegistry:
             except Exception as e:
                 print(f"[hooks] Error in handler for '{event_type}': {e}", flush=True)
         return results
+
+
+# ---------------------------------------------------------------------------
+# Global registry singleton (for builtin hooks that need to wire external systems)
+# ---------------------------------------------------------------------------
+
+_global_registry: Optional["HookRegistry"] = None
+
+
+def get_global_registry() -> Optional["HookRegistry"]:
+    """Return the global HookRegistry if one has been instantiated, else None."""
+    return _global_registry
+
+
+def set_global_registry(registry: "HookRegistry") -> None:
+    """Register the global HookRegistry instance (called by AnanGateway)."""
+    global _global_registry
+    _global_registry = registry
