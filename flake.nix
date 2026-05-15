@@ -1,5 +1,5 @@
 {
-  description = "Anan Agent - AI agent framework by Nous Research";
+  description = "Anan Agent - self-improving AI agent by Anan Team";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

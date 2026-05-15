@@ -8,43 +8,43 @@ ENV PYTHONUNBUFFERED=1
 
 # Store Playwright browsers outside the volume mount so the build-time
 # install survives the /opt/data volume overlay at runtime.
-ENV PLAYWRIGHT_BROWSERS_PATH=/opt/sinoclaw/.playwright
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/anan/.playwright
 
 # Install system dependencies in one layer, clear APT cache
 # tini reaps orphaned zombie processes (MCP stdio subprocesses, git, bun, etc.)
-# that would otherwise accumulate when sinoclaw runs as PID 1. See #15012.
+# that would otherwise accumulate when anan runs as PID 1. See #15012.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential curl nodejs npm python3 ripgrep ffmpeg gcc python3-dev libffi-dev procps git openssh-client docker-cli tini && \
     rm -rf /var/lib/apt/lists/*
 
-# Non-root user for runtime; UID can be overridden via SINOCLAW_UID at runtime
-RUN useradd -u 10000 -m -d /opt/data sinoclaw
+# Non-root user for runtime; UID can be overridden via ANAN_UID at runtime
+RUN useradd -u 10000 -m -d /opt/data anan
 
 COPY --chmod=0755 --from=gosu_source /gosu /usr/local/bin/
 COPY --chmod=0755 --from=uv_source /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 
-WORKDIR /opt/sinoclaw
+WORKDIR /opt/anan
 
 # ---------- Layer-cached dependency install ----------
 # Copy only package manifests first so npm install + Playwright are cached
 # unless the lockfiles themselves change.
 #
-# ui-tui/packages/sinoclaw-ink/ is copied IN FULL (not just its manifests)
+# ui-tui/packages/anan-ink/ is copied IN FULL (not just its manifests)
 # because it is referenced as a `file:` workspace dependency from
 # ui-tui/package.json.  Copying the tree up front lets npm resolve the
 # workspace to real content instead of stopping at a bare package.json.
 COPY package.json package-lock.json ./
 COPY web/package.json web/package-lock.json web/
 COPY ui-tui/package.json ui-tui/package-lock.json ui-tui/
-COPY ui-tui/packages/sinoclaw-ink/ ui-tui/packages/sinoclaw-ink/
+COPY ui-tui/packages/anan-ink/ ui-tui/packages/anan-ink/
 
 # `npm_config_install_links=false` forces npm to install `file:` deps as
 # symlinks (the npm 10+ default) even on Debian's older bundled npm 9.x,
 # which defaults to `install-links=true` and installs file deps as *copies*.
 # The host-side package-lock.json is generated with a newer npm that uses
 # symlinks, so an install-as-copy produces a hidden node_modules/.package-lock.json
-# that permanently disagrees with the root lock on the @sinoclaw/ink entry.
+# that permanently disagrees with the root lock on the @anan/ink entry.
 # That disagreement trips the TUI launcher's `_tui_need_npm_install()`
 # check on every startup and triggers a runtime `npm install` that then
 # fails with EACCES (node_modules/ is root-owned from build time).
@@ -82,34 +82,34 @@ RUN uv sync --frozen --no-install-project --extra all
 
 # ---------- Source code ----------
 # .dockerignore excludes node_modules, so the installs above survive.
-COPY --chown=sinoclaw:sinoclaw . .
+COPY --chown=anan:anan . .
 
 # Build browser dashboard and terminal UI assets.
 RUN cd web && npm run build && \
     cd ../ui-tui && npm run build
 
 # ---------- Permissions ----------
-# Make install dir world-readable so any SINOCLAW_UID can read it at runtime.
+# Make install dir world-readable so any ANAN_UID can read it at runtime.
 # The venv needs to be traversable too.
-# node_modules trees additionally need to be writable by the sinoclaw user
+# node_modules trees additionally need to be writable by the anan user
 # so the runtime `npm install` triggered by _tui_need_npm_install() in
-# sinoclaw_cli/main.py succeeds (see #18800). /opt/sinoclaw/web is build-time
-# only (SINOCLAW_WEB_DIST points at sinoclaw_cli/web_dist) and is intentionally
+# anan_cli/main.py succeeds (see #18800). /opt/anan/web is build-time
+# only (ANAN_WEB_DIST points at anan_cli/web_dist) and is intentionally
 # not chowned here.
 USER root
-RUN chmod -R a+rX /opt/sinoclaw && \
-    chown -R sinoclaw:sinoclaw /opt/sinoclaw/ui-tui /opt/sinoclaw/node_modules
+RUN chmod -R a+rX /opt/anan && \
+    chown -R anan:anan /opt/anan/ui-tui /opt/anan/node_modules
 # Start as root so the entrypoint can usermod/groupmod + gosu.
-# If SINOCLAW_UID is unset, the entrypoint drops to the default sinoclaw user (10000).
+# If ANAN_UID is unset, the entrypoint drops to the default anan user (10000).
 
-# ---------- Link sinoclaw-agent itself (editable) ----------
+# ---------- Link anan-agent itself (editable) ----------
 # Deps are already installed in the cached layer above; `--no-deps` makes
 # this a fast (~1s) egg-link creation with no resolution or downloads.
 RUN uv pip install --no-cache-dir --no-deps -e "."
 
 # ---------- Runtime ----------
-ENV SINOCLAW_WEB_DIST=/opt/sinoclaw/sinoclaw_cli/web_dist
-ENV SINOCLAW_HOME=/opt/data
+ENV ANAN_WEB_DIST=/opt/anan/anan_cli/web_dist
+ENV ANAN_HOME=/opt/data
 ENV PATH="/opt/data/.local/bin:${PATH}"
 VOLUME [ "/opt/data" ]
-ENTRYPOINT [ "/usr/bin/tini", "-g", "--", "/opt/sinoclaw/docker/entrypoint.sh" ]
+ENTRYPOINT [ "/usr/bin/tini", "-g", "--", "/opt/anan/docker/entrypoint.sh" ]

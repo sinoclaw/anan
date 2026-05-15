@@ -4,13 +4,13 @@
 #   container.enable = false (default) → native systemd service
 #   container.enable = true            → OCI container (persistent writable layer)
 #
-# Container mode: hermes runs from /nix/store bind-mounted read-only into a
+# Container mode: anan runs from /nix/store bind-mounted read-only into a
 # plain Ubuntu container. The writable layer (apt/pip/npm installs) persists
 # across restarts and agent updates. Only image/volume/options changes trigger
-# container recreation. Environment variables are written to $SINOCLAW_HOME/.env
-# and read by hermes at startup — no container recreation needed for env changes.
+# container recreation. Environment variables are written to $ANAN_HOME/.env
+# and read by anan at startup — no container recreation needed for env changes.
 #
-# Tool resolution: the hermes wrapper uses --suffix PATH for nix store tools,
+# Tool resolution: the anan wrapper uses --suffix PATH for nix store tools,
 # so apt/uv-installed versions take priority. The container entrypoint provisions
 # extensible tools on first boot: nodejs/npm via apt, uv via curl, and a Python
 # 3.11 venv (bootstrapped entirely by uv) at ~/.venv with pip seeded. Agents get
@@ -20,7 +20,7 @@
 #   services.anan-agent = {
 #     enable = true;
 #     settings.model = "anthropic/claude-sonnet-4";
-#     environmentFiles = [ config.sops.secrets."hermes/env".path ];
+#     environmentFiles = [ config.sops.secrets."anan/env".path ];
 #   };
 #
 { inputs, ... }: {
@@ -66,7 +66,7 @@
 
     containerName = "anan-agent";
     containerDataDir = "/data";     # stateDir mount point inside container
-    containerHomeDir = "/home/hermes";
+    containerHomeDir = "/home/anan";
 
     # ── Container mode helpers ──────────────────────────────────────────
     containerBin = if cfg.container.backend == "docker"
@@ -74,7 +74,7 @@
       else "${pkgs.podman}/bin/podman";
 
     # Runs as root inside the container on every start. Provisions the
-    # hermes user + sudo on first boot (writable layer persists), then
+    # anan user + sudo on first boot (writable layer persists), then
     # drops privileges. Supports arbitrary base images (Debian, Alpine, etc).
     containerEntrypoint = pkgs.writeShellScript "anan-container-entrypoint" ''
       set -eu
@@ -89,7 +89,7 @@
       if [ -n "$EXISTING_GROUP" ]; then
         GROUP_NAME="$EXISTING_GROUP"
       else
-        GROUP_NAME="hermes"
+        GROUP_NAME="anan"
         if command -v groupadd >/dev/null 2>&1; then
           groupadd -g "$SINOCLAW_GID" "$GROUP_NAME"
         elif command -v addgroup >/dev/null 2>&1; then
@@ -103,8 +103,8 @@
         TARGET_USER=$(echo "$PASSWD_ENTRY" | cut -d: -f1)
         TARGET_HOME=$(echo "$PASSWD_ENTRY" | cut -d: -f6)
       else
-        TARGET_USER="hermes"
-        TARGET_HOME="/home/hermes"
+        TARGET_USER="anan"
+        TARGET_HOME="/home/anan"
         if command -v useradd >/dev/null 2>&1; then
           useradd -u "$SINOCLAW_UID" -g "$SINOCLAW_GID" -m -d "$TARGET_HOME" -s /bin/bash "$TARGET_USER"
         elif command -v adduser >/dev/null 2>&1; then
@@ -139,10 +139,10 @@
         touch /var/lib/anan-tools-provisioned
       fi
 
-      if command -v sudo >/dev/null 2>&1 && [ ! -f /etc/sudoers.d/hermes ]; then
+      if command -v sudo >/dev/null 2>&1 && [ ! -f /etc/sudoers.d/anan ]; then
         mkdir -p /etc/sudoers.d
-        echo "$TARGET_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/hermes
-        chmod 0440 /etc/sudoers.d/hermes
+        echo "$TARGET_USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/anan
+        chmod 0440 /etc/sudoers.d/anan
       fi
 
       # uv (Python manager) — not in Ubuntu repos, retry-safe outside the sentinel
@@ -188,7 +188,7 @@
 
     identityFile = "${cfg.stateDir}/.container-identity";
 
-    # Default: /var/lib/hermes/workspace → /data/workspace.
+    # Default: /var/lib/anan/workspace → /data/workspace.
     # Custom paths outside stateDir pass through unchanged (user must add extraVolumes).
     containerWorkDir =
       if lib.hasPrefix "${cfg.stateDir}/" cfg.workingDirectory
@@ -209,13 +209,13 @@
       # ── Service identity ─────────────────────────────────────────────────
       user = mkOption {
         type = types.str;
-        default = "hermes";
+        default = "anan";
         description = "System user running the gateway.";
       };
 
       group = mkOption {
         type = types.str;
-        default = "hermes";
+        default = "anan";
         description = "System group running the gateway.";
       };
 
@@ -228,8 +228,8 @@
       # ── Directories ──────────────────────────────────────────────────────
       stateDir = mkOption {
         type = types.str;
-        default = "/var/lib/hermes";
-        description = "State directory. Contains .hermes/ subdir (SINOCLAW_HOME).";
+        default = "/var/lib/anan";
+        description = "State directory. Contains .anan/ subdir (ANAN_HOME).";
       };
 
       workingDirectory = mkOption {
@@ -459,7 +459,7 @@
           Extra packages available to the agent — terminal commands, skills,
           cron jobs, and the service process all see them.
 
-          Implemented via the hermes user's per-user profile
+          Implemented via the anan user's per-user profile
           (`/etc/profiles/per-user/${cfg.user}/bin`), which NixOS includes
           in PATH for login shells.  The packages are also added to the
           systemd service PATH for direct process access.
@@ -470,7 +470,7 @@
         type = types.listOf types.package;
         default = [ ];
         description = ''
-          Directory-based plugin packages to symlink into the hermes plugins
+          Directory-based plugin packages to symlink into the anan plugins
           directory. Each package should contain a plugin.yaml and __init__.py
           at its root. Hermes discovers these automatically on startup.
         '';
@@ -494,7 +494,7 @@
           Python packages to add to PYTHONPATH for entry-point plugin discovery.
           These are pip-packaged plugins that register via the
           anan_agent.plugins entry-point group. Each package must be built
-          with the same Python interpreter as hermes (python312).
+          with the same Python interpreter as anan (python312).
         '';
         example = literalExpression ''
           [
@@ -528,8 +528,8 @@
         type = types.bool;
         default = false;
         description = ''
-          Add the hermes CLI to environment.systemPackages and export
-          SINOCLAW_HOME system-wide (via environment.variables) so interactive
+          Add the anan CLI to environment.systemPackages and export
+          ANAN_HOME system-wide (via environment.variables) so interactive
           shells share state with the gateway service.
         '';
       };
@@ -568,7 +568,7 @@
           default = [ ];
           description = ''
             Interactive users who get a ~/.anan symlink to the service
-            stateDir. These users are automatically added to the hermes group.
+            stateDir. These users are automatically added to the anan group.
           '';
           example = [ "sidbin" ];
         };
@@ -622,12 +622,12 @@
       })
 
       # ── Host CLI ──────────────────────────────────────────────────────
-      # Add the hermes CLI to system PATH and export SINOCLAW_HOME system-wide
+      # Add the anan CLI to system PATH and export ANAN_HOME system-wide
       # so interactive shells share state (sessions, skills, cron) with the
       # gateway service instead of creating a separate ~/.anan/.
       (lib.mkIf cfg.addToSystemPackages {
         environment.systemPackages = [ effectivePackage ];
-        environment.variables.SINOCLAW_HOME = "${cfg.stateDir}/.hermes";
+        environment.variables.ANAN_HOME = "${cfg.stateDir}/.anan";
       })
 
       # ── Host user group membership ─────────────────────────────────────
@@ -659,7 +659,7 @@
 
       # ── Warnings ──────────────────────────────────────────────────────
       # ── Per-user profile for extraPackages ───────────────────────────
-      # Wire extraPackages into the hermes user's per-user profile so the
+      # Wire extraPackages into the anan user's per-user profile so the
       # login-shell snapshot (which rebuilds PATH from NixOS profiles) sees
       # them.  The systemd service PATH also includes them for direct access.
       (lib.mkIf (cfg.extraPackages != []) {
@@ -673,9 +673,9 @@
         warnings = [
           ''
             services.anan-agent: container.enable is true and container.hostUsers
-            is set, but addToSystemPackages is false. Without a host-installed hermes
+            is set, but addToSystemPackages is false. Without a host-installed anan
             binary, container routing will not work for interactive users.
-            Set addToSystemPackages = true or ensure hermes is on PATH.
+            Set addToSystemPackages = true or ensure anan is on PATH.
           ''
         ];
       })
@@ -684,7 +684,7 @@
       {
         systemd.tmpfiles.rules = [
           "d ${cfg.stateDir}                2770 ${cfg.user} ${cfg.group} - -"
-          "d ${cfg.stateDir}/.hermes        2770 ${cfg.user} ${cfg.group} - -"
+          "d ${cfg.stateDir}/.anan        2770 ${cfg.user} ${cfg.group} - -"
           "d ${cfg.stateDir}/.anan/cron   2770 ${cfg.user} ${cfg.group} - -"
           "d ${cfg.stateDir}/.anan/sessions 2770 ${cfg.user} ${cfg.group} - -"
           "d ${cfg.stateDir}/.anan/logs   2770 ${cfg.user} ${cfg.group} - -"
@@ -699,16 +699,16 @@
       {
         system.activationScripts."anan-agent-setup" = lib.stringAfter ([ "users" ] ++ lib.optional (config.system.activationScripts ? setupSecrets) "setupSecrets") ''
           # Ensure directories exist (activation runs before tmpfiles)
-          mkdir -p ${cfg.stateDir}/.hermes
+          mkdir -p ${cfg.stateDir}/.anan
           mkdir -p ${cfg.stateDir}/home
           mkdir -p ${cfg.workingDirectory}
-          chown ${cfg.user}:${cfg.group} ${cfg.stateDir} ${cfg.stateDir}/.hermes ${cfg.stateDir}/home ${cfg.workingDirectory}
-          chmod 2770 ${cfg.stateDir} ${cfg.stateDir}/.hermes ${cfg.workingDirectory}
+          chown ${cfg.user}:${cfg.group} ${cfg.stateDir} ${cfg.stateDir}/.anan ${cfg.stateDir}/home ${cfg.workingDirectory}
+          chmod 2770 ${cfg.stateDir} ${cfg.stateDir}/.anan ${cfg.workingDirectory}
           chmod 0750 ${cfg.stateDir}/home
 
           # Create subdirs, set setgid + group-writable, migrate existing files.
           # Nix-managed files (config.yaml, .env, .managed) stay 0640/0644.
-          find ${cfg.stateDir}/.hermes -maxdepth 1 \
+          find ${cfg.stateDir}/.anan -maxdepth 1 \
             \( -name "*.db" -o -name "*.db-wal" -o -name "*.db-shm" -o -name "SOUL.md" \) \
             -exec chmod g+rw {} + 2>/dev/null || true
           for _subdir in cron sessions logs memories plugins; do
@@ -744,7 +744,7 @@
     backend=${cfg.container.backend}
     container_name=${containerName}
     exec_user=${cfg.user}
-    anan_bin=${containerDataDir}/current-package/bin/hermes
+    anan_bin=${containerDataDir}/current-package/bin/anan
     SINOCLAW_CONTAINER_MODE_EOF
             chown ${cfg.user}:${cfg.group} ${cfg.stateDir}/.anan/.container-mode
             chmod 0644 ${cfg.stateDir}/.anan/.container-mode
@@ -755,9 +755,9 @@
             ${lib.concatStringsSep "\n" (map (user:
               let
                 userHome = config.users.users.${user}.home;
-                symlinkPath = "${userHome}/.hermes";
+                symlinkPath = "${userHome}/.anan";
               in ''
-                if [ -L "${symlinkPath}" ] && [ "$(readlink "${symlinkPath}")" = "${cfg.stateDir}/.hermes" ]; then
+                if [ -L "${symlinkPath}" ] && [ "$(readlink "${symlinkPath}")" = "${cfg.stateDir}/.anan" ]; then
                   rm -f "${symlinkPath}"
                   echo "anan-agent: removed symlink ${symlinkPath}"
                 fi
@@ -765,15 +765,15 @@
           ''}
 
           # ── Symlink bridge for interactive users ───────────────────────
-          # Create ~/.anan -> stateDir/.hermes for each hostUser so the
+          # Create ~/.anan -> stateDir/.anan for each hostUser so the
           # host CLI shares state with the container service.
           # Only runs when container mode is enabled.
           ${lib.optionalString cfg.container.enable
             (lib.concatStringsSep "\n" (map (user:
               let
                 userHome = config.users.users.${user}.home;
-                symlinkPath = "${userHome}/.hermes";
-                target = "${cfg.stateDir}/.hermes";
+                symlinkPath = "${userHome}/.anan";
+                target = "${cfg.stateDir}/.anan";
               in ''
                 if [ -d "${symlinkPath}" ] && [ ! -L "${symlinkPath}" ]; then
                   # Real directory — back it up, then create symlink.
@@ -851,8 +851,8 @@
 
           environment = {
             HOME = cfg.stateDir;
-            SINOCLAW_HOME = "${cfg.stateDir}/.hermes";
-            SINOCLAW_MANAGED = "true";
+            ANAN_HOME = "${cfg.stateDir}/.anan";
+            ANAN_MANAGED = "true";
             MESSAGING_CWD = cfg.workingDirectory;
           };
 
@@ -866,7 +866,7 @@
             # reads them at Python startup — no systemd EnvironmentFile needed.
 
             ExecStart = lib.concatStringsSep " " ([
-              "${effectivePackage}/bin/hermes"
+              "${effectivePackage}/bin/anan"
               "gateway"
             ] ++ cfg.extraArgs);
 
@@ -874,7 +874,7 @@
             RestartSec = cfg.restartSec;
 
             # Shared-state: files created by the gateway should be group-writable
-            # so interactive users in the hermes group can read/write them.
+            # so interactive users in the anan group can read/write them.
             UMask = "0007";
 
             # Hardening
@@ -947,7 +947,7 @@
                 ${lib.concatStringsSep " " (map (v: "--volume ${v}") cfg.container.extraVolumes)} \
                 --env SINOCLAW_UID="$SINOCLAW_UID" \
                 --env SINOCLAW_GID="$SINOCLAW_GID" \
-                --env SINOCLAW_HOME=${containerDataDir}/.hermes \
+                --env ANAN_HOME=${containerDataDir}/.anan \
                 --env SINOCLAW_MANAGED=true \
                 --env HOME=${containerHomeDir} \
                 --env MESSAGING_CWD=${containerWorkDir} \

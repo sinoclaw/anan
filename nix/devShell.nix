@@ -23,7 +23,7 @@
           ''
             echo "Anan Agent dev shell"
             ${combined}
-            echo "Ready. Run 'hermes' to start."
+            echo "Ready. Run 'anan' to start."
           '';
       };
     };
