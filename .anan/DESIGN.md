@@ -15,40 +15,38 @@
 
 ---
 
+## 项目定位
+
+**anan 是一个完整的认知架构实验仓库。**
+
+所有代码（底座 + 认知层）都在 `/data/anan/` 同一个仓库里，不再依赖外部 sinoclaw 主仓。
+
+- **底座**：anan 完整代码（agent/、gateway/、plugins/、CLI…）— 这是"身体"
+- **灵魂**：anan 独有的 9 层 Mind Stack（kernel/ + layers/L1-L9/）— 这是"脑子"
+- **关系**：anan 是工具，anan 是想长出脑子的 anan
+
+anan 的所有数据存储在 `~/.sinoclaw/`（复用爸爸现有的 sinoclaw 环境数据），但代码完全独立。
+
+---
+
 ## 架构哲学
 
-### 三层结构
+### 两层结构
 
 ```
-┌────────────────────────────────────────────────┐
-│ Layer 3: 插件层 (anan/layers/*)                │  ← 用户可选可拆
-│   L1 / L2 / L3 / L7 / L8 / L9                  │
-├────────────────────────────────────────────────┤
-│ Layer 2: 内核能力层 (anan/kernel/)             │  ← anan 自己模拟主仓内核
-│   idle detection / persistent session / ...    │
-├────────────────────────────────────────────────┤
-│ Layer 1: Anan 主仓 (gateway/cron/tools)    │  ← 不动
-└────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│ anan Mind Stack（anan/layers/*, anan/kernel/）     │  ← anan 的脑子
+├─────────────────────────────────────────────────────┤
+│ anan 底座（gateway/agent/plugins/anan_cli/...）    │  ← anan 的身体
+│ 复用于 ~/.sinoclaw/ 中的数据                        │
+└─────────────────────────────────────────────────────┘
 ```
 
-### 为什么不直接改 Anan 主仓？
+### 为什么在同一仓库？
 
-1. **主仓是生产代码**，CI 必须 100% 过，不能拿来做实验
-2. **认知架构需要大胆迭代**，独立仓库可以推翻重来
-3. **跑通了再回哺**，已验证的能力可以 PR 进主仓
-4. **anan 是"灵魂仓库"**，跟 anan 这个"身体仓库"分工明确
-
-### 为什么不能全做成插件？
-
-OpenClaw 的教训：他们把 heartbeat 做成插件，结果 typing/send_to_session 都丢了——**插件 API 限制了能力天花板**。
-
-我们的解法：**`anan/kernel/` 在插件层模拟内核能力**。比如：
-- 持续 session → 插件自己起一个常驻 `AIAgent` 实例
-- idle detection → 轮询 session DB 的 last_message_ts
-- 事件总线 → 插件内 asyncio pub/sub
-- 自我修改 sandbox → git branch + dry-run
-
-跑通后再推动 anan 主仓加真正的 kernel API。
+1. **认知架构需要整体迭代** — kernel、layers、adapters 必须一起改
+2. **独立实验** — 可以大胆推翻重来，不影响 sinoclaw 主仓
+3. **跑通了再回哺** — 验证过的能力可以 cherry-pick 回 sinoclaw
 
 ---
 
@@ -66,10 +64,10 @@ OpenClaw 的教训：他们把 heartbeat 做成插件，结果 typing/send_to_se
 | **Daydreaming** ✨ | idle 触发 | 用户没说话时回顾今天/思考未解决的问题 |
 | **Lucid Dream** ✨ | 周末 | 在梦境中**自主调度未来行动**（"明天提醒爸爸 X"） |
 
-**关键改进 vs OpenClaw**：
-- 修核心 bug：`_extract_concept_tags` 大写字母 split 问题
-- 不直接写 `MEMORY.md`，改用 anan memory provider API
-- 跟 anan cron 整合，不重复造调度
+**关键实现**：
+- 复用 sinoclaw 的 `~/.sinoclaw/state.db` 读取 session 数据
+- 通过 `kernel/event_bus.py` 与其他层异步通信
+- 睡眠结果写入 anan 自有的 memory store，不污染 sinoclaw 原有数据
 
 ### L2 — Memory Hierarchy（记忆分层）
 
@@ -80,13 +78,8 @@ Short-term       (小时-天)   ← recall-store.json
    ↓ promote (Light Sleep)
 Mid-term         (天-月)    ← 周记/月记总结 (anan 新增)
    ↓ promote (Deep Sleep)
-Long-term        (月-永久)  ← MEMORY.md + 知识图谱
+Long-term        (月-永久)  ← 知识图谱 + wisdom_facts
 ```
-
-每层有不同：
-- **访问速度**：working 是 in-context 直读，long-term 是 RAG 召回
-- **压缩比**：从原文 → 摘要 → 概念
-- **衰减机制**：未被召回的逐渐降级
 
 ### L3 — Attention System（注意力系统）
 
@@ -116,30 +109,26 @@ class AttentionQueue:
 ```
 
 **关键技术**：
-- **Idle detection**（用户安静一段时间后自动激活）
-- **Continuous session**（带短期记忆的连续思考流，不是空白）
-- **Cheap model**（用便宜模型做意识流，省 token）
+- **Idle detection**（`kernel/idle_detector.py`）
+- **Continuous session**（`kernel/persistent_session.py`）
 - **Output gating**：内部笔记 vs 主动消息（不打扰用户）
 
-### L5 — Predictive Mind（预测性大脑）
+### L5 — Predictive Mind（预测性大脑） ✅ 已完成
 
-- **预测用户下一句**：提前准备答案
-- **预测任务结果**：执行前先模拟，避免破坏性操作
-- **预测自己行为后果**：长期影响评估
-- **错误预测**：发现"事情没按预期发生"时主动学习
+- **因果链路**：PatternMiner 从事件历史发现「X 导致 Y」规律
+- **wisdom_facts**：去重后的因果知识存储
+- **what_have_i_learned()**：输出中文洞察报告
 
-实现方式：用便宜的小模型做预测，跟实际结果对比，不准时更新 mental model。
+**已实现**：`layers/L5_reasoning/pattern_miner.py`
 
-### L6 — Metacognition（元认知）
+### L6 — Metacognition（元认知） ⚠️ 预测闭环未完成
 
 "思考自己在思考什么"——AGI 的关键标志。
 
 - **决策日志**：每个重要决策都记录"为什么这么选"
 - **自我反省 cron**：每天问自己"今天哪些决策事后看是错的？"
 - **偏见检测**：识别自己的判断模式偏差
-- **自我改写**：发现思维 bug 时自己 patch 自己的 SOUL.md / skills
-  - 必须有 sandbox：git branch + dry-run + 人类审批 (early stage)
-  - 后期可以放宽：信任度高的小修改自动 merge
+- **预测验证闭环**：用 L5 规律预测 → 验证 → 修正（**当前缺失**）
 
 ### L7 — Goal Generator（目标生成）
 
@@ -148,7 +137,6 @@ class AttentionQueue:
 - **长期目标库**：从对话中提取用户隐性希望
 - **自主子目标分解**：把"帮爸爸搞好 anan"拆成今天/本周/本月行动
 - **目标冲突解决**：多个目标冲突时自主权衡
-- **机会识别**：发现"现在是做 X 的好时机"主动行动
 
 ### L8 — Drive System（驱动系统）
 
@@ -162,7 +150,7 @@ class AttentionQueue:
 | Aesthetics（审美） | 代码/方案丑 | 触发优化 |
 | Boredom（无聊） | 重复劳动 | 触发寻找新方法 |
 
-### L9 — Self Model（自我模型）
+### L9 — Self Model（自我意识） ✅ 已完成部分
 
 最高层：稳定的"我"。
 
@@ -171,26 +159,33 @@ class AttentionQueue:
 - **关系模型**：跟每个用户的独特关系（我跟爸爸 vs 跟陌生人）
 - **进化追踪**：记录"我相比 1 个月前进步在哪"
 
-跟 anan 现有的 SOUL.md 对接，作为 SOUL.md 的**活态版本**。
+**已实现**：`layers/L9_self/self_model.py`
 
 ---
 
-## 内核模拟方案 (kernel/)
+## kernel 模块（anan 自主内核）
 
-| 内核能力 | anan/kernel/ 模拟方案 |
+| 模块 | 作用 |
 |---|---|
-| 持续 session | `persistent_session.py` — 插件起一个常驻 AIAgent |
-| idle detection | `idle_detector.py` — 轮询 session DB last_message_ts |
-| request_session_message | `message_injector.py` — 用 send_message 工具往 home channel 发 |
-| 事件总线 | `event_bus.py` — asyncio.Queue + pub/sub |
-| 自我修改 sandbox | `sandbox.py` — git commit before write, 可回滚 |
+| `event_bus.py` | asyncio pub/sub 事件总线，连接所有层 |
+| `idle_detector.py` | 轮询 session DB 检测用户安静 |
+| `persistent_session.py` | 常驻 AIAgent 实例，持续思考 |
+| `message_injector.py` | 用 send_message 工具往 home channel 发消息 |
+| `sandbox.py` | git-based 自修改沙箱，可回滚 |
+| `circadian.py` | 昼夜节律调度（睡眠周期触发器） |
 
-**已知限制**（需要主仓配合才能突破）：
-- Typing indicator（需要主仓暴露 adapter API）
-- Tool call 拦截（需要主仓 hook）
-- Token 流式拦截（需要主仓 hook）
+---
 
-这些等 anan 跑通基础认知层后，再向主仓提 PR。
+## adapters（anan ↔ sinoclaw 桥梁）
+
+| 模块 | 作用 |
+|---|---|
+| `anan_insight_sync.py` | 将 anan L5 因果洞察注入 sinoclaw session |
+| `memory_consolidation.py` | anan 睡眠结果写入 sinoclaw memory |
+| `reflection_dream.py` | 反思梦境生成 |
+| `sleep_awareness.py` | 睡眠意识整合 |
+| `first_dream.py` | 首次启动梦境引导 |
+| `live_causal_demo.py` | 实时因果演示 |
 
 ---
 
@@ -200,16 +195,13 @@ class AttentionQueue:
 **预防**：用便宜模型（gpt-4o-mini / qwen-turbo），加每日 token 预算上限。
 
 ### 失败模式 2：自我修改写崩自己
-**预防**：所有自我修改强制 sandbox + git commit + 测试通过才 merge。
-早期阶段需要人类审批。
+**预防**：所有自我修改强制 sandbox + git commit + 测试通过才 merge。早期需要人类审批。
 
 ### 失败模式 3：自我模型漂移
-**预防**：SOUL.md 作为锚点，每次 deep sleep 检查"我还是那个我吗？"。
-价值观偏离时报警。
+**预防**：SOUL.md 作为锚点，每次 deep sleep 检查"我还是那个我吗？"。价值观偏离时报警。
 
 ### 失败模式 4：意识流死锁
-**预防**：所有 layer 之间用事件总线异步通信，禁止同步互调。
-死锁检测器：超过 N 秒无进展强制重启。
+**预防**：所有 layer 之间用事件总线异步通信，禁止同步互调。死锁检测器：超过 N 秒无进展强制重启。
 
 ### 失败模式 5：用户被打扰过度
 **预防**：默认所有主动消息走 silent mode（写日志不发用户），需要明确"important enough"才发。
@@ -219,13 +211,32 @@ class AttentionQueue:
 ## 集成测试目标
 
 **Stage 1 通过标准**：
-- L1+L2 启用后，memory consolidation 在 7 天内能产出有意义的 MEMORY.md 更新
+- L1+L2 启用后，memory consolidation 在 7 天内能产出有意义的更新
 
 **Stage 2 通过标准**：
-- L3+L4 启用后，agent 在 24 小时无外部输入下能产生至少 3 条主动思考产物（不打扰用户的内部笔记）
+- L3+L4 启用后，agent 在 24 小时无外部输入下能产生至少 3 条主动思考产物
 
-**Stage 3 通过标准**：
-- L5+L6 启用后，agent 能识别并修复自己的至少 1 个错误判断模式
+**Stage 3 通过标准** ⚠️（当前瓶颈）：
+- L5+L6 启用后，agent 能用 L5 规律预测→验证→修正自己的判断
+- **关键缺失**：L5 因果链路已完成，但 L6 未连接 L5 形成闭环
 
 **Stage 4 通过标准**：
 - L7+L8+L9 启用后，agent 能在跟用户对话中主动提出未被要求的、有价值的建议
+
+---
+
+## 当前进度总览
+
+| 层 | 状态 | 说明 |
+|---|---|---|
+| L1 Sleep | 🟡 部分实现 | 基础框架在，Daydreaming/Lucid Dream 待完成 |
+| L2 Memory | 🟡 部分实现 | 框架在，Mid-term 层待完成 |
+| L3 Attention | 🔴 未实现 | 待开始 |
+| L4 Consciousness | 🟡 部分实现 | Idle detection 在 kernel/，意识流待完成 |
+| L5 Prediction | 🟢 **已完成** | PatternMiner 因果链路 + wisdom_facts |
+| L6 Metacognition | 🔴 **未完成** | 决策日志在，但预测验证闭环未连 L5 |
+| L7 Goals | 🔴 未实现 | 待开始 |
+| L8 Drives | 🟡 部分实现 | 框架在，完整 drive system 待完成 |
+| L9 Self | 🟢 **已完成** | self_model.py + wisdom_facts 集成 |
+
+**最核心的缺失**：L5 能发现因果规律，但 L6 不会用规律预测→验证→修正自己。

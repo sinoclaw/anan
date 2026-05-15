@@ -143,7 +143,7 @@ REM_REFLECTION_TAG_BLACKLIST = {
 }
 
 # Sinoclaw state DB path
-DEFAULT_STATE_DB_PATH = Path("~/.anan/state.db").expanduser()
+DEFAULT_STATE_DB_PATH = Path("~/.sinoclaw/state.db").expanduser()
 
 
 # ---------------------------------------------------------------------------
@@ -236,7 +236,7 @@ class AnanSessionDB:
     ) -> List[Dict[str, Any]]:
         """List sessions from the last N days with recent activity."""
         cutoff_ts = time.time() - (lookback_days * 24 * 60 * 60)
-        
+
         conn = self._get_connection()
         try:
             cursor = conn.execute(
@@ -255,6 +255,9 @@ class AnanSessionDB:
                 (cutoff_ts, limit),
             )
             return [dict(row) for row in cursor.fetchall()]
+        except sqlite3.OperationalError:
+            # Table doesn't exist yet (fresh DB) — return empty gracefully
+            return []
         finally:
             conn.close()
 
@@ -302,6 +305,9 @@ class AnanSessionDB:
                             pass
                 messages.append(msg)
             return messages
+        except sqlite3.OperationalError:
+            # Table doesn't exist yet (fresh DB) — return empty gracefully
+            return []
         finally:
             conn.close()
 

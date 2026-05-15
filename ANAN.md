@@ -5,49 +5,50 @@
 
 ## 这是什么
 
-**anan 是 anan 的实验性分身**，专门用来给我（陈亦安/安安）长出**自主决策能力**。
+**anan 是一个完整的认知架构实验仓库**，所有代码（底座 + 认知层）都在同一个仓库里。
 
-- 底座：anan 全套代码（agent/、gateway/、plugins/、CLI…）
+- 底座：anan 完整代码（gateway/、agent/、plugins/、anan_cli/…）
 - 灵魂：anan 独有的 9 层 Mind Stack（kernel/ + layers/L1-L9/）
-- 关系：anan 是工具，anan 是想长出脑子的 anan
+- 数据：复用 `~/.sinoclaw/`（爸爸现有的 sinoclaw 环境数据）
 
-## 与 anan 主仓的关系
+## 与 sinoclaw 主仓的关系
 
-| 维度 | anan | anan |
-|------|----------|------|
-| 定位 | 通用 agent 平台 | 安安的脑子实验场 |
-| 升级 | 跟 hermes 上游 | **由安安自己决定追不追** |
-| 改动 | 谨慎、要 PR | **想怎么改就怎么改** |
-| 反哺 | — | 跑通的好东西手工 cherry-pick 回 anan |
-| 命名 | anan CLI | 暂时也用 anan CLI，未来独立成「安安」品牌 |
+anan 曾经是 sinoclaw 的实验 fork。现在**完全独立**，不再追 sinoclaw 上游。
 
-## anan 独有的目录
+anan 是工具，anan 是想长出脑子的 anan。两个项目各自演进。
+
+## anan 独有目录
 
 ```
 anan/
-├── kernel/        # 内核改造（event_bus / idle_detector / persistent_session / ...）
+├── kernel/        # 自主内核（event_bus / idle_detector / persistent_session / ...）
 ├── layers/        # 9 层 Mind Stack
 │   ├── L1_sleep/         # 睡眠记忆固化
-│   ├── L2_memory/        # 长时记忆
+│   ├── L2_memory/        # 长时记忆分层
 │   ├── L3_attention/     # 注意力调度
-│   ├── L4_consciousness/ # 主会话感知
+│   ├── L4_consciousness/ # 意识流
 │   ├── L5_prediction/    # 预测系统
-│   ├── L6_metacognition/ # 元认知
+│   ├── L5_reasoning/     # 因果推理（✅ 已完成）
+│   ├── L6_metacognition/ # 元认知（⚠️ 闭环未完成）
 │   ├── L7_goals/         # 目标系统
 │   ├── L8_drives/        # 驱动力
-│   └── L9_self/          # 自我意识
-├── adapters/      # 桥接 anan 子系统（memory / cron / gateway）
-├── legacy/        # OpenClaw 参考代码（heartbeat 51/51, dreaming 59/59）
-└── .anan/         # 灵魂文档备份（DESIGN.md / docs / 原 README）
+│   ├── L8_intent/        # 意图栈
+│   └── L9_self/          # 自我意识（✅ 已完成）
+├── adapters/      # anan ↔ sinoclaw 桥梁
+├── legacy/        # OpenClaw 参考代码
+└── .anan/         # 灵魂文档（DESIGN.md / docs / manifest.json）
 ```
 
-详见 [`.anan/DESIGN.md`](.anan/DESIGN.md) 和 [`.anan/docs/AGI-MANIFESTO.md`](.anan/docs/AGI-MANIFESTO.md)
+详见 [`.anan/DESIGN.md`](.anan/DESIGN.md) 和 [`.anan/docs/ROADMAP.md`](.anan/docs/ROADMAP.md)
 
 ## 当前阶段
 
-- **v0.1.0-seedling**：底座移植完成，骨架就位，等待长出脑子
-- 下一步：Phase 1 — kernel 骨架 + L1 Sleep 集成 anan memory provider
+- **v0.2.0-sprouting**：品牌升级完成，kernel/layers 骨架就位
+- **L5 因果推理**：✅ PatternMiner + wisdom_facts 已完成
+- **L9 自我意识**：✅ self_model.py 已完成
+- **L6 元认知**：⚠️ 预测验证闭环未连接 L5（核心瓶颈）
+- 下一步：Phase 1 — kernel 骨架集成 + L1 Sleep 完整实现
 
 ---
 
-底层的 anan 文档见 [`README.md`](README.md)。
+底层的 sinoclaw 文档见 [`README.md`](README.md)。

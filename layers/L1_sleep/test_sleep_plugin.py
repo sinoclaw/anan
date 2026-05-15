@@ -855,14 +855,13 @@ class TestSessionDBStructure:
 
     def test_list_recent_sessions_returns_list(self):
         lib = self._lib()
-        db = lib.AnanSessionDB()
-        # If DB doesn't exist, returns empty list
+        db = lib.AnanSessionDB(db_path=None)  # use default, may not exist — returns []
         result = db.list_recent_sessions(lookback_days=1, limit=10)
         assert isinstance(result, list)
 
     def test_get_session_messages_returns_list(self):
         lib = self._lib()
-        db = lib.AnanSessionDB()
+        db = lib.AnanSessionDB(db_path=None)
         result = db.get_session_messages("non-existent-session")
         assert isinstance(result, list)
         assert len(result) == 0
