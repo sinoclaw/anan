@@ -130,9 +130,9 @@ class PredictiveReasoner:
                 )
                 logger.debug("Cached new link: %s → %s (lift=%.2f)", cause, effect, lift)
 
-        # Listen to everything except our own output
-        for layer in ["L0", "L1", "L2", "L3", "L4", "L6", "L7", "L8", "L9"]:
-            self._unsubs.append(self._bus.subscribe(f"{layer}.*", on_any))
+        # Subscribe to ALL events so we can detect when predicted effects occur.
+        # _on_event filters out L5.* and L0.circadian.tick internally.
+        self._unsubs.append(self._bus.subscribe("*", on_any))
         self._unsubs.append(self._bus.subscribe("L5.causal.link_discovered", on_link_discovered))
 
     async def detach(self) -> None:

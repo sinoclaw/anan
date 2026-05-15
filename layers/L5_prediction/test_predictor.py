@@ -98,13 +98,13 @@ class TestPredictiveReasonerAttach:
         assert len(pr._unsubs) == 0
 
     @pytest.mark.asyncio
-    async def test_attach_subscribes_to_layers(self):
-        """attach() subscribes to all layer wildcard topics."""
+    async def test_attach_subscribes_to_all_events(self):
+        """attach() subscribes to wildcard '*' (all events) for effect detection."""
         bus = EventBus()
         pr = PredictiveReasoner(bus=bus, causal_links_fn=lambda: [("A", "B")])
         await pr.attach()
-        # Should have subscribed to ~9 layer wildcards + 1 link_discovered
-        assert len(pr._unsubs) >= 10
+        # Should subscribe to '*' (all events) + link_discovered = 2 total
+        assert len(pr._unsubs) == 2
         await pr.detach()
 
 
