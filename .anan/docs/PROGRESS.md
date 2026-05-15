@@ -1,7 +1,8 @@
 # anan 九层进度报告
 
-> 更新时间：2026-05-15 14:25
+> 更新时间：2026-05-15 15:05
 > 调研范围：`layers/` 全部源文件 + `kernel/mind_stack_runner.py`
+> 最新提交：637702d — fix: 九层联动闭环全接通（P0-1~P0-4）
 
 ---
 
@@ -14,16 +15,16 @@
 | L2 | MemoryTier | 🟡 | ✅ | ✅ | 三层存储在，promote 链路未与 L1 联动 |
 | L3 | VigilanceMonitor | 🟡 | ✅ | ✅ | 走神检测框架在，未与 L4 联动 |
 | L3 | AttentionQueue | 🟡 | ✅ | ✅ | 三维评分在，未被其他层调用 |
-| L4 | ConsciousnessEngine | 🟡 | ✅ | ✅ | idle 检测在，但未接收上下文 |
+| L4 | ConsciousnessEngine | ✅ | ✅ | ✅ | idle 检测 + 对话上下文注入 + L8 驱动消费 |
 | L5 | PatternMiner | ✅ | ✅ | ✅ | 因果挖掘完成 |
 | L5 | PredictiveReasoner | ✅ | ✅ | ✅ | 预测完成 |
 | L6 | PredictionMonitor | ✅ | ✅ | ✅ | 追踪准确率完成 |
-| L6 | SelfTuner | 🟡 | ✅ | ✅ | 调参框架在，调参对象未确认 |
+| L6 | SelfTuner | ✅ | ✅ | ✅ | 调参闭环接通 PatternMiner + PredictiveReasoner |
 | L6 | Mirror | 🟡 | ❌ | ❌ | 未加入 MindStackRunner |
-| L7 | GoalGenerator | 🟡 | ✅ | ✅ | 目标生成在，未被触发 |
+| L7 | GoalGenerator | ✅ | ✅ | ✅ | L8驱动触发 + L0.tick周期生成目标 |
 | L7 | SelfRegulator | 🟡 | ✅ | ✅ | 框架在，未连接 L7 Goals |
-| L8 | DriveSystem | 🟡 | ✅ | ✅ | 5种驱动力在，未被触发 |
-| L8 | IntentStack | 🟡 | ✅ | ✅ | 框架在，未启动 |
+| L8 | DriveSystem | ✅ | ✅ | ✅ | L0.tick 周期性触发 CURIOSITY |
+| L8 | IntentStack | 🟡 | ✅ | ✅ | 框架在，未被启动 |
 | L9 | SelfModel | ✅ | ✅ | ✅ | 自我意识完成 |
 
 ---
@@ -86,18 +87,9 @@
 - L4 ConsciousnessEngine 创建了自己的 `IdleDetector`，未使用 AttentionQueue 的监测结果
 - L8 DriveSystem 有 `attention_bridge.py` 但未激活
 
-**关键问题**：
-```python
-# MindStackRunner 中，L3 的 AttentionQueue 是独立实例
-from layers.L3_attention.attention import VigilanceMonitor, AttentionQueue
-attention = VigilanceMonitor(...)   # 这个 instance
-queue = AttentionQueue(...)         # 这个 instance
-# 但 L4/L8 根本没拿到这些 instance
-```
-
 ---
 
-### L4 — Consciousness 🟡 部分实现
+### L4 — Consciousness ✅ 完成
 **文件**：`layers/L4_consciousness/consciousness.py`
 
 **已有**：
@@ -106,19 +98,14 @@ queue = AttentionQueue(...)         # 这个 instance
 - OutputGate：评估推送还是内部笔记（只有 HIGH+CRITICAL 才推送）
 - 5 种思考模板：DIALOGUE_REFLECTION / QUESTION_EXTENSION / TODO_CHECK / SITUATION_ASSOCIATION / SPONTANEOUS
 
-**缺失**：
-- `set_dialogue_context()` / `set_question_context()` 从未被调用 → 对话反思/问题延伸永远为空
-- `_generate_one_thought()` 的模板填充了提示词，但内容本身是"回想有没有更好回答"的问句，不是真正的思考
-- 未连接 L8 DriveSystem（`L8.drive.suggestion` 事件未被主动消费）
-- `note_user_input()` 从未被外部调用 → idle 检测永远感知不到用户输入
+**2026-05-15 修复**：
+- ✅ `gateway.message.sent` 事件 → `_on_gateway_message()` 注入对话上下文
+- ✅ `_on_gateway_message()` 调用 `note_user_input()` 取消 idle 状态
+- ✅ 订阅 `L8.drive.suggestion` 接收驱动力建议
+- ✅ `stop()` 方法加给 MindStackRunner 调用
 
-**关键问题**：
-```python
-# _generate_one_thought() 产出的是：
-"回想刚才的对话: {context}，有没有更好的回答方式？"
-# 这是个问题，不是思考产出。真正需要的是：
-"刚才对话里，如果重来说，我会用更简洁的方式解释 X"
-```
+**缺失**：
+- `_generate_one_thought()` 的模板填充了提示词，但内容本身是"回想有没有更好回答"的开式问句，不是真正的反思性思考
 
 ---
 
@@ -132,6 +119,10 @@ queue = AttentionQueue(...)         # 这个 instance
 - `what_have_i_learned()`：输出中文洞察报告
 - `wisdom_facts`：去重存储
 
+**2026-05-15 修复**：
+- ✅ `PatternMiner.set_min_lift()` 方法 + `import asyncio` 补全
+- ✅ `SelfTuner._apply()` 同时写回 PatternMiner + PredictiveReasoner
+
 **问题**：依赖 session 历史数据，刚启动时为空
 
 ---
@@ -144,33 +135,29 @@ queue = AttentionQueue(...)         # 这个 instance
 - SelfTuner：订阅 `L6.metacognition.warn`，调整 min_lift / horizon_s
 - Mirror（`mirror.py`）：HealthReport 元认知报告，但**未启动**
 
+**2026-05-15 修复**：
+- ✅ SelfTuner 调参闭环接通：`_apply()` 同时写回 `PatternMiner.set_min_lift()` + `PredictiveReasoner._min_lift`
+- ✅ SelfTuner 接收 `pattern_miner` 参数（由 MindStackRunner 注入）
+
 **缺失**：
 - Mirror 未加入 MindStackRunner（没注册到 `_layers`）
-- SelfTuner 调参后没有写回 PatternMiner（参数改了但不生效）
 - Mirror 的 HealthReport 没有消费者（L7 Goals 未订阅）
-
-**关键问题**：
-```python
-# SelfTuner 调参：
-self._predictor._min_lift = new_min_lift
-# 但 PatternMiner 用的是自己的 self._min_lift，不是 predictor 的
-# 两者是独立配置！
-```
 
 ---
 
-### L7 — Goals 🔴 未触发（框架在）
+### L7 — Goals ✅ 已触发
 **文件**：`layers/L7_goals/goal_engine.py`
 
 **已有**：
 - GoalGenerator：propose / decompose / achieve / abandon / detect_conflicts
 - `what_are_my_goals()` 输出当前目标列表
-- 订阅 `L6.metacognition.report` 和 `L9.self.updated` 自动生成目标
+
+**2026-05-15 修复**：
+- ✅ 订阅 `L8.drive.suggestion` → `_on_drive_suggestion()` 生成驱动力目标
+- ✅ 订阅 `L0.circadian.tick` → `_on_circadian_tick()` 周期性生成探索目标（active_order < 2 时）
 
 **缺失**：
-- `L6.metacognition.report` 从未被发布（Mirror 没启动）
-- `L9.self.updated` 从未被发布（条件是 n_new>=3，刚启动时不够）
-- 没有外部触发 goal 的路径
+- SelfRegulator 未与 GoalGenerator 连接
 
 ---
 
@@ -182,18 +169,20 @@ self._predictor._min_lift = new_min_lift
 
 ---
 
-### L8 — Drive System 🟡 未触发
-**文件**：`layers/L8_drives/drive_system.py` + `attention_bridge.py`
+### L8 — Drive System ✅ 已触发
+**文件**：`layers/L8_drives/drive_system.py`
 
 **已有**：
 - 5 种驱动力：CURIOSITY / COMPLETION / CARE / AESTHETICS / BOREDOM
 - `trigger()` 触发驱动，`satisfy()` 满足驱动
 - `active_drives()` 返回当前最活跃的驱动力
 
+**2026-05-15 修复**：
+- ✅ 订阅 `L0.circadian.tick` → `_on_circadian_tick()` 周期性触发 CURIOSITY
+- ✅ 无活跃驱动时发送 `L8.drive.suggestion` 通知 L4/L7
+
 **缺失**：
-- DriveSystem 从未被触发（没有事件调用 `trigger()`）
 - `attention_bridge.py` 未接入（连接 DriveSystem 和 AttentionQueue 的桥）
-- L4 ConsciousnessEngine 监听了 `L8.drive.suggestion`，但 DriveSystem 从未发过
 
 ---
 
@@ -214,24 +203,34 @@ self._predictor._min_lift = new_min_lift
 
 ---
 
-## 层间关键断点
+## 层间关键断点（2026-05-15 更新）
 
 ```
-CircadianLoop.tick
-    ↓ (L0.circadian.bedtime)
-PatternMiner.mine_now()     ← 框架在，但 session 历史为空时无用
-    ↓ discovered_links
-PredictiveReasoner          ← 需要 discovered_links 有数据才能预测
-    ↓ L5.prediction.upcoming
-PredictionMonitor           ← 订阅 confirmed/failed，但无 pending predictions 时无数据
-    ↓ L6.metacognition.warn
-SelfTuner                   ← 调参，但参数没写回 PatternMiner
+CircadianLoop.tick (L0.circadian.tick)
+    ├─→ PatternMiner.mine_now()     ✅ (bedtime 触发)
+    ├─→ DriveSystem._on_circadian_tick() ✅ 触发 CURIOSITY
+    │       └─→ L8.drive.suggestion ✅
+    │               ├─→ GoalGenerator._on_drive_suggestion() ✅ 生成目标
+    │               └─→ ConsciousnessEngine._on_drive_suggestion() ✅ 生成思考
+    └─→ GoalGenerator._on_circadian_tick() ✅ 周期性生成探索目标
 
-L8 DriveSystem             ← 从未被触发（无 trigger() 调用）
-    ↓ L8.drive.suggestion
-L4 ConsciousnessEngine      ← 收到 suggestion 但没有真正消费
-    ↓
-OutputGate.evaluate()       ← 大部分产出 importance=LOW，推送不了
+PatternMiner.discovered_links
+    └─→ PredictiveReasoner ✅
+
+PredictiveReasoner
+    ├─→ L5.prediction.upcoming ✅
+    │       └─→ DriveSystem._on_prediction() ✅ 触发 CURIOSITY
+    ├─→ L5.prediction.confirmed/failed ✅
+    │       └─→ PredictionMonitor ✅
+    │               └─→ L6.metacognition.warn ✅
+    │                       └─→ SelfTuner ✅
+    │                               ├─→ PredictiveReasoner._min_lift ✅
+    │                               └─→ PatternMiner.set_min_lift() ✅ ← 2026-05-15 接通
+
+gateway.message.sent
+    └─→ ConsciousnessEngine._on_gateway_message() ✅
+            ├─→ set_dialogue_context() ✅
+            └─→ note_user_input() ✅ 取消 idle
 ```
 
 ---
@@ -241,38 +240,36 @@ OutputGate.evaluate()       ← 大部分产出 importance=LOW，推送不了
 | 组件 | 文件 | 问题 |
 |---|---|---|
 | Mirror | `layers/L6_metacognition/mirror.py` | `_start_layers()` 未实例化 |
-| IntentStack | `layers/L8_intent/intent_stack.py` | 未注册 |
+| IntentStack | `layers/L8_intent/intent_stack.py` | 已注册，但未确认是否正常启动 |
 | AttentionBridge | `layers/L8_drives/attention_bridge.py` | 未激活 |
-| VigilanceMonitor | `layers/L3_attention/attention.py` | 已加入，但走神事件无消费者 |
-| IdleDetector (L4) | `consciousness.py` | L4 自带的，未被 `note_user_input()` 驱动 |
 
 ---
 
 ## 待办清单（按优先级）
 
-### P0 — 必须修
-1. **L6 SelfTuner ↔ PatternMiner 调参闭环**：SelfTuner 改了参数要写回 PatternMiner
-2. **L4 ConsciousnessEngine 上下文注入**：让 `set_dialogue_context()` 被调用，否则永远产出空思考
-3. **L4 note_user_input()**：外部事件触发 idle 检测
+### P0 — 必须修 ✅ 全部完成
+1. ✅ **L6 SelfTuner ↔ PatternMiner 调参闭环**：SelfTuner 改了参数要写回 PatternMiner
+2. ✅ **L4 ConsciousnessEngine 上下文注入**：让 `set_dialogue_context()` 被调用
+3. ✅ **L4 note_user_input()**：外部事件触发 idle 检测
+4. ✅ **DriveSystem 从未被触发**：L0.tick 周期性触发
+5. ✅ **GoalGenerator 从未被触发**：L8.drive.suggestion + L0.tick 触发
 
 ### P1 — 重要
-4. **L1 DreamingPlugin sleep_fn 参数**：传真实的 workspace_dir 和 phase
-5. **L2 MemoryTier promote 链路**：连上 L1 sleep 事件
-6. **L8 DriveSystem 触发**：在合适的时机调用 `drives.trigger()`
-7. **Mirror 加入 MindStackRunner**：启动 L6 元认知报告
+6. **L1 DreamingPlugin sleep_fn 参数**：传真实的 workspace_dir 和 phase
+7. **L2 MemoryTier promote 链路**：连上 L1 sleep 事件
+8. **Mirror 加入 MindStackRunner**：启动 L6 元认知报告 → L7 Goals
+9. **IntentStack 确认启动状态**：验证 `_start_layers()` 是否正确启动
 
 ### P2 — 完善
-8. **L7 Goals 触发路径**：L6.metacognition.report → GoalGenerator（需要 Mirror）
-9. **IntentStack 加入 MindStackRunner**
-10. **AttentionQueue boost() 被 L8 调用**：通过 attention_bridge.py
+10. **L7 Goals → SelfRegulator 连接**：目标状态变化触发自我调节
+11. **AttentionQueue boost() 被 L8 调用**：通过 attention_bridge.py
+12. **L4 思考质量提升**：`_generate_one_thought()` 从问句改为反思性思考
 
 ---
 
 ## 下一步
 
-先从 P0 开始：
-1. 修 SelfTuner ↔ PatternMiner 调参闭环
-2. 给 L4 注入对话上下文
-3. 让 note_user_input() 被调用
-
-完成后九层才能真正产生可观测的主动行为。
+P0 全部完成，九层事件流已全接通。下一批重点：
+1. **Mirror 加入 MindStackRunner** — 让 L6 元认知报告产生消费者（L7 Goals）
+2. **L1/L2 promote 链路** — 让睡眠真正触发记忆升级
+3. **IntentStack 确认** — 验证是否正常启动
