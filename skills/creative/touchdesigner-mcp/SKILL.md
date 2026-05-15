@@ -8,7 +8,7 @@ platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [TouchDesigner, MCP, twozero, creative-coding, real-time-visuals, generative-art, audio-reactive, VJ, installation, GLSL]
-    related_skills: [native-mcp, ascii-video, manim-video, sinoclaw-video]
+    related_skills: [native-mcp, ascii-video, manim-video, anan-video]
 
 ---
 
@@ -25,7 +25,7 @@ metadata:
 ## Architecture
 
 ```
-Sinoclaw Agent -> MCP (Streamable HTTP) -> twozero.tox (port 40404) -> TD Python
+anan Agent -> MCP (Streamable HTTP) -> twozero.tox (port 40404) -> TD Python
 ```
 
 36 native tools. Free plugin (no payment/license — confirmed April 2026).
@@ -51,7 +51,7 @@ The script will:
 
 1. **Drag `~/Downloads/twozero.tox` into the TD network editor** → click Install
 2. **Enable MCP:** click twozero icon → Settings → mcp → "auto start MCP" → Yes
-3. **Restart Sinoclaw session** to pick up the new MCP server
+3. **Restart anan session** to pick up the new MCP server
 
 After setup, verify:
 ```bash

@@ -99,7 +99,7 @@ def _write_env(home: Path, entries: dict[str, str]) -> None:
 
 @pytest.fixture
 def anan_home(tmp_path: Path) -> Path:
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     return home
 

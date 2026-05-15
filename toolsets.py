@@ -610,7 +610,7 @@ def resolve_toolset(name: str, visited: Set[str] = None) -> List[str]:
     # Get toolset definition
     toolset = get_toolset(name)
     if not toolset:
-        # Auto-generate a toolset for plugin platforms (sinoclaw-<name>).
+        # Auto-generate a toolset for plugin platforms (anan-<name>).
         # Gives them _SINOCLAW_CORE_TOOLS plus any tools the plugin registered
         # into a toolset matching the platform name.
         if name.startswith("anan-"):

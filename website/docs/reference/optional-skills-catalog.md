@@ -1,7 +1,7 @@
 ---
 sidebar_position: 9
 title: "Optional Skills Catalog"
-description: "Official optional skills shipped with anan — install via sinoclaw skills install official/<category>/<skill>"
+description: "Official optional skills shipped with anan — install via anan skills install official/<category>/<skill>"
 ---
 
 # Optional Skills Catalog
@@ -9,14 +9,14 @@ description: "Official optional skills shipped with anan — install via sinocla
 Optional skills ship with anan under `optional-skills/` but are **not active by default**. Install them explicitly:
 
 ```bash
-sinoclaw skills install official/<category>/<skill>
+anan skills install official/<category>/<skill>
 ```
 
 For example:
 
 ```bash
-sinoclaw skills install official/blockchain/solana
-sinoclaw skills install official/mlops/flash-attention
+anan skills install official/blockchain/solana
+anan skills install official/mlops/flash-attention
 ```
 
 Each skill below links to a dedicated page with its full definition, setup, and usage.
@@ -24,7 +24,7 @@ Each skill below links to a dedicated page with its full definition, setup, and 
 To uninstall:
 
 ```bash
-sinoclaw skills uninstall <skill-name>
+anan skills uninstall <skill-name>
 ```
 
 ## autonomous-ai-agents
@@ -92,7 +92,7 @@ sinoclaw skills uninstall <skill-name>
 
 | Skill | Description |
 |-------|-------------|
-| [**openclaw-migration**](/docs/user-guide/skills/optional/migration/migration-openclaw-migration) | Migrate a user's OpenClaw customization footprint into Sinoclaw Agent. Imports Sinoclaw-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.anan, then reports exactly what could not be mig... |
+| [**openclaw-migration**](/docs/user-guide/skills/optional/migration/migration-openclaw-migration) | Migrate a user's OpenClaw customization footprint into anan Agent. Imports anan-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.anan, then reports exactly what could not be mig... |
 
 ## mlops
 
@@ -104,7 +104,7 @@ sinoclaw skills uninstall <skill-name>
 | [**faiss**](/docs/user-guide/skills/optional/mlops/mlops-faiss) | Facebook's library for efficient similarity search and clustering of dense vectors. Supports billions of vectors, GPU acceleration, and various index types (Flat, IVF, HNSW). Use for fast k-NN search, large-scale vector retrieval, or whe... |
 | [**optimizing-attention-flash**](/docs/user-guide/skills/optional/mlops/mlops-flash-attention) | Optimizes transformer attention with Flash Attention for 2-4x speedup and 10-20x memory reduction. Use when training/running transformers with long sequences (>512 tokens), encountering GPU memory issues with attention, or need faster in... |
 | [**guidance**](/docs/user-guide/skills/optional/mlops/mlops-guidance) | Control LLM output with regex and grammars, guarantee valid JSON/XML/code generation, enforce structured formats, and build multi-step workflows with Guidance - Microsoft Research's constrained generation framework |
-| [**sinoclaw-atropos-environments**](/docs/user-guide/skills/optional/mlops/mlops-sinoclaw-atropos-environments) | Build, test, and debug Sinoclaw Agent RL environments for Atropos training. Covers the SinoclawAgentBaseEnv interface, reward functions, agent loop integration, evaluation with tools, wandb logging, and the three CLI modes (serve/process/eva... |
+| [**anan-atropos-environments**](/docs/user-guide/skills/optional/mlops/mlops-anan-atropos-environments) | Build, test, and debug anan Agent RL environments for Atropos training. Covers the SinoclawAgentBaseEnv interface, reward functions, agent loop integration, evaluation with tools, wandb logging, and the three CLI modes (serve/process/eva... |
 | [**huggingface-tokenizers**](/docs/user-guide/skills/optional/mlops/mlops-huggingface-tokenizers) | Fast tokenizers optimized for research and production. Rust-based implementation tokenizes 1GB in &lt;20 seconds. Supports BPE, WordPiece, and Unigram algorithms. Train custom vocabularies, track alignments, handle padding/truncation. Integ... |
 | [**instructor**](/docs/user-guide/skills/optional/mlops/mlops-instructor) | Extract structured data from LLM responses with Pydantic validation, retry failed extractions automatically, parse complex JSON with type safety, and stream partial results with Instructor - battle-tested structured output library |
 | [**lambda-labs-gpu-cloud**](/docs/user-guide/skills/optional/mlops/mlops-lambda-labs) | Reserved and on-demand GPU cloud instances for ML training and inference. Use when you need dedicated GPU instances with simple SSH access, persistent filesystems, or high-performance multi-node clusters for large-scale training. |

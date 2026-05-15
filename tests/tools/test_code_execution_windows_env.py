@@ -311,7 +311,7 @@ class TestPosixEquivalence:
         "PYTHONPATH": "/opt/lib",
         "VIRTUAL_ENV": "/home/alice/.venv",
         "CONDA_PREFIX": "/opt/conda",
-        "ANAN_HOME": "/home/alice/.sinoclaw",
+        "ANAN_HOME": "/home/alice/.anan",
         "SINOCLAW_INTERACTIVE": "1",
         # Secret-substring blocks
         "OPENAI_API_KEY": "sk-xxx",

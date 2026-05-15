@@ -99,8 +99,8 @@ class TestHandleUpdateCommand:
         assert "Not a git repository" in result
 
     @pytest.mark.asyncio
-    async def test_no_sinoclaw_binary(self, tmp_path):
-        """Returns error when sinoclaw is not on PATH and anan_cli is not importable."""
+    async def test_no_anan_binary(self, tmp_path):
+        """Returns error when anan is not on PATH and anan_cli is not importable."""
         runner = _make_runner()
         event = _make_event()
 
@@ -123,7 +123,7 @@ class TestHandleUpdateCommand:
 
     @pytest.mark.asyncio
     async def test_fallback_to_sys_executable(self, tmp_path):
-        """Falls back to sys.executable -m anan_cli.main when sinoclaw not on PATH."""
+        """Falls back to sys.executable -m anan_cli.main when anan not on PATH."""
         runner = _make_runner()
         event = _make_event()
 
@@ -146,43 +146,43 @@ class TestHandleUpdateCommand:
              patch("subprocess.Popen", mock_popen):
             result = await runner._handle_update_command(event)
 
-        assert "Starting Sinoclaw update" in result
+        assert "Starting anan update" in result
         call_args = mock_popen.call_args[0][0]
         # The update_cmd uses sys.executable -m anan_cli.main
         joined = " ".join(call_args) if isinstance(call_args, list) else call_args
         assert "anan_cli.main" in joined or "bash" in call_args[0]
 
     @pytest.mark.asyncio
-    async def test_resolve_sinoclaw_bin_prefers_which(self, tmp_path):
-        """_resolve_sinoclaw_bin returns argv parts from shutil.which when available."""
-        from gateway.run import _resolve_sinoclaw_bin
+    async def test_resolve_anan_bin_prefers_which(self, tmp_path):
+        """_resolve_anan_bin returns argv parts from shutil.which when available."""
+        from gateway.run import _resolve_anan_bin
 
-        with patch("shutil.which", return_value="/custom/path/sinoclaw"):
-            result = _resolve_sinoclaw_bin()
+        with patch("shutil.which", return_value="/custom/path/anan"):
+            result = _resolve_anan_bin()
 
-        assert result == ["/custom/path/sinoclaw"]
+        assert result == ["/custom/path/anan"]
 
     @pytest.mark.asyncio
-    async def test_resolve_sinoclaw_bin_fallback(self):
-        """_resolve_sinoclaw_bin falls back to sys.executable argv when which fails."""
+    async def test_resolve_anan_bin_fallback(self):
+        """_resolve_anan_bin falls back to sys.executable argv when which fails."""
         import sys
-        from gateway.run import _resolve_sinoclaw_bin
+        from gateway.run import _resolve_anan_bin
 
         fake_spec = MagicMock()
         with patch("shutil.which", return_value=None), \
              patch("importlib.util.find_spec", return_value=fake_spec):
-            result = _resolve_sinoclaw_bin()
+            result = _resolve_anan_bin()
 
         assert result == [sys.executable, "-m", "anan_cli.main"]
 
     @pytest.mark.asyncio
-    async def test_resolve_sinoclaw_bin_returns_none_when_both_fail(self):
-        """_resolve_sinoclaw_bin returns None when both strategies fail."""
-        from gateway.run import _resolve_sinoclaw_bin
+    async def test_resolve_anan_bin_returns_none_when_both_fail(self):
+        """_resolve_anan_bin returns None when both strategies fail."""
+        from gateway.run import _resolve_anan_bin
 
         with patch("shutil.which", return_value=None), \
              patch("importlib.util.find_spec", return_value=None):
-            result = _resolve_sinoclaw_bin()
+            result = _resolve_anan_bin()
 
         assert result is None
 
@@ -203,7 +203,7 @@ class TestHandleUpdateCommand:
 
         with patch("gateway.run._anan_home", anan_home), \
              patch("gateway.run.__file__", fake_file), \
-             patch("shutil.which", side_effect=lambda x: "/usr/bin/sinoclaw" if x == "hermes" else "/usr/bin/setsid"), \
+             patch("shutil.which", side_effect=lambda x: "/usr/bin/anan" if x == "hermes" else "/usr/bin/setsid"), \
              patch("subprocess.Popen"):
             result = await runner._handle_update_command(event)
 
@@ -236,7 +236,7 @@ class TestHandleUpdateCommand:
 
         with patch("gateway.run._anan_home", anan_home), \
              patch("gateway.run.__file__", fake_file), \
-             patch("shutil.which", side_effect=lambda x: "/usr/bin/sinoclaw" if x == "hermes" else "/usr/bin/setsid"), \
+             patch("shutil.which", side_effect=lambda x: "/usr/bin/anan" if x == "hermes" else "/usr/bin/setsid"), \
              patch("subprocess.Popen"):
             await runner._handle_update_command(event)
 
@@ -270,7 +270,7 @@ class TestHandleUpdateCommand:
         assert call_args[0] == "/usr/bin/setsid"
         assert call_args[1] == "bash"
         assert ".update_exit_code" in call_args[-1]
-        assert "Starting Sinoclaw update" in result
+        assert "Starting anan update" in result
 
     @pytest.mark.asyncio
     async def test_fallback_when_no_setsid(self, tmp_path):
@@ -291,7 +291,7 @@ class TestHandleUpdateCommand:
 
         def which_no_setsid(x):
             if x == "hermes":
-                return "/usr/bin/sinoclaw"
+                return "/usr/bin/anan"
             if x == "setsid":
                 return None
             return None
@@ -310,7 +310,7 @@ class TestHandleUpdateCommand:
         # start_new_session=True should be in kwargs
         call_kwargs = mock_popen.call_args[1]
         assert call_kwargs.get("start_new_session") is True
-        assert "Starting Sinoclaw update" in result
+        assert "Starting anan update" in result
 
     @pytest.mark.asyncio
     async def test_popen_failure_cleans_up(self, tmp_path):

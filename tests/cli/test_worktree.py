@@ -155,7 +155,7 @@ class TestWorktreeCreation:
         info = _setup_worktree(str(git_repo))
         assert info is not None
         assert Path(info["path"]).exists()
-        assert info["branch"].startswith("hermes/sinoclaw-")
+        assert info["branch"].startswith("hermes/anan-")
         assert info["repo_root"] == str(git_repo)
 
         # Verify it's a valid git worktree
@@ -695,19 +695,19 @@ class TestOrphanedBranchPruning:
     """Test cleanup of orphaned hermes/* and pr-* branches."""
 
     def test_prunes_orphaned_sinoclaw_branch(self, git_repo):
-        """hermes/sinoclaw-* branches with no worktree should be deleted."""
+        """hermes/anan-* branches with no worktree should be deleted."""
         # Create a branch that looks like a worktree branch but has no worktree
         subprocess.run(
-            ["git", "branch", "hermes/sinoclaw-deadbeef", "HEAD"],
+            ["git", "branch", "hermes/anan-deadbeef", "HEAD"],
             cwd=str(git_repo), capture_output=True,
         )
 
         # Verify it exists
         result = subprocess.run(
-            ["git", "branch", "--list", "hermes/sinoclaw-deadbeef"],
+            ["git", "branch", "--list", "hermes/anan-deadbeef"],
             capture_output=True, text=True, cwd=str(git_repo),
         )
-        assert "hermes/sinoclaw-deadbeef" in result.stdout
+        assert "hermes/anan-deadbeef" in result.stdout
 
         # Simulate _prune_orphaned_branches logic
         result = subprocess.run(
@@ -728,9 +728,9 @@ class TestOrphanedBranchPruning:
         orphaned = [
             b for b in all_branches
             if b not in active_branches
-            and (b.startswith("hermes/sinoclaw-") or b.startswith("pr-"))
+            and (b.startswith("hermes/anan-") or b.startswith("pr-"))
         ]
-        assert "hermes/sinoclaw-deadbeef" in orphaned
+        assert "hermes/anan-deadbeef" in orphaned
 
         # Delete them
         if orphaned:
@@ -741,10 +741,10 @@ class TestOrphanedBranchPruning:
 
         # Verify gone
         result = subprocess.run(
-            ["git", "branch", "--list", "hermes/sinoclaw-deadbeef"],
+            ["git", "branch", "--list", "hermes/anan-deadbeef"],
             capture_output=True, text=True, cwd=str(git_repo),
         )
-        assert "hermes/sinoclaw-deadbeef" not in result.stdout
+        assert "hermes/anan-deadbeef" not in result.stdout
 
     def test_prunes_orphaned_pr_branch(self, git_repo):
         """pr-* branches should be deleted during pruning."""
@@ -813,7 +813,7 @@ class TestOrphanedBranchPruning:
         orphaned = [
             b for b in all_branches
             if b not in active_branches
-            and (b.startswith("hermes/sinoclaw-") or b.startswith("pr-"))
+            and (b.startswith("hermes/anan-") or b.startswith("pr-"))
         ]
         assert "main" not in orphaned
 

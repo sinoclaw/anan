@@ -14,10 +14,10 @@ Set up and use 1Password CLI (op). Use when installing the CLI, enabling desktop
 
 | | |
 |---|---|
-| Source | Optional — install with `sinoclaw skills install official/security/1password` |
+| Source | Optional — install with `anan skills install official/security/1password` |
 | Path | `optional-skills/security/1password` |
 | Version | `1.0.0` |
-| Author | arceus77-7, enhanced by Sinoclaw Agent |
+| Author | arceus77-7, enhanced by anan Agent |
 | License | MIT |
 | Tags | `security`, `secrets`, `1password`, `op`, `cli` |
 
@@ -102,9 +102,9 @@ For reliable `op` use with desktop app integration, run sign-in and secret opera
 Note: This is NOT needed when using `OP_SERVICE_ACCOUNT_TOKEN` — the token persists across terminal calls automatically.
 
 ```bash
-SOCKET_DIR="${TMPDIR:-/tmp}/sinoclaw-tmux-sockets"
+SOCKET_DIR="${TMPDIR:-/tmp}/anan-tmux-sockets"
 mkdir -p "$SOCKET_DIR"
-SOCKET="$SOCKET_DIR/sinoclaw-op.sock"
+SOCKET="$SOCKET_DIR/anan-op.sock"
 SESSION="op-auth-$(date +%Y%m%d-%H%M%S)"
 
 tmux -S "$SOCKET" new -d -s "$SESSION" -n shell

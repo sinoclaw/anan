@@ -1,8 +1,8 @@
-"""Tests for --ignore-user-config and --ignore-rules flags on `sinoclaw chat`.
+"""Tests for --ignore-user-config and --ignore-rules flags on `anan chat`.
 
 Ported from openai/codex#18646 (`feat: add --ignore-user-config and --ignore-rules`).
 Codex's flags fully isolate a run from user-level config and exec-policy .rules
-files. In Sinoclaw the equivalent isolation is:
+files. In anan the equivalent isolation is:
 
 * ``--ignore-user-config`` → skip ``~/.anan/config.yaml`` in ``load_cli_config()``
   (credentials in ``.env`` are still loaded).
@@ -224,7 +224,7 @@ class TestArgparseFlagsRegistered:
         assert args.ignore_rules is True
 
     def test_main_py_registers_both_flags(self):
-        """E2E: the real sinoclaw parser accepts both flags."""
+        """E2E: the real anan parser accepts both flags."""
         from anan_cli._parser import build_top_level_parser
 
         parser, _subparsers, chat_parser = build_top_level_parser()

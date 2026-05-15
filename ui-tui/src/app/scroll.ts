@@ -1,4 +1,4 @@
-import type { ScrollBoxHandle } from '@sinoclaw/ink'
+import type { ScrollBoxHandle } from '@anan/ink'
 
 import type { SelectionApi } from './interfaces.js'
 

@@ -2,7 +2,7 @@
 name: honcho
 description: Configure and use Honcho memory with Hermes -- cross-session user modeling, multi-profile peer isolation, observation config, dialectic reasoning, session summaries, and context budget enforcement. Use when setting up Honcho, troubleshooting memory, managing profiles with Honcho peers, or tuning observation, recall, and dialectic settings.
 version: 2.0.0
-author: Sinoclaw Agent
+author: anan Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
@@ -395,7 +395,7 @@ Run `anan honcho setup`. Ensure `memory.provider: honcho` is in `~/.anan/config.
 Check `anan honcho status` -- verify `saveMessages: true` and `writeFrequency` isn't `session` (which only writes on exit).
 
 ### Profile not getting its own peer
-Use `--clone` when creating: `sinoclaw profile create <name> --clone`. For existing profiles: `anan honcho sync`.
+Use `--clone` when creating: `anan profile create <name> --clone`. For existing profiles: `anan honcho sync`.
 
 ### Observation changes in dashboard not reflected
 Observation config is synced from the server on each session init. Start a new session after changing settings in the Honcho UI.

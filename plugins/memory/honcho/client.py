@@ -1,7 +1,7 @@
 """Honcho client initialization and configuration.
 
 Resolution order for config file:
-  1. $ANAN_HOME/honcho.json  (instance-local, enables isolated Sinoclaw instances)
+  1. $ANAN_HOME/honcho.json  (instance-local, enables isolated anan instances)
   2. ~/.honcho/config.json     (global, shared across all Honcho-enabled apps)
   3. Environment variables     (HONCHO_API_KEY, HONCHO_ENVIRONMENT)
 
@@ -32,7 +32,7 @@ HOST = "anan"
 
 
 def resolve_active_host() -> str:
-    """Derive the Honcho host key from the active Sinoclaw profile.
+    """Derive the Honcho host key from the active anan profile.
 
     Resolution order:
       1. SINOCLAW_HONCHO_HOST env var (explicit override)
@@ -273,7 +273,7 @@ class HonchoClientConfig:
     # honcho_reasoning tool param (agentic). When false, always uses
     # dialecticReasoningLevel and ignores model-provided overrides.
     dialectic_dynamic: bool = True
-    # Max chars of dialectic result to inject into Sinoclaw system prompt
+    # Max chars of dialectic result to inject into anan system prompt
     dialectic_max_chars: int = 600
     # Dialectic depth: how many .chat() calls per dialectic cycle (1-3).
     # Depth 1: single call. Depth 2: self-audit + targeted synthesis.
@@ -316,7 +316,7 @@ class HonchoClientConfig:
     sessions: dict[str, str] = field(default_factory=dict)
     # Raw global config for anything else consumers need
     raw: dict[str, Any] = field(default_factory=dict)
-    # True when Honcho was explicitly configured for this host (hosts.sinoclaw
+    # True when Honcho was explicitly configured for this host (hosts.anan
     # block exists or enabled was set explicitly), vs auto-enabled from a
     # stray HONCHO_API_KEY env var.
     explicitly_configured: bool = False
@@ -352,7 +352,7 @@ class HonchoClientConfig:
         """Create config from the resolved Honcho config path.
 
         Resolution: $ANAN_HOME/honcho.json -> ~/.honcho/config.json -> env vars.
-        When host is None, derives it from the active Sinoclaw profile.
+        When host is None, derives it from the active anan profile.
         """
         resolved_host = host or resolve_active_host()
         path = config_path or resolve_config_path()
@@ -367,7 +367,7 @@ class HonchoClientConfig:
             return cls.from_env(host=resolved_host)
 
         host_block = (raw.get("hosts") or {}).get(resolved_host, {})
-        # A hosts.sinoclaw block or explicit enabled flag means the user
+        # A hosts.anan block or explicit enabled flag means the user
         # intentionally configured Honcho for this host.
         _explicitly_configured = bool(host_block) or raw.get("enabled") is True
 
@@ -603,9 +603,9 @@ class HonchoClientConfig:
 
         Resolution order:
           1. Manual directory override from sessions map
-          2. Sinoclaw session title (from /title command)
+          2. anan session title (from /title command)
           3. Gateway session key (stable per-chat identifier from gateway platforms)
-          4. per-session strategy — Sinoclaw session_id ({timestamp}_{hex})
+          4. per-session strategy — anan session_id ({timestamp}_{hex})
           5. per-repo strategy — git repo root directory name
           6. per-directory strategy — directory basename
           7. global strategy — workspace name
@@ -638,7 +638,7 @@ class HonchoClientConfig:
             if sanitized:
                 return self._enforce_session_id_limit(sanitized, gateway_session_key)
 
-        # per-session: inherit Sinoclaw session_id (new Honcho session each run)
+        # per-session: inherit anan session_id (new Honcho session each run)
         if self.session_strategy == "per-session" and session_id:
             if self.session_peer_prefix and self.peer_name:
                 return f"{self.peer_name}-{session_id}"

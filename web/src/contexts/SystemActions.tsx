@@ -10,7 +10,7 @@ import {
 
 const ACTION_NAMES: Record<SystemAction, string> = {
   restart: "gateway-restart",
-  update: "sinoclaw-update",
+  update: "anan-update",
 };
 
 export function SystemActionsProvider({

@@ -2,7 +2,7 @@
 
 Regression: the old implementation wrote ``sinoclaw_conversation_<ts>.json``
 to the current working directory (CWD). Users who ran /save expected the
-file to be discoverable via ``sinoclaw sessions browse``, but CWD-resident
+file to be discoverable via ``anan sessions browse``, but CWD-resident
 snapshots are not indexed in the state DB and are generally invisible.
 The fix writes snapshots under ``~/.anan/sessions/saved/`` and prints
 the absolute path plus the resume hint for the live session.
@@ -22,7 +22,7 @@ import pytest
 
 @pytest.fixture
 def anan_home(tmp_path, monkeypatch):
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("ANAN_HOME", str(home))
@@ -85,7 +85,7 @@ def test_save_conversation_writes_under_anan_home(anan_home, tmp_path, monkeypat
     # User-facing message must include the absolute path AND the resume hint.
     out = capsys.readouterr().out
     assert str(files[0]) in out, out
-    assert "sinoclaw --resume 20260101_120000_abc123" in out, out
+    assert "anan --resume 20260101_120000_abc123" in out, out
 
 
 def test_save_conversation_empty_history_does_nothing(anan_home, capsys):

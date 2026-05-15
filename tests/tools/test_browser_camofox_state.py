@@ -1,4 +1,4 @@
-"""Tests for Sinoclaw-managed Camofox state helpers."""
+"""Tests for anan-managed Camofox state helpers."""
 
 from unittest.mock import patch
 

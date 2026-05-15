@@ -51,7 +51,7 @@ class TestDiscovery:
         from anan_cli import plugins as plugins_mod
 
         # Isolated ANAN_HOME so we don't read the developer's config.yaml.
-        home = tmp_path / ".sinoclaw"
+        home = tmp_path / ".anan"
         home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)

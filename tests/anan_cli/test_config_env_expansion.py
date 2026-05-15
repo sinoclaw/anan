@@ -109,7 +109,7 @@ class TestLoadCliConfigExpansion:
         config_file.write_text(config_yaml)
 
         monkeypatch.setenv("TEST_VISION_KEY_XYZ", "vis-key-123")
-        # Patch the sinoclaw home so load_cli_config finds our test config
+        # Patch the anan home so load_cli_config finds our test config
         monkeypatch.setattr("cli._anan_home", tmp_path)
 
         from cli import load_cli_config

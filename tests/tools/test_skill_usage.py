@@ -19,7 +19,7 @@ def _bump_view_many(anan_home: str, skill_name: str, iterations: int) -> None:
 @pytest.fixture
 def skills_home(tmp_path, monkeypatch):
     """Isolated ANAN_HOME with a clean skills/ dir for each test."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     (home / "skills").mkdir()
     monkeypatch.setattr(Path, "home", lambda: tmp_path)

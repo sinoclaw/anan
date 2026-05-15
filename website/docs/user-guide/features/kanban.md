@@ -27,7 +27,7 @@ This is the shape that covers the workloads `delegate_task` can't:
 - **Engineering pipelines** — decompose → implement in parallel worktrees → review → iterate → PR.
 - **Fleet work** — one specialist managing N subjects (50 social accounts, 12 monitored services).
 
-For the full design rationale, comparative analysis against Cline Kanban / Paperclip / NanoClaw / Google Gemini Enterprise, and the eight canonical collaboration patterns, see `docs/sinoclaw-kanban-v1-spec.pdf` in the repository.
+For the full design rationale, comparative analysis against Cline Kanban / Paperclip / NanoClaw / Google Gemini Enterprise, and the eight canonical collaboration patterns, see `docs/anan-kanban-v1-spec.pdf` in the repository.
 
 ## Kanban vs. `delegate_task`
 
@@ -136,7 +136,7 @@ so path-traversal tricks can't name a board.
 
 ### Managing boards from the dashboard
 
-`sinoclaw dashboard` → Kanban tab shows a board switcher at the top as soon
+`anan dashboard` → Kanban tab shows a board switcher at the top as soon
 as more than one board exists (or any board has tasks). Single-board users
 see only a small `+ New board` button; the switcher is hidden until it
 matters.
@@ -164,7 +164,7 @@ The commands below are **you** (the human) setting up the board and creating tas
 hermes kanban init
 
 # 2. Start the gateway (hosts the embedded dispatcher)
-sinoclaw gateway start
+anan gateway start
 
 # 3. Create a task (you — or an orchestrator agent via kanban_create)
 hermes kanban create "research AI funding landscape" --assignee researcher
@@ -193,7 +193,7 @@ kanban:
 ```
 
 Override the config flag at runtime via `SINOCLAW_KANBAN_DISPATCH_IN_GATEWAY=0`
-for debugging. Standard gateway supervision applies: run `sinoclaw gateway
+for debugging. Standard gateway supervision applies: run `anan gateway
 start` directly, or wire the gateway up as a systemd user unit (see the
 gateway docs). Without a running gateway, `ready` tasks stay where they are
 until one comes up — `anan kanban create` warns about this at creation
@@ -288,7 +288,7 @@ Three reasons:
 2. **No shell-quoting fragility.** Passing `--metadata '{"files": [...]}'` through shlex + argparse is a latent footgun. Structured tool args skip it entirely.
 3. **Better errors.** Tool results are structured JSON the model can reason about, not stderr strings it has to parse.
 
-**Zero schema footprint on normal sessions.** A regular `sinoclaw chat` session has zero `kanban_*` tools in its schema. The `check_fn` on each tool only returns True when `SINOCLAW_KANBAN_TASK` is set, which only happens when the dispatcher spawned this process. No tool bloat for users who never touch kanban.
+**Zero schema footprint on normal sessions.** A regular `anan chat` session has zero `kanban_*` tools in its schema. The `check_fn` on each tool only returns True when `SINOCLAW_KANBAN_TASK` is set, which only happens when the dispatcher spawned this process. No tool bloat for users who never touch kanban.
 
 The `kanban-worker` and `kanban-orchestrator` skills teach the model which tool to call when and in what order.
 
@@ -341,13 +341,13 @@ whichever profile you use for kanban workers (`researcher`, `writer`, `ops`,
 etc.):
 
 ```bash
-sinoclaw -p <your-worker-profile> skills list | grep kanban-worker
+anan -p <your-worker-profile> skills list | grep kanban-worker
 ```
 
 If the bundled copy is missing, restore it for that profile:
 
 ```bash
-sinoclaw -p <your-worker-profile> skills reset kanban-worker --restore
+anan -p <your-worker-profile> skills reset kanban-worker --restore
 ```
 
 The dispatcher also auto-passes `--skills kanban-worker` when spawning every worker, so the worker always has the pattern library available even if a profile's default skills config doesn't include it.
@@ -387,7 +387,7 @@ hermes kanban create "audit auth flow" \
 
 **From the dashboard**, type the skills comma-separated into the **skills** field of the inline create form.
 
-These skills are **additive** to the built-in `kanban-worker` — the dispatcher emits one `--skills <name>` flag for each (and for the built-in), so the worker spawns with all of them loaded. The skill names must match skills that are actually installed on the assignee's profile (run `sinoclaw skills list` to see what's available); there's no runtime install.
+These skills are **additive** to the built-in `kanban-worker` — the dispatcher emits one `--skills <name>` flag for each (and for the built-in), so the worker spawns with all of them loaded. The skill names must match skills that are actually installed on the assignee's profile (run `anan skills list` to see what's available); there's no runtime install.
 
 ### The orchestrator skill
 
@@ -417,13 +417,13 @@ install and update, so there is no separate Skills Hub install step. Verify it i
 present in your orchestrator profile:
 
 ```bash
-sinoclaw -p orchestrator skills list | grep kanban-orchestrator
+anan -p orchestrator skills list | grep kanban-orchestrator
 ```
 
 If the bundled copy is missing, restore it for that profile:
 
 ```bash
-sinoclaw -p orchestrator skills reset kanban-orchestrator --restore
+anan -p orchestrator skills reset kanban-orchestrator --restore
 ```
 
 For best results, pair it with a profile whose toolsets are restricted to board operations (`kanban`, `gateway`, `memory`) so the orchestrator literally cannot execute implementation tasks even if it tries.
@@ -526,9 +526,9 @@ The dashboard's HTTP auth middleware [explicitly skips `/api/plugins/`](./extend
 
 The WebSocket takes one additional step: it requires the dashboard's ephemeral session token as a `?token=…` query parameter (browsers can't set `Authorization` on an upgrade request), matching the pattern used by the in-browser PTY bridge.
 
-If you run `sinoclaw dashboard --host 0.0.0.0`, every plugin route — kanban included — becomes reachable from the network. **Don't do that on a shared host.** The board contains task bodies, comments, and workspace paths; an attacker reaching these routes gets read access to your entire collaboration surface and can also create / reassign / archive tasks.
+If you run `anan dashboard --host 0.0.0.0`, every plugin route — kanban included — becomes reachable from the network. **Don't do that on a shared host.** The board contains task bodies, comments, and workspace paths; an attacker reaching these routes gets read access to your entire collaboration surface and can also create / reassign / archive tasks.
 
-Tasks in `~/.anan/kanban.db` are profile-agnostic on purpose (that's the coordination primitive). If you open the dashboard with `sinoclaw -p <profile> dashboard`, the board still shows tasks created by any other profile on the host. Same user owns all profiles, but this is worth knowing if multiple personas coexist.
+Tasks in `~/.anan/kanban.db` are profile-agnostic on purpose (that's the coordination primitive). If you open the dashboard with `anan -p <profile> dashboard`, the board still shows tasks created by any other profile on the host. Same user owns all profiles, but this is worth knowing if multiple personas coexist.
 
 ### Live updates
 
@@ -579,7 +579,7 @@ hermes kanban runs <id> [--json]                       # attempt history (one ro
 hermes kanban assignees [--json]                       # profiles on disk + per-assignee task counts
 hermes kanban dispatch [--dry-run] [--max N]           # one-shot pass
         [--failure-limit N] [--json]
-hermes kanban daemon --force                           # DEPRECATED — standalone dispatcher (use `sinoclaw gateway start` instead)
+hermes kanban daemon --force                           # DEPRECATED — standalone dispatcher (use `anan gateway start` instead)
         [--failure-limit N] [--pidfile PATH] [-v]
 hermes kanban stats [--json]                           # per-status + per-assignee counts
 hermes kanban log <id> [--tail BYTES]                  # worker log from ~/.anan/kanban/logs/
@@ -599,7 +599,7 @@ All commands are also available as a slash command in the interactive CLI and in
 
 ## `/kanban` slash command {#kanban-slash-command}
 
-Every `anan kanban <action>` verb is also reachable as `/kanban <action>` — from inside an interactive `sinoclaw chat` session **and** from any gateway platform (Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Mattermost, email, SMS). Both surfaces call the exact same `anan_cli.kanban.run_slash()` entry point that reuses the `anan kanban` argparse tree, so the argument surface, flags, and output format are identical across CLI, `/kanban`, and `anan kanban`. You don't have to leave the chat to drive the board.
+Every `anan kanban <action>` verb is also reachable as `/kanban <action>` — from inside an interactive `anan chat` session **and** from any gateway platform (Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Mattermost, email, SMS). Both surfaces call the exact same `anan_cli.kanban.run_slash()` entry point that reuses the `anan kanban` argparse tree, so the argument surface, flags, and output format are identical across CLI, `/kanban`, and `anan kanban`. You don't have to leave the chat to drive the board.
 
 ```
 /kanban list
@@ -665,7 +665,7 @@ The board supports these eight patterns without any new primitives:
 | **P8 Fleet farming** | one profile, N subjects | 50 social accounts |
 | **P9 Triage specifier** | rough idea → `triage` → `anan kanban specify` expands body → `todo` | "turn this one-liner into a spec'd task" |
 
-For worked examples of each, see `docs/sinoclaw-kanban-v1-spec.pdf`.
+For worked examples of each, see `docs/anan-kanban-v1-spec.pdf`.
 
 ## Multi-tenant usage
 
@@ -795,4 +795,4 @@ Kanban is deliberately single-host. `~/.anan/kanban.db` is a local SQLite file a
 
 ## Design spec
 
-The complete design — architecture, concurrency correctness, comparison with other systems, implementation plan, risks, open questions — lives in `docs/sinoclaw-kanban-v1-spec.pdf`. Read that before filing any behavior-change PR.
+The complete design — architecture, concurrency correctness, comparison with other systems, implementation plan, risks, open questions — lives in `docs/anan-kanban-v1-spec.pdf`. Read that before filing any behavior-change PR.

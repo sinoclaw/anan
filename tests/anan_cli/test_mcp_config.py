@@ -1,5 +1,5 @@
 """
-Tests for anan_cli.mcp_config — ``sinoclaw mcp`` subcommands.
+Tests for anan_cli.mcp_config — ``anan mcp`` subcommands.
 
 These tests mock the MCP server connection layer so they run without
 any actual MCP servers or API keys.

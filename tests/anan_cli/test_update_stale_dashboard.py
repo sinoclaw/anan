@@ -1,6 +1,6 @@
 """Tests for the stale-dashboard handling run at the end of ``anan update``.
 
-``anan update`` detects ``sinoclaw dashboard`` processes left over from the
+``anan update`` detects ``anan dashboard`` processes left over from the
 previous version and kills them (SIGTERM + SIGKILL grace, or ``taskkill /F``
 on Windows).  Without this, the running backend silently serves stale Python
 against a freshly-updated JS bundle, producing 401s / empty data.
@@ -110,7 +110,7 @@ class TestFindStaleDashboardPids:
                 returncode=0,
                 stdout="\n".join([
                     _ps_line(12345, "python3 -m anan_cli.main dashboard --port 9119"),
-                    _ps_line(12346, "sinoclaw dashboard --port 9120 --no-open"),
+                    _ps_line(12346, "anan dashboard --port 9120 --no-open"),
                     _ps_line(12347, "python /home/x/anan_cli/main.py dashboard"),
                 ]) + "\n",
                 stderr="",
@@ -123,7 +123,7 @@ class TestFindStaleDashboardPids:
                 returncode=0,
                 stdout="\n".join([
                     _ps_line(os.getpid(), "python3 -m anan_cli.main dashboard"),
-                    _ps_line(12345, "sinoclaw dashboard --port 9119"),
+                    _ps_line(12345, "anan dashboard --port 9119"),
                 ]) + "\n",
                 stderr="",
             )
@@ -162,8 +162,8 @@ class TestFindStaleDashboardPids:
             mock_run.return_value = MagicMock(
                 returncode=0,
                 stdout="\n".join([
-                    _ps_line(99999, "grep sinoclaw dashboard"),
-                    _ps_line(12345, "sinoclaw dashboard --port 9119"),
+                    _ps_line(99999, "grep anan dashboard"),
+                    _ps_line(12345, "anan dashboard --port 9119"),
                 ]) + "\n",
                 stderr="",
             )
@@ -176,8 +176,8 @@ class TestFindStaleDashboardPids:
             mock_run.return_value = MagicMock(
                 returncode=0,
                 stdout="\n".join([
-                    "notapid sinoclaw dashboard --bad",
-                    _ps_line(12345, "sinoclaw dashboard --port 9119"),
+                    "notapid anan dashboard --bad",
+                    _ps_line(12345, "anan dashboard --port 9119"),
                     "   ",
                 ]) + "\n",
                 stderr="",

@@ -15,7 +15,7 @@ from anan_cli import kanban_db as kb
 @pytest.fixture
 def kanban_home(tmp_path, monkeypatch):
     """Isolated ANAN_HOME with an empty kanban DB."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -438,7 +438,7 @@ def test_has_spawnable_ready_false_when_only_terminal_lanes(kanban_home, monkeyp
 
 def test_has_spawnable_ready_true_when_real_profile_present(kanban_home, monkeypatch):
     """``has_spawnable_ready`` returns True as soon as ANY ready task
-    has an assignee that maps to a real Sinoclaw profile — preserves the
+    has an assignee that maps to a real anan profile — preserves the
     real "stuck" signal when a daily/agent task is queued."""
     from anan_cli import profiles
     monkeypatch.setattr(
@@ -567,7 +567,7 @@ def test_tenant_propagates_to_events(kanban_home):
 # Shared-board path resolution (issue #19348)
 #
 # The kanban board is a cross-profile coordination primitive: a worker
-# spawned with `sinoclaw -p <profile>` must read/write the same kanban.db
+# spawned with `anan -p <profile>` must read/write the same kanban.db
 # as the dispatcher that claimed the task. These tests exercise the
 # path-resolution layer directly and would have caught the regression
 # where `kanban_db_path()` resolved to the active profile's ANAN_HOME.
@@ -585,8 +585,8 @@ class TestSharedBoardPaths:
     def test_default_install_anchors_at_home_dot_hermes(
         self, tmp_path, monkeypatch
     ):
-        # Standard install: ANAN_HOME == ~/.sinoclaw, no profile active.
-        default_home = tmp_path / ".sinoclaw"
+        # Standard install: ANAN_HOME == ~/.anan, no profile active.
+        default_home = tmp_path / ".anan"
         default_home.mkdir()
         self._set_home(monkeypatch, tmp_path, default_home)
 
@@ -605,7 +605,7 @@ class TestSharedBoardPaths:
         # worker spawned with -p <profile> previously resolved to
         # ~/.anan/profiles/<profile>/kanban.db. After the fix both
         # converge on ~/.anan/kanban.db.
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         default_home.mkdir()
         profile_home = default_home / "profiles" / "nehemiahkanban"
         profile_home.mkdir(parents=True)
@@ -631,7 +631,7 @@ class TestSharedBoardPaths:
         # End-to-end convergence: resolve the path under each side's
         # ANAN_HOME and confirm equality. This is the property the
         # dispatcher/worker handoff actually depends on.
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         default_home.mkdir()
         profile_home = default_home / "profiles" / "coder"
         profile_home.mkdir(parents=True)
@@ -642,7 +642,7 @@ class TestSharedBoardPaths:
         dispatcher_ws = kb.workspaces_root()
         dispatcher_log = kb.worker_log_path("t_handoff")
 
-        # Worker's perspective (profile activated by `sinoclaw -p coder`).
+        # Worker's perspective (profile activated by `anan -p coder`).
         monkeypatch.setenv("ANAN_HOME", str(profile_home))
         worker_db = kb.kanban_db_path()
         worker_ws = kb.workspaces_root()
@@ -655,7 +655,7 @@ class TestSharedBoardPaths:
     def test_docker_custom_anan_home_uses_env_path_directly(
         self, tmp_path, monkeypatch
     ):
-        # Docker / custom deployment: ANAN_HOME points outside ~/.sinoclaw.
+        # Docker / custom deployment: ANAN_HOME points outside ~/.anan.
         # `get_default_sinoclaw_root()` returns env_home directly when it
         # is not a `<root>/profiles/<name>` shape and not under
         # `Path.home() / ".anan"`.
@@ -685,7 +685,7 @@ class TestSharedBoardPaths:
     ):
         # Explicit override: SINOCLAW_KANBAN_HOME beats every other
         # resolution rule.
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         profile_home = default_home / "profiles" / "any"
         profile_home.mkdir(parents=True)
         override = tmp_path / "shared-board"
@@ -701,7 +701,7 @@ class TestSharedBoardPaths:
 
     def test_empty_override_falls_through(self, tmp_path, monkeypatch):
         # Empty/whitespace override is treated as unset.
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         default_home.mkdir()
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         monkeypatch.setenv("ANAN_HOME", str(default_home))
@@ -715,7 +715,7 @@ class TestSharedBoardPaths:
         # Belt-and-suspenders: round-trip a task across the two
         # ANAN_HOME perspectives via a real SQLite file. Without the
         # fix the worker would open a different file and see no rows.
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         default_home.mkdir()
         profile_home = default_home / "profiles" / "nehemiahkanban"
         profile_home.mkdir(parents=True)
@@ -739,7 +739,7 @@ class TestSharedBoardPaths:
         # SINOCLAW_KANBAN_DB pins the file path directly and beats both
         # SINOCLAW_KANBAN_HOME and the `get_default_sinoclaw_root()` path.
         # This is the env the dispatcher injects into workers.
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         default_home.mkdir()
         umbrella = tmp_path / "umbrella"
         umbrella.mkdir()
@@ -760,7 +760,7 @@ class TestSharedBoardPaths:
         self, tmp_path, monkeypatch
     ):
         # SINOCLAW_KANBAN_WORKSPACES_ROOT pins the workspaces root directly.
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         default_home.mkdir()
         umbrella = tmp_path / "umbrella"
         umbrella.mkdir()
@@ -781,7 +781,7 @@ class TestSharedBoardPaths:
     ):
         # Empty/whitespace pins are treated as unset, same as
         # SINOCLAW_KANBAN_HOME.
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         default_home.mkdir()
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         monkeypatch.setenv("ANAN_HOME", str(default_home))
@@ -798,7 +798,7 @@ class TestSharedBoardPaths:
         # and SINOCLAW_KANBAN_WORKSPACES_ROOT into the worker env so the
         # worker converges on the dispatcher's paths even when the
         # `-p <profile>` flag rewrites ANAN_HOME.
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         default_home.mkdir()
         self._set_home(monkeypatch, tmp_path, default_home)
 

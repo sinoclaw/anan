@@ -52,7 +52,7 @@ hermes teams-pipeline maintain-subscriptions --dry-run
 
 You MUST run `maintain-subscriptions` on a schedule. Pick one of these three options:
 
-#### Option 1: Hermes cron (recommended if you already run the Sinoclaw gateway)
+#### Option 1: Hermes cron (recommended if you already run the anan gateway)
 
 Hermes ships a built-in cron scheduler. Add a script-only cron job that runs every 12 hours (gives 6x headroom against the 72h expiry window):
 
@@ -73,7 +73,7 @@ hermes cron show teams-pipeline-maintain-subscriptions
 
 #### Option 2: systemd timer (recommended for Linux production deployments)
 
-Create `/etc/systemd/system/sinoclaw-teams-pipeline-maintain.service`:
+Create `/etc/systemd/system/anan-teams-pipeline-maintain.service`:
 
 ```ini
 [Unit]
@@ -87,7 +87,7 @@ EnvironmentFile=/etc/hermes/env
 ExecStart=/usr/local/bin/hermes teams-pipeline maintain-subscriptions
 ```
 
-And `/etc/systemd/system/sinoclaw-teams-pipeline-maintain.timer`:
+And `/etc/systemd/system/anan-teams-pipeline-maintain.timer`:
 
 ```ini
 [Unit]
@@ -106,8 +106,8 @@ Enable:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now sinoclaw-teams-pipeline-maintain.timer
-systemctl list-timers sinoclaw-teams-pipeline-maintain.timer
+sudo systemctl enable --now anan-teams-pipeline-maintain.timer
+systemctl list-timers anan-teams-pipeline-maintain.timer
 ```
 
 #### Option 3: Plain crontab
@@ -171,14 +171,14 @@ hermes teams-pipeline show <job-id>
 
 ### Daily or periodic checks
 
-- run `sinoclaw teams-pipeline maintain-subscriptions --dry-run`
-- inspect `sinoclaw teams-pipeline list --status failed`
+- run `anan teams-pipeline maintain-subscriptions --dry-run`
+- inspect `anan teams-pipeline list --status failed`
 - verify the Teams delivery target is still the correct chat or channel
 
 ### Before changing webhook URLs or delivery targets
 
 - update the public notification URL or Teams target config
-- run `sinoclaw teams-pipeline validate`
+- run `anan teams-pipeline validate`
 - renew or recreate affected subscriptions
 - confirm new events land in the expected sink
 
@@ -212,7 +212,7 @@ Check:
 ### Duplicate or unexpected replays
 
 Check:
-- whether you manually replayed a job with `sinoclaw teams-pipeline run`
+- whether you manually replayed a job with `anan teams-pipeline run`
 - whether the sink record already exists for that meeting
 - whether you intentionally enabled a resend path in your local config
 
@@ -226,8 +226,8 @@ Check:
 - [ ] `ffmpeg` is installed if recording fallback is enabled
 - [ ] Teams outbound delivery target is configured and verified
 - [ ] Notion and Linear sinks are configured only if actually needed
-- [ ] `sinoclaw teams-pipeline validate` returns an OK snapshot
-- [ ] `sinoclaw teams-pipeline token-health --force-refresh` succeeds
+- [ ] `anan teams-pipeline validate` returns an OK snapshot
+- [ ] `anan teams-pipeline token-health --force-refresh` succeeds
 - [ ] **`maintain-subscriptions` is scheduled** (Hermes cron, systemd timer, or crontab — see [Automating subscription renewal](#automating-subscription-renewal-required-for-production)). Without this, Graph subscriptions silently expire within 72 hours.
 - [ ] a real end-to-end meeting event has produced a stored job
 - [ ] at least one summary has reached the intended delivery sink

@@ -4,11 +4,11 @@ sidebar_position: 2
 
 # Profiles: Running Multiple Agents
 
-Run multiple independent Sinoclaw agents on the same machine — each with its own config, API keys, memory, sessions, skills, and gateway state.
+Run multiple independent anan agents on the same machine — each with its own config, API keys, memory, sessions, skills, and gateway state.
 
 ## What are profiles?
 
-A profile is a separate Sinoclaw home directory. Each profile gets its own directory containing its own `config.yaml`, `.env`, `SOUL.md`, memories, sessions, skills, cron jobs, and state database. Profiles let you run separate agents for different purposes — a coding assistant, a personal bot, a research agent — without mixing up Hermes state.
+A profile is a separate anan home directory. Each profile gets its own directory containing its own `config.yaml`, `.env`, `SOUL.md`, memories, sessions, skills, cron jobs, and state database. Profiles let you run separate agents for different purposes — a coding assistant, a personal bot, a research agent — without mixing up Hermes state.
 
 When you create a profile, it automatically becomes its own command. Create a profile called `coder` and you immediately have `coder chat`, `coder setup`, `coder gateway start`, etc.
 
@@ -73,24 +73,24 @@ coder skills list             # list coder's skills
 coder config set model.default anthropic/claude-sonnet-4
 ```
 
-The alias works with every sinoclaw subcommand — it's just `sinoclaw -p <name>` under the hood.
+The alias works with every anan subcommand — it's just `anan -p <name>` under the hood.
 
 ### The `-p` flag
 
 You can also target a profile explicitly with any command:
 
 ```bash
-sinoclaw -p coder chat
+anan -p coder chat
 hermes --profile=coder doctor
 hermes chat -p coder -q "hello"    # works in any position
 ```
 
-### Sticky default (`sinoclaw profile use`)
+### Sticky default (`anan profile use`)
 
 ```bash
 hermes profile use coder
 hermes chat                   # now targets coder
-sinoclaw tools                  # configures coder's tools
+anan tools                  # configures coder's tools
 hermes profile use default    # switch back
 ```
 
@@ -102,7 +102,7 @@ The CLI always shows which profile is active:
 
 - **Prompt**: `coder ❯` instead of `❯`
 - **Banner**: Shows `Profile: coder` on startup
-- **`sinoclaw profile`**: Shows current profile name, path, model, gateway status
+- **`anan profile`**: Shows current profile name, path, model, gateway status
 
 ## Profiles vs workspaces vs sandboxing
 
@@ -213,10 +213,10 @@ hermes profile delete coder
 
 This stops the gateway, removes the systemd/launchd service, removes the command alias, and deletes all profile data. You'll be asked to type the profile name to confirm.
 
-Use `--yes` to skip confirmation: `sinoclaw profile delete coder --yes`
+Use `--yes` to skip confirmation: `anan profile delete coder --yes`
 
 :::note
-You cannot delete the default profile (`~/.sinoclaw`). To remove everything, use `sinoclaw uninstall`.
+You cannot delete the default profile (`~/.anan`). To remove everything, use `anan uninstall`.
 :::
 
 ## Tab completion
@@ -237,7 +237,7 @@ Profiles use the `ANAN_HOME` environment variable. When you run `coder chat`, th
 
 This is separate from terminal working directory. Tool execution starts from `terminal.cwd` (or the launch directory when `cwd: "."` on the local backend), not automatically from `ANAN_HOME`.
 
-The default profile is simply `~/.sinoclaw` itself. No migration needed — existing installs work identically.
+The default profile is simply `~/.anan` itself. No migration needed — existing installs work identically.
 
 ## Sharing profiles as distributions
 

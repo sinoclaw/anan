@@ -3,10 +3,10 @@
 
 Usage (via cron with --no-agent):
 
-    sinoclaw cron create sinoclaw-issues \\
+    anan cron create anan-issues \\
       --schedule "*/5 * * * *" --no-agent \\
       --script "$ANAN_HOME/skills/devops/watchers/scripts/watch_github.py" \\
-      --script-args "--name sinoclaw-issues --repo NousResearch/anan --scope issues"
+      --script-args "--name anan-issues --repo NousResearch/anan --scope issues"
 
 Set GITHUB_TOKEN (or GH_TOKEN) in ~/.anan/.env to avoid the 60 req/hr
 anonymous rate limit.
@@ -112,7 +112,7 @@ def main() -> int:
 
     headers = {
         "Accept": "application/vnd.github+json",
-        "User-Agent": "Sinoclaw-Watcher/1.0",
+        "User-Agent": "anan-Watcher/1.0",
     }
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     if token:

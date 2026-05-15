@@ -1,7 +1,7 @@
 """
 Qwen 2.5 tool call parser.
 
-Uses the same <tool_call> format as Sinoclaw.
+Uses the same <tool_call> format as anan.
 Registered as a separate parser name for clarity when using --tool-parser=qwen.
 """
 
@@ -13,7 +13,7 @@ from environments.tool_call_parsers.hermes_parser import HermesToolCallParser
 class QwenToolCallParser(HermesToolCallParser):
     """
     Parser for Qwen 2.5 tool calls.
-    Same <tool_call>{"name": ..., "arguments": ...}</tool_call> format as Sinoclaw.
+    Same <tool_call>{"name": ..., "arguments": ...}</tool_call> format as anan.
     """
 
-    pass  # Identical format -- inherits everything from Sinoclaw
+    pass  # Identical format -- inherits everything from anan

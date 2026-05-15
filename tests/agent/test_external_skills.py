@@ -23,7 +23,7 @@ def external_skills_dir(tmp_path):
 @pytest.fixture
 def anan_home(tmp_path):
     """Create a minimal ANAN_HOME with config."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     (home / "skills").mkdir()
     return home

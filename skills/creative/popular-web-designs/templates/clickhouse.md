@@ -1,7 +1,7 @@
 # Design System: ClickHouse
 
 
-> **Sinoclaw Agent — Implementation Notes**
+> **anan Agent — Implementation Notes**
 >
 > The original site uses proprietary fonts. For self-contained HTML output, use these CDN substitutes:
 > - **Primary:** `Inter` | **Mono:** `JetBrains Mono`

@@ -11,7 +11,7 @@ JSON.
 > **Credit:** the single-project-workspace layout, profile-config patching
 > approach, SOUL.md-per-profile convention, and `--workspace dir:<path>` rule
 > are adapted from alt-glitch's original multi-agent video pipeline:
-> [sinoclaw/kanban-video-pipeline](https://github.com/sinoclaw/kanban-video-pipeline).
+> [anan/kanban-video-pipeline](https://github.com/anan/kanban-video-pipeline).
 > This skill generalizes those patterns across video styles and replaces the
 > string-replacement config patcher with a PyYAML-based one.
 
@@ -60,7 +60,7 @@ Example: `q3-product-teaser`, `ascii-mood-loop`, `interview-cut-2026-q1`.
 The setup script does six things in order:
 
 1. **Create workspace tree** — all directories above
-2. **Create profiles** — `sinoclaw profile create <name> --clone`
+2. **Create profiles** — `anan profile create <name> --clone`
 3. **Configure profiles** — patch each profile's
    `~/.anan/profiles/<name>/config.yaml` to set toolsets, always_load skills,
    and `cwd`
@@ -237,8 +237,8 @@ check_key() {
     return 1
 }
 
-check_key ELEVENLABS_API_KEY sinoclaw ELEVENLABS_API_KEY || exit 1
-check_key OPENROUTER_API_KEY sinoclaw OPENROUTER_API_KEY || exit 1
+check_key ELEVENLABS_API_KEY anan ELEVENLABS_API_KEY || exit 1
+check_key OPENROUTER_API_KEY anan OPENROUTER_API_KEY || exit 1
 # ...
 ```
 

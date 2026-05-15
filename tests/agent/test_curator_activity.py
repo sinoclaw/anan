@@ -18,7 +18,7 @@ def _write_skill(skills_dir: Path, name: str) -> None:
 
 @pytest.fixture
 def curator_modules(tmp_path, monkeypatch):
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     (home / "skills").mkdir(parents=True)
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)

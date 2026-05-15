@@ -7,7 +7,7 @@ sidebar_position: 5
 
 # Browser Automation
 
-Sinoclaw Agent includes a full browser automation toolset with multiple backend options:
+anan Agent includes a full browser automation toolset with multiple backend options:
 
 - **Browserbase cloud mode** via [Browserbase](https://browserbase.com) for managed cloud browsers and anti-bot tooling
 - **Browser Use cloud mode** via [Browser Use](https://browser-use.com) as an alternative cloud browser provider
@@ -34,7 +34,7 @@ Key capabilities:
 ## Setup
 
 :::tip Nous Subscribers
-If you have a paid [Nous Portal](https://portal.nousresearch.com) subscription, you can use browser automation through the **[Tool Gateway](tool-gateway.md)** without any separate API keys. Run `sinoclaw model` or `sinoclaw tools` to enable it.
+If you have a paid [Nous Portal](https://portal.nousresearch.com) subscription, you can use browser automation through the **[Tool Gateway](tool-gateway.md)** without any separate API keys. Run `anan model` or `anan tools` to enable it.
 :::
 
 ### Browserbase cloud mode
@@ -72,7 +72,7 @@ FIRECRAWL_API_KEY=fc-***
 Get your API key at [firecrawl.dev](https://firecrawl.dev). Then select Firecrawl as your browser provider:
 
 ```bash
-sinoclaw setup tools
+anan setup tools
 # → Browser Automation → Firecrawl
 ```
 
@@ -115,7 +115,7 @@ With auto-routing disabled, private URLs are rejected with
 usually won't work since Browserbase etc. can't reach your LAN).
 
 Requirements: the local sidecar uses the same `agent-browser` CLI as pure local
-mode, so you need it installed (`sinoclaw setup tools → Browser Automation`
+mode, so you need it installed (`anan setup tools → Browser Automation`
 auto-installs it). Post-navigation redirects from a public URL onto a private
 address are still blocked (you can't use a redirect-to-internal trick to reach
 your LAN through the public path).
@@ -185,7 +185,7 @@ Then set in `~/.anan/.env`:
 CAMOFOX_URL=http://localhost:9377
 ```
 
-Or configure via `sinoclaw tools` → Browser Automation → Camofox.
+Or configure via `anan tools` → Browser Automation → Camofox.
 
 When `CAMOFOX_URL` is set, all browser tools automatically route through Camofox instead of Browserbase or agent-browser.
 
@@ -244,7 +244,7 @@ When Camofox runs in headed mode (with a visible browser window), it exposes a V
 Instead of a cloud provider, you can attach Hermes browser tools to your own running Chrome instance via the Chrome DevTools Protocol (CDP). This is useful when you want to see what the agent is doing in real-time, interact with pages that require your own cookies/sessions, or avoid cloud browser costs.
 
 :::note
-`/browser connect` is an **interactive-CLI slash command** — it is not dispatched by the gateway. If you try to run it inside a WebUI, Telegram, Discord, or other gateway chat, the message will be sent to the agent as plain text and the command will not execute. Start Hermes from the terminal (`hermes` or `sinoclaw chat`) and issue `/browser connect` there.
+`/browser connect` is an **interactive-CLI slash command** — it is not dispatched by the gateway. If you try to run it inside a WebUI, Telegram, Discord, or other gateway chat, the message will be sent to the agent as plain text and the command will not execute. Start Hermes from the terminal (`hermes` or `anan chat`) and issue `/browser connect` there.
 :::
 
 In the CLI, use:
@@ -265,19 +265,19 @@ To start Chrome manually with CDP enabled, use a dedicated user-data-dir so the 
 # Linux
 google-chrome \
   --remote-debugging-port=9222 \
-  --user-data-dir=$HOME/.sinoclaw/chrome-debug \
+  --user-data-dir=$HOME/.anan/chrome-debug \
   --no-first-run \
   --no-default-browser-check &
 
 # macOS
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
   --remote-debugging-port=9222 \
-  --user-data-dir="$HOME/.sinoclaw/chrome-debug" \
+  --user-data-dir="$HOME/.anan/chrome-debug" \
   --no-first-run \
   --no-default-browser-check &
 ```
 
-Then launch the Sinoclaw CLI and run `/browser connect`.
+Then launch the anan CLI and run `/browser connect`.
 
 **Why `--user-data-dir`?** Without it, launching Chrome while a regular Chrome instance is already running typically opens a new window on the existing process — and that existing process was not started with `--remote-debugging-port`, so port 9222 never opens. A dedicated user-data-dir forces a fresh Chrome process where the debug port actually listens. `--no-first-run --no-default-browser-check` skips the first-launch wizard for the fresh profile.
 :::
@@ -298,7 +298,7 @@ For that setup, prefer `chrome-devtools-mcp` through Hermes MCP support.
 
 See the MCP guide for the practical setup:
 
-- [Use MCP with Hermes](../../guides/use-mcp-with-hermes.md#wsl2-bridge-sinoclaw-in-wsl-to-windows-chrome)
+- [Use MCP with Hermes](../../guides/use-mcp-with-hermes.md#wsl2-bridge-anan-in-wsl-to-windows-chrome)
 
 ### Local browser mode
 
@@ -343,7 +343,7 @@ The `browser` toolset must be included in your config's `toolsets` list or enabl
 Navigate to a URL. Must be called before any other browser tool. Initializes the Browserbase session.
 
 ```
-Navigate to https://github.com/sinoclaw
+Navigate to https://github.com/anan
 ```
 
 :::tip

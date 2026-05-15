@@ -1,12 +1,12 @@
 ---
 sidebar_position: 8
 title: "Open WebUI"
-description: "Connect Open WebUI to Sinoclaw Agent via the OpenAI-compatible API server"
+description: "Connect Open WebUI to anan Agent via the OpenAI-compatible API server"
 ---
 
 # Open WebUI Integration
 
-[Open WebUI](https://github.com/open-webui/open-webui) (126k★) is the most popular self-hosted chat interface for AI. With Sinoclaw Agent's built-in API server, you can use Open WebUI as a polished web frontend for your agent — complete with conversation management, user accounts, and a modern chat interface.
+[Open WebUI](https://github.com/open-webui/open-webui) (126k★) is the most popular self-hosted chat interface for AI. With anan Agent's built-in API server, you can use Open WebUI as a polished web frontend for your agent — complete with conversation management, user accounts, and a modern chat interface.
 
 ## Architecture
 
@@ -18,12 +18,12 @@ flowchart LR
     B -->|SSE streaming response| A
 ```
 
-Open WebUI connects to Sinoclaw Agent's API server just like it would connect to OpenAI. Hermes handles the requests with its full toolset — terminal, file operations, web search, memory, skills — and returns the final response.
+Open WebUI connects to anan Agent's API server just like it would connect to OpenAI. Hermes handles the requests with its full toolset — terminal, file operations, web search, memory, skills — and returns the final response.
 
 :::important Runtime location
-The API server is a **Sinoclaw agent runtime**, not a pure LLM proxy. For each request, Hermes creates a server-side `AIAgent` on the API-server host. Tool calls run where that API server is running.
+The API server is a **anan agent runtime**, not a pure LLM proxy. For each request, Hermes creates a server-side `AIAgent` on the API-server host. Tool calls run where that API server is running.
 
-For example, if a laptop points Open WebUI or another OpenAI-compatible client at a Sinoclaw API server on a remote machine, `pwd`, file tools, browser tools, local MCP tools, and other workspace tools run on the remote API-server host, not on the laptop.
+For example, if a laptop points Open WebUI or another OpenAI-compatible client at a anan API server on a remote machine, `pwd`, file tools, browser tools, local MCP tools, and other workspace tools run on the remote API-server host, not on the laptop.
 :::
 
 Open WebUI talks to Hermes server-to-server, so you do not need `API_SERVER_CORS_ORIGINS` for this integration.
@@ -42,7 +42,7 @@ bash scripts/setup_open_webui.sh
 What the script does:
 
 - ensures `~/.anan/.env` contains `API_SERVER_ENABLED`, `API_SERVER_HOST`, `API_SERVER_KEY`, `API_SERVER_PORT`, and `API_SERVER_MODEL_NAME`
-- restarts the Sinoclaw gateway so the API server comes up
+- restarts the anan gateway so the API server comes up
 - installs Open WebUI into `~/.local/open-webui-venv`
 - writes a launcher at `~/.local/bin/start-open-webui-hermes.sh`
 - on macOS, installs a `launchd` user service; on Linux with `systemd --user`, installs a user service there
@@ -51,14 +51,14 @@ Defaults:
 
 - Hermes API: `http://127.0.0.1:8642/v1`
 - Open WebUI: `http://127.0.0.1:8080`
-- model name advertised to Open WebUI: `Sinoclaw Agent`
+- model name advertised to Open WebUI: `anan Agent`
 
 Useful overrides:
 
 ```bash
 OPEN_WEBUI_NAME='My Hermes UI' \
 OPEN_WEBUI_ENABLE_SIGNUP=true \
-SINOCLAW_API_MODEL_NAME='My Sinoclaw Agent' \
+SINOCLAW_API_MODEL_NAME='My anan Agent' \
 bash scripts/setup_open_webui.sh
 ```
 
@@ -78,13 +78,13 @@ anan config set API_SERVER_KEY your-secret-key
 `anan config set` auto-routes the flag to `config.yaml` and the secret to `~/.anan/.env`. If the gateway is already running, restart it so the change takes effect:
 
 ```bash
-sinoclaw gateway stop && sinoclaw gateway
+anan gateway stop && anan gateway
 ```
 
-### 2. Start Sinoclaw Agent gateway
+### 2. Start anan Agent gateway
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 You should see:
@@ -189,7 +189,7 @@ Open WebUI supports two API modes when connecting to a backend:
 
 ### Using Chat Completions (recommended)
 
-This is the default and requires no extra configuration. Open WebUI sends standard OpenAI-format requests and Sinoclaw Agent responds accordingly. Each request includes the full conversation history.
+This is the default and requires no extra configuration. Open WebUI sends standard OpenAI-format requests and anan Agent responds accordingly. Each request includes the full conversation history.
 
 ### Using Responses API
 
@@ -200,7 +200,7 @@ To use the Responses API mode:
 3. Change **API Type** from "Chat Completions" to **"Responses (Experimental)"**
 4. Save
 
-With the Responses API, Open WebUI sends requests in the Responses format (`input` array + `instructions`), and Sinoclaw Agent can preserve full tool call history across turns via `previous_response_id`. When `stream: true`, Hermes also streams spec-native `function_call` and `function_call_output` items, which enables custom structured tool-call UI in clients that render Responses events.
+With the Responses API, Open WebUI sends requests in the Responses format (`input` array + `instructions`), and anan Agent can preserve full tool call history across turns via `previous_response_id`. When `stream: true`, Hermes also streams spec-native `function_call` and `function_call_output` items, which enables custom structured tool-call UI in clients that render Responses events.
 
 :::note
 Open WebUI currently manages conversation history client-side even in Responses mode — it sends the full message history in each request rather than using `previous_response_id`. The main advantage of Responses mode today is the structured event stream: text deltas, `function_call`, and `function_call_output` items arrive as OpenAI Responses SSE events instead of Chat Completions chunks.
@@ -211,7 +211,7 @@ Open WebUI currently manages conversation history client-side even in Responses 
 When you send a message in Open WebUI:
 
 1. Open WebUI sends a `POST /v1/chat/completions` request with your message and conversation history
-2. Sinoclaw Agent creates a server-side `AIAgent` instance using the API server's profile, model/provider config, memory, skills, and configured API-server toolsets
+2. anan Agent creates a server-side `AIAgent` instance using the API server's profile, model/provider config, memory, skills, and configured API-server toolsets
 3. The agent processes your request — it may call tools (terminal, file operations, web search, etc.) on the API-server host
 4. As tools execute, **inline progress messages stream to the UI** so you can see what the agent is doing (e.g. `` `💻 ls -la` ``, `` `🔍 Python 3.12 release` ``)
 5. The agent's final text response streams back to Open WebUI
@@ -219,7 +219,7 @@ When you send a message in Open WebUI:
 
 Your agent has access to the same tools and capabilities as that API-server Hermes instance. If the API server is remote, those tools are remote too.
 
-If you need tools to run against your **local** workspace today, run Hermes locally and point it at a pure LLM provider or pure OpenAI-compatible model proxy (for example vLLM, LiteLLM, Ollama, llama.cpp, OpenAI, OpenRouter, etc.). A future split-runtime mode for "remote brain, local hands" is being tracked in [#18715](https://github.com/sinoclaw/anan/issues/18715); it is not the behavior of the current API server.
+If you need tools to run against your **local** workspace today, run Hermes locally and point it at a pure LLM provider or pure OpenAI-compatible model proxy (for example vLLM, LiteLLM, Ollama, llama.cpp, OpenAI, OpenRouter, etc.). A future split-runtime mode for "remote brain, local hands" is being tracked in [#18715](https://github.com/anan/anan/issues/18715); it is not the behavior of the current API server.
 
 :::tip Tool Progress
 With streaming enabled (the default), you'll see brief inline indicators as tools run — the tool emoji and its key argument. These appear in the response stream before the agent's final answer, giving you visibility into what's happening behind the scenes.
@@ -227,7 +227,7 @@ With streaming enabled (the default), you'll see brief inline indicators as tool
 
 ## Configuration Reference
 
-### Sinoclaw Agent (API server)
+### anan Agent (API server)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -240,7 +240,7 @@ With streaming enabled (the default), you'll see brief inline indicators as tool
 
 | Variable | Description |
 |----------|-------------|
-| `OPENAI_API_BASE_URL` | Sinoclaw Agent's API URL (include `/v1`) |
+| `OPENAI_API_BASE_URL` | anan Agent's API URL (include `/v1`) |
 | `OPENAI_API_KEY` | Must be non-empty. Match your `API_SERVER_KEY`. |
 
 ## Troubleshooting
@@ -259,11 +259,11 @@ This is almost always the missing `/v1` suffix. Open WebUI's connection test is 
 
 ### Response takes a long time
 
-Sinoclaw Agent may be executing multiple tool calls (reading files, running commands, searching the web) before producing its final response. This is normal for complex queries. The response appears all at once when the agent finishes.
+anan Agent may be executing multiple tool calls (reading files, running commands, searching the web) before producing its final response. This is normal for complex queries. The response appears all at once when the agent finishes.
 
 ### "Invalid API key" errors
 
-Make sure your `OPENAI_API_KEY` in Open WebUI matches the `API_SERVER_KEY` in Sinoclaw Agent.
+Make sure your `OPENAI_API_KEY` in Open WebUI matches the `API_SERVER_KEY` in anan Agent.
 
 :::warning
 Open WebUI persists OpenAI-compatible connection settings in its own database after first launch. If you accidentally saved a wrong key in the Admin UI, fixing the environment variables alone is not enough — update or delete the saved connection in **Admin Settings → Connections**, or reset the Open WebUI data directory / database.
@@ -277,21 +277,21 @@ To run separate Hermes instances per user — each with their own config, memory
 
 ```bash
 hermes profile create alice
-sinoclaw -p alice config set API_SERVER_ENABLED true
-sinoclaw -p alice config set API_SERVER_PORT 8643
-sinoclaw -p alice config set API_SERVER_KEY alice-secret
+anan -p alice config set API_SERVER_ENABLED true
+anan -p alice config set API_SERVER_PORT 8643
+anan -p alice config set API_SERVER_KEY alice-secret
 
 hermes profile create bob
-sinoclaw -p bob config set API_SERVER_ENABLED true
-sinoclaw -p bob config set API_SERVER_PORT 8644
-sinoclaw -p bob config set API_SERVER_KEY bob-secret
+anan -p bob config set API_SERVER_ENABLED true
+anan -p bob config set API_SERVER_PORT 8644
+anan -p bob config set API_SERVER_KEY bob-secret
 ```
 
 ### 2. Start each gateway
 
 ```bash
-sinoclaw -p alice gateway &
-sinoclaw -p bob gateway &
+anan -p alice gateway &
+anan -p bob gateway &
 ```
 
 ### 3. Add connections in Open WebUI
@@ -303,12 +303,12 @@ In **Admin Settings** → **Connections** → **OpenAI API** → **Manage**, add
 | Alice | `http://host.docker.internal:8643/v1` | `alice-secret` |
 | Bob | `http://host.docker.internal:8644/v1` | `bob-secret` |
 
-The model dropdown will show `alice` and `bob` as distinct models. You can assign models to Open WebUI users via the admin panel, giving each user their own isolated Sinoclaw agent.
+The model dropdown will show `alice` and `bob` as distinct models. You can assign models to Open WebUI users via the admin panel, giving each user their own isolated anan agent.
 
 :::tip Custom Model Names
 The model name defaults to the profile name. To override it, set `API_SERVER_MODEL_NAME` in the profile's `.env`:
 ```bash
-sinoclaw -p alice config set API_SERVER_MODEL_NAME "Alice's Agent"
+anan -p alice config set API_SERVER_MODEL_NAME "Alice's Agent"
 ```
 :::
 

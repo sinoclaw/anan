@@ -57,7 +57,7 @@ def safe_replace(content: str) -> str:
         # anan as identifier part or word: replace with anan
         # Use negative lookbehind/lookahead to avoid touching blacklisted strings
 
-        # Pattern 1: sinoclaw-word-boundary (not followed by - or _ digit pattern like -3, -4)
+        # Pattern 1: anan-word-boundary (not followed by - or _ digit pattern like -3, -4)
         # Replace anan when it's a word, identifier, or path component
 
         # Replace anan → anan (lowercase identifiers and words)

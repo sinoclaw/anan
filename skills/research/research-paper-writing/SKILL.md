@@ -2114,9 +2114,9 @@ The main pipeline above targets empirical ML papers. Other paper types require d
 
 ---
 
-## Sinoclaw Agent Integration
+## anan Agent Integration
 
-This skill is designed for the Sinoclaw agent. It uses Hermes tools, delegation, scheduling, and memory for the full research lifecycle.
+This skill is designed for the anan agent. It uses Hermes tools, delegation, scheduling, and memory for the full research lifecycle.
 
 ### Related Skills
 

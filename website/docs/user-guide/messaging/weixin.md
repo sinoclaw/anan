@@ -1,7 +1,7 @@
 ---
 sidebar_position: 15
 title: "Weixin (WeChat)"
-description: "Connect Sinoclaw Agent to personal WeChat accounts via the iLink Bot API"
+description: "Connect anan Agent to personal WeChat accounts via the iLink Bot API"
 ---
 
 # Weixin (WeChat)
@@ -44,7 +44,7 @@ pip install anan[messaging]
 The easiest way to connect your WeChat account is through the interactive setup:
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 Select **Weixin** when prompted. The wizard will:
@@ -88,7 +88,7 @@ WEIXIN_HOME_CHANNEL_NAME=Home
 ### 3. Start the Gateway
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 The adapter will restore saved credentials, connect to the iLink API, and begin long-polling for messages.
@@ -96,7 +96,7 @@ The adapter will restore saved credentials, connect to the iLink API, and begin 
 ## Features
 
 - **Long-poll transport** — no public endpoint, webhook, or WebSocket needed
-- **QR code login** — scan-to-connect setup via `sinoclaw gateway setup`
+- **QR code login** — scan-to-connect setup via `anan gateway setup`
 - **DM messaging** — configurable access policies; group messaging depends on iLink actually delivering group events for the connected identity (often not the case for iLink bot accounts — see the warning above)
 - **Media support** — images, video, files, and voice messages
 - **AES-128-ECB encrypted CDN** — automatic encryption/decryption for all media transfers
@@ -297,10 +297,10 @@ Only one Weixin gateway instance can use a given token at a time. The adapter ac
 | Problem | Fix |
 |---------|-----|
 | `Weixin startup failed: aiohttp and cryptography are required` | Install both: `pip install aiohttp cryptography` |
-| `Weixin startup failed: WEIXIN_TOKEN is required` | Run `sinoclaw gateway setup` to complete QR login, or set `WEIXIN_TOKEN` manually |
-| `Weixin startup failed: WEIXIN_ACCOUNT_ID is required` | Set `WEIXIN_ACCOUNT_ID` in your `.env` or run `sinoclaw gateway setup` |
-| `Another local Sinoclaw gateway is already using this Weixin token` | Stop the other gateway instance first — only one poller per token is allowed |
-| Session expired (`errcode=-14`) | Your login session has expired. Re-run `sinoclaw gateway setup` to scan a new QR code |
+| `Weixin startup failed: WEIXIN_TOKEN is required` | Run `anan gateway setup` to complete QR login, or set `WEIXIN_TOKEN` manually |
+| `Weixin startup failed: WEIXIN_ACCOUNT_ID is required` | Set `WEIXIN_ACCOUNT_ID` in your `.env` or run `anan gateway setup` |
+| `Another local anan gateway is already using this Weixin token` | Stop the other gateway instance first — only one poller per token is allowed |
+| Session expired (`errcode=-14`) | Your login session has expired. Re-run `anan gateway setup` to scan a new QR code |
 | QR code expired during setup | The QR auto-refreshes up to 3 times. If it keeps expiring, check your network connection |
 | Bot doesn't respond to DMs | Check `WEIXIN_DM_POLICY` — if set to `allowlist`, the sender must be in `WEIXIN_ALLOWED_USERS` |
 | Bot ignores group messages | Group policy defaults to `disabled`. Set `WEIXIN_GROUP_POLICY=open` or `allowlist` — but note that QR-login iLink bot identities (`...@im.bot`) typically cannot receive ordinary WeChat group messages at all. If the gateway logs show no raw inbound events for group messages, the limitation is on the iLink side, not in Hermes. |

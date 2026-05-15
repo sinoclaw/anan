@@ -97,7 +97,7 @@ class TestEphemeralMode:
 
 
 class TestManagedPersistenceMode:
-    """With managed_persistence: stable userId derived from Sinoclaw profile."""
+    """With managed_persistence: stable userId derived from anan profile."""
 
     def test_session_gets_stable_user_id(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))

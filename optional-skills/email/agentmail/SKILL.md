@@ -45,7 +45,7 @@ mcp_servers:
       AGENTMAIL_API_KEY: "am_your_key_here"
 ```
 
-### 3. Restart Sinoclaw
+### 3. Restart anan
 ```bash
 hermes
 ```

@@ -192,8 +192,8 @@ class TestCmdUpdateProfileSkillSync:
         )
 
         default_p = SimpleNamespace(name="default", path=Path("/fake/.hermes"))
-        active_p = SimpleNamespace(name="bit", path=Path("/fake/.sinoclaw/profiles/bit"))
-        other_p = SimpleNamespace(name="work", path=Path("/fake/.sinoclaw/profiles/work"))
+        active_p = SimpleNamespace(name="bit", path=Path("/fake/.anan/profiles/bit"))
+        other_p = SimpleNamespace(name="work", path=Path("/fake/.anan/profiles/work"))
         all_profiles = [default_p, active_p, other_p]
 
         synced_paths = []

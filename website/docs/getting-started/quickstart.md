@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: "Quickstart"
-description: "Your first conversation with Sinoclaw Agent — from install to chatting in under 5 minutes"
+description: "Your first conversation with anan Agent — from install to chatting in under 5 minutes"
 ---
 
 # Quickstart
@@ -10,13 +10,13 @@ This guide gets you from zero to a working Hermes setup that survives real use. 
 
 ## Prefer to watch?
 
-**Onchain AI Garage** put together a Masterclass walkthrough of installation, setup, and basic commands — a good companion to this page if you'd rather follow along on video. For more, see the full [Sinoclaw Agent Tutorials & Use Cases](https://www.youtube.com/channel/UCqB1bhMwGsW-yefBxYwFCCg) playlist.
+**Onchain AI Garage** put together a Masterclass walkthrough of installation, setup, and basic commands — a good companion to this page if you'd rather follow along on video. For more, see the full [anan Agent Tutorials & Use Cases](https://www.youtube.com/channel/UCqB1bhMwGsW-yefBxYwFCCg) playlist.
 
 <div style={{position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '100%', marginBottom: '1.5rem'}}>
   <iframe
     style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
     src="https://www.youtube-nocookie.com/embed/R3YOGfTBcQg"
-    title="Sinoclaw Agent Masterclass: Installation, Setup, Basic Commands"
+    title="anan Agent Masterclass: Installation, Setup, Basic Commands"
     frameBorder="0"
     allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowFullScreen
@@ -36,23 +36,23 @@ Pick the row that matches your goal:
 
 | Goal | Do this first | Then do this |
 |---|---|---|
-| I just want Hermes working on my machine | `sinoclaw setup` | Run a real chat and verify it responds |
-| I already know my provider | `sinoclaw model` | Save the config, then start chatting |
-| I want a bot or always-on setup | `sinoclaw gateway setup` after CLI works | Connect Telegram, Discord, Slack, or another platform |
-| I want a local or self-hosted model | `sinoclaw model` → custom endpoint | Verify the endpoint, model name, and context length |
-| I want multi-provider fallback | `sinoclaw model` first | Add routing and fallback only after the base chat works |
+| I just want Hermes working on my machine | `anan setup` | Run a real chat and verify it responds |
+| I already know my provider | `anan model` | Save the config, then start chatting |
+| I want a bot or always-on setup | `anan gateway setup` after CLI works | Connect Telegram, Discord, Slack, or another platform |
+| I want a local or self-hosted model | `anan model` → custom endpoint | Verify the endpoint, model name, and context length |
+| I want multi-provider fallback | `anan model` first | Add routing and fallback only after the base chat works |
 
 **Rule of thumb:** if Hermes cannot complete a normal chat, do not add more features yet. Get one clean conversation working first, then layer on gateway, cron, skills, voice, or routing.
 
 ---
 
-## 1. Install Sinoclaw Agent
+## 1. Install anan Agent
 
 Run the one-line installer:
 
 ```bash
 # Linux / macOS / WSL2 / Android (Termux)
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
 :::tip Android / Termux
@@ -73,7 +73,7 @@ For detailed installation options, prerequisites, and troubleshooting, see the [
 
 ## 2. Choose a Provider
 
-The single most important setup step. Use `sinoclaw model` to walk through the choice interactively:
+The single most important setup step. Use `anan model` to walk through the choice interactively:
 
 ```bash
 hermes model
@@ -83,16 +83,16 @@ Good defaults:
 
 | Provider | What it is | How to set up |
 |----------|-----------|---------------|
-| **Nous Portal** | Subscription-based, zero-config | OAuth login via `sinoclaw model` |
-| **OpenAI Codex** | ChatGPT OAuth, uses Codex models | Device code auth via `sinoclaw model` |
-| **Anthropic** | Claude models directly — Max plan + extra usage credits (OAuth), or API key for pay-per-token | `sinoclaw model` → OAuth login (requires Max + extra credits), or an Anthropic API key |
+| **Nous Portal** | Subscription-based, zero-config | OAuth login via `anan model` |
+| **OpenAI Codex** | ChatGPT OAuth, uses Codex models | Device code auth via `anan model` |
+| **Anthropic** | Claude models directly — Max plan + extra usage credits (OAuth), or API key for pay-per-token | `anan model` → OAuth login (requires Max + extra credits), or an Anthropic API key |
 | **OpenRouter** | Multi-provider routing across many models | Enter your API key |
 | **Z.AI** | GLM / Zhipu-hosted models | Set `GLM_API_KEY` / `ZAI_API_KEY` |
 | **Kimi / Moonshot** | Moonshot-hosted coding and chat models | Set `KIMI_API_KEY` |
 | **Kimi / Moonshot China** | China-region Moonshot endpoint | Set `KIMI_CN_API_KEY` |
 | **Arcee AI** | Trinity models | Set `ARCEEAI_API_KEY` |
 | **GMI Cloud** | Multi-model direct API | Set `GMI_API_KEY` |
-| **MiniMax (OAuth)** | MiniMax-M2.7 via browser OAuth — no API key needed | `sinoclaw model` → MiniMax (OAuth) |
+| **MiniMax (OAuth)** | MiniMax-M2.7 via browser OAuth — no API key needed | `anan model` → MiniMax (OAuth) |
 | **MiniMax** | International MiniMax endpoint | Set `MINIMAX_API_KEY` |
 | **MiniMax China** | China-region MiniMax endpoint | Set `MINIMAX_CN_API_KEY` |
 | **Alibaba Cloud** | Qwen models via DashScope | Set `DASHSCOPE_API_KEY` |
@@ -103,19 +103,19 @@ Good defaults:
 | **OpenCode Go** | $10/month subscription for open models | Set `OPENCODE_GO_API_KEY` |
 | **DeepSeek** | Direct DeepSeek API access | Set `DEEPSEEK_API_KEY` |
 | **NVIDIA NIM** | Nemotron models via build.nvidia.com or local NIM | Set `NVIDIA_API_KEY` (optional: `NVIDIA_BASE_URL`) |
-| **GitHub Copilot** | GitHub Copilot subscription (GPT-5.x, Claude, Gemini, etc.) | OAuth via `sinoclaw model`, or `COPILOT_GITHUB_TOKEN` / `GH_TOKEN` |
-| **GitHub Copilot ACP** | Copilot ACP agent backend (spawns local `copilot` CLI) | `sinoclaw model` (requires `copilot` CLI + `copilot login`) |
+| **GitHub Copilot** | GitHub Copilot subscription (GPT-5.x, Claude, Gemini, etc.) | OAuth via `anan model`, or `COPILOT_GITHUB_TOKEN` / `GH_TOKEN` |
+| **GitHub Copilot ACP** | Copilot ACP agent backend (spawns local `copilot` CLI) | `anan model` (requires `copilot` CLI + `copilot login`) |
 | **Vercel AI Gateway** | Vercel AI Gateway routing | Set `AI_GATEWAY_API_KEY` |
 | **Custom Endpoint** | VLLM, SGLang, Ollama, or any OpenAI-compatible API | Set base URL + API key |
 
 For most first-time users: choose a provider, accept the defaults unless you know why you're changing them. The full provider catalog with env vars and setup steps lives on the [Providers](../integrations/providers.md) page.
 
 :::caution Minimum context: 64K tokens
-Sinoclaw Agent requires a model with at least **64,000 tokens** of context. Models with smaller windows cannot maintain enough working memory for multi-step tool-calling workflows and will be rejected at startup. Most hosted models (Claude, GPT, Gemini, Qwen, DeepSeek) meet this easily. If you're running a local model, set its context size to at least 64K (e.g. `--ctx-size 65536` for llama.cpp or `-c 65536` for Ollama).
+anan Agent requires a model with at least **64,000 tokens** of context. Models with smaller windows cannot maintain enough working memory for multi-step tool-calling workflows and will be rejected at startup. Most hosted models (Claude, GPT, Gemini, Qwen, DeepSeek) meet this easily. If you're running a local model, set its context size to at least 64K (e.g. `--ctx-size 65536` for llama.cpp or `-c 65536` for Ollama).
 :::
 
 :::tip
-You can switch providers at any time with `sinoclaw model` — no lock-in. For a full list of all supported providers and setup details, see [AI Providers](../integrations/providers.md).
+You can switch providers at any time with `anan model` — no lock-in. For a full list of all supported providers and setup details, see [AI Providers](../integrations/providers.md).
 :::
 
 ### How settings are stored
@@ -145,7 +145,7 @@ hermes --tui      # modern TUI (recommended)
 You'll see a welcome banner with your model, available tools, and skills. Use a prompt that's specific and easy to verify:
 
 :::tip Pick your interface
-Hermes ships with two terminal interfaces: the classic `prompt_toolkit` CLI and a newer [TUI](../user-guide/tui.md) with modal overlays, mouse selection, and non-blocking input. Both share the same sessions, slash commands, and config — try each with `hermes` vs `sinoclaw --tui`.
+Hermes ships with two terminal interfaces: the classic `prompt_toolkit` CLI and a newer [TUI](../user-guide/tui.md) with modal overlays, mouse selection, and non-blocking input. Both share the same sessions, slash commands, and config — try each with `hermes` vs `anan --tui`.
 :::
 
 ```
@@ -217,15 +217,15 @@ Only after the base chat works. Pick what you need:
 ### Bot or shared assistant
 
 ```bash
-sinoclaw gateway setup    # Interactive platform configuration
+anan gateway setup    # Interactive platform configuration
 ```
 
 Connect [Telegram](/docs/user-guide/messaging/telegram), [Discord](/docs/user-guide/messaging/discord), [Slack](/docs/user-guide/messaging/slack), [WhatsApp](/docs/user-guide/messaging/whatsapp), [Signal](/docs/user-guide/messaging/signal), [Email](/docs/user-guide/messaging/email), or [Home Assistant](/docs/user-guide/messaging/homeassistant), or [Microsoft Teams](/docs/user-guide/messaging/teams).
 
 ### Automation and tools
 
-- `sinoclaw tools` — tune tool access per platform
-- `sinoclaw skills` — browse and install reusable workflows
+- `anan tools` — tune tool access per platform
+- `anan skills` — browse and install reusable workflows
 - Cron — only after your bot or CLI setup is stable
 
 ### Sandboxed terminal
@@ -249,8 +249,8 @@ Then in the CLI: `/voice on`. Press `Ctrl+B` to record. See [Voice Mode](../user
 ### Skills
 
 ```bash
-sinoclaw skills search kubernetes
-sinoclaw skills install openai/skills/k8s
+anan skills search kubernetes
+anan skills install openai/skills/k8s
 ```
 
 Or use `/skills` inside a chat session.
@@ -284,23 +284,23 @@ These are the problems that waste the most time:
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Hermes opens but gives empty or broken replies | Provider auth or model selection is wrong | Run `sinoclaw model` again and confirm provider, model, and auth |
+| Hermes opens but gives empty or broken replies | Provider auth or model selection is wrong | Run `anan model` again and confirm provider, model, and auth |
 | Custom endpoint "works" but returns garbage | Wrong base URL, model name, or not actually OpenAI-compatible | Verify the endpoint in a separate client first |
-| Gateway starts but nobody can message it | Bot token, allowlist, or platform setup is incomplete | Re-run `sinoclaw gateway setup` and check `sinoclaw gateway status` |
-| `sinoclaw --continue` can't find old session | Switched profiles or session never saved | Check `sinoclaw sessions list` and confirm you're in the right profile |
+| Gateway starts but nobody can message it | Bot token, allowlist, or platform setup is incomplete | Re-run `anan gateway setup` and check `anan gateway status` |
+| `anan --continue` can't find old session | Switched profiles or session never saved | Check `anan sessions list` and confirm you're in the right profile |
 | Model unavailable or odd fallback behavior | Provider routing or fallback settings are too aggressive | Keep routing off until the base provider is stable |
-| `sinoclaw doctor` flags config problems | Config values are missing or stale | Fix the config, retest a plain chat before adding features |
+| `anan doctor` flags config problems | Config values are missing or stale | Fix the config, retest a plain chat before adding features |
 
 ## Recovery Toolkit
 
 When something feels off, use this order:
 
-1. `sinoclaw doctor`
-2. `sinoclaw model`
-3. `sinoclaw setup`
-4. `sinoclaw sessions list`
-5. `sinoclaw --continue`
-6. `sinoclaw gateway status`
+1. `anan doctor`
+2. `anan model`
+3. `anan setup`
+4. `anan sessions list`
+5. `anan --continue`
+6. `anan gateway status`
 
 That sequence gets you from "broken vibes" back to a known state fast.
 
@@ -311,13 +311,13 @@ That sequence gets you from "broken vibes" back to a known state fast.
 | Command | Description |
 |---------|-------------|
 | `hermes` | Start chatting |
-| `sinoclaw model` | Choose your LLM provider and model |
-| `sinoclaw tools` | Configure which tools are enabled per platform |
-| `sinoclaw setup` | Full setup wizard (configures everything at once) |
-| `sinoclaw doctor` | Diagnose issues |
+| `anan model` | Choose your LLM provider and model |
+| `anan tools` | Configure which tools are enabled per platform |
+| `anan setup` | Full setup wizard (configures everything at once) |
+| `anan doctor` | Diagnose issues |
 | `anan update` | Update to latest version |
-| `sinoclaw gateway` | Start the messaging gateway |
-| `sinoclaw --continue` | Resume last session |
+| `anan gateway` | Start the messaging gateway |
+| `anan --continue` | Resume last session |
 
 ## Next Steps
 

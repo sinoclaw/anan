@@ -213,7 +213,7 @@ class TestToolsetConsistency:
                 assert inc in TOOLSETS, f"{name} includes unknown toolset '{inc}'"
 
     def test_anan_platforms_share_core_tools(self):
-        """All sinoclaw-* platform toolsets share the same core tools.
+        """All anan-* platform toolsets share the same core tools.
 
         Platform-specific additions (e.g. ``discord`` / ``discord_admin``
         on anan-discord, gated on DISCORD_BOT_TOKEN) are allowed on top —

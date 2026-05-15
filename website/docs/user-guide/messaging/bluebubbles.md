@@ -26,7 +26,7 @@ In BlueBubbles Server → **Settings → API**, note:
 Run the setup wizard:
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 Select **BlueBubbles (iMessage)** and enter your server URL and password.
@@ -47,7 +47,7 @@ When someone messages your iMessage, Hermes automatically sends them a pairing c
 ```bash
 hermes pairing approve bluebubbles <CODE>
 ```
-Use `sinoclaw pairing list` to see pending codes and approved users.
+Use `anan pairing list` to see pending codes and approved users.
 
 **Pre-authorize specific users** (in `~/.anan/.env`):
 ```bash
@@ -62,7 +62,7 @@ BLUEBUBBLES_ALLOW_ALL_USERS=true
 ### 5. Start the Gateway
 
 ```bash
-sinoclaw gateway run
+anan gateway run
 ```
 
 Hermes will connect to your BlueBubbles server, register a webhook, and start listening for iMessage messages.
@@ -75,7 +75,7 @@ Hermes → BlueBubbles REST API → Messages.app → iMessage
 ```
 
 - **Inbound:** BlueBubbles sends webhook events to a local listener when new messages arrive. No polling — instant delivery.
-- **Outbound:** Sinoclaw sends messages via the BlueBubbles REST API.
+- **Outbound:** anan sends messages via the BlueBubbles REST API.
 - **Media:** Images, voice messages, videos, and documents are supported in both directions. Inbound attachments are downloaded and cached locally for the agent to process.
 
 ## Environment Variables
@@ -136,7 +136,7 @@ Without the Private API, basic text messaging and media still work.
 ### Messages not arriving
 - Check that the webhook is registered in BlueBubbles Server → Settings → API → Webhooks
 - Verify the webhook URL is reachable from the Mac
-- Check `sinoclaw logs gateway` for webhook errors (or `sinoclaw logs -f` to follow in real-time)
+- Check `anan logs gateway` for webhook errors (or `anan logs -f` to follow in real-time)
 
 ### "Private API helper not connected"
 - Install the Private API helper: [docs.bluebubbles.app](https://docs.bluebubbles.app/helper-bundle/installation)

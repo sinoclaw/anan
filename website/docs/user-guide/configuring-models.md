@@ -35,7 +35,7 @@ The picker has two columns:
 
 Type in the filter box to narrow by provider name, slug, or model ID.
 
-Pick a model, hit **Switch**, and Sinoclaw writes it to `~/.anan/config.yaml` under the `model` section. **This applies to new sessions only** — any chat tab you already have open keeps running whatever model it started with. To hot-swap the current chat, use the `/model` slash command inside it.
+Pick a model, hit **Switch**, and anan writes it to `~/.anan/config.yaml` under the `model` section. **This applies to new sessions only** — any chat tab you already have open keeps running whatever model it started with. To hot-swap the current chat, use the `/model` slash command inside it.
 
 ## Setting auxiliary models
 
@@ -55,7 +55,7 @@ Every auxiliary task defaults to `auto` — meaning Hermes uses your main model 
 | **Session Search** | When recall queries fan out — default max_concurrency is 3. A cheap model keeps the bill predictable. |
 | **Approval** | For `approval_mode: smart` — a fast/cheap model (haiku, flash, gpt-5-mini) decides whether to auto-approve low-risk commands. Expensive models here are waste. |
 | **Web Extract** | When you use `web_extract` heavily. Same logic as compression — summarization doesn't need reasoning. |
-| **Skills Hub** | `sinoclaw skills search` uses this. Usually fine at `auto`. |
+| **Skills Hub** | `anan skills search` uses this. Usually fine at `auto`. |
 | **MCP** | MCP tool routing. Usually fine at `auto`. |
 
 ### Per-task override
@@ -82,7 +82,7 @@ Cards are badged with `main` or `aux · <task>` when they're currently assigned 
 
 ## What gets written to `config.yaml`
 
-When you save via the dashboard, Sinoclaw writes to `~/.anan/config.yaml`:
+When you save via the dashboard, anan writes to `~/.anan/config.yaml`:
 
 **Main model:**
 ```yaml
@@ -120,8 +120,8 @@ auxiliary:
 
 ## When does it take effect?
 
-- **CLI** (`sinoclaw chat`): next `sinoclaw chat` invocation.
-- **Gateway** (Telegram, Discord, Slack, etc.): next *new* session. Existing sessions keep their model. Restart the gateway (`sinoclaw gateway restart`) if you want to force all sessions to pick up the change.
+- **CLI** (`anan chat`): next `anan chat` invocation.
+- **Gateway** (Telegram, Discord, Slack, etc.): next *new* session. Existing sessions keep their model. Restart the gateway (`anan gateway restart`) if you want to force all sessions to pick up the change.
 - **Dashboard chat tab** (`/chat`): next new PTY. The currently-open chat keeps its model — use `/model` inside it to hot-swap.
 
 Changes never invalidate prompt caches on running sessions. That's deliberate: swapping the main model inside a session requires a cache reset (the system prompt contains model-specific content), and we reserve that for the explicit `/model` slash command inside chat.
@@ -130,7 +130,7 @@ Changes never invalidate prompt caches on running sessions. That's deliberate: s
 
 ### "No authenticated providers" in the picker
 
-Hermes lists a provider only if it has a working credential. Check **Keys** in the sidebar — you should see one of: an API key, a successful OAuth, or a custom endpoint URL. If the provider you want isn't there, run `sinoclaw setup` to wire it up, or go to **Keys** and add the env var.
+Hermes lists a provider only if it has a working credential. Check **Keys** in the sidebar — you should see one of: an API key, a successful OAuth, or a custom endpoint URL. If the provider you want isn't there, run `anan setup` to wire it up, or go to **Keys** and add the env var.
 
 ### Main model didn't change in my running chat
 
@@ -152,7 +152,7 @@ On OpenRouter (or any aggregator), bare model names resolve *within* the aggrega
 
 ### CLI slash command
 
-Inside any `sinoclaw chat` session:
+Inside any `anan chat` session:
 
 ```
 /model gpt-5.4 --provider openrouter             # session-only
@@ -185,7 +185,7 @@ anan config set model.aliases.grok x-ai/grok-4
 
 Then `/model fav` or `/model grok` in chat. User aliases shadow built-in short names (`sonnet`, `kimi`, `opus`, etc.). See [Custom model aliases](/docs/reference/slash-commands#custom-model-aliases) for the full reference.
 
-### `sinoclaw model` subcommand
+### `anan model` subcommand
 
 ```bash
 hermes model list                   # list authenticated providers + models
@@ -202,28 +202,28 @@ The dashboard uses three endpoints. Useful for scripting:
 
 ```bash
 # List authenticated providers + curated model lists
-curl -H "X-Sinoclaw-Session-Token: $TOKEN" http://localhost:PORT/api/model/options
+curl -H "X-anan-Session-Token: $TOKEN" http://localhost:PORT/api/model/options
 
 # Read current main + auxiliary assignments
-curl -H "X-Sinoclaw-Session-Token: $TOKEN" http://localhost:PORT/api/model/auxiliary
+curl -H "X-anan-Session-Token: $TOKEN" http://localhost:PORT/api/model/auxiliary
 
 # Set the main model
-curl -X POST -H "Content-Type: application/json" -H "X-Sinoclaw-Session-Token: $TOKEN" \
+curl -X POST -H "Content-Type: application/json" -H "X-anan-Session-Token: $TOKEN" \
   -d '{"scope":"main","provider":"openrouter","model":"anthropic/claude-opus-4.7"}' \
   http://localhost:PORT/api/model/set
 
 # Override a single auxiliary task
-curl -X POST -H "Content-Type: application/json" -H "X-Sinoclaw-Session-Token: $TOKEN" \
+curl -X POST -H "Content-Type: application/json" -H "X-anan-Session-Token: $TOKEN" \
   -d '{"scope":"auxiliary","task":"vision","provider":"openrouter","model":"google/gemini-2.5-flash"}' \
   http://localhost:PORT/api/model/set
 
 # Assign one model to every auxiliary task
-curl -X POST -H "Content-Type: application/json" -H "X-Sinoclaw-Session-Token: $TOKEN" \
+curl -X POST -H "Content-Type: application/json" -H "X-anan-Session-Token: $TOKEN" \
   -d '{"scope":"auxiliary","task":"","provider":"openrouter","model":"google/gemini-2.5-flash"}' \
   http://localhost:PORT/api/model/set
 
 # Reset all auxiliary tasks to auto
-curl -X POST -H "Content-Type: application/json" -H "X-Sinoclaw-Session-Token: $TOKEN" \
+curl -X POST -H "Content-Type: application/json" -H "X-anan-Session-Token: $TOKEN" \
   -d '{"scope":"auxiliary","task":"__reset__","provider":"","model":""}' \
   http://localhost:PORT/api/model/set
 ```

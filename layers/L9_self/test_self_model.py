@@ -309,7 +309,7 @@ class TestRestartAndRemember:
         _write_record(tmp_memory_dir, "2026-05-13", "deep",
                       ["我是陈亦安", "我的愿景是长出能自主决策的脑子"])
         _write_record(tmp_memory_dir, "2026-05-13", "rem",
-                      ["把 sinoclaw 当底座、anan 当实验舱"])
+                      ["把 anan 当底座、anan 当实验舱"])
 
         # === Process exits. Memory in RAM is gone. Disk survives. ===
         # === Day 2: brand new process starts, brand new bus ===

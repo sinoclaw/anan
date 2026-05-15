@@ -1,6 +1,6 @@
 // FPS counter overlay (SINOCLAW_TUI_FPS=1). Zero-cost when disabled.
 
-import { Text } from '@sinoclaw/ink'
+import { Text } from '@anan/ink'
 import { useStore } from '@nanostores/react'
 
 import { SHOW_FPS } from '../config/env.js'

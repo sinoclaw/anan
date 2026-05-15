@@ -32,7 +32,7 @@ from anan_cli.kanban import run_slash
 
 @pytest.fixture
 def kanban_home(tmp_path, monkeypatch):
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -1111,7 +1111,7 @@ def test_spawned_event_emitted_with_pid(kanban_home, all_assignees_spawnable):
 def test_migration_renames_legacy_event_kinds(tmp_path, monkeypatch):
     """A DB created with the old vocab must have its event rows renamed
     in place on init_db()."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -1154,7 +1154,7 @@ def test_list_profiles_on_disk(tmp_path, monkeypatch):
     named profiles under ~/.anan/profiles/ that contain a config.yaml."""
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.delenv("ANAN_HOME", raising=False)
-    profiles = tmp_path / ".sinoclaw" / "profiles"
+    profiles = tmp_path / ".anan" / "profiles"
     profiles.mkdir(parents=True)
     for name in ("researcher", "writer"):
         d = profiles / name
@@ -1186,9 +1186,9 @@ def test_known_assignees_merges_disk_and_board(tmp_path, monkeypatch):
     """known_assignees unions profiles on disk with currently-assigned
     names, and reports per-status counts."""
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    profiles = tmp_path / ".sinoclaw" / "profiles"
+    profiles = tmp_path / ".anan" / "profiles"
     profiles.mkdir(parents=True)
-    monkeypatch.setenv("ANAN_HOME", str(tmp_path / ".sinoclaw"))
+    monkeypatch.setenv("ANAN_HOME", str(tmp_path / ".anan"))
 
     for name in ("researcher", "writer"):
         d = profiles / name
@@ -2073,7 +2073,7 @@ def test_claim_task_recovers_from_invariant_leak(kanban_home):
 def test_cli_create_on_fresh_home_auto_inits(tmp_path, monkeypatch):
     """First CLI action on an empty ANAN_HOME must not error with
     'no such table: tasks' — init_db auto-runs now."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -2099,7 +2099,7 @@ def test_cli_create_on_fresh_home_auto_inits(tmp_path, monkeypatch):
 def test_connect_auto_inits_fresh_db(tmp_path, monkeypatch):
     """Calling connect() on a fresh ANAN_HOME must create the
     schema. Previously callers had to remember kb.init_db() first."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -2209,7 +2209,7 @@ def test_migration_backfill_idempotent_under_re_run(tmp_path, monkeypatch):
     """init_db must be safe to re-run repeatedly. Each call should leave
     at most one run row per in-flight task, even if called while a
     dispatcher is simultaneously claiming."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -2561,7 +2561,7 @@ def test_default_spawn_auto_loads_kanban_worker_skill(kanban_home, monkeypatch):
     the profile hasn't wired it into its default skills config.
 
     We intercept Popen to capture the argv without actually spawning a
-    sinoclaw subprocess (which would hang trying to call an LLM).
+    anan subprocess (which would hang trying to call an LLM).
     """
     captured = {}
 
@@ -3080,7 +3080,7 @@ def test_check_dispatcher_presence_warns_when_no_gateway(monkeypatch):
     )
     running, msg = kb_cli._check_dispatcher_presence()
     assert running is False
-    assert "sinoclaw gateway start" in msg
+    assert "anan gateway start" in msg
 
 
 def test_check_dispatcher_presence_warns_when_flag_off(monkeypatch):
@@ -3133,7 +3133,7 @@ def test_cli_create_warns_when_no_gateway(kanban_home, monkeypatch, capsys):
     assert kb_cli._cmd_create(ns) == 0
     captured = capsys.readouterr()
     # Stderr has the warning prefix + guidance.
-    assert "sinoclaw gateway start" in captured.err
+    assert "anan gateway start" in captured.err
 
 
 def test_cli_create_silent_when_gateway_up(kanban_home, monkeypatch, capsys):
@@ -3147,7 +3147,7 @@ def test_cli_create_silent_when_gateway_up(kanban_home, monkeypatch, capsys):
     ns = _make_create_ns(title="silent", assignee="worker")
     assert kb_cli._cmd_create(ns) == 0
     captured = capsys.readouterr()
-    assert "sinoclaw gateway start" not in captured.err
+    assert "anan gateway start" not in captured.err
 
 
 def test_cli_create_no_warn_on_triage(kanban_home, monkeypatch, capsys):
@@ -3161,7 +3161,7 @@ def test_cli_create_no_warn_on_triage(kanban_home, monkeypatch, capsys):
     ns = _make_create_ns(title="triage-task", assignee=None, triage=True)
     assert kb_cli._cmd_create(ns) == 0
     err = capsys.readouterr().err
-    assert "sinoclaw gateway start" not in err
+    assert "anan gateway start" not in err
 
 
 def test_cli_create_no_warn_unassigned(kanban_home, monkeypatch, capsys):
@@ -3175,7 +3175,7 @@ def test_cli_create_no_warn_unassigned(kanban_home, monkeypatch, capsys):
     ns = _make_create_ns(title="nobody", assignee=None)
     assert kb_cli._cmd_create(ns) == 0
     err = capsys.readouterr().err
-    assert "sinoclaw gateway start" not in err
+    assert "anan gateway start" not in err
 
 
 def test_cli_daemon_without_force_prints_deprecation_exits_2(kanban_home, capsys):
@@ -3189,7 +3189,7 @@ def test_cli_daemon_without_force_prints_deprecation_exits_2(kanban_home, capsys
     assert rc == 2
     err = capsys.readouterr().err
     assert "DEPRECATED" in err
-    assert "sinoclaw gateway start" in err
+    assert "anan gateway start" in err
 
 
 def test_cli_daemon_help_marks_deprecated():

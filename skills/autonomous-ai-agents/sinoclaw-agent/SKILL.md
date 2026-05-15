@@ -8,7 +8,7 @@ platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [hermes, setup, configuration, multi-agent, spawning, cli, gateway, development]
-    homepage: https://github.com/sinoclaw/anan
+    homepage: https://github.com/anan/anan
     related_skills: [claude-code, codex, opencode]
 ---
 
@@ -35,7 +35,7 @@ People use Hermes for software development, research, system administration, dat
 
 ```bash
 # Install
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 
 # Interactive chat (default)
 hermes
@@ -44,13 +44,13 @@ hermes
 hermes chat -q "What is the capital of France?"
 
 # Setup wizard
-sinoclaw setup
+anan setup
 
 # Change model/provider
 hermes model
 
 # Check health
-sinoclaw doctor
+anan doctor
 ```
 
 ---
@@ -91,40 +91,40 @@ hermes chat [flags]
 ### Configuration
 
 ```
-sinoclaw setup [section]      Interactive wizard (model|terminal|gateway|tools|agent)
+anan setup [section]      Interactive wizard (model|terminal|gateway|tools|agent)
 hermes model                Interactive model/provider picker
-sinoclaw config               View current config
-sinoclaw config edit          Open config.yaml in $EDITOR
+anan config               View current config
+anan config edit          Open config.yaml in $EDITOR
 anan config set KEY VAL   Set a config value
-sinoclaw config path          Print config.yaml path
-sinoclaw config env-path      Print .env path
-sinoclaw config check         Check for missing/outdated config
-sinoclaw config migrate       Update config with new options
+anan config path          Print config.yaml path
+anan config env-path      Print .env path
+anan config check         Check for missing/outdated config
+anan config migrate       Update config with new options
 hermes login [--provider P] OAuth login (nous, openai-codex)
 hermes logout               Clear stored auth
-sinoclaw doctor [--fix]       Check dependencies and config
+anan doctor [--fix]       Check dependencies and config
 hermes status [--all]       Show component status
 ```
 
 ### Tools & Skills
 
 ```
-sinoclaw tools                Interactive tool enable/disable (curses UI)
-sinoclaw tools list           Show all tools and status
-sinoclaw tools enable NAME    Enable a toolset
-sinoclaw tools disable NAME   Disable a toolset
+anan tools                Interactive tool enable/disable (curses UI)
+anan tools list           Show all tools and status
+anan tools enable NAME    Enable a toolset
+anan tools disable NAME   Disable a toolset
 
-sinoclaw skills list          List installed skills
-sinoclaw skills search QUERY  Search the skills hub
-sinoclaw skills install ID    Install a skill (ID can be a hub identifier OR a direct https://…/SKILL.md URL; pass --name to override when frontmatter has no name)
-sinoclaw skills inspect ID    Preview without installing
-sinoclaw skills config        Enable/disable skills per platform
-sinoclaw skills check         Check for updates
-sinoclaw skills update        Update outdated skills
-sinoclaw skills uninstall N   Remove a hub skill
-sinoclaw skills publish PATH  Publish to registry
-sinoclaw skills browse        Browse all available skills
-sinoclaw skills tap add REPO  Add a GitHub repo as skill source
+anan skills list          List installed skills
+anan skills search QUERY  Search the skills hub
+anan skills install ID    Install a skill (ID can be a hub identifier OR a direct https://…/SKILL.md URL; pass --name to override when frontmatter has no name)
+anan skills inspect ID    Preview without installing
+anan skills config        Enable/disable skills per platform
+anan skills check         Check for updates
+anan skills update        Update outdated skills
+anan skills uninstall N   Remove a hub skill
+anan skills publish PATH  Publish to registry
+anan skills browse        Browse all available skills
+anan skills tap add REPO  Add a GitHub repo as skill source
 ```
 
 ### MCP Servers
@@ -141,12 +141,12 @@ hermes mcp configure NAME   Toggle tool selection
 ### Gateway (Messaging Platforms)
 
 ```
-sinoclaw gateway run          Start gateway foreground
-sinoclaw gateway install      Install as background service
-sinoclaw gateway start/stop   Control the service
-sinoclaw gateway restart      Restart the service
-sinoclaw gateway status       Check status
-sinoclaw gateway setup        Configure platforms
+anan gateway run          Start gateway foreground
+anan gateway install      Install as background service
+anan gateway start/stop   Control the service
+anan gateway restart      Restart the service
+anan gateway status       Check status
+anan gateway setup        Configure platforms
 ```
 
 Supported platforms: Telegram, Discord, Slack, WhatsApp, Signal, Email, SMS, Matrix, Mattermost, Home Assistant, DingTalk, Feishu, WeCom, BlueBubbles (iMessage), Weixin (WeChat), API Server, Webhooks. Open WebUI connects via the API Server adapter.
@@ -203,10 +203,10 @@ hermes profile import FILE  Import from archive
 ### Credential Pools
 
 ```
-sinoclaw auth add             Interactive credential wizard
-sinoclaw auth list [PROVIDER] List pooled credentials
-sinoclaw auth remove P INDEX  Remove by provider + index
-sinoclaw auth reset PROVIDER  Clear exhaustion status
+anan auth add             Interactive credential wizard
+anan auth list [PROVIDER] List pooled credentials
+anan auth remove P INDEX  Remove by provider + index
+anan auth reset PROVIDER  Clear exhaustion status
 ```
 
 ### Other
@@ -346,7 +346,7 @@ Profiles use `~/.anan/profiles/<name>/` with the same layout.
 
 ### Config Sections
 
-Edit with `sinoclaw config edit` or `anan config set section.key value`.
+Edit with `anan config edit` or `anan config set section.key value`.
 
 | Section | Key options |
 |---------|-------------|
@@ -366,14 +366,14 @@ Full config reference: https://anan.nousresearch.com/docs/user-guide/configurati
 
 ### Providers
 
-20+ providers supported. Set via `sinoclaw model` or `sinoclaw setup`.
+20+ providers supported. Set via `anan model` or `anan setup`.
 
 | Provider | Auth | Key env var |
 |----------|------|-------------|
 | OpenRouter | API key | `OPENROUTER_API_KEY` |
 | Anthropic | API key | `ANTHROPIC_API_KEY` |
-| Nous Portal | OAuth | `sinoclaw auth` |
-| OpenAI Codex | OAuth | `sinoclaw auth` |
+| Nous Portal | OAuth | `anan auth` |
+| OpenAI Codex | OAuth | `anan auth` |
 | GitHub Copilot | Token | `COPILOT_GITHUB_TOKEN` |
 | Google Gemini | API key | `GOOGLE_API_KEY` or `GEMINI_API_KEY` |
 | DeepSeek | API key | `DEEPSEEK_API_KEY` |
@@ -389,7 +389,7 @@ Full config reference: https://anan.nousresearch.com/docs/user-guide/configurati
 | AI Gateway (Vercel) | API key | `AI_GATEWAY_API_KEY` |
 | OpenCode Zen | API key | `OPENCODE_ZEN_API_KEY` |
 | OpenCode Go | API key | `OPENCODE_GO_API_KEY` |
-| Qwen OAuth | OAuth | `sinoclaw login --provider qwen-oauth` |
+| Qwen OAuth | OAuth | `anan login --provider qwen-oauth` |
 | Custom endpoint | Config | `model.base_url` + `model.api_key` in config.yaml |
 | GitHub Copilot ACP | External | `COPILOT_CLI_PATH` or Copilot CLI |
 
@@ -397,7 +397,7 @@ Full provider docs: https://anan.nousresearch.com/docs/integrations/providers
 
 ### Toolsets
 
-Enable/disable via `sinoclaw tools` (interactive) or `sinoclaw tools enable/disable NAME`.
+Enable/disable via `anan tools` (interactive) or `anan tools enable/disable NAME`.
 
 | Toolset | What it provides |
 |---------|-----------------|
@@ -480,7 +480,7 @@ anan config set approvals.mode off         # bypass everything (not recommended)
 ```
 
 Per-invocation bypass without changing config:
-- `sinoclaw --yolo …`
+- `anan --yolo …`
 - `export SINOCLAW_YOLO_MODE=1`
 
 Note: YOLO / `approvals.mode: off` does NOT turn off secret redaction. They are independent.
@@ -491,7 +491,7 @@ Some shell-hook integrations require explicit allowlisting before they fire. Man
 
 ### Disabling the web/browser/image-gen tools
 
-To keep the model away from network or media tools entirely, open `sinoclaw tools` and toggle per-platform. Takes effect on next session (`/reset`). See the Tools & Skills section above.
+To keep the model away from network or media tools entirely, open `anan tools` and toggle per-platform. Takes effect on next session (`/reset`). See the Tools & Skills section above.
 
 ---
 
@@ -606,7 +606,7 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 - **Prefer `delegate_task` for quick subtasks** — less overhead than spawning a full process
 - **Use `-w` (worktree mode)** when spawning agents that edit code — prevents git conflicts
 - **Set timeouts** for one-shot mode — complex tasks can take 5-10 minutes
-- **Use `sinoclaw chat -q` for fire-and-forget** — no PTY needed
+- **Use `anan chat -q` for fire-and-forget** — no PTY needed
 - **Use tmux for interactive sessions** — raw PTY mode has `\r` vs `\n` issues with prompt_toolkit
 - **For scheduled tasks**, use the `cronjob` tool instead of spawning — handles delivery and retry
 
@@ -637,7 +637,7 @@ Config: `delegation.*` in `config.yaml`.
 ### Cron (scheduled jobs)
 
 Durable scheduler — `cron/jobs.py` + `cron/scheduler.py`. Drive it via
-the `cronjob` tool, the `sinoclaw cron` CLI (`list`, `add`, `edit`,
+the `cronjob` tool, the `anan cron` CLI (`list`, `add`, `edit`,
 `pause`, `resume`, `run`, `remove`), or the `/cron` slash command.
 
 - **Schedules:** duration (`"30m"`, `"2h"`), "every" phrase
@@ -661,7 +661,7 @@ Background maintenance for agent-created skills. Tracks usage, marks
 idle skills stale, archives stale ones, keeps a pre-run tar.gz backup
 so nothing is lost.
 
-- **CLI:** `sinoclaw curator <verb>` — `status`, `run`, `pause`, `resume`,
+- **CLI:** `anan curator <verb>` — `status`, `run`, `pause`, `resume`,
   `pin`, `unpin`, `archive`, `restore`, `prune`, `backup`, `rollback`.
 - **Slash:** `/curator <subcommand>` mirrors the CLI.
 - **Scope:** only touches skills with `created_by: "agent"` provenance.
@@ -736,7 +736,7 @@ Ctrl+Enter?" This is how the Ctrl+Enter = c-j fact was established.
 
 **HTTP 400 "No models provided" on first run.** `config.yaml` was saved
 with a UTF-8 BOM (common when Windows apps write it). Re-save as UTF-8
-without BOM. `sinoclaw config edit` writes without BOM; manual edits in
+without BOM. `anan config edit` writes without BOM; manual edits in
 Notepad are the usual culprit.
 
 ### `execute_code` / Sandbox
@@ -799,15 +799,15 @@ and logs — avoids shell-escaping backslashes in bash.
 3. In gateway: `/restart`. In CLI: exit and relaunch.
 
 ### Tool not available
-1. `sinoclaw tools` — check if toolset is enabled for your platform
+1. `anan tools` — check if toolset is enabled for your platform
 2. Some tools need env vars (check `.env`)
 3. `/reset` after enabling tools
 
 ### Model/provider issues
-1. `sinoclaw doctor` — check config and dependencies
-2. `sinoclaw login` — re-authenticate OAuth providers
+1. `anan doctor` — check config and dependencies
+2. `anan login` — re-authenticate OAuth providers
 3. Check `.env` has the right API key
-4. **Copilot 403**: `gh auth login` tokens do NOT work for Copilot API. You must use the Copilot-specific OAuth device code flow via `sinoclaw model` → GitHub Copilot.
+4. **Copilot 403**: `gh auth login` tokens do NOT work for Copilot API. You must use the Copilot-specific OAuth device code flow via `anan model` → GitHub Copilot.
 
 ### Changes not taking effect
 - **Tools/skills:** `/reset` starts a new session with updated toolset
@@ -815,9 +815,9 @@ and logs — avoids shell-escaping backslashes in bash.
 - **Code changes:** Restart the CLI or gateway process
 
 ### Skills not showing
-1. `sinoclaw skills list` — verify installed
-2. `sinoclaw skills config` — check platform enablement
-3. Load explicitly: `/skill name` or `sinoclaw -s name`
+1. `anan skills list` — verify installed
+2. `anan skills config` — check platform enablement
+3. Load explicitly: `/skill name` or `anan -s name`
 
 ### Gateway issues
 Check logs first:
@@ -848,20 +848,20 @@ anan config set auxiliary.vision.model <model_name>
 
 | Looking for... | Location |
 |----------------|----------|
-| Config options | `sinoclaw config edit` or [Configuration docs](https://anan.nousresearch.com/docs/user-guide/configuration) |
-| Available tools | `sinoclaw tools list` or [Tools reference](https://anan.nousresearch.com/docs/reference/tools-reference) |
+| Config options | `anan config edit` or [Configuration docs](https://anan.nousresearch.com/docs/user-guide/configuration) |
+| Available tools | `anan tools list` or [Tools reference](https://anan.nousresearch.com/docs/reference/tools-reference) |
 | Slash commands | `/help` in session or [Slash commands reference](https://anan.nousresearch.com/docs/reference/slash-commands) |
-| Skills catalog | `sinoclaw skills browse` or [Skills catalog](https://anan.nousresearch.com/docs/reference/skills-catalog) |
-| Provider setup | `sinoclaw model` or [Providers guide](https://anan.nousresearch.com/docs/integrations/providers) |
-| Platform setup | `sinoclaw gateway setup` or [Messaging docs](https://anan.nousresearch.com/docs/user-guide/messaging/) |
-| MCP servers | `sinoclaw mcp list` or [MCP guide](https://anan.nousresearch.com/docs/user-guide/features/mcp) |
-| Profiles | `sinoclaw profile list` or [Profiles docs](https://anan.nousresearch.com/docs/user-guide/profiles) |
-| Cron jobs | `sinoclaw cron list` or [Cron docs](https://anan.nousresearch.com/docs/user-guide/features/cron) |
+| Skills catalog | `anan skills browse` or [Skills catalog](https://anan.nousresearch.com/docs/reference/skills-catalog) |
+| Provider setup | `anan model` or [Providers guide](https://anan.nousresearch.com/docs/integrations/providers) |
+| Platform setup | `anan gateway setup` or [Messaging docs](https://anan.nousresearch.com/docs/user-guide/messaging/) |
+| MCP servers | `anan mcp list` or [MCP guide](https://anan.nousresearch.com/docs/user-guide/features/mcp) |
+| Profiles | `anan profile list` or [Profiles docs](https://anan.nousresearch.com/docs/user-guide/profiles) |
+| Cron jobs | `anan cron list` or [Cron docs](https://anan.nousresearch.com/docs/user-guide/features/cron) |
 | Memory | `anan memory status` or [Memory docs](https://anan.nousresearch.com/docs/user-guide/features/memory) |
-| Env variables | `sinoclaw config env-path` or [Env vars reference](https://anan.nousresearch.com/docs/reference/environment-variables) |
-| CLI commands | `sinoclaw --help` or [CLI reference](https://anan.nousresearch.com/docs/reference/cli-commands) |
+| Env variables | `anan config env-path` or [Env vars reference](https://anan.nousresearch.com/docs/reference/environment-variables) |
+| CLI commands | `anan --help` or [CLI reference](https://anan.nousresearch.com/docs/reference/cli-commands) |
 | Gateway logs | `~/.anan/logs/gateway.log` |
-| Session files | `~/.anan/sessions/` or `sinoclaw sessions browse` |
+| Session files | `~/.anan/sessions/` or `anan sessions browse` |
 | Source code | `~/.anan/anan/` |
 
 ---
@@ -923,7 +923,7 @@ registry.register(
 
 Auto-discovery: any `tools/*.py` file with a top-level `registry.register()` call is imported automatically — no manual list needed.
 
-All handlers must return JSON strings. Use `get_anan_home()` for paths, never hardcode `~/.sinoclaw`.
+All handlers must return JSON strings. Use `get_anan_home()` for paths, never hardcode `~/.anan`.
 
 ### Adding a Slash Command
 

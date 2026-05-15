@@ -342,10 +342,10 @@ async def test_handle_thread_create_slash_dispatches_session_when_message_provid
 
     adapter._dispatch_thread_session = AsyncMock()
 
-    await adapter._handle_thread_create_slash(interaction, "Planning", "Hello Sinoclaw", 1440)
+    await adapter._handle_thread_create_slash(interaction, "Planning", "Hello anan", 1440)
 
     adapter._dispatch_thread_session.assert_awaited_once_with(
-        interaction, "555", "Planning", "Hello Sinoclaw",
+        interaction, "555", "Planning", "Hello anan",
     )
 
 
@@ -539,8 +539,8 @@ async def test_auto_create_thread_strips_mention_syntax_from_name(adapter):
 @pytest.mark.asyncio
 async def test_auto_create_thread_falls_back_to_sinoclaw_when_only_mentions(adapter):
     """If a message contains only mention syntax, the stripped content is
-    empty — fall back to the 'Sinoclaw' default rather than ''."""
-    thread = SimpleNamespace(id=999, name="Sinoclaw")
+    empty — fall back to the 'anan' default rather than ''."""
+    thread = SimpleNamespace(id=999, name="anan")
     message = SimpleNamespace(
         content="<@&1490963422786093149>",
         create_thread=AsyncMock(return_value=thread),
@@ -551,7 +551,7 @@ async def test_auto_create_thread_falls_back_to_sinoclaw_when_only_mentions(adap
     await adapter._auto_create_thread(message)
 
     name = message.create_thread.await_args[1]["name"]
-    assert name == "Sinoclaw"
+    assert name == "anan"
 
 
 @pytest.mark.asyncio
@@ -586,7 +586,7 @@ async def test_auto_create_thread_falls_back_to_seed_message(adapter):
 
     result = await adapter._auto_create_thread(message)
     assert result is thread
-    message.channel.send.assert_awaited_once_with("🧵 Thread created by Sinoclaw: **Hello**")
+    message.channel.send.assert_awaited_once_with("🧵 Thread created by anan: **Hello**")
     seed_message.create_thread.assert_awaited_once_with(
         name="Hello",
         auto_archive_duration=1440,
@@ -761,7 +761,7 @@ def test_discord_auto_thread_config_bridge(monkeypatch, tmp_path):
     from pathlib import Path
 
     # Write a config.yaml the loader will find
-    sinoclaw_dir = tmp_path / ".sinoclaw"
+    sinoclaw_dir = tmp_path / ".anan"
     sinoclaw_dir.mkdir()
     config_path = sinoclaw_dir / "config.yaml"
     config_path.write_text(yaml.dump({

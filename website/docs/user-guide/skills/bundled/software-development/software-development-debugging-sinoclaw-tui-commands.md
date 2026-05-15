@@ -17,7 +17,7 @@ Debug Hermes TUI slash commands: Python, gateway, Ink UI.
 | Source | Bundled (installed by default) |
 | Path | `skills/software-development/debugging-anan-tui-commands` |
 | Version | `1.0.0` |
-| Author | Sinoclaw Agent |
+| Author | anan Agent |
 | License | MIT |
 | Tags | `debugging`, `anan`, `tui`, `slash-commands`, `typescript`, `python` |
 | Related skills | [`python-debugpy`](/docs/user-guide/skills/bundled/software-development/software-development-python-debugpy), [`node-inspect-debugger`](/docs/user-guide/skills/bundled/software-development/software-development-node-inspect-debugger), [`systematic-debugging`](/docs/user-guide/skills/bundled/software-development/software-development-systematic-debugging) |
@@ -158,7 +158,7 @@ After fixing:
 
 2. Run the TUI and test the command:
    ```bash
-   sinoclaw --tui
+   anan --tui
    ```
 
 3. Type `/` and verify the command appears in autocomplete suggestions with the expected description and args hint.

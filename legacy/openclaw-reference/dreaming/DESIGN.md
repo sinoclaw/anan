@@ -2,7 +2,7 @@
 
 ## Overview
 
-Dreaming is an automated long-term memory management system for Sinoclaw. It mimics human sleep cycles to periodically process, organize, and consolidate memory fragments into durable long-term memory.
+Dreaming is an automated long-term memory management system for anan. It mimics human sleep cycles to periodically process, organize, and consolidate memory fragments into durable long-term memory.
 
 **Based on**: OpenClaw's `memory-core` dreaming system (`extensions/memory-core/src/dreaming.ts`)
 
@@ -21,11 +21,11 @@ OpenClaw's dreaming is embedded in the memory-core plugin with these key compone
 5. **Session ingestion**: Scans session transcripts to extract signal snippets
 6. **Promotion ranking**: Weighted scoring combining frequency, recency, relevance, diversity, consolidation, and conceptual strength
 
-### Sinoclaw Adaptation
+### anan Adaptation
 
-Sinoclaw's dreaming plugin is a standalone plugin (not tied to a specific memory system). Key adaptations:
+anan's dreaming plugin is a standalone plugin (not tied to a specific memory system). Key adaptations:
 
-1. **Plugin architecture**: Self-contained, uses Sinoclaw's plugin registration system
+1. **Plugin architecture**: Self-contained, uses anan's plugin registration system
 2. **Cron service**: Integrated via `ctx.get_cron()` for managing dreaming cron jobs
 3. **Recall store**: Shared with heartbeat plugin's recall store format for compatibility
 4. **Subagent integration**: Optional AI narrative generation via provided subagent
@@ -243,17 +243,17 @@ The memory of debugging that authentication flow surfaced suddenly — three ret
 
 ## Implementation Notes
 
-### Sinoclaw vs OpenClaw
+### anan vs OpenClaw
 
-1. **No session database**: OpenClaw has a full session store with message timestamps. Sinoclaw's simplified version scans `.txt` session files directly.
+1. **No session database**: OpenClaw has a full session store with message timestamps. anan's simplified version scans `.txt` session files directly.
 
-2. **No subagent runtime**: OpenClaw's subagent is integrated. Sinoclaw accepts an optional subagent via `set_subagent()` for narrative generation.
+2. **No subagent runtime**: OpenClaw's subagent is integrated. anan accepts an optional subagent via `set_subagent()` for narrative generation.
 
 3. **Cron service optional**: If cron service is not available, the plugin runs in "manual trigger" mode only.
 
 4. **Recall store compatibility**: The recall store format is shared with the heartbeat plugin, allowing both plugins to read/write the same store.
 
-5. **No phase markers in legacy format**: OpenClaw had complex phase marker logic. Sinoclaw uses simple start/end markers per phase.
+5. **No phase markers in legacy format**: OpenClaw had complex phase marker logic. anan uses simple start/end markers per phase.
 
 ### Performance Considerations
 

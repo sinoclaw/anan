@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Second pass: fix remaining sinoclaw residuals after first bulk pass.
+Second pass: fix remaining anan residuals after first bulk pass.
 """
 from pathlib import Path
 import re
@@ -10,7 +10,7 @@ ROOT = Path("/data/anan")
 # Patterns that should NOT be renamed (Nous model names, npm packages, etc.)
 PROTECTED = [
     re.compile(r'anan-[345](?:\.\d+)?(?:[-_]|$)', re.IGNORECASE),
-    re.compile(r'anan-[a-z]+-[a-z]+(?:\.\d+)?'),  # sinoclaw-local-stt, anan-yuanbao
+    re.compile(r'anan-[a-z]+-[a-z]+(?:\.\d+)?'),  # anan-local-stt, anan-yuanbao
 ]
 
 def is_protected(text: str) -> bool:

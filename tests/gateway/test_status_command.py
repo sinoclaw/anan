@@ -325,7 +325,7 @@ async def test_first_run_slack_home_channel_onboarding_uses_parent_command(monke
     assert result == "ok"
     runner.adapters[Platform.SLACK].send.assert_awaited_once()
     onboarding = runner.adapters[Platform.SLACK].send.await_args.args[1]
-    assert "/sinoclaw sethome" in onboarding
+    assert "/anan sethome" in onboarding
     assert "Type /sethome" not in onboarding
 
 
@@ -504,7 +504,7 @@ async def test_status_command_bypasses_active_session_guard():
 
     async def fake_handler(event):
         handler_called_with.append(event)
-        return "📊 **Sinoclaw Gateway Status**\n**Agent Running:** Yes ⚡"
+        return "📊 **anan Gateway Status**\n**Agent Running:** Yes ⚡"
 
     # Concrete subclass to avoid abstract method errors
     class _ConcreteAdapter(BasePlatformAdapter):
@@ -547,7 +547,7 @@ async def test_status_command_bypasses_active_session_guard():
 
 @pytest.mark.asyncio
 async def test_profile_command_reports_custom_root_profile(monkeypatch, tmp_path):
-    """Gateway /profile detects custom-root profiles (not under ~/.sinoclaw)."""
+    """Gateway /profile detects custom-root profiles (not under ~/.anan)."""
     from pathlib import Path
 
     session_entry = SessionEntry(

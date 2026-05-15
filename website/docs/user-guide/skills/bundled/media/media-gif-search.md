@@ -17,7 +17,7 @@ Search/download GIFs from Tenor via curl + jq.
 | Source | Bundled (installed by default) |
 | Path | `skills/media/gif-search` |
 | Version | `1.1.0` |
-| Author | Sinoclaw Agent |
+| Author | anan Agent |
 | License | MIT |
 | Tags | `GIF`, `Media`, `Search`, `Tenor`, `API` |
 
@@ -102,4 +102,4 @@ Each result has multiple formats under `.media_formats`:
 
 - URL-encode the query: spaces as `+`, special chars as `%XX`
 - For sending in chat, `tinygif` URLs are lighter weight
-- GIF URLs can be used directly in markdown: `![alt](https://github.com/sinoclaw/anan/blob/main/skills/media/gif-search/url)`
+- GIF URLs can be used directly in markdown: `![alt](https://github.com/anan/anan/blob/main/skills/media/gif-search/url)`

@@ -1,23 +1,23 @@
 ---
-title: "Hermes Atropos Environments — Build, test, and debug Sinoclaw Agent RL environments for Atropos training"
+title: "Hermes Atropos Environments — Build, test, and debug anan Agent RL environments for Atropos training"
 sidebar_label: "Hermes Atropos Environments"
-description: "Build, test, and debug Sinoclaw Agent RL environments for Atropos training"
+description: "Build, test, and debug anan Agent RL environments for Atropos training"
 ---
 
 {/* This page is auto-generated from the skill's SKILL.md by website/scripts/generate-skill-docs.py. Edit the source SKILL.md, not this page. */}
 
 # Hermes Atropos Environments
 
-Build, test, and debug Sinoclaw Agent RL environments for Atropos training. Covers the SinoclawAgentBaseEnv interface, reward functions, agent loop integration, evaluation with tools, wandb logging, and the three CLI modes (serve/process/evaluate). Use when creating, reviewing, or fixing RL environments in the anan repo.
+Build, test, and debug anan Agent RL environments for Atropos training. Covers the SinoclawAgentBaseEnv interface, reward functions, agent loop integration, evaluation with tools, wandb logging, and the three CLI modes (serve/process/evaluate). Use when creating, reviewing, or fixing RL environments in the anan repo.
 
 ## Skill metadata
 
 | | |
 |---|---|
-| Source | Optional — install with `sinoclaw skills install official/mlops/sinoclaw-atropos-environments` |
-| Path | `optional-skills/mlops/sinoclaw-atropos-environments` |
+| Source | Optional — install with `anan skills install official/mlops/anan-atropos-environments` |
+| Path | `optional-skills/mlops/anan-atropos-environments` |
 | Version | `1.1.0` |
-| Author | Sinoclaw Agent |
+| Author | anan Agent |
 | License | MIT |
 | Tags | `atropos`, `rl`, `environments`, `training`, `reinforcement-learning`, `reward-functions` |
 | Related skills | [`axolotl`](/docs/user-guide/skills/bundled/mlops/mlops-training-axolotl), [`fine-tuning-with-trl`](/docs/user-guide/skills/bundled/mlops/mlops-training-trl-fine-tuning), `lm-evaluation-harness` |
@@ -28,7 +28,7 @@ Build, test, and debug Sinoclaw Agent RL environments for Atropos training. Cove
 The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
-# Sinoclaw Agent Atropos Environments
+# anan Agent Atropos Environments
 
 Guide for building RL environments in the anan repo that integrate with the Atropos training framework.
 

@@ -97,9 +97,9 @@ Key behaviors:
 Toolsets are named bundles of tools. Hermes resolves them through:
 
 - explicit enabled/disabled toolset lists
-- platform presets (`anan-cli`, `sinoclaw-telegram`, etc.)
+- platform presets (`anan-cli`, `anan-telegram`, etc.)
 - dynamic MCP toolsets
-- curated special-purpose sets like `sinoclaw-acp`
+- curated special-purpose sets like `anan-acp`
 
 ### How `get_tool_definitions()` filters tools
 

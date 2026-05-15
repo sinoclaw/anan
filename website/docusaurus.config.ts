@@ -3,15 +3,15 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'Sinoclaw Agent',
+  title: 'anan Agent',
   tagline: 'The self-improving AI agent',
   favicon: 'img/favicon.ico',
 
-  url: 'https://sinoclaw-agent.nousresearch.com',
+  url: 'https://anan-agent.nousresearch.com',
   baseUrl: '/docs/',
 
   organizationName: 'NousResearch',
-  projectName: 'sinoclaw-agent',
+  projectName: 'anan-agent',
 
   onBrokenLinks: 'warn',
 
@@ -73,7 +73,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',  // Docs at the root of /docs/
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/NousResearch/sinoclaw-agent/edit/main/website/',
+          editUrl: 'https://github.com/NousResearch/anan-agent/edit/main/website/',
         },
         blog: false,
         theme: {
@@ -84,7 +84,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/sinoclaw-agent-banner.png',
+    image: 'img/anan-agent-banner.png',
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,
@@ -96,9 +96,9 @@ const config: Config = {
       },
     },
     navbar: {
-      title: 'Sinoclaw Agent',
+      title: 'anan Agent',
       logo: {
-        alt: 'Sinoclaw Agent',
+        alt: 'anan Agent',
         src: 'img/logo.png',
       },
       items: [
@@ -118,12 +118,12 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://sinoclaw-agent.nousresearch.com',
+          href: 'https://anan-agent.nousresearch.com',
           label: 'Home',
           position: 'right',
         },
         {
-          href: 'https://github.com/NousResearch/sinoclaw-agent',
+          href: 'https://github.com/NousResearch/anan-agent',
           label: 'GitHub',
           position: 'right',
         },
@@ -150,14 +150,14 @@ const config: Config = {
           title: 'Community',
           items: [
             { label: 'Discord', href: 'https://discord.gg/NousResearch' },
-            { label: 'GitHub Discussions', href: 'https://github.com/NousResearch/sinoclaw-agent/discussions' },
+            { label: 'GitHub Discussions', href: 'https://github.com/NousResearch/anan-agent/discussions' },
             { label: 'Skills Hub', href: 'https://agentskills.io' },
           ],
         },
         {
           title: 'More',
           items: [
-            { label: 'GitHub', href: 'https://github.com/NousResearch/sinoclaw-agent' },
+            { label: 'GitHub', href: 'https://github.com/NousResearch/anan-agent' },
             { label: 'Nous Research', href: 'https://nousresearch.com' },
           ],
         },

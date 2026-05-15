@@ -1,4 +1,4 @@
-# Dreaming Plugin for Sinoclaw
+# Dreaming Plugin for anan
 
 Automated long-term memory management system — mimics human sleep cycles to organize and consolidate memory over time.
 
@@ -68,7 +68,7 @@ Sessions / Daily Memory / Recall Store
 ## Installation
 
 ```bash
-cp -r /data/plugins/dreaming /data/sinoclaw/plugins/
+cp -r /data/plugins/dreaming /data/anan/plugins/
 ```
 
 Add to `config.yaml`:

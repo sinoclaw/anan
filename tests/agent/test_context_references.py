@@ -24,7 +24,7 @@ def sample_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir()
     _git(repo, "init")
-    _git(repo, "config", "user.name", "Sinoclaw Tests")
+    _git(repo, "config", "user.name", "anan Tests")
     _git(repo, "config", "user.email", "tests@example.com")
 
     (repo / "src").mkdir()
@@ -313,9 +313,9 @@ async def test_blocks_sensitive_home_and_sinoclaw_paths(tmp_path: Path, monkeypa
     from agent.context_references import preprocess_context_references_async
 
     monkeypatch.setenv("HOME", str(tmp_path))
-    monkeypatch.setenv("ANAN_HOME", str(tmp_path / ".sinoclaw"))
+    monkeypatch.setenv("ANAN_HOME", str(tmp_path / ".anan"))
 
-    sinoclaw_env = tmp_path / ".sinoclaw" / ".env"
+    sinoclaw_env = tmp_path / ".anan" / ".env"
     sinoclaw_env.parent.mkdir(parents=True)
     sinoclaw_env.write_text("API_KEY=super-secret\n", encoding="utf-8")
 
@@ -324,7 +324,7 @@ async def test_blocks_sensitive_home_and_sinoclaw_paths(tmp_path: Path, monkeypa
     ssh_key.write_text("PRIVATE-KEY\n", encoding="utf-8")
 
     result = await preprocess_context_references_async(
-        "read @file:.sinoclaw/.env and @file:.ssh/id_rsa",
+        "read @file:.anan/.env and @file:.ssh/id_rsa",
         cwd=tmp_path,
         allowed_root=tmp_path,
         context_length=100_000,

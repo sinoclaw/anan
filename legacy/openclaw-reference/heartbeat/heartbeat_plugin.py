@@ -1,5 +1,5 @@
 """
-Heartbeat Plugin for Sinoclaw Gateway
+Heartbeat Plugin for anan Gateway
 
 Replicates OpenClaw's heartbeat mechanism:
 - Phase-offset scheduling for multi-agent (SHA256-based)
@@ -370,7 +370,7 @@ class HeartbeatState:
 
 class HeartbeatPlugin:
     """
-    Heartbeat plugin for Sinoclaw.
+    Heartbeat plugin for anan.
     
     Replicates OpenClaw's heartbeat scheduling with:
     - Phase-offset multi-agent scheduling
@@ -1170,7 +1170,7 @@ def register(ctx) -> None:
     """Register the heartbeat plugin with the gateway.
     
     Args:
-        ctx: PluginContext from Sinoclaw gateway
+        ctx: PluginContext from anan gateway
     """
     global _plugin_instance
     

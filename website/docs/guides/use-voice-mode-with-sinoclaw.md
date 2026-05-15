@@ -147,7 +147,7 @@ ELEVENLABS_API_KEY=***
 - `openai` → good middle ground
 - `mistral` → multilingual, native Opus
 
-### If you use `sinoclaw setup`
+### If you use `anan setup`
 
 If you choose NeuTTS in the setup wizard, Hermes checks whether `neutts` is already installed. If it is missing, the wizard tells you NeuTTS needs the Python package `neutts` and the system package `espeak-ng`, offers to install them for you, installs `espeak-ng` with your platform package manager, and then runs:
 
@@ -298,7 +298,7 @@ Hermes stays a normal chat bot, but can speak replies.
 ### Start the gateway
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 ### Turn on voice replies
@@ -345,7 +345,7 @@ Useful when you want private interaction without server-channel mention behavior
 
 This is the most advanced mode.
 
-Sinoclaw joins a Discord VC, listens to user speech, transcribes it, runs the normal agent pipeline, and speaks replies back into the channel.
+anan joins a Discord VC, listens to user speech, transcribes it, runs the normal agent pipeline, and speaks replies back into the channel.
 
 ## Required Discord permissions
 

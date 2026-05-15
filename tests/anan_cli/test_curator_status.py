@@ -1,4 +1,4 @@
-"""Tests for `sinoclaw curator status` output.
+"""Tests for `anan curator status` output.
 
 Covers:
 - y0shualee's "least recently active" semantic (view/patch/use all count as activity).
@@ -60,7 +60,7 @@ def test_status_uses_last_activity_not_only_last_used(monkeypatch, capsys):
 @pytest.fixture
 def curator_status_env(tmp_path, monkeypatch):
     """Isolated ANAN_HOME with real agent-created skills on disk."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     skills = home / "skills"
     skills.mkdir(parents=True)
     (home / "logs").mkdir()

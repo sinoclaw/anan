@@ -26,7 +26,7 @@ API_SERVER_KEY=change-me-local-dev
 ### 2. Start the gateway
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 You'll see:
@@ -102,10 +102,10 @@ Standard OpenAI Chat Completions format. Stateless — the full conversation is 
 
 Uploaded files (`file` / `input_file` / `file_id`) and non-image `data:` URLs return `400 unsupported_content_type`.
 
-**Streaming** (`"stream": true`): Returns Server-Sent Events (SSE) with token-by-token response chunks. For **Chat Completions**, the stream uses standard `chat.completion.chunk` events plus Hermes' custom `sinoclaw.tool.progress` event for tool-start UX. For **Responses**, the stream uses OpenAI Responses event types such as `response.created`, `response.output_text.delta`, `response.output_item.added`, `response.output_item.done`, and `response.completed`.
+**Streaming** (`"stream": true`): Returns Server-Sent Events (SSE) with token-by-token response chunks. For **Chat Completions**, the stream uses standard `chat.completion.chunk` events plus Hermes' custom `anan.tool.progress` event for tool-start UX. For **Responses**, the stream uses OpenAI Responses event types such as `response.created`, `response.output_text.delta`, `response.output_item.added`, `response.output_item.done`, and `response.completed`.
 
 **Tool progress in streams**:
-- **Chat Completions**: Hermes emits `event: sinoclaw.tool.progress` for tool-start visibility without polluting persisted assistant text.
+- **Chat Completions**: Hermes emits `event: anan.tool.progress` for tool-start visibility without polluting persisted assistant text.
 - **Responses**: Hermes emits spec-native `function_call` and `function_call_output` output items during the SSE stream, so clients can render structured tool UI in real time.
 
 ### POST /v1/responses
@@ -248,7 +248,7 @@ Poll the current run state. This is useful for dashboards that need status witho
 
 ```json
 {
-  "object": "sinoclaw.run",
+  "object": "anan.run",
   "run_id": "run_abc123",
   "status": "completed",
   "session_id": "space-session",
@@ -278,7 +278,7 @@ List all scheduled jobs.
 
 ### POST /api/jobs
 
-Create a new scheduled job. Body accepts the same shape as `sinoclaw cron` — prompt, schedule, skills, provider override, delivery target.
+Create a new scheduled job. Body accepts the same shape as `anan cron` — prompt, schedule, skills, provider override, delivery target.
 
 ### GET /api/jobs/\{job_id\}
 
@@ -399,17 +399,17 @@ hermes profile create alice
 hermes profile create bob
 
 # Configure each profile's API server on a different port
-sinoclaw -p alice config set API_SERVER_ENABLED true
-sinoclaw -p alice config set API_SERVER_PORT 8643
-sinoclaw -p alice config set API_SERVER_KEY alice-secret
+anan -p alice config set API_SERVER_ENABLED true
+anan -p alice config set API_SERVER_PORT 8643
+anan -p alice config set API_SERVER_KEY alice-secret
 
-sinoclaw -p bob config set API_SERVER_ENABLED true
-sinoclaw -p bob config set API_SERVER_PORT 8644
-sinoclaw -p bob config set API_SERVER_KEY bob-secret
+anan -p bob config set API_SERVER_ENABLED true
+anan -p bob config set API_SERVER_PORT 8644
+anan -p bob config set API_SERVER_KEY bob-secret
 
 # Start each profile's gateway
-sinoclaw -p alice gateway &
-sinoclaw -p bob gateway &
+anan -p alice gateway &
+anan -p bob gateway &
 ```
 
 Each profile's API server automatically advertises the profile name as the model ID:
@@ -427,6 +427,6 @@ In Open WebUI, add each as a separate connection. The model dropdown shows `alic
 
 ## Proxy Mode
 
-The API server also serves as the backend for **gateway proxy mode**. When another Sinoclaw gateway instance is configured with `GATEWAY_PROXY_URL` pointing at this API server, it forwards all messages here instead of running its own agent. This enables split deployments — for example, a Docker container handling Matrix E2EE that relays to a host-side agent.
+The API server also serves as the backend for **gateway proxy mode**. When another anan gateway instance is configured with `GATEWAY_PROXY_URL` pointing at this API server, it forwards all messages here instead of running its own agent. This enables split deployments — for example, a Docker container handling Matrix E2EE that relays to a host-side agent.
 
 See [Matrix Proxy Mode](/docs/user-guide/messaging/matrix#proxy-mode-e2ee-on-macos) for the full setup guide.

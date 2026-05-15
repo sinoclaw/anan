@@ -15587,7 +15587,7 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
         # before sending SIGTERM. If present, treat the signal as a
         # planned shutdown and exit 0 so systemd's Restart=on-failure
         # doesn't revive us (which would flap-fight the replacer when
-        # both services are enabled, e.g. anan.service + sinoclaw-
+        # both services are enabled, e.g. anan.service + anan-
         # gateway.service from pre-rename installs).
         planned_takeover = False
         try:
@@ -15621,7 +15621,7 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
         else:
             _signal_initiated_shutdown = True
             logger.info("Received SIGTERM/SIGINT — initiating shutdown")
-        # Diagnostic: log all sinoclaw-related processes so we can identify
+        # Diagnostic: log all anan-related processes so we can identify
         # what triggered the signal (anan update, anan gateway restart,
         # a stale detached subprocess, etc.).
         try:

@@ -46,7 +46,7 @@
 
 **已有**：
 - Light/REM/Deep Sleep 三阶段框架
-- `AnanSessionDB` 读 sinoclaw state.db 的 session 数据
+- `AnanSessionDB` 读 anan state.db 的 session 数据
 - Narrative dream 生成（NARRATIVE_SYSTEM_PROMPT）
 - Recall signal system（短时记忆信号）
 

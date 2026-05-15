@@ -1,4 +1,4 @@
-import { renderSync } from '@sinoclaw/ink'
+import { renderSync } from '@anan/ink'
 import React from 'react'
 import { PassThrough } from 'stream'
 import { describe, expect, it } from 'vitest'

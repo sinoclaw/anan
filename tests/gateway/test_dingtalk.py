@@ -175,7 +175,7 @@ class TestSend:
         assert call_args[0][0] == "https://dingtalk.example/webhook"
         payload = call_args[1]["json"]
         assert payload["msgtype"] == "markdown"
-        assert payload["markdown"]["title"] == "Sinoclaw"
+        assert payload["markdown"]["title"] == "anan"
         assert payload["markdown"]["text"] == "Hello!"
 
     @pytest.mark.asyncio
@@ -494,7 +494,7 @@ class TestMentionPatterns:
             monkeypatch, extra={"mention_patterns": ["^hermes"]}
         )
         assert adapter._message_matches_mention_patterns("hermes please help") is True
-        assert adapter._message_matches_mention_patterns("please sinoclaw help") is False
+        assert adapter._message_matches_mention_patterns("please anan help") is False
 
     def test_pattern_is_case_insensitive(self, monkeypatch):
         adapter = _make_gating_adapter(

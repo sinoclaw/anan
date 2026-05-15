@@ -35,20 +35,20 @@ If you already have an API key set in `.env`, Hermes auto-discovers it as a 1-ke
 
 ```bash
 # Add a second OpenRouter key
-sinoclaw auth add openrouter --api-key sk-or-v1-your-second-key
+anan auth add openrouter --api-key sk-or-v1-your-second-key
 
 # Add a second Anthropic key
-sinoclaw auth add anthropic --type api-key --api-key sk-ant-api03-your-second-key
+anan auth add anthropic --type api-key --api-key sk-ant-api03-your-second-key
 
 # Add an Anthropic OAuth credential (requires Claude Max plan + extra usage credits)
-sinoclaw auth add anthropic --type oauth
+anan auth add anthropic --type oauth
 # Opens browser for OAuth login
 ```
 
 Check your pools:
 
 ```bash
-sinoclaw auth list
+anan auth list
 ```
 
 Output:
@@ -67,10 +67,10 @@ The `←` marks the currently selected credential.
 
 ## Interactive Management
 
-Run `sinoclaw auth` with no subcommand for an interactive wizard:
+Run `anan auth` with no subcommand for an interactive wizard:
 
 ```bash
-sinoclaw auth
+anan auth
 ```
 
 This shows your full pool status and offers a menu:
@@ -97,18 +97,18 @@ Type [1/2]:
 
 | Command | Description |
 |---------|-------------|
-| `sinoclaw auth` | Interactive pool management wizard |
-| `sinoclaw auth list` | Show all pools and credentials |
-| `sinoclaw auth list <provider>` | Show a specific provider's pool |
-| `sinoclaw auth add <provider>` | Add a credential (prompts for type and key) |
-| `sinoclaw auth add <provider> --type api-key --api-key <key>` | Add an API key non-interactively |
-| `sinoclaw auth add <provider> --type oauth` | Add an OAuth credential via browser login |
-| `sinoclaw auth remove <provider> <index>` | Remove credential by 1-based index |
-| `sinoclaw auth reset <provider>` | Clear all cooldowns/exhaustion status |
+| `anan auth` | Interactive pool management wizard |
+| `anan auth list` | Show all pools and credentials |
+| `anan auth list <provider>` | Show a specific provider's pool |
+| `anan auth add <provider>` | Add a credential (prompts for type and key) |
+| `anan auth add <provider> --type api-key --api-key <key>` | Add an API key non-interactively |
+| `anan auth add <provider> --type oauth` | Add an OAuth credential via browser login |
+| `anan auth remove <provider> <index>` | Remove credential by 1-based index |
+| `anan auth reset <provider>` | Clear all cooldowns/exhaustion status |
 
 ## Rotation Strategies
 
-Configure via `sinoclaw auth` → "Set rotation strategy" or in `config.yaml`:
+Configure via `anan auth` → "Set rotation strategy" or in `config.yaml`:
 
 ```yaml
 credential_pool_strategies:
@@ -140,17 +140,17 @@ The `has_retried_429` flag resets on every successful API call, so a single tran
 
 Custom OpenAI-compatible endpoints (Together.ai, RunPod, local servers) get their own pools, keyed by the endpoint name from `custom_providers` in config.yaml.
 
-When you set up a custom endpoint via `sinoclaw model`, it auto-generates a name like "Together.ai" or "Local (localhost:8080)". This name becomes the pool key.
+When you set up a custom endpoint via `anan model`, it auto-generates a name like "Together.ai" or "Local (localhost:8080)". This name becomes the pool key.
 
 ```bash
-# After setting up a custom endpoint via sinoclaw model:
-sinoclaw auth list
+# After setting up a custom endpoint via anan model:
+anan auth list
 # Shows:
 #   Together.ai (1 credential):
 #     #1  config key    api_key config:Together.ai ←
 
 # Add a second key for the same endpoint:
-sinoclaw auth add Together.ai --api-key sk-together-second-key
+anan auth add Together.ai --api-key sk-together-second-key
 ```
 
 Custom endpoint pools are stored in `auth.json` under `credential_pool` with a `custom:` prefix:
@@ -175,9 +175,9 @@ Hermes automatically discovers credentials from multiple sources and seeds the p
 | Claude Code credentials | `~/.claude/.credentials.json` | Yes (Anthropic) |
 | Hermes PKCE OAuth | `~/.anan/auth.json` | Yes (Anthropic) |
 | Custom endpoint config | `model.api_key` in config.yaml | Yes (custom endpoints) |
-| Manual entries | Added via `sinoclaw auth add` | Persisted in auth.json |
+| Manual entries | Added via `anan auth add` | Persisted in auth.json |
 
-Auto-seeded entries are updated on each pool load — if you remove an env var, its pool entry is automatically pruned. Manual entries (added via `sinoclaw auth add`) are never auto-pruned.
+Auto-seeded entries are updated on each pool load — if you remove an env var, its pool entry is automatically pruned. Manual entries (added via `anan auth add`) are never auto-pruned.
 
 ## Delegation & Subagent Sharing
 

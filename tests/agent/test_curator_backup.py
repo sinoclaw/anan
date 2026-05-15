@@ -16,7 +16,7 @@ import pytest
 @pytest.fixture
 def backup_env(monkeypatch, tmp_path):
     """Isolate ANAN_HOME + reload modules so every test starts clean."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     (home / "skills").mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))

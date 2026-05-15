@@ -39,7 +39,7 @@ URL = "https://example.com/pricing"
 STATE_FILE = os.path.expanduser("~/.anan/scripts/.watch-site-state.json")
 
 # Fetch current content
-req = urllib.request.Request(URL, headers={"User-Agent": "Sinoclaw-Monitor/1.0"})
+req = urllib.request.Request(URL, headers={"User-Agent": "anan-Monitor/1.0"})
 content = urllib.request.urlopen(req, timeout=30).read().decode()
 current_hash = hashlib.sha256(content.encode()).hexdigest()
 
@@ -108,14 +108,14 @@ The `0 9 * * 1` is a standard cron expression: 9:00 AM every Monday.
 Monitor a repository for new issues, PRs, or releases.
 
 ```bash
-/cron add "every 6h" "Check the GitHub repository sinoclaw/anan for:
+/cron add "every 6h" "Check the GitHub repository anan/anan for:
 - New issues opened in the last 6 hours
 - New PRs opened or merged in the last 6 hours
 - Any new releases
 
 Use the terminal to run gh commands:
-  gh issue list --repo sinoclaw/anan --state open --json number,title,author,createdAt --limit 10
-  gh pr list --repo sinoclaw/anan --state all --json number,title,author,createdAt,mergedAt --limit 10
+  gh issue list --repo anan/anan --state open --json number,title,author,createdAt --limit 10
+  gh pr list --repo anan/anan --state all --json number,title,author,createdAt,mergedAt --limit 10
 
 Filter to only items from the last 6 hours. If nothing new, respond with [SILENT].
 Otherwise, provide a concise summary of the activity." --name "Repo watcher" --deliver discord

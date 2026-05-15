@@ -22,7 +22,7 @@ import pytest
 
 @pytest.fixture
 def curator_env(tmp_path, monkeypatch):
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     (home / "skills").mkdir()
     (home / "logs").mkdir()

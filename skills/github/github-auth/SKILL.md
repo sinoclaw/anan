@@ -2,7 +2,7 @@
 name: github-auth
 description: "GitHub auth setup: HTTPS tokens, SSH keys, gh CLI login."
 version: 1.1.0
-author: Sinoclaw Agent
+author: anan Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:

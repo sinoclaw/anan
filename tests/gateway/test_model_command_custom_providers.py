@@ -27,7 +27,7 @@ def _make_event(text="/model"):
 
 @pytest.mark.asyncio
 async def test_handle_model_command_lists_saved_custom_provider(tmp_path, monkeypatch):
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     (anan_home / "config.yaml").write_text(
         yaml.safe_dump(

@@ -722,7 +722,7 @@ kanban task.
   assigned profiles. Runs **inside the gateway** by default via
   `kanban.dispatch_in_gateway: true`.
 - **Plugin assets:** `plugins/kanban/dashboard/` (web UI) +
-  `plugins/kanban/systemd/` (`sinoclaw-kanban-dispatcher.service` for
+  `plugins/kanban/systemd/` (`anan-kanban-dispatcher.service` for
   standalone dispatcher deployment).
 
 Isolation model:

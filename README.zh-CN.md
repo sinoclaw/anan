@@ -5,7 +5,7 @@
 # Anan Agent ☤
 
 <p align="center">
-  <a href="https://anan.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-sinoclaw--agent.anan.com-FFD700?style=for-the-badge" alt="Documentation"></a>
+  <a href="https://anan.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-anan--agent.anan.com-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://github.com/anan/anan"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://github.com/anan/anan/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
   <a href="https://github.com/anan"><img src="https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge" alt="Built by Anan Team"></a>

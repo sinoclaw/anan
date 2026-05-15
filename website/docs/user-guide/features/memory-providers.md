@@ -6,7 +6,7 @@ description: "External memory provider plugins — Honcho, OpenViking, Mem0, Hin
 
 # Memory Providers
 
-Sinoclaw Agent ships with 8 external memory provider plugins that give the agent persistent, cross-session knowledge beyond the built-in MEMORY.md and USER.md. Only **one** external provider can be active at a time — the built-in memory is always active alongside it.
+anan Agent ships with 8 external memory provider plugins that give the agent persistent, cross-session knowledge beyond the built-in MEMORY.md and USER.md. Only **one** external provider can be active at a time — the built-in memory is always active alongside it.
 
 ## Quick Start
 
@@ -16,7 +16,7 @@ hermes memory status     # check what's active
 hermes memory off        # disable external provider
 ```
 
-You can also select the active memory provider via `sinoclaw plugins` → Provider Plugins → Memory Provider.
+You can also select the active memory provider via `anan plugins` → Provider Plugins → Memory Provider.
 
 Or set manually in `~/.anan/config.yaml`:
 
@@ -68,7 +68,7 @@ hermes honcho setup        # (legacy command)
 hermes memory setup        # select "honcho"
 ```
 
-**Config:** `$ANAN_HOME/honcho.json` (profile-local) or `~/.honcho/config.json` (global). Resolution order: `$ANAN_HOME/honcho.json` > `~/.anan/honcho.json` > `~/.honcho/config.json`. See the [config reference](https://github.com/sinoclaw-ai/anan/blob/main/plugins/memory/honcho/README.md) and the [Honcho integration guide](https://docs.honcho.dev/v3/guides/integrations/hermes).
+**Config:** `$ANAN_HOME/honcho.json` (profile-local) or `~/.honcho/config.json` (global). Resolution order: `$ANAN_HOME/honcho.json` > `~/.anan/honcho.json` > `~/.honcho/config.json`. See the [config reference](https://github.com/anan-ai/anan/blob/main/plugins/memory/honcho/README.md) and the [Honcho integration guide](https://docs.honcho.dev/v3/guides/integrations/hermes).
 
 <details>
 <summary>Full config reference</summary>
@@ -255,7 +255,7 @@ See the [Honcho page](./honcho.md#observation-directional-vs-unified) for the fu
 
 </details>
 
-See the [config reference](https://github.com/sinoclaw-ai/anan/blob/main/plugins/memory/honcho/README.md) and [Honcho integration guide](https://docs.honcho.dev/v3/guides/integrations/hermes).
+See the [config reference](https://github.com/anan-ai/anan/blob/main/plugins/memory/honcho/README.md) and [Honcho integration guide](https://docs.honcho.dev/v3/guides/integrations/hermes).
 
 
 ---
@@ -359,14 +359,14 @@ The setup wizard installs dependencies automatically and only installs what's ne
 | `auto_retain` | `true` | Automatically retain conversation turns |
 | `auto_recall` | `true` | Automatically recall memories before each turn |
 | `retain_async` | `true` | Process retain asynchronously on the server |
-| `retain_context` | `conversation between Sinoclaw Agent and the User` | Context label for retained memories |
+| `retain_context` | `conversation between anan Agent and the User` | Context label for retained memories |
 | `retain_tags` | — | Default tags applied to retained memories; merged with per-call tool tags |
 | `retain_source` | — | Optional `metadata.source` attached to retained memories |
 | `retain_user_prefix` | `User` | Label used before user turns in auto-retained transcripts |
 | `retain_assistant_prefix` | `Assistant` | Label used before assistant turns in auto-retained transcripts |
 | `recall_tags` | — | Tags to filter on recall |
 
-See [plugin README](https://github.com/sinoclaw/anan/blob/main/plugins/memory/hindsight/README.md) for the full configuration reference.
+See [plugin README](https://github.com/anan/anan/blob/main/plugins/memory/hindsight/README.md) for the full configuration reference.
 
 ---
 

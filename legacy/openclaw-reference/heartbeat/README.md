@@ -1,10 +1,10 @@
-# Heartbeat Plugin for Sinoclaw
+# Heartbeat Plugin for anan
 
 Periodic main-session turns — batch checks (inbox, calendar, notifications) with full session context. Replicates OpenClaw's heartbeat mechanism.
 
 ## Overview
 
-The heartbeat plugin provides intelligent, periodic health-checks for the Sinoclaw agent. Unlike cron which runs isolated tasks, heartbeat runs in the **main session context** so the agent can make smart, contextual decisions about what needs attention.
+The heartbeat plugin provides intelligent, periodic health-checks for the anan agent. Unlike cron which runs isolated tasks, heartbeat runs in the **main session context** so the agent can make smart, contextual decisions about what needs attention.
 
 ## Features
 
@@ -35,9 +35,9 @@ The heartbeat plugin provides intelligent, periodic health-checks for the Sinocl
 
 ## Installation
 
-1. Copy to Sinoclaw plugins directory:
+1. Copy to anan plugins directory:
    ```bash
-   cp -r /data/plugins/heartbeat /data/sinoclaw/plugins/
+   cp -r /data/plugins/heartbeat /data/anan/plugins/
    ```
 
 2. Add to `config.yaml`:
@@ -68,7 +68,7 @@ The heartbeat plugin provides intelligent, periodic health-checks for the Sinocl
 |---------|---------|-------------|
 | `enabled` | `true` | Enable/disable plugin |
 | `interval_ms` | `1800000` | Heartbeat interval (30 min) |
-| `scheduler_seed` | `sinoclaw-heartbeat-v1` | Phase calculation seed |
+| `scheduler_seed` | `anan-heartbeat-v1` | Phase calculation seed |
 | `flood_window_ms` | `60000` | Flood guard window (60s) |
 | `flood_threshold` | `5` | Max heartbeats in window |
 | `min_spacing_ms` | `30000` | Min spacing between runs |
@@ -202,4 +202,4 @@ heartbeat/
 
 ## Credits
 
-Mechanism inspired by [OpenClaw heartbeat](https://docs.openclaw.ai/heartbeat), adapted for Sinoclaw's Python/Gateway architecture.
+Mechanism inspired by [OpenClaw heartbeat](https://docs.openclaw.ai/heartbeat), adapted for anan's Python/Gateway architecture.

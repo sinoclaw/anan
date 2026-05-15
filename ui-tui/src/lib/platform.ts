@@ -88,7 +88,7 @@ export const DEFAULT_VOICE_RECORD_KEY: ParsedVoiceRecordKey = {
 /** Modifier aliases.
  *
  * ``meta`` / ``cmd`` / ``command`` are intentionally absent.
- * sinoclaw-ink sets ``key.meta`` for plain Alt/Option on every platform
+ * anan-ink sets ``key.meta`` for plain Alt/Option on every platform
  * AND for Cmd on some legacy macOS terminals (Terminal.app without
  * kitty-protocol passthrough). Accepting any of those as a literal
  * modifier would produce a display/binding mismatch — a config like
@@ -165,7 +165,7 @@ const _RESERVED_CTRL_CHARS = new Set(['c', 'd', 'l'])
 const _RESERVED_SUPER_CHARS = new Set(['c', 'd', 'l', 'v'])
 
 /** On macOS ``isActionMod`` accepts ``key.meta`` as the action
- * modifier — but sinoclaw-ink reports Alt as ``key.meta`` on many
+ * modifier — but anan-ink reports Alt as ``key.meta`` on many
  * terminals. So on darwin a configured ``alt+c`` / ``alt+d`` / ``alt+l``
  * gets swallowed by ``isCopyShortcut`` / ``isAction`` before the voice
  * check runs. Block at parse time so /voice status doesn't advertise
@@ -292,7 +292,7 @@ export const parseVoiceRecordKey = (raw: unknown): ParsedVoiceRecordKey => {
     return DEFAULT_VOICE_RECORD_KEY
   }
 
-  // On macOS sinoclaw-ink reports Alt as ``key.meta``, which ``isActionMod``
+  // On macOS anan-ink reports Alt as ``key.meta``, which ``isActionMod``
   // accepts as the mac action modifier. So ``alt+c`` / ``alt+d`` / ``alt+l``
   // collide with copy / exit / clear in ``useInputHandlers()`` before the
   // voice check. Reject at parse time on darwin only — non-mac ``alt+<letter>``
@@ -377,7 +377,7 @@ export const isVoiceToggleKey = (
       // Ctrl+Alt+<key> or Cmd+Alt+<key> doesn't spuriously fire the
       // alt binding.
       //
-      // Bare Escape on sinoclaw-ink can arrive as ``key.meta=true`` on some
+      // Bare Escape on anan-ink can arrive as ``key.meta=true`` on some
       // terminals, so a configured ``alt+escape`` must not match that shape;
       // require an explicit alt bit for escape chords (Copilot round-7
       // follow-up on #19835).
@@ -390,7 +390,7 @@ export const isVoiceToggleKey = (
       // The documented default (``ctrl+b``) additionally accepts the
       // explicit ``key.super`` bit on macOS for Cmd+B muscle memory —
       // but ONLY ``key.super`` (kitty-style), never ``key.meta``, since
-      // ``key.meta`` is sinoclaw-ink's Alt signal and accepting it would
+      // ``key.meta`` is anan-ink's Alt signal and accepting it would
       // fire the binding on Alt+B.
       if (key.ctrl) {
         return !key.alt && !key.meta && key.super !== true

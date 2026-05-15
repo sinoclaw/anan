@@ -1710,8 +1710,8 @@ class TestExecuteToolCalls:
         assert messages[0]["tool_call_id"] == "c1"
 
     def test_result_truncation_over_100k(self, agent, tmp_path, monkeypatch):
-        monkeypatch.setenv("ANAN_HOME", str(tmp_path / ".sinoclaw"))
-        (tmp_path / ".sinoclaw").mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(tmp_path / ".anan"))
+        (tmp_path / ".anan").mkdir()
         tc = _mock_tool_call(name="web_search", arguments="{}", call_id="c1")
         mock_msg = _mock_assistant_msg(content="", tool_calls=[tc])
         messages = []
@@ -2028,8 +2028,8 @@ class TestConcurrentToolExecution:
 
     def test_concurrent_truncates_large_results(self, agent, tmp_path, monkeypatch):
         """Concurrent path should save oversized results to file."""
-        monkeypatch.setenv("ANAN_HOME", str(tmp_path / ".sinoclaw"))
-        (tmp_path / ".sinoclaw").mkdir()
+        monkeypatch.setenv("ANAN_HOME", str(tmp_path / ".anan"))
+        (tmp_path / ".anan").mkdir()
         tc1 = _mock_tool_call(name="web_search", arguments='{}', call_id="c1")
         tc2 = _mock_tool_call(name="web_search", arguments='{}', call_id="c2")
         mock_msg = _mock_assistant_msg(content="", tool_calls=[tc1, tc2])
@@ -3867,7 +3867,7 @@ class TestSystemPromptStability:
         # Should have built fresh, not queried the DB
         mock_db.get_session.assert_not_called()
         assert agent._cached_system_prompt is not None
-        assert "Sinoclaw Agent" in agent._cached_system_prompt
+        assert "anan Agent" in agent._cached_system_prompt
 
     def test_fresh_build_when_db_has_no_prompt(self, agent):
         """If the session DB has no stored prompt, build fresh even with history."""
@@ -3894,7 +3894,7 @@ class TestSystemPromptStability:
                 agent._cached_system_prompt = agent._build_system_prompt()
 
         # Empty string is falsy, so should fall through to fresh build
-        assert "Sinoclaw Agent" in agent._cached_system_prompt
+        assert "anan Agent" in agent._cached_system_prompt
 
 class TestBudgetPressure:
     """Budget exhaustion grace call system."""

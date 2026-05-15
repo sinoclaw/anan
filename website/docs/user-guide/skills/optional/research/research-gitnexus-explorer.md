@@ -14,10 +14,10 @@ Index a codebase with GitNexus and serve an interactive knowledge graph via web 
 
 | | |
 |---|---|
-| Source | Optional — install with `sinoclaw skills install official/research/gitnexus-explorer` |
+| Source | Optional — install with `anan skills install official/research/gitnexus-explorer` |
 | Path | `optional-skills/research/gitnexus-explorer` |
 | Version | `1.0.0` |
-| Author | Sinoclaw Agent + Teknium |
+| Author | anan Agent + Teknium |
 | License | MIT |
 | Tags | `gitnexus`, `code-intelligence`, `knowledge-graph`, `visualization` |
 | Related skills | [`native-mcp`](/docs/user-guide/skills/bundled/mcp/mcp-native-mcp), [`codebase-inspection`](/docs/user-guide/skills/bundled/github/github-codebase-inspection) |

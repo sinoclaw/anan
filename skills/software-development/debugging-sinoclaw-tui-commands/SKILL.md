@@ -2,7 +2,7 @@
 name: debugging-anan-tui-commands
 description: "Debug Hermes TUI slash commands: Python, gateway, Ink UI."
 version: 1.0.0
-author: Sinoclaw Agent
+author: anan Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
@@ -139,7 +139,7 @@ After fixing:
 
 2. Run the TUI and test the command:
    ```bash
-   sinoclaw --tui
+   anan --tui
    ```
 
 3. Type `/` and verify the command appears in autocomplete suggestions with the expected description and args hint.

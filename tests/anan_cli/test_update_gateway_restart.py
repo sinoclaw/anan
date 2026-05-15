@@ -72,13 +72,13 @@ def _make_run_side_effect(
             if "--user" in joined and systemd_active:
                 return subprocess.CompletedProcess(
                     cmd, 0,
-                    stdout="anan-gateway.service loaded active running Sinoclaw Gateway\n",
+                    stdout="anan-gateway.service loaded active running anan Gateway\n",
                     stderr="",
                 )
             elif "--user" not in joined and system_service_active:
                 return subprocess.CompletedProcess(
                     cmd, 0,
-                    stdout="anan-gateway.service loaded active running Sinoclaw Gateway\n",
+                    stdout="anan-gateway.service loaded active running anan Gateway\n",
                     stderr="",
                 )
             return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
@@ -337,7 +337,7 @@ class TestCmdUpdateLaunchdRestart:
         self, mock_run, _mock_which, mock_args, capsys, tmp_path, monkeypatch,
     ):
         """When launchd is running the gateway, update should print
-        'auto-restart via launchd' instead of 'Restart it with: sinoclaw gateway run'."""
+        'auto-restart via launchd' instead of 'Restart it with: anan gateway run'."""
         # Create a fake launchd plist so is_macos + plist.exists() passes
         plist_path = tmp_path / "ai.hermes.gateway.plist"
         plist_path.write_text("<plist/>")
@@ -361,7 +361,7 @@ class TestCmdUpdateLaunchdRestart:
 
         captured = capsys.readouterr().out
         assert "Restarted" in captured
-        assert "Restart manually: sinoclaw gateway run" not in captured
+        assert "Restart manually: anan gateway run" not in captured
         mock_launchd_restart.assert_called_once_with()
 
     @patch("shutil.which", return_value=None)
@@ -390,7 +390,7 @@ class TestCmdUpdateLaunchdRestart:
             cmd_update(mock_args)
 
         captured = capsys.readouterr().out
-        assert "Restart manually: sinoclaw gateway run" in captured
+        assert "Restart manually: anan gateway run" in captured
 
     @patch("shutil.which", return_value=None)
     @patch("subprocess.run")
@@ -411,7 +411,7 @@ class TestCmdUpdateLaunchdRestart:
         )
         process = gateway_cli.ProfileGatewayProcess(
             profile="coder",
-            path=tmp_path / ".sinoclaw" / "profiles" / "coder",
+            path=tmp_path / ".anan" / "profiles" / "coder",
             pid=12345,
         )
 
@@ -434,7 +434,7 @@ class TestCmdUpdateLaunchdRestart:
         # Graceful drain succeeded — no SIGTERM fallback needed.
         kill.assert_not_called()
         assert "Restarting manual gateway profile(s): coder" in captured
-        assert "Restart manually: sinoclaw gateway run" not in captured
+        assert "Restart manually: anan gateway run" not in captured
 
     @patch("shutil.which", return_value=None)
     @patch("subprocess.run")
@@ -455,7 +455,7 @@ class TestCmdUpdateLaunchdRestart:
         )
         process = gateway_cli.ProfileGatewayProcess(
             profile="coder",
-            path=tmp_path / ".sinoclaw" / "profiles" / "coder",
+            path=tmp_path / ".anan" / "profiles" / "coder",
             pid=12345,
         )
 
@@ -999,7 +999,7 @@ class TestGetServicePids:
             if "list-units" in joined:
                 return subprocess.CompletedProcess(
                     cmd, 0,
-                    stdout="anan-gateway.service loaded active running Sinoclaw Gateway\n",
+                    stdout="anan-gateway.service loaded active running anan Gateway\n",
                     stderr="",
                 )
             if "show" in joined and "MainPID" in joined:
@@ -1049,7 +1049,7 @@ class TestGetServicePids:
             if "list-units" in joined:
                 return subprocess.CompletedProcess(
                     cmd, 0,
-                    stdout="anan-gateway.service loaded inactive dead Sinoclaw Gateway\n",
+                    stdout="anan-gateway.service loaded inactive dead anan Gateway\n",
                     stderr="",
                 )
             if "show" in joined and "MainPID" in joined:
@@ -1107,7 +1107,7 @@ class TestFindGatewayPidsExclude:
         assert 200 in pids
 
     def test_filters_to_current_profile(self, monkeypatch, tmp_path):
-        profile_dir = tmp_path / ".sinoclaw" / "profiles" / "orcha"
+        profile_dir = tmp_path / ".anan" / "profiles" / "orcha"
         profile_dir.mkdir(parents=True)
         monkeypatch.setattr(gateway_cli, "is_windows", lambda: False)
         monkeypatch.setattr(gateway_cli, "get_anan_home", lambda: profile_dir)
@@ -1116,8 +1116,8 @@ class TestFindGatewayPidsExclude:
             return subprocess.CompletedProcess(
                 cmd, 0,
                 stdout=(
-                    "100 /Users/dgrieco/.sinoclaw/anan/venv/bin/python -m anan_cli.main --profile orcha gateway run --replace\n"
-                    "200 /Users/dgrieco/.sinoclaw/anan/venv/bin/python -m anan_cli.main --profile other gateway run --replace\n"
+                    "100 /Users/dgrieco/.anan/anan/venv/bin/python -m anan_cli.main --profile orcha gateway run --replace\n"
+                    "200 /Users/dgrieco/.anan/anan/venv/bin/python -m anan_cli.main --profile other gateway run --replace\n"
                 ),
                 stderr="",
             )
@@ -1156,7 +1156,7 @@ class TestGatewayModeWritesExitCodeEarly:
         monkeypatch.setattr(gateway_cli, "is_termux", lambda: False)
 
         # Point ANAN_HOME at a temp dir so the marker file lands there
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         import anan_cli.config as _cfg
@@ -1186,7 +1186,7 @@ class TestGatewayModeWritesExitCodeEarly:
         monkeypatch.setattr(gateway_cli, "supports_systemd_services", lambda: False)
         monkeypatch.setattr(gateway_cli, "is_termux", lambda: False)
 
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         import anan_cli.config as _cfg
@@ -1214,7 +1214,7 @@ class TestGatewayModeWritesExitCodeEarly:
         monkeypatch.setattr(gateway_cli, "supports_systemd_services", lambda: True)
         monkeypatch.setattr(gateway_cli, "is_termux", lambda: False)
 
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         import anan_cli.config as _cfg
@@ -1250,17 +1250,17 @@ class TestGatewayModeWritesExitCodeEarly:
 
 
 class TestCmdUpdateLegacyGatewayWarning:
-    """Tests for the legacy sinoclaw.service warning printed by `anan update`.
+    """Tests for the legacy anan.service warning printed by `anan update`.
 
-    Users who installed Sinoclaw before the service rename often have a
-    dormant ``sinoclaw.service`` that starts flap-fighting the current
+    Users who installed anan before the service rename often have a
+    dormant ``anan.service`` that starts flap-fighting the current
     ``anan-gateway.service`` after PR #5646. Every ``anan update``
-    should remind them to run ``sinoclaw gateway migrate-legacy`` until
+    should remind them to run ``anan gateway migrate-legacy`` until
     they do.
     """
 
     _OUR_UNIT_TEXT = (
-        "[Unit]\nDescription=Sinoclaw Gateway\n[Service]\n"
+        "[Unit]\nDescription=anan Gateway\n[Service]\n"
         "ExecStart=/usr/bin/python -m anan_cli.main gateway run --replace\n"
     )
 
@@ -1274,7 +1274,7 @@ class TestCmdUpdateLegacyGatewayWarning:
         system_dir = tmp_path / "system"
         user_dir.mkdir()
         system_dir.mkdir()
-        legacy_path = user_dir / "sinoclaw.service"
+        legacy_path = user_dir / "anan.service"
         legacy_path.write_text(self._OUR_UNIT_TEXT, encoding="utf-8")
 
         monkeypatch.setattr(
@@ -1292,9 +1292,9 @@ class TestCmdUpdateLegacyGatewayWarning:
             cmd_update(mock_args)
 
         captured = capsys.readouterr().out
-        assert "Legacy Sinoclaw gateway unit(s) detected" in captured
-        assert "sinoclaw.service" in captured
-        assert "sinoclaw gateway migrate-legacy" in captured
+        assert "Legacy anan gateway unit(s) detected" in captured
+        assert "anan.service" in captured
+        assert "anan gateway migrate-legacy" in captured
         assert "(user scope)" in captured
 
     @patch("shutil.which", return_value=None)
@@ -1323,7 +1323,7 @@ class TestCmdUpdateLegacyGatewayWarning:
             cmd_update(mock_args)
 
         captured = capsys.readouterr().out
-        assert "Legacy Sinoclaw gateway" not in captured
+        assert "Legacy anan gateway" not in captured
         assert "migrate-legacy" not in captured
 
     @patch("shutil.which", return_value=None)
@@ -1334,7 +1334,7 @@ class TestCmdUpdateLegacyGatewayWarning:
         """Profile units (anan-gateway-coder.service) must not trigger the warning.
 
         This is the core safety invariant: the legacy allowlist is
-        ``sinoclaw.service`` only, no globs.
+        ``anan.service`` only, no globs.
         """
         user_dir = tmp_path / "user"
         system_dir = tmp_path / "system"
@@ -1363,7 +1363,7 @@ class TestCmdUpdateLegacyGatewayWarning:
             cmd_update(mock_args)
 
         captured = capsys.readouterr().out
-        assert "Legacy Sinoclaw gateway" not in captured
+        assert "Legacy anan gateway" not in captured
         assert "anan-gateway-coder.service" not in captured  # not flagged
 
     @patch("shutil.which", return_value=None)
@@ -1376,7 +1376,7 @@ class TestCmdUpdateLegacyGatewayWarning:
         user_dir = tmp_path / "user"
         user_dir.mkdir()
         # Put a file that WOULD match if the check ran
-        (user_dir / "sinoclaw.service").write_text(self._OUR_UNIT_TEXT, encoding="utf-8")
+        (user_dir / "anan.service").write_text(self._OUR_UNIT_TEXT, encoding="utf-8")
 
         monkeypatch.setattr(
             gateway_cli,
@@ -1395,7 +1395,7 @@ class TestCmdUpdateLegacyGatewayWarning:
 
         captured = capsys.readouterr().out
         # Must not print the warning on non-systemd platforms
-        assert "Legacy Sinoclaw gateway" not in captured
+        assert "Legacy anan gateway" not in captured
 
     @patch("shutil.which", return_value=None)
     @patch("subprocess.run")
@@ -1407,7 +1407,7 @@ class TestCmdUpdateLegacyGatewayWarning:
         system_dir = tmp_path / "system"
         user_dir.mkdir()
         system_dir.mkdir()
-        (system_dir / "sinoclaw.service").write_text(self._OUR_UNIT_TEXT, encoding="utf-8")
+        (system_dir / "anan.service").write_text(self._OUR_UNIT_TEXT, encoding="utf-8")
 
         monkeypatch.setattr(
             gateway_cli,
@@ -1424,7 +1424,7 @@ class TestCmdUpdateLegacyGatewayWarning:
             cmd_update(mock_args)
 
         captured = capsys.readouterr().out
-        assert "Legacy Sinoclaw gateway" in captured
+        assert "Legacy anan gateway" in captured
         assert "(system scope)" in captured
         assert "sudo" in captured
 
@@ -1451,7 +1451,7 @@ class TestCmdUpdateResetFailedBeforeRestart:
     earlier auto-restart crashes (CHDIR, OOM, filesystem race) doesn't
     permanently strand the unit.
 
-    Mirrors the recovery pattern `sinoclaw gateway restart` (systemd_restart)
+    Mirrors the recovery pattern `anan gateway restart` (systemd_restart)
     adopted in PR #20949.  Without this, users hit "gateway never comes
     back after update" until they manually run `systemctl reset-failed`.
     """

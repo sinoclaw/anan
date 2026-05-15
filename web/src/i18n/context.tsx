@@ -4,7 +4,7 @@ import { en } from "./en";
 import { zh } from "./zh";
 
 const TRANSLATIONS: Record<Locale, Translations> = { en, zh };
-const STORAGE_KEY = "sinoclaw-locale";
+const STORAGE_KEY = "anan-locale";
 
 function getInitialLocale(): Locale {
   try {

@@ -191,7 +191,7 @@ def test_setup_gateway_skips_service_install_when_systemctl_missing(monkeypatch,
     out = capsys.readouterr().out
     assert "Messaging platforms configured!" in out
     assert "Start the gateway to bring your bots online:" in out
-    assert "sinoclaw gateway" in out
+    assert "anan gateway" in out
 
 
 def test_setup_gateway_in_container_shows_docker_guidance(monkeypatch, capsys):
@@ -578,7 +578,7 @@ def test_offer_launch_chat_relaunches_via_bin(monkeypatch):
     from anan_cli import relaunch as relaunch_mod
 
     monkeypatch.setattr(setup_mod, "prompt_yes_no", lambda *_args, **_kwargs: True)
-    monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/local/bin/sinoclaw")
+    monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/local/bin/anan")
 
     exec_calls = []
 
@@ -591,7 +591,7 @@ def test_offer_launch_chat_relaunches_via_bin(monkeypatch):
     with pytest.raises(SystemExit):
         setup_mod._offer_launch_chat()
 
-    assert exec_calls == [("/usr/local/bin/sinoclaw", ["/usr/local/bin/sinoclaw", "chat"])]
+    assert exec_calls == [("/usr/local/bin/anan", ["/usr/local/bin/anan", "chat"])]
 
 
 def test_offer_launch_chat_falls_back_to_module(monkeypatch):

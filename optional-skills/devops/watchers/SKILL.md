@@ -2,7 +2,7 @@
 name: watchers
 description: Poll RSS, JSON APIs, and GitHub with watermark dedup.
 version: 1.0.0
-author: Sinoclaw Agent
+author: anan Agent
 license: MIT
 platforms: [linux, macos]
 metadata:
@@ -66,7 +66,7 @@ Watch a GitHub repo (set `GITHUB_TOKEN` in `~/.anan/.env` to avoid the 60 req/hr
 
 ```bash
 python $ANAN_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name sinoclaw-issues --repo sinoclaw/anan --scope issues
+  --name anan-issues --repo anan/anan --scope issues
 ```
 
 Poll an arbitrary JSON API:

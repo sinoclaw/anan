@@ -686,7 +686,7 @@ export default function EnvPage() {
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
           <p className="text-sm text-muted-foreground">
-            {t.env.description} <code>~/.sinoclaw/.env</code>
+            {t.env.description} <code>~/.anan/.env</code>
           </p>
           <p className="text-[0.7rem] text-muted-foreground/70">
             {t.env.changesNote}

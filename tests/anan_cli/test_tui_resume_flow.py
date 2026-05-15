@@ -440,12 +440,12 @@ def test_launch_tui_exports_model_provider_and_toolsets(monkeypatch, main_mod):
 
     with pytest.raises(SystemExit):
         main_mod._launch_tui(
-            model="nous/sinoclaw-test", provider="nous", toolsets="web, terminal"
+            model="nous/anan-test", provider="nous", toolsets="web, terminal"
         )
 
     env = captured["env"]
-    assert env["SINOCLAW_MODEL"] == "nous/sinoclaw-test"
-    assert env["SINOCLAW_INFERENCE_MODEL"] == "nous/sinoclaw-test"
+    assert env["SINOCLAW_MODEL"] == "nous/anan-test"
+    assert env["SINOCLAW_INFERENCE_MODEL"] == "nous/anan-test"
     assert env["SINOCLAW_TUI_PROVIDER"] == "nous"
     assert env["SINOCLAW_INFERENCE_PROVIDER"] == "nous"
     assert env["SINOCLAW_TUI_TOOLSETS"] == "web,terminal"

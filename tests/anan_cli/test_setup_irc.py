@@ -1,7 +1,7 @@
-"""Tests for IRC gateway configuration via `sinoclaw setup gateway` UI.
+"""Tests for IRC gateway configuration via `anan setup gateway` UI.
 
 Covers the full plugin-platform discovery → status → configure flow so that
-a fresh Sinoclaw install (no state, no env vars) can set up IRC through the
+a fresh anan install (no state, no env vars) can set up IRC through the
 interactive setup menus.
 """
 
@@ -57,7 +57,7 @@ def _unregister_irc_platform():
 
 
 class TestIRCFreshInstallDiscovery:
-    """IRC appears in the setup menu on a brand-new Sinoclaw install."""
+    """IRC appears in the setup menu on a brand-new anan install."""
 
     def test_irc_appears_in_all_platforms(self, monkeypatch):
         """When the IRC plugin is registered, _all_platforms() surfaces it."""
@@ -100,7 +100,7 @@ class TestIRCFreshInstallDiscovery:
         plat = _register_irc_platform()
         try:
             monkeypatch.setenv("IRC_SERVER", "irc.libera.chat")
-            monkeypatch.setenv("IRC_CHANNEL", "#sinoclaw")
+            monkeypatch.setenv("IRC_CHANNEL", "#anan")
             monkeypatch.setenv("IRC_NICKNAME", "anan-bot")
 
             status = gateway_mod._platform_status(plat)
@@ -170,7 +170,7 @@ class TestIRCInteractiveSetup:
 
 
 class TestIRCGatewaySetupFreshInstall:
-    """Simulate the full `sinoclaw setup gateway` experience with IRC present."""
+    """Simulate the full `anan setup gateway` experience with IRC present."""
 
     def test_setup_gateway_shows_irc_in_platform_menu(self, monkeypatch, capsys, tmp_path):
         """The gateway setup menu lists IRC among the available platforms."""
@@ -227,7 +227,7 @@ class TestIRCGatewaySetupFreshInstall:
         _register_irc_platform()
         try:
             monkeypatch.setenv("IRC_SERVER", "irc.libera.chat")
-            monkeypatch.setenv("IRC_CHANNEL", "#sinoclaw")
+            monkeypatch.setenv("IRC_CHANNEL", "#anan")
             monkeypatch.setenv("IRC_NICKNAME", "anan-bot")
 
             monkeypatch.setattr(setup_mod, "prompt_yes_no", lambda *a, **kw: False)

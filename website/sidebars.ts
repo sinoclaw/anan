@@ -18,7 +18,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Using Sinoclaw',
+      label: 'Using anan',
       collapsed: true,
       items: [
         'user-guide/cli',
@@ -171,10 +171,10 @@ const sidebars: SidebarsConfig = {
         'guides/daily-briefing-bot',
         'guides/team-telegram-assistant',
         'guides/python-library',
-        'guides/use-mcp-with-sinoclaw',
-        'guides/use-soul-with-sinoclaw',
-        'guides/use-voice-mode-with-sinoclaw',
-        'guides/build-a-sinoclaw-plugin',
+        'guides/use-mcp-with-anan',
+        'guides/use-soul-with-anan',
+        'guides/use-voice-mode-with-anan',
+        'guides/build-a-anan-plugin',
         'guides/automate-with-cron',
         'guides/cron-script-only',
         'guides/automation-templates',

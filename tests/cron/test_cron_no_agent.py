@@ -21,7 +21,7 @@ import pytest
 @pytest.fixture
 def sinoclaw_env(tmp_path, monkeypatch):
     """Isolate ANAN_HOME for each test so jobs/scripts don't leak."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     (home / "scripts").mkdir()
     (home / "cron").mkdir()

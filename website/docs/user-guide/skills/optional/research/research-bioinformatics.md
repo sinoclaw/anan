@@ -14,7 +14,7 @@ Gateway to 400+ bioinformatics skills from bioSkills and ClawBio. Covers genomic
 
 | | |
 |---|---|
-| Source | Optional — install with `sinoclaw skills install official/research/bioinformatics` |
+| Source | Optional — install with `anan skills install official/research/bioinformatics` |
 | Path | `optional-skills/research/bioinformatics` |
 | Version | `1.0.0` |
 | Platforms | linux, macos |
@@ -61,7 +61,7 @@ This skill is a gateway to two open-source bioinformatics skill libraries. Inste
    # ClawBio — each skill is at: skills/<skill-name>/
    cat /tmp/ClawBio/skills/pharmgx-reporter/README.md
    ```
-4. Follow the fetched skill as reference material. These are NOT Sinoclaw-format skills — treat them as expert domain guides. They contain correct parameters, proper tool flags, and validated pipelines.
+4. Follow the fetched skill as reference material. These are NOT anan-format skills — treat them as expert domain guides. They contain correct parameters, proper tool flags, and validated pipelines.
 
 ## Skill Index by Domain
 

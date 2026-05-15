@@ -1,17 +1,17 @@
 ---
 title: "Windows (WSL2) Guide"
-description: "Run Sinoclaw Agent on Windows via WSL2 — setup, filesystem access between Windows and Linux, networking, and common pitfalls"
+description: "Run anan Agent on Windows via WSL2 — setup, filesystem access between Windows and Linux, networking, and common pitfalls"
 sidebar_label: "Windows (WSL2)"
 sidebar_position: 2
 ---
 
 # Windows (WSL2) Guide
 
-Sinoclaw Agent now supports **both** native Windows and WSL2.  This page covers the WSL2 path; for the native PowerShell install see the dedicated **[Windows (Native) Guide](./windows-native.md)**.
+anan Agent now supports **both** native Windows and WSL2.  This page covers the WSL2 path; for the native PowerShell install see the dedicated **[Windows (Native) Guide](./windows-native.md)**.
 
 **When to pick WSL2 over native:**
 - You want to use the dashboard's embedded terminal (`/chat` tab) — that pane requires a POSIX PTY and is WSL2-only.
-- You're doing POSIX-heavy development work and want your Sinoclaw sessions to share the same filesystem / paths as your dev tools.
+- You're doing POSIX-heavy development work and want your anan sessions to share the same filesystem / paths as your dev tools.
 - You already have a WSL2 environment and don't want to maintain a second install.
 
 **When native is fine (or better):**
@@ -34,9 +34,9 @@ WSL2 runs a real Linux kernel in a lightweight VM, so Hermes inside it is essent
 
 Practical consequences of WSL2:
 
-- The Sinoclaw CLI, gateway, sessions, memory, skills, and tool runtimes all live inside the Linux VM.
+- The anan CLI, gateway, sessions, memory, skills, and tool runtimes all live inside the Linux VM.
 - Windows programs (browsers, native apps, Chrome with your logged-in profile) live outside it.
-- Every time you want the two to talk — share files, open URLs, control Chrome, hit a local model server, expose the Sinoclaw gateway to your phone — you cross a boundary. Those boundaries are what this guide is about.
+- Every time you want the two to talk — share files, open URLs, control Chrome, hit a local model server, expose the anan gateway to your phone — you cross a boundary. Those boundaries are what this guide is about.
 
 ## Install WSL2
 
@@ -69,7 +69,7 @@ Ubuntu (LTS) is what we test against. Debian works. Arch and NixOS work for peop
 
 ### Enable systemd (recommended)
 
-The sinoclaw gateway (and anything else you want to keep running) is easier to manage with systemd. On modern WSL, enable it once inside your distro:
+The anan gateway (and anything else you want to keep running) is easier to manage with systemd. On modern WSL, enable it once inside your distro:
 
 ```bash
 sudo tee /etc/wsl.conf >/dev/null <<'EOF'
@@ -100,7 +100,7 @@ The `metadata` mount option above is important — without it, files on `/mnt/c/
 Once you have a WSL2 shell open:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 source ~/.bashrc
 hermes
 ```
@@ -186,9 +186,9 @@ dos2unix path/to/script.sh
 
 ### "Clone inside WSL or on `/mnt/c`?"
 
-Clone inside WSL. Always, unless you have a specific reason not to. A typical Hermes workflow (`sinoclaw chat`, tool calls that `rg`/`ripgrep` the repo, file watchers, background gateway) will be dramatically faster and more reliable against `~/code/myrepo` than `/mnt/c/Users/you/myrepo`.
+Clone inside WSL. Always, unless you have a specific reason not to. A typical Hermes workflow (`anan chat`, tool calls that `rg`/`ripgrep` the repo, file watchers, background gateway) will be dramatically faster and more reliable against `~/code/myrepo` than `/mnt/c/Users/you/myrepo`.
 
-One exception: **MCP bridges that launch Windows binaries.** If you're using `chrome-devtools-mcp` through `cmd.exe` (see [MCP guide: WSL → Windows Chrome](/docs/guides/use-mcp-with-hermes#wsl2-bridge-sinoclaw-in-wsl-to-windows-chrome)), Windows may complain with a `UNC` warning if Hermes's current working directory is `~`. In that case, start Hermes from somewhere under `/mnt/c/` so the Windows process has a drive-letter cwd.
+One exception: **MCP bridges that launch Windows binaries.** If you're using `chrome-devtools-mcp` through `cmd.exe` (see [MCP guide: WSL → Windows Chrome](/docs/guides/use-mcp-with-hermes#wsl2-bridge-anan-in-wsl-to-windows-chrome)), Windows may complain with a `UNC` warning if Hermes's current working directory is `~`. In that case, start Hermes from somewhere under `/mnt/c/` so the Windows process has a drive-letter cwd.
 
 ## Networking: WSL ↔ Windows
 
@@ -214,7 +214,7 @@ For the full table (Ollama / LM Studio / vLLM / SGLang bind addresses, firewall 
 This is the reverse direction and is less documented elsewhere, but it's what you need for:
 
 - Using the Hermes **web dashboard** from a Windows browser.
-- Using the **API server** (`sinoclaw api`) from a Windows-side tool.
+- Using the **API server** (`anan api`) from a Windows-side tool.
 - Testing a **messaging gateway** (Telegram, Discord, etc.) where the platform pings a local webhook URL — usually you'd use `cloudflared`/`ngrok` rather than raw port forwarding.
 
 #### Subcase 2a: from the Windows host itself
@@ -262,10 +262,10 @@ The Hermes [Tool Gateway](/docs/user-guide/features/tool-gateway) and the API se
 
 ### Inside WSL with systemd (recommended)
 
-If you enabled systemd per the setup section above, `sinoclaw gateway` and the API server work the way they do on any Linux machine. Use the gateway setup wizard:
+If you enabled systemd per the setup section above, `anan gateway` and the API server work the way they do on any Linux machine. Use the gateway setup wizard:
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 It will offer to install a systemd user unit so the gateway comes up automatically when WSL starts.
@@ -294,7 +294,7 @@ If you're running a **Windows-native** local-model server (Ollama for Windows, L
 **"Connection refused" to my Windows-hosted Ollama / LM Studio.**
 See [WSL2 Networking](/docs/integrations/providers#wsl2-networking-windows-users). Ninety percent of the time the server is bound to `127.0.0.1` and needs `0.0.0.0` (Ollama: `OLLAMA_HOST=0.0.0.0`), or you're missing a firewall rule.
 
-**Massive slowness on `git status` / `sinoclaw chat` in a repo.**
+**Massive slowness on `git status` / `anan chat` in a repo.**
 You're probably working under `/mnt/c/...`. Move the repo to `~/code/...` (Linux side). Order-of-magnitude faster.
 
 **`bad interpreter: /bin/bash^M` on scripts.**
@@ -328,5 +328,5 @@ WSL2 stores its VM disk as a sparse VHDX under `%LOCALAPPDATA%\Packages\...`. It
 
 - **[Installation](/docs/getting-started/installation)** — actual install steps (Linux/WSL2/Termux all use the same installer).
 - **[Integrations → Providers → WSL2 Networking](/docs/integrations/providers#wsl2-networking-windows-users)** — the canonical networking deep-dive for local model servers.
-- **[MCP guide → WSL → Windows Chrome](/docs/guides/use-mcp-with-hermes#wsl2-bridge-sinoclaw-in-wsl-to-windows-chrome)** — controlling your signed-in Windows Chrome from Hermes in WSL.
+- **[MCP guide → WSL → Windows Chrome](/docs/guides/use-mcp-with-hermes#wsl2-bridge-anan-in-wsl-to-windows-chrome)** — controlling your signed-in Windows Chrome from Hermes in WSL.
 - **[Tool Gateway](/docs/user-guide/features/tool-gateway)** and **[Web Dashboard](/docs/user-guide/features/web-dashboard)** — the long-lived services you'll most often want to expose from WSL to the rest of your network.

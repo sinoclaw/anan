@@ -1,5 +1,5 @@
 """
-Dreaming Plugin for Sinoclaw Gateway
+Dreaming Plugin for anan Gateway
 
 Automated long-term memory management system — mimics sleep cycles to organize
 and consolidate memory over time.
@@ -9,7 +9,7 @@ Three phases:
   - REM Sleep:    Weekly    → find patterns/themes across memories
   - Deep Sleep:   Daily    → promote weighted short-term recalls to MEMORY.md
 
-Based on OpenClaw's memory-core dreaming system, adapted for Sinoclaw's
+Based on OpenClaw's memory-core dreaming system, adapted for anan's
 SQLite-backed session database.
 """
 
@@ -142,8 +142,8 @@ REM_REFLECTION_TAG_BLACKLIST = {
     "model", "openclaw", "plugin", "session", "anan", "tool", "user", "workspace",
 }
 
-# Sinoclaw state DB path
-DEFAULT_STATE_DB_PATH = Path("~/.sinoclaw/state.db").expanduser()
+# anan state DB path
+DEFAULT_STATE_DB_PATH = Path("~/.anan/state.db").expanduser()
 
 
 # ---------------------------------------------------------------------------
@@ -204,11 +204,11 @@ class DreamingConfig:
 
 
 # ---------------------------------------------------------------------------
-# Sinoclaw SessionDB integration
+# anan SessionDB integration
 # ---------------------------------------------------------------------------
 
 class AnanSessionDB:
-    """Read-only wrapper for Sinoclaw's SQLite session database.
+    """Read-only wrapper for anan's SQLite session database.
     
     Uses the same state.db as the gateway, with proper locking.
     """
@@ -294,7 +294,7 @@ class AnanSessionDB:
             messages = []
             for row in cursor.fetchall():
                 msg = dict(row)
-                # Decode content (same logic as Sinoclaw)
+                # Decode content (same logic as anan)
                 if msg.get("content") and isinstance(msg["content"], str):
                     # Handle JSON-encoded content
                     if msg["content"].startswith("{") or msg["content"].startswith("["):
@@ -605,7 +605,7 @@ def _extract_concept_tags(snippet: str) -> List[str]:
 
 
 # ---------------------------------------------------------------------------
-# Session corpus ingestion (using Sinoclaw SessionDB)
+# Session corpus ingestion (using anan SessionDB)
 # ---------------------------------------------------------------------------
 
 def normalize_session_corpus_snippet(line: str) -> str:
@@ -1135,7 +1135,7 @@ async def _ingest_session_signals_from_db(
     timezone: Optional[str],
     state: DreamingState,
 ) -> List[str]:
-    """Ingest signals from Sinoclaw's SQLite session database."""
+    """Ingest signals from anan's SQLite session database."""
     try:
         session_db = AnanSessionDB()
     except Exception as e:
@@ -1382,7 +1382,7 @@ async def write_deep_dreaming_report(
 # ---------------------------------------------------------------------------
 
 class DreamingPlugin:
-    """Dreaming plugin for Sinoclaw.
+    """Dreaming plugin for anan.
 
     Manages three sleep-cycle phases:
     - Light Sleep:  ingest daily/sessions/recall signals

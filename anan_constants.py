@@ -149,7 +149,7 @@ def display_anan_home() -> str:
 
         default:  ``~/.anan``
         profile:  ``~/.anan/profiles/coder``
-        custom:   ``/opt/sinoclaw-custom``
+        custom:   ``/opt/anan-custom``
 
     Use this in **user-facing** print/log messages instead of hardcoding
     ``~/.anan``.  For code that needs a real ``Path``, use

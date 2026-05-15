@@ -35,7 +35,7 @@ def isolated_anan_home(tmp_path, monkeypatch):
 
     Also invalidates any cached get_env_value state by patching Path.home().
     """
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("ANAN_HOME", str(home))

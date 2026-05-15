@@ -1,12 +1,12 @@
 ---
 sidebar_position: 11
 title: "ACP Editor Integration"
-description: "Use Sinoclaw Agent inside ACP-compatible editors such as VS Code, Zed, and JetBrains"
+description: "Use anan Agent inside ACP-compatible editors such as VS Code, Zed, and JetBrains"
 ---
 
 # ACP Editor Integration
 
-Sinoclaw Agent can run as an ACP server, letting ACP-compatible editors talk to Hermes over stdio and render:
+anan Agent can run as an ACP server, letting ACP-compatible editors talk to Hermes over stdio and render:
 
 - chat messages
 - tool activity
@@ -19,7 +19,7 @@ ACP is a good fit when you want Hermes to behave like an editor-native coding ag
 
 ## What Hermes exposes in ACP mode
 
-Hermes runs with a curated `sinoclaw-acp` toolset designed for editor workflows. It includes:
+Hermes runs with a curated `anan-acp` toolset designed for editor workflows. It includes:
 
 - file tools: `read_file`, `write_file`, `patch`, `search_files`
 - terminal tools: `terminal`, `process`
@@ -41,8 +41,8 @@ pip install -e '.[acp]'
 
 This installs the `agent-client-protocol` dependency and enables:
 
-- `sinoclaw acp`
-- `sinoclaw-acp`
+- `anan acp`
+- `anan-acp`
 - `python -m acp_adapter`
 
 ## Launching the ACP server
@@ -54,7 +54,7 @@ hermes acp
 ```
 
 ```bash
-sinoclaw-acp
+anan-acp
 ```
 
 ```bash
@@ -72,7 +72,7 @@ Install the [ACP Client](https://marketplace.visualstudio.com/items?itemName=for
 To connect:
 
 1. Open the ACP Client panel from the Activity Bar.
-2. Select **Sinoclaw Agent** from the built-in agent list.
+2. Select **anan Agent** from the built-in agent list.
 3. Connect and start chatting.
 
 If you want to define Hermes manually, add it through VS Code settings under `acp.agents`:
@@ -80,7 +80,7 @@ If you want to define Hermes manually, add it through VS Code settings under `ac
 ```json
 {
   "acp.agents": {
-    "Sinoclaw Agent": {
+    "anan Agent": {
       "command": "hermes",
       "args": ["acp"]
     }
@@ -180,7 +180,7 @@ Check:
 Try these checks:
 
 ```bash
-sinoclaw doctor
+anan doctor
 hermes status
 hermes acp
 ```

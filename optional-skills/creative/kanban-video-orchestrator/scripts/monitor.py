@@ -32,7 +32,7 @@ def anan_available() -> bool:
 
 def kanban_list(tenant: str) -> list[dict]:
     """Returns parsed task rows. Falls back to plain stdout parsing if JSON
-    output isn't supported by the installed sinoclaw CLI."""
+    output isn't supported by the installed anan CLI."""
     try:
         out = subprocess.run(
             ["hermes", "kanban", "list", "--tenant", tenant, "--json"],

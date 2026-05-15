@@ -1,7 +1,7 @@
 ---
 sidebar_position: 5
 title: "Adding Providers"
-description: "How to add a new inference provider to Sinoclaw Agent — auth, runtime resolution, CLI flows, adapters, tests, and docs"
+description: "How to add a new inference provider to anan Agent — auth, runtime resolution, CLI flows, adapters, tests, and docs"
 ---
 
 # Adding Providers
@@ -10,7 +10,7 @@ Hermes can already talk to any OpenAI-compatible endpoint through the custom pro
 
 - provider-specific auth or token refresh
 - a curated model catalog
-- setup / `sinoclaw model` menu entries
+- setup / `anan model` menu entries
 - provider aliases for `provider:model` syntax
 - a non-OpenAI API shape that needs an adapter
 
@@ -84,7 +84,7 @@ This path includes everything from Path A plus:
 8. user-facing docs under `website/docs/`
 
 :::tip
-`anan_cli/setup.py` does **not** need changes. The setup wizard delegates provider/model selection to `select_provider_and_model()` in `main.py` — any provider added there is automatically available in `sinoclaw setup`.
+`anan_cli/setup.py` does **not** need changes. The setup wizard delegates provider/model selection to `select_provider_and_model()` in `main.py` — any provider added there is automatically available in `anan setup`.
 :::
 
 ### Additional for native / non-OpenAI providers
@@ -112,8 +112,8 @@ When you add a plugin and it calls `register_provider()`, the following wire up 
 4. `env_vars` checked in priority order for the API key
 5. `fallback_models` list registered for the provider
 6. `--provider` CLI flag accepts the provider id
-7. `sinoclaw model` menu includes the provider
-8. `sinoclaw setup` wizard delegates to `main.py` automatically
+7. `anan model` menu includes the provider
+8. `anan setup` wizard delegates to `main.py` automatically
 9. `provider:model` alias syntax works
 10. Runtime resolver returns the correct `base_url` and `api_key`
 11. `SINOCLAW_INFERENCE_PROVIDER` env-var override accepts the provider id
@@ -131,7 +131,7 @@ Use the full checklist below when your provider needs any of the following:
 - A non-OpenAI API shape that requires a new adapter (Anthropic Messages, Codex Responses)
 - Custom endpoint detection or multi-region probing (z.ai, Kimi)
 - A curated static model catalog or live `/models` fetch
-- Provider-specific `sinoclaw model` menu entries with bespoke auth flows
+- Provider-specific `anan model` menu entries with bespoke auth flows
 
 ## Step 1: Pick one canonical provider id
 
@@ -230,7 +230,7 @@ Be careful with API-key precedence. Hermes already contains logic to avoid leaki
 
 ## Step 5: Wire the CLI in `anan_cli/main.py`
 
-A provider is not discoverable until it shows up in the interactive `sinoclaw model` flow.
+A provider is not discoverable until it shows up in the interactive `anan model` flow.
 
 Update these in `anan_cli/main.py`:
 
@@ -242,7 +242,7 @@ Update these in `anan_cli/main.py`:
 - a `_model_flow_<provider>()` function, or reuse `_model_flow_api_key_provider()` if it fits
 
 :::tip
-`anan_cli/setup.py` does not need changes — it calls `select_provider_and_model()` from `main.py`, so your new provider appears in both `sinoclaw model` and `sinoclaw setup` automatically.
+`anan_cli/setup.py` does not need changes — it calls `select_provider_and_model()` from `main.py`, so your new provider appears in both `anan model` and `anan setup` automatically.
 :::
 
 ## Step 6: Keep auxiliary calls working
@@ -434,7 +434,7 @@ Search for `api_mode` and `self.client.`. Do not assume the obvious request path
 
 Fields like provider routing belong only on the providers that support them.
 
-### 7. Updating `sinoclaw model` but not `sinoclaw setup`
+### 7. Updating `anan model` but not `anan setup`
 
 Both flows need to know about the provider.
 

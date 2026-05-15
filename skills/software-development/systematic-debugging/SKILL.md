@@ -2,7 +2,7 @@
 name: systematic-debugging
 description: "4-phase root cause debugging: understand bugs before fixing."
 version: 1.1.0
-author: Sinoclaw Agent (adapted from obra/superpowers)
+author: anan Agent (adapted from obra/superpowers)
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
@@ -315,7 +315,7 @@ If you catch yourself thinking:
 | **3. Hypothesis** | Form theory, test minimally, one variable at a time | Confirmed or new hypothesis |
 | **4. Implementation** | Create regression test, fix root cause, verify | Bug resolved, all tests pass |
 
-## Sinoclaw Agent Integration
+## anan Agent Integration
 
 ### Investigation Tools
 

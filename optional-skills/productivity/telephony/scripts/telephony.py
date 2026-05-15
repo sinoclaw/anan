@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Telephony helper for the Sinoclaw optional telephony skill.
+"""Telephony helper for the anan optional telephony skill.
 
 Capabilities:
 - Persist telephony provider credentials to ~/.anan/.env
@@ -69,7 +69,7 @@ class OwnedTwilioNumber:
 
 
 def _anan_home() -> Path:
-    return Path(os.environ.get("ANAN_HOME", "~/.sinoclaw")).expanduser()
+    return Path(os.environ.get("ANAN_HOME", "~/.anan")).expanduser()
 
 
 def _env_path() -> Path:
@@ -89,7 +89,7 @@ def _load_root_config() -> dict[str, Any]:
     if not path.exists():
         return {}
     try:
-        import yaml  # optional dependency; Sinoclaw already ships PyYAML
+        import yaml  # optional dependency; anan already ships PyYAML
     except Exception:
         return {}
     try:
@@ -1146,7 +1146,7 @@ def save_vapi(
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Sinoclaw telephony helper")
+    parser = argparse.ArgumentParser(description="anan telephony helper")
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("diagnose", help="Show saved telephony state and provider readiness")

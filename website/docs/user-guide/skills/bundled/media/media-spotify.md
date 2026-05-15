@@ -17,7 +17,7 @@ Spotify: play, search, queue, manage playlists and devices.
 | Source | Bundled (installed by default) |
 | Path | `skills/media/spotify` |
 | Version | `1.0.0` |
-| Author | Sinoclaw Agent |
+| Author | anan Agent |
 | License | MIT |
 | Tags | `spotify`, `music`, `playback`, `playlists`, `media` |
 | Related skills | [`gif-search`](/docs/user-guide/skills/bundled/media/media-gif-search) |
@@ -127,7 +127,7 @@ spotify_devices({"action": "transfer", "device_id": "<id>", "play": true})
 
 **`429 Too Many Requests`** = rate limit. Wait and retry once. If it keeps happening, you're looping — stop.
 
-**`401 Unauthorized` after a retry** — refresh token revoked. Tell the user to run `sinoclaw auth spotify` again.
+**`401 Unauthorized` after a retry** — refresh token revoked. Tell the user to run `anan auth spotify` again.
 
 ## URI and ID formats
 

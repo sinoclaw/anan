@@ -6,7 +6,7 @@ description: "Step-by-step guide to setting up a Telegram bot that your whole te
 
 # Set Up a Team Telegram Assistant
 
-This tutorial walks you through setting up a Telegram bot powered by Sinoclaw Agent that multiple team members can use. By the end, your team will have a shared AI assistant they can message for help with code, research, system administration, and anything else — secured with per-user authorization.
+This tutorial walks you through setting up a Telegram bot powered by anan Agent that multiple team members can use. By the end, your team will have a shared AI assistant they can message for help with code, research, system administration, and anything else — secured with per-user authorization.
 
 ## What We're Building
 
@@ -24,7 +24,7 @@ A Telegram bot that:
 
 Before starting, make sure you have:
 
-- **Sinoclaw Agent installed** on a server or VPS (not your laptop — the bot needs to stay running). Follow the [installation guide](/docs/getting-started/installation) if you haven't yet.
+- **anan Agent installed** on a server or VPS (not your laptop — the bot needs to stay running). Follow the [installation guide](/docs/getting-started/installation) if you haven't yet.
 - **A Telegram account** for yourself (the bot owner)
 - **An LLM provider configured** — at minimum, an API key for OpenAI, Anthropic, or another supported provider in `~/.anan/.env`
 
@@ -57,7 +57,7 @@ Every Telegram bot starts with **@BotFather** — Telegram's official bot for cr
    ```
    Choose your bot, then enter something like:
    ```
-   Team AI assistant powered by Sinoclaw Agent. DM me for help with code, research, debugging, and more.
+   Team AI assistant powered by anan Agent. DM me for help with code, research, debugging, and more.
    ```
 
 5. **Set bot commands** (optional — gives users a command menu):
@@ -86,7 +86,7 @@ You have two options: the interactive setup wizard (recommended) or manual confi
 ### Option A: Interactive Setup (Recommended)
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 This walks you through everything with arrow-key selection. Pick **Telegram**, paste your bot token, and enter your user ID when prompted.
@@ -124,13 +124,13 @@ Telegram user IDs are permanent numbers like `123456789`. They're different from
 Run the gateway in the foreground first to make sure everything works:
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 You should see output like:
 
 ```
-[Gateway] Starting Sinoclaw Gateway...
+[Gateway] Starting anan Gateway...
 [Gateway] Telegram adapter connected
 [Gateway] Cron scheduler started (tick every 60s)
 ```
@@ -142,17 +142,17 @@ Open Telegram, find your bot, and send it a message. If it replies, you're in bu
 For a persistent deployment that survives reboots:
 
 ```bash
-sinoclaw gateway install
-sudo sinoclaw gateway install --system   # Linux only: boot-time system service
+anan gateway install
+sudo anan gateway install --system   # Linux only: boot-time system service
 ```
 
 This creates a background service: a user-level **systemd** service on Linux by default, a **launchd** service on macOS, or a boot-time Linux system service if you pass `--system`.
 
 ```bash
 # Linux — manage the default user service
-sinoclaw gateway start
-sinoclaw gateway stop
-sinoclaw gateway status
+anan gateway start
+anan gateway stop
+anan gateway status
 
 # View live logs
 journalctl --user -u anan-gateway -f
@@ -161,26 +161,26 @@ journalctl --user -u anan-gateway -f
 sudo loginctl enable-linger $USER
 
 # Linux servers — explicit system-service commands
-sudo sinoclaw gateway start --system
-sudo sinoclaw gateway status --system
+sudo anan gateway start --system
+sudo anan gateway status --system
 journalctl -u anan-gateway -f
 ```
 
 ```bash
 # macOS — manage the service
-sinoclaw gateway start
-sinoclaw gateway stop
+anan gateway start
+anan gateway stop
 tail -f ~/.anan/logs/gateway.log
 ```
 
 :::tip macOS PATH
-The launchd plist captures your shell PATH at install time so gateway subprocesses can find tools like Node.js and ffmpeg. If you install new tools later, re-run `sinoclaw gateway install` to update the plist.
+The launchd plist captures your shell PATH at install time so gateway subprocesses can find tools like Node.js and ffmpeg. If you install new tools later, re-run `anan gateway install` to update the plist.
 :::
 
 ### Verify It's Running
 
 ```bash
-sinoclaw gateway status
+anan gateway status
 ```
 
 Then send a test message to your bot on Telegram. You should get a response within a few seconds.
@@ -203,7 +203,7 @@ TELEGRAM_ALLOWED_USERS=123456789,987654321,555555555
 Restart the gateway after changes:
 
 ```bash
-sinoclaw gateway stop && sinoclaw gateway start
+anan gateway stop && anan gateway start
 ```
 
 ### Approach B: DM Pairing (Recommended for Teams)
@@ -220,7 +220,7 @@ DM pairing is more flexible — you don't need to collect user IDs upfront. Here
 
 3. **You approve it** on the server:
    ```bash
-   sinoclaw pairing approve telegram XKGH5N7P
+   anan pairing approve telegram XKGH5N7P
    ```
 
 4. **They're in** — the bot immediately starts responding to their messages
@@ -394,7 +394,7 @@ This way, even if someone asks the bot to run something destructive, your host s
 
 ```bash
 # Check if the gateway is running
-sinoclaw gateway status
+anan gateway status
 
 # Watch live logs (Linux)
 journalctl --user -u anan-gateway -f
@@ -409,7 +409,7 @@ From Telegram, send `/update` to the bot — it will pull the latest version and
 
 ```bash
 anan update
-sinoclaw gateway stop && sinoclaw gateway start
+anan gateway stop && anan gateway start
 ```
 
 ### Log Locations

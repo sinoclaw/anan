@@ -99,7 +99,7 @@ while [[ $# -gt 0 ]]; do
             INSTALL_DIR_EXPLICIT=true
             shift 2
             ;;
-        --sinoclaw-home)
+        --anan-home)
             ANAN_HOME="$2"
             shift 2
             ;;
@@ -115,7 +115,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --dir PATH     Installation directory"
             echo "                   default (non-root):  ~/.anan/anan"
             echo "                   default (root, Linux): /usr/local/lib/anan"
-            echo "  --sinoclaw-home PATH  Data directory (default: ~/.anan, or \$ANAN_HOME)"
+            echo "  --anan-home PATH  Data directory (default: ~/.anan, or \$ANAN_HOME)"
             echo "  -h, --help     Show this help"
             echo ""
             echo "Notes:"

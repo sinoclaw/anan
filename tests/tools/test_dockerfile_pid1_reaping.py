@@ -60,7 +60,7 @@ def _run_steps(dockerfile_text: str) -> list[str]:
 def test_dockerfile_installs_an_init_for_zombie_reaping(dockerfile_text):
     """Some init (tini, dumb-init, catatonit) must be installed.
 
-    Without a PID-1 init that handles SIGCHLD, sinoclaw accumulates zombie
+    Without a PID-1 init that handles SIGCHLD, anan accumulates zombie
     processes from MCP stdio subprocesses, git operations, browser
     daemons, etc.  In long-running Docker deployments this eventually
     exhausts the PID table.
@@ -72,7 +72,7 @@ def test_dockerfile_installs_an_init_for_zombie_reaping(dockerfile_text):
     assert installed, (
         "No PID-1 init detected in Dockerfile (looked for: "
         f"{', '.join(known_inits)}). Without an init process to reap "
-        "orphaned subprocesses, sinoclaw accumulates zombies in Docker "
+        "orphaned subprocesses, anan accumulates zombies in Docker "
         "deployments. See issue #15012."
     )
 
@@ -100,7 +100,7 @@ def test_dockerfile_entrypoint_routes_through_the_init(dockerfile_text):
     routes_through_init = any(name in entrypoint_line for name in known_inits)
     assert routes_through_init, (
         f"ENTRYPOINT does not route through an init: {entrypoint_line!r}. "
-        "If tini is only installed but not wired into ENTRYPOINT, sinoclaw "
+        "If tini is only installed but not wired into ENTRYPOINT, anan "
         "still runs as PID 1 and zombies will accumulate (#15012)."
     )
 
@@ -132,14 +132,14 @@ def test_dockerfile_materializes_local_tui_ink_package(dockerfile_text):
     # ``anan-ink`` is a bundled workspace package referenced from
     # ``ui-tui/package.json`` via ``file:`` — not pulled from the npm
     # registry. The contract this test pins is just that the image
-    # actually carries the package source so ``await import('@sinoclaw/ink')``
+    # actually carries the package source so ``await import('@anan/ink')``
     # can resolve at runtime; the previous, much pickier assertion (manual
-    # ``rm -rf`` + ``npm install --omit=dev --prefix node_modules/@sinoclaw/ink``)
+    # ``rm -rf`` + ``npm install --omit=dev --prefix node_modules/@anan/ink``)
     # baked in implementation details of an older materialisation flow that
     # was simplified once npm workspaces handled the resolution natively.
     assert "ui-tui/packages/anan-ink/" in dockerfile_text, (
         "Dockerfile must COPY the bundled anan-ink workspace package "
-        "so ``await import('@sinoclaw/ink')`` resolves at runtime."
+        "so ``await import('@anan/ink')`` resolves at runtime."
     )
 
 

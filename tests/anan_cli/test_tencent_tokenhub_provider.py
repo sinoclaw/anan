@@ -374,7 +374,7 @@ class TestTencentTokenhubAuxiliary:
 
 
 class TestTencentTokenhubDoctor:
-    """Verify sinoclaw doctor recognizes Tencent TokenHub env vars."""
+    """Verify anan doctor recognizes Tencent TokenHub env vars."""
 
     def test_provider_env_hints(self):
         from anan_cli.doctor import _PROVIDER_ENV_HINTS
@@ -411,7 +411,7 @@ class TestTencentTokenhubCLIDispatch:
 
     def test_in_api_key_provider_tuple(self):
         """tencent-tokenhub must appear in the elif tuple in _model_flow dispatch
-        so ``sinoclaw model`` routes it through the generic api_key_provider flow.
+        so ``anan model`` routes it through the generic api_key_provider flow.
         """
         import inspect
         from anan_cli import main as main_mod

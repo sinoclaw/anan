@@ -1,7 +1,7 @@
 ---
 sidebar_position: 14
 title: "WeCom (Enterprise WeChat)"
-description: "Connect Sinoclaw Agent to WeCom via the AI Bot WebSocket gateway"
+description: "Connect anan Agent to WeCom via the AI Bot WebSocket gateway"
 ---
 
 # WeCom (Enterprise WeChat)
@@ -22,7 +22,7 @@ Connect Hermes to [WeCom](https://work.weixin.qq.com/) (企业微信), Tencent's
 #### Recommended: Scan-to-Create (one command)
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 Select **WeCom** and scan the QR code with your WeCom mobile app. Hermes will automatically create a bot application with the correct permissions and save the credentials.
@@ -41,7 +41,7 @@ If scan-to-create is not available, the wizard falls back to manual input:
 2. Navigate to **Applications** → **Create Application** → **AI Bot**
 3. Configure the bot name and description
 4. Copy the **Bot ID** and **Secret** from the credentials page
-5. Run `sinoclaw gateway setup`, select **WeCom**, and enter the credentials when prompted
+5. Run `anan gateway setup`, select **WeCom**, and enter the credentials when prompted
 
 :::warning
 Keep the Bot Secret private. Anyone with it can impersonate your bot.
@@ -52,7 +52,7 @@ Keep the Bot Secret private. Anyone with it can impersonate your bot.
 #### Option A: Interactive Setup (Recommended)
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 Select **WeCom** and follow the prompts. The wizard will guide you through:
@@ -78,7 +78,7 @@ WECOM_HOME_CHANNEL=chat_id
 ### Step 3: Start the gateway
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 ## Features

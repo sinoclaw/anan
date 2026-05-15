@@ -1,12 +1,12 @@
 ---
 sidebar_position: 7
 title: "Docker"
-description: "Running Sinoclaw Agent in Docker and using Docker as a terminal backend"
+description: "Running anan Agent in Docker and using Docker as a terminal backend"
 ---
 
-# Sinoclaw Agent — Docker
+# anan Agent — Docker
 
-There are two distinct ways Docker intersects with Sinoclaw Agent:
+There are two distinct ways Docker intersects with anan Agent:
 
 1. **Running Hermes IN Docker** — the agent itself runs inside a container (this page's primary focus)
 2. **Docker as a terminal backend** — the agent runs on your host but executes every command inside a single, persistent Docker sandbox container that survives across tool calls, `/new`, and subagents for the life of the Hermes process (see [Configuration → Docker Backend](./configuration.md#docker-backend))
@@ -15,13 +15,13 @@ This page covers option 1. The container stores all user data (config, API keys,
 
 ## Quick start
 
-If this is your first time running Sinoclaw Agent, create a data directory on the host and start the container interactively to run the setup wizard:
+If this is your first time running anan Agent, create a data directory on the host and start the container interactively to run the setup wizard:
 
 ```sh
-mkdir -p ~/.sinoclaw
+mkdir -p ~/.anan
 docker run -it --rm \
-  -v ~/.sinoclaw:/opt/data \
-  sinoclaw/anan setup
+  -v ~/.anan:/opt/data \
+  anan/anan setup
 ```
 
 This drops you into the setup wizard, which will prompt you for your API keys and write them to `~/.anan/.env`. You only need to do this once. It is highly recommended to set up a chat system for the gateway to work with at this point.
@@ -32,11 +32,11 @@ Once configured, run the container in the background as a persistent gateway (Te
 
 ```sh
 docker run -d \
-  --name sinoclaw \
+  --name anan \
   --restart unless-stopped \
-  -v ~/.sinoclaw:/opt/data \
+  -v ~/.anan:/opt/data \
   -p 8642:8642 \
-  sinoclaw/anan gateway run
+  anan/anan gateway run
 ```
 
 Port 8642 exposes the gateway's [OpenAI-compatible API server](./features/api-server.md) and health endpoint. It's optional if you only use chat platforms (Telegram, Discord, etc.), but required if you want the dashboard or external tools to reach the gateway.
@@ -45,15 +45,15 @@ Note: the API server is gated on `API_SERVER_ENABLED=true`. To expose it beyond 
 
 ```sh
 docker run -d \
-  --name sinoclaw \
+  --name anan \
   --restart unless-stopped \
-  -v ~/.sinoclaw:/opt/data \
+  -v ~/.anan:/opt/data \
   -p 8642:8642 \
   -e API_SERVER_ENABLED=true \
   -e API_SERVER_HOST=0.0.0.0 \
   -e API_SERVER_KEY=your_api_key_here \
   -e API_SERVER_CORS_ORIGINS='*' \
-  sinoclaw/anan gateway run
+  anan/anan gateway run
 ```
 
 Opening any port on an internet facing machine is a security risk. You should not do it unless you understand the risks.
@@ -64,25 +64,25 @@ The built-in web dashboard runs as an optional side-process inside the same cont
 
 ```sh
 docker run -d \
-  --name sinoclaw \
+  --name anan \
   --restart unless-stopped \
-  -v ~/.sinoclaw:/opt/data \
+  -v ~/.anan:/opt/data \
   -p 8642:8642 \
   -p 9119:9119 \
   -e SINOCLAW_DASHBOARD=1 \
-  sinoclaw/anan gateway run
+  anan/anan gateway run
 ```
 
-The entrypoint starts `sinoclaw dashboard` in the background (running as the non-root `hermes` user) before `exec`-ing the main command. Dashboard output is prefixed with `[dashboard]` in `docker logs` so it's easy to separate from gateway logs.
+The entrypoint starts `anan dashboard` in the background (running as the non-root `hermes` user) before `exec`-ing the main command. Dashboard output is prefixed with `[dashboard]` in `docker logs` so it's easy to separate from gateway logs.
 
 | Environment variable | Description | Default |
 |---------------------|-------------|---------|
 | `SINOCLAW_DASHBOARD` | Set to `1` (or `true` / `yes`) to launch the dashboard alongside the main command | *(unset — dashboard not started)* |
 | `SINOCLAW_DASHBOARD_HOST` | Bind address for the dashboard HTTP server | `0.0.0.0` |
 | `SINOCLAW_DASHBOARD_PORT` | Port for the dashboard HTTP server | `9119` |
-| `SINOCLAW_DASHBOARD_TUI` | Set to `1` to expose the in-browser Chat tab (embedded `sinoclaw --tui` via PTY/WebSocket) | *(unset)* |
+| `SINOCLAW_DASHBOARD_TUI` | Set to `1` to expose the in-browser Chat tab (embedded `anan --tui` via PTY/WebSocket) | *(unset)* |
 
-The default `SINOCLAW_DASHBOARD_HOST=0.0.0.0` is required for the host to reach the dashboard through the published port; the entrypoint automatically passes `--insecure` to `sinoclaw dashboard` in that case. Override to `127.0.0.1` if you want to restrict the dashboard to in-container access only (e.g. behind a reverse proxy in a sidecar).
+The default `SINOCLAW_DASHBOARD_HOST=0.0.0.0` is required for the host to reach the dashboard through the published port; the entrypoint automatically passes `--insecure` to `anan dashboard` in that case. Override to `127.0.0.1` if you want to restrict the dashboard to in-container access only (e.g. behind a reverse proxy in a sidecar).
 
 :::note
 The dashboard side-process is **not supervised** — if it crashes, it stays down until the container restarts. Running it as a separate container is not supported: the dashboard's gateway-liveness detection requires a shared PID namespace with the gateway process.
@@ -94,8 +94,8 @@ To open an interactive chat session against a running data directory:
 
 ```sh
 docker run -it --rm \
-  -v ~/.sinoclaw:/opt/data \
-  sinoclaw/anan
+  -v ~/.anan:/opt/data \
+  anan/anan
 ```
 
 Or if you have already opened a terminal in your running container (via Docker Desktop for instance), just run:
@@ -134,25 +134,25 @@ Instead, the recommended pattern is **one container per profile**, with each con
 ```sh
 # Work profile
 docker run -d \
-  --name sinoclaw-work \
+  --name anan-work \
   --restart unless-stopped \
-  -v ~/.sinoclaw-work:/opt/data \
+  -v ~/.anan-work:/opt/data \
   -p 8642:8642 \
-  sinoclaw/anan gateway run
+  anan/anan gateway run
 
 # Personal profile
 docker run -d \
-  --name sinoclaw-personal \
+  --name anan-personal \
   --restart unless-stopped \
-  -v ~/.sinoclaw-personal:/opt/data \
+  -v ~/.anan-personal:/opt/data \
   -p 8643:8642 \
-  sinoclaw/anan gateway run
+  anan/anan gateway run
 ```
 
 Why separate containers over profiles in Docker:
 
 - **Isolation** — each container has its own filesystem, process table, and resource limits. A crash, dependency change, or runaway session in one profile can't affect another.
-- **Independent lifecycle** — upgrade, restart, pause, or roll back each agent separately (`docker restart sinoclaw-work` leaves `sinoclaw-personal` untouched).
+- **Independent lifecycle** — upgrade, restart, pause, or roll back each agent separately (`docker restart anan-work` leaves `anan-personal` untouched).
 - **Clean port and network separation** — each gateway binds its own host port; there's no risk of cross-talk between chat platforms or API servers.
 - **Simpler mental model** — the container *is* the profile. Backups, migrations, and permissions all follow the bind-mounted directory, with no extra `--profile` flags to remember.
 - **Avoids concurrent-write risk** — the warning above about never running two gateways against the same data directory still applies to profiles within a single container.
@@ -161,25 +161,25 @@ In Docker Compose, this just means declaring one service per profile with distin
 
 ```yaml
 services:
-  sinoclaw-work:
-    image: sinoclaw/anan:latest
-    container_name: sinoclaw-work
+  anan-work:
+    image: anan/anan:latest
+    container_name: anan-work
     restart: unless-stopped
     command: gateway run
     ports:
       - "8642:8642"
     volumes:
-      - ~/.sinoclaw-work:/opt/data
+      - ~/.anan-work:/opt/data
 
-  sinoclaw-personal:
-    image: sinoclaw/anan:latest
-    container_name: sinoclaw-personal
+  anan-personal:
+    image: anan/anan:latest
+    container_name: anan-personal
     restart: unless-stopped
     command: gateway run
     ports:
       - "8643:8642"
     volumes:
-      - ~/.sinoclaw-personal:/opt/data
+      - ~/.anan-personal:/opt/data
 ```
 
 ## Environment variable forwarding
@@ -188,10 +188,10 @@ API keys are read from `/opt/data/.env` inside the container. You can also pass 
 
 ```sh
 docker run -it --rm \
-  -v ~/.sinoclaw:/opt/data \
+  -v ~/.anan:/opt/data \
   -e ANTHROPIC_API_KEY="sk-ant-..." \
   -e OPENAI_API_KEY="sk-..." \
-  sinoclaw/anan
+  anan/anan
 ```
 
 Direct `-e` flags override values from `.env`. This is useful for CI/CD or secrets-manager integrations where you don't want keys on disk.
@@ -203,7 +203,7 @@ For persistent deployment with both the gateway and dashboard, a `docker-compose
 ```yaml
 services:
   hermes:
-    image: sinoclaw/anan:latest
+    image: anan/anan:latest
     container_name: hermes
     restart: unless-stopped
     command: gateway run
@@ -211,7 +211,7 @@ services:
       - "8642:8642"   # gateway API
       - "9119:9119"   # dashboard (only reached when SINOCLAW_DASHBOARD=1)
     volumes:
-      - ~/.sinoclaw:/opt/data
+      - ~/.anan:/opt/data
     environment:
       - SINOCLAW_DASHBOARD=1
       # Uncomment to forward specific env vars instead of using .env file:
@@ -243,11 +243,11 @@ Set limits in Docker:
 
 ```sh
 docker run -d \
-  --name sinoclaw \
+  --name anan \
   --restart unless-stopped \
   --memory=4g --cpus=2 \
-  -v ~/.sinoclaw:/opt/data \
-  sinoclaw/anan gateway run
+  -v ~/.anan:/opt/data \
+  anan/anan gateway run
 ```
 
 ## What the Dockerfile does
@@ -268,11 +268,11 @@ The entrypoint script (`docker/entrypoint.sh`) bootstraps the data volume on fir
 - Copies default `config.yaml` if missing
 - Copies default `SOUL.md` if missing
 - Syncs bundled skills using a manifest-based approach (preserves user edits)
-- Optionally launches `sinoclaw dashboard` as a background side-process when `SINOCLAW_DASHBOARD=1` (see [Running the dashboard](#running-the-dashboard))
+- Optionally launches `anan dashboard` as a background side-process when `SINOCLAW_DASHBOARD=1` (see [Running the dashboard](#running-the-dashboard))
 - Then runs `hermes` with whatever arguments you pass
 
 :::warning
-Do not override the image entrypoint unless you keep `/opt/hermes/docker/entrypoint.sh` in the command chain. The entrypoint drops root privileges to the `hermes` user before gateway state files are created. Starting `sinoclaw gateway run` as root inside the official image is refused by default because it can leave root-owned files in `/opt/data` and break later dashboard or gateway starts. Set `SINOCLAW_ALLOW_ROOT_GATEWAY=1` only when you intentionally accept that risk.
+Do not override the image entrypoint unless you keep `/opt/hermes/docker/entrypoint.sh` in the command chain. The entrypoint drops root privileges to the `hermes` user before gateway state files are created. Starting `anan gateway run` as root inside the official image is refused by default because it can leave root-owned files in `/opt/data` and break later dashboard or gateway starts. Set `SINOCLAW_ALLOW_ROOT_GATEWAY=1` only when you intentionally accept that risk.
 :::
 
 ## Upgrading
@@ -280,13 +280,13 @@ Do not override the image entrypoint unless you keep `/opt/hermes/docker/entrypo
 Pull the latest image and recreate the container. Your data directory is untouched.
 
 ```sh
-docker pull sinoclaw/anan:latest
+docker pull anan/anan:latest
 docker rm -f hermes
 docker run -d \
-  --name sinoclaw \
+  --name anan \
   --restart unless-stopped \
-  -v ~/.sinoclaw:/opt/data \
-  sinoclaw/anan gateway run
+  -v ~/.anan:/opt/data \
+  anan/anan gateway run
 ```
 
 Or with Docker Compose:
@@ -323,7 +323,7 @@ services:
     ports:
       - "8000:8000"
     networks:
-      - sinoclaw-net
+      - anan-net
     deploy:
       resources:
         reservations:
@@ -331,19 +331,19 @@ services:
             - capabilities: [gpu]
 
   hermes:
-    image: sinoclaw/anan:latest
+    image: anan/anan:latest
     container_name: hermes
     restart: unless-stopped
     command: gateway run
     ports:
       - "8642:8642"
     volumes:
-      - ~/.sinoclaw:/opt/data
+      - ~/.anan:/opt/data
     networks:
-      - sinoclaw-net
+      - anan-net
 
 networks:
-  sinoclaw-net:
+  anan-net:
     driver: bridge
 ```
 
@@ -372,10 +372,10 @@ If your inference server runs directly on the host (not in Docker), use `host.do
 
 ```sh
 docker run -d \
-  --name sinoclaw \
-  -v ~/.sinoclaw:/opt/data \
+  --name anan \
+  -v ~/.anan:/opt/data \
   -p 8642:8642 \
-  sinoclaw/anan gateway run
+  anan/anan gateway run
 ```
 
 ```yaml
@@ -391,10 +391,10 @@ model:
 
 ```sh
 docker run -d \
-  --name sinoclaw \
+  --name anan \
   --network host \
-  -v ~/.sinoclaw:/opt/data \
-  sinoclaw/anan gateway run
+  -v ~/.anan:/opt/data \
+  anan/anan gateway run
 ```
 
 ```yaml
@@ -414,12 +414,12 @@ model:
 From inside the Hermes container, confirm the inference server is reachable:
 
 ```sh
-docker exec sinoclaw curl -s http://vllm:8000/v1/models
+docker exec anan curl -s http://vllm:8000/v1/models
 ```
 
 You should see a JSON response listing your served model. If this fails, check:
 
-1. Both containers are on the same Docker network (`docker network inspect sinoclaw-net`)
+1. Both containers are on the same Docker network (`docker network inspect anan-net`)
 2. The inference server is listening on `0.0.0.0`, not `127.0.0.1`
 3. The port number matches
 
@@ -448,7 +448,7 @@ Check logs: `docker logs hermes`. Common causes:
 The container's entrypoint drops privileges to the non-root `hermes` user (UID 10000) via `gosu`. If your host `~/.anan/` is owned by a different UID, set `SINOCLAW_UID`/`SINOCLAW_GID` to match your host user, or ensure the data directory is writable:
 
 ```sh
-chmod -R 755 ~/.sinoclaw
+chmod -R 755 ~/.anan
 ```
 
 ### Browser tools not working
@@ -457,10 +457,10 @@ Playwright needs shared memory. Add `--shm-size=1g` to your Docker run command:
 
 ```sh
 docker run -d \
-  --name sinoclaw \
+  --name anan \
   --shm-size=1g \
-  -v ~/.sinoclaw:/opt/data \
-  sinoclaw/anan gateway run
+  -v ~/.anan:/opt/data \
+  anan/anan gateway run
 ```
 
 ### Gateway not reconnecting after network issues
@@ -474,7 +474,7 @@ docker restart hermes
 ### Checking container health
 
 ```sh
-docker logs --tail 50 sinoclaw          # Recent logs
-docker run -it --rm sinoclaw/anan:latest version     # Verify version
-docker stats sinoclaw                    # Resource usage
+docker logs --tail 50 anan          # Recent logs
+docker run -it --rm anan/anan:latest version     # Verify version
+docker stats anan                    # Resource usage
 ```

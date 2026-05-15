@@ -7,7 +7,7 @@ sidebar_position: 8
 
 # Fallback Providers
 
-Sinoclaw Agent has three layers of resilience that keep your sessions running when providers hit issues:
+anan Agent has three layers of resilience that keep your sessions running when providers hit issues:
 
 1. **[Credential pools](./credential-pools.md)** — rotate across multiple API keys for the *same* provider (tried first)
 2. **Primary model fallback** — automatically switches to a *different* provider:model when your main model fails
@@ -24,10 +24,10 @@ When your main LLM provider encounters errors — rate limits, server overload, 
 The easiest path is the interactive manager:
 
 ```bash
-sinoclaw fallback
+anan fallback
 ```
 
-`sinoclaw fallback` reuses the provider picker from `sinoclaw model` — same provider list, same credential prompts, same validation. Press `a` to add a fallback, `↑`/`↓` to reorder, `d` to remove, `q` to save and exit. Changes persist under `model.fallback_providers` in `config.yaml`.
+`anan fallback` reuses the provider picker from `anan model` — same provider list, same credential prompts, same validation. Press `a` to add a fallback, `↑`/`↓` to reorder, `d` to remove, `q` to save and exit. Changes persist under `model.fallback_providers` in `config.yaml`.
 
 If you'd rather edit the YAML directly, add a `fallback_model` section to `~/.anan/config.yaml`:
 
@@ -40,7 +40,7 @@ fallback_model:
 Both `provider` and `model` are **required**. If either is missing, the fallback is disabled.
 
 :::note `fallback_model` vs `fallback_providers`
-`fallback_model` (singular) is the legacy single-fallback key — Hermes still honors it for back-compat. `fallback_providers` (plural, list) supports multiple fallbacks tried in order; `sinoclaw fallback` writes to this key. When both are set, Hermes merges them with `fallback_providers` taking priority.
+`fallback_model` (singular) is the legacy single-fallback key — Hermes still honors it for back-compat. `fallback_providers` (plural, list) supports multiple fallbacks tried in order; `anan fallback` writes to this key. When both are set, Hermes merges them with `fallback_providers` taking priority.
 :::
 
 ### Supported Providers
@@ -49,8 +49,8 @@ Both `provider` and `model` are **required**. If either is missing, the fallback
 |----------|-------|-------------|
 | AI Gateway | `ai-gateway` | `AI_GATEWAY_API_KEY` |
 | OpenRouter | `openrouter` | `OPENROUTER_API_KEY` |
-| Nous Portal | `nous` | `sinoclaw auth` (OAuth) |
-| OpenAI Codex | `openai-codex` | `sinoclaw model` (ChatGPT OAuth) |
+| Nous Portal | `nous` | `anan auth` (OAuth) |
+| OpenAI Codex | `openai-codex` | `anan model` (ChatGPT OAuth) |
 | GitHub Copilot | `copilot` | `COPILOT_GITHUB_TOKEN`, `GH_TOKEN`, or `GITHUB_TOKEN` |
 | GitHub Copilot ACP | `copilot-acp` | External process (editor integration) |
 | Anthropic | `anthropic` | `ANTHROPIC_API_KEY` or Claude Code credentials |
@@ -63,12 +63,12 @@ Both `provider` and `model` are **required**. If either is missing, the fallback
 | GMI Cloud | `gmi` | `GMI_API_KEY` (optional: `GMI_BASE_URL`) |
 | StepFun | `stepfun` | `STEPFUN_API_KEY` (optional: `STEPFUN_BASE_URL`) |
 | Ollama Cloud | `ollama-cloud` | `OLLAMA_API_KEY` |
-| Google Gemini (OAuth) | `google-gemini-cli` | `sinoclaw model` (Google OAuth; optional: `SINOCLAW_GEMINI_PROJECT_ID`) |
+| Google Gemini (OAuth) | `google-gemini-cli` | `anan model` (Google OAuth; optional: `SINOCLAW_GEMINI_PROJECT_ID`) |
 | Google AI Studio | `gemini` | `GOOGLE_API_KEY` (alias: `GEMINI_API_KEY`) |
 | xAI (Grok) | `xai` (alias `grok`) | `XAI_API_KEY` (optional: `XAI_BASE_URL`) |
 | AWS Bedrock | `bedrock` | Standard boto3 auth (`AWS_REGION` + `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`) |
-| Qwen Portal (OAuth) | `qwen-oauth` | `sinoclaw model` (Qwen Portal OAuth; optional: `SINOCLAW_QWEN_BASE_URL`) |
-| MiniMax (OAuth) | `minimax-oauth` | `sinoclaw model` (MiniMax portal OAuth) |
+| Qwen Portal (OAuth) | `qwen-oauth` | `anan model` (Qwen Portal OAuth; optional: `SINOCLAW_QWEN_BASE_URL`) |
+| MiniMax (OAuth) | `minimax-oauth` | `anan model` (MiniMax portal OAuth) |
 | OpenCode Zen | `opencode-zen` | `OPENCODE_ZEN_API_KEY` |
 | OpenCode Go | `opencode-go` | `OPENCODE_GO_API_KEY` |
 | Kilo Code | `kilocode` | `KILOCODE_API_KEY` |
@@ -298,8 +298,8 @@ These options apply to `auxiliary:`, `compression:`, and `fallback_model:` confi
 |----------|-------------|-------------|
 | `"auto"` | Try providers in order until one works (default) | At least one provider configured |
 | `"openrouter"` | Force OpenRouter | `OPENROUTER_API_KEY` |
-| `"nous"` | Force Nous Portal | `sinoclaw auth` |
-| `"codex"` | Force Codex OAuth | `sinoclaw model` → Codex |
+| `"nous"` | Force Nous Portal | `anan auth` |
+| `"codex"` | Force Codex OAuth | `anan model` → Codex |
 | `"main"` | Use whatever provider the main agent uses (auxiliary tasks only) | Active main provider configured |
 | `"anthropic"` | Force Anthropic native | `ANTHROPIC_API_KEY` or Claude Code credentials |
 

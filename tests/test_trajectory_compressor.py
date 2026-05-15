@@ -20,7 +20,7 @@ from trajectory_compressor import (
 def test_import_loads_env_from_anan_home(tmp_path, monkeypatch):
     home = tmp_path / ".anan"
     home.mkdir()
-    (home / ".env").write_text("OPENROUTER_API_KEY=from-sinoclaw-home\n", encoding="utf-8")
+    (home / ".env").write_text("OPENROUTER_API_KEY=from-anan-home\n", encoding="utf-8")
 
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
@@ -28,7 +28,7 @@ def test_import_loads_env_from_anan_home(tmp_path, monkeypatch):
     sys.modules.pop("trajectory_compressor", None)
     importlib.import_module("trajectory_compressor")
 
-    assert os.getenv("OPENROUTER_API_KEY") == "from-sinoclaw-home"
+    assert os.getenv("OPENROUTER_API_KEY") == "from-anan-home"
 
 
 def test_generate_summary_kimi_omits_temperature():

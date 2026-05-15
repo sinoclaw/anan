@@ -15,7 +15,7 @@ Bypass safety filters on API-served LLMs using techniques from [G0DM0D3](https:/
 
 ## What is G0DM0D3?
 
-G0DM0D3 is an open-source jailbreaking toolkit that automates bypassing LLM safety filters through three complementary attack modes. It was created by Pliny the Prompter and packages the battle-tested jailbreak templates from the L1B3RT4S collection into runnable scripts with automated strategy selection, scoring, and Sinoclaw-native config integration.
+G0DM0D3 is an open-source jailbreaking toolkit that automates bypassing LLM safety filters through three complementary attack modes. It was created by Pliny the Prompter and packages the battle-tested jailbreak templates from the L1B3RT4S collection into runnable scripts with automated strategy selection, scoring, and anan-native config integration.
 
 ## Three Attack Modes
 
@@ -115,7 +115,7 @@ Each strategy is also retried with prefill messages added if it fails alone.
 
 ## Hermes Integration
 
-The godmode skill integrates with two Sinoclaw Agent config mechanisms:
+The godmode skill integrates with two anan Agent config mechanisms:
 
 ### Ephemeral System Prompt (`config.yaml`)
 
@@ -137,7 +137,7 @@ agent:
     [####START OF OUTPUT####]
 ```
 
-The `agent.system_prompt` is appended **after** Sinoclaw's own system prompt — it augments, not replaces.
+The `agent.system_prompt` is appended **after** anan's own system prompt — it augments, not replaces.
 
 Or set via environment variable:
 
@@ -168,7 +168,7 @@ For maximum effect, combine the system prompt to set the jailbreak frame AND pre
 ## Quick Start Commands
 
 ```bash
-# Load the skill in a Sinoclaw session
+# Load the skill in a anan session
 /godmode
 
 # Or via CLI one-shot
@@ -249,7 +249,7 @@ Claude Sonnet 4 is robust against all current techniques for clearly harmful con
 
 5. **Always use `load_godmode.py` in execute_code** — The individual scripts (`parseltongue.py`, `godmode_race.py`, `auto_jailbreak.py`) have argparse CLI entry points. When loaded via `exec()` in execute_code, `__name__` is `'__main__'` and argparse fires, crashing the script. The loader handles this.
 
-6. **Restart Sinoclaw after auto-jailbreak** — The CLI reads config once at startup. Gateway sessions pick up changes immediately.
+6. **Restart anan after auto-jailbreak** — The CLI reads config once at startup. Gateway sessions pick up changes immediately.
 
 7. **execute_code sandbox lacks env vars** — Load dotenv explicitly: `from dotenv import load_dotenv; load_dotenv(os.path.expanduser("~/.anan/.env"))`
 

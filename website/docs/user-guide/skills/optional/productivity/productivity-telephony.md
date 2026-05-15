@@ -14,10 +14,10 @@ Give Hermes phone capabilities without core tool changes. Provision and persist 
 
 | | |
 |---|---|
-| Source | Optional — install with `sinoclaw skills install official/productivity/telephony` |
+| Source | Optional — install with `anan skills install official/productivity/telephony` |
 | Path | `optional-skills/productivity/telephony` |
 | Version | `1.0.0` |
-| Author | Sinoclaw Team |
+| Author | anan Team |
 | License | MIT |
 | Tags | `telephony`, `phone`, `sms`, `mms`, `voice`, `twilio`, `bland.ai`, `vapi`, `calling`, `texting` |
 | Related skills | [`maps`](/docs/user-guide/skills/bundled/productivity/productivity-maps), [`google-workspace`](/docs/user-guide/skills/bundled/productivity/productivity-google-workspace), [`agentmail`](/docs/user-guide/skills/optional/email/email-agentmail) |
@@ -156,8 +156,8 @@ If `SCRIPT` is empty, the skill is not installed yet.
 This is an official optional skill, so install it from the Skills Hub:
 
 ```bash
-sinoclaw skills search telephony
-sinoclaw skills install official/productivity/telephony
+anan skills search telephony
+anan skills install official/productivity/telephony
 ```
 
 ## Provider setup

@@ -32,7 +32,7 @@ import pytest
 @pytest.fixture(autouse=True)
 def _isolate_env(tmp_path, monkeypatch):
     """Isolate ANAN_HOME for each test."""
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     yield anan_home
@@ -42,7 +42,7 @@ def _load_lib():
     """Import heartbeat_plugin library module directly from the data partition.
     
     The heartbeat plugin lives at /data/plugins/heartbeat/ (separate from the
-    bundled plugins at /data/sinoclaw/plugins/). This function uses the absolute
+    bundled plugins at /data/anan/plugins/). This function uses the absolute
     path so tests work without needing the plugin in the standard location.
     
     We set up a minimal sinoclaw_plugins namespace package so that
@@ -617,17 +617,17 @@ class TestPluginStatus:
 # Bundled discovery tests
 # ---------------------------------------------------------------------------
 # NOTE: Heartbeat plugin lives at /data/plugins/heartbeat/ (separate from
-# bundled plugins at /data/sinoclaw/plugins/), so discovery tests are skipped.
-# The plugin would need to be copied to /data/sinoclaw/plugins/heartbeat
+# bundled plugins at /data/anan/plugins/), so discovery tests are skipped.
+# The plugin would need to be copied to /data/anan/plugins/heartbeat
 # for bundled discovery to work.
 
 class TestBundledDiscovery:
     def test_skip_heartbeat_not_in_bundled_dir(self, _isolate_env):
         """Heartbeat plugin is at /data/plugins/heartbeat/, not bundled.
         
-        Discovery tests require the plugin to be in /data/sinoclaw/plugins/heartbeat/
+        Discovery tests require the plugin to be in /data/anan/plugins/heartbeat/
         which is not the case. Skipping this test class.
         """
-        # Plugin is not in /data/sinoclaw/plugins/ so can't be discovered
+        # Plugin is not in /data/anan/plugins/ so can't be discovered
         # This is intentional - heartbeat is a separately deployed plugin
         pass

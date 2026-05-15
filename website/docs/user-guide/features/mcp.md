@@ -1,12 +1,12 @@
 ---
 sidebar_position: 4
 title: "MCP (Model Context Protocol)"
-description: "Connect Sinoclaw Agent to external tool servers via MCP — and control exactly which MCP tools Hermes loads"
+description: "Connect anan Agent to external tool servers via MCP — and control exactly which MCP tools Hermes loads"
 ---
 
 # MCP (Model Context Protocol)
 
-MCP lets Sinoclaw Agent connect to external tool servers so the agent can use tools that live outside Hermes itself — GitHub, databases, file systems, browser stacks, internal APIs, and more.
+MCP lets anan Agent connect to external tool servers so the agent can use tools that live outside Hermes itself — GitHub, databases, file systems, browser stacks, internal APIs, and more.
 
 If you have ever wanted Hermes to use a tool that already exists somewhere else, MCP is usually the cleanest way to do it.
 
@@ -222,7 +222,7 @@ tools:
 
 ### Filter utility tools too
 
-You can also separately disable Sinoclaw-added utility wrappers:
+You can also separately disable anan-added utility wrappers:
 
 ```yaml
 mcp_servers:
@@ -450,7 +450,7 @@ In addition to connecting **to** MCP servers, Hermes can also **be** an MCP serv
 
 - You want Claude Code, Cursor, or another coding agent to send and read Telegram/Discord/Slack messages through Hermes
 - You want a single MCP server that bridges to all of Hermes's connected messaging platforms at once
-- You already have a running Sinoclaw gateway with connected platforms
+- You already have a running anan gateway with connected platforms
 
 ### Quick start
 
@@ -481,7 +481,7 @@ Or if you installed Hermes in a specific location:
 {
   "mcpServers": {
     "hermes": {
-      "command": "/home/user/.sinoclaw/anan/venv/bin/sinoclaw",
+      "command": "/home/user/.anan/anan/venv/bin/anan",
       "args": ["mcp", "serve"]
     }
   }
@@ -490,7 +490,7 @@ Or if you installed Hermes in a specific location:
 
 ### Available tools
 
-The MCP server exposes 10 tools, matching OpenClaw's channel bridge surface plus a Sinoclaw-specific channel browser:
+The MCP server exposes 10 tools, matching OpenClaw's channel bridge surface plus a anan-specific channel browser:
 
 | Tool | Description |
 |------|-------------|
@@ -530,7 +530,7 @@ hermes mcp serve --verbose    # Debug logging on stderr
 
 ### How it works
 
-The MCP server reads conversation data directly from Hermes's session store (`~/.anan/sessions/sessions.json` and the SQLite database). A background thread polls the database for new messages and maintains an in-memory event queue. For sending messages, it uses the same `send_message` infrastructure as the Sinoclaw agent itself.
+The MCP server reads conversation data directly from Hermes's session store (`~/.anan/sessions/sessions.json` and the SQLite database). A background thread polls the database for new messages and maintains an in-memory event queue. For sending messages, it uses the same `send_message` infrastructure as the anan agent itself.
 
 The gateway does NOT need to be running for read operations (listing conversations, reading history, polling events). It DOES need to be running for send operations, since the platform adapters need active connections.
 

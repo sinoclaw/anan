@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs'
 
-import type { ScrollBoxHandle } from '@sinoclaw/ink'
-import { evictInkCaches } from '@sinoclaw/ink'
+import type { ScrollBoxHandle } from '@anan/ink'
+import { evictInkCaches } from '@anan/ink'
 import { useCallback, type RefObject } from 'react'
 
 import { buildSetupRequiredSections, SETUP_REQUIRED_TITLE } from '../content/setup.js'

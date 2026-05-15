@@ -34,7 +34,7 @@ class TestWriteDenyExactPaths:
 
     def test_sinoclaw_env(self):
         # ``.env`` under the active ANAN_HOME (profile-aware, not just
-        # ``~/.sinoclaw``) must be write-denied. The hermetic test conftest
+        # ``~/.anan``) must be write-denied. The hermetic test conftest
         # points ANAN_HOME at a tempdir — resolve via get_anan_home()
         # to match the denylist.
         from anan_constants import get_anan_home
@@ -84,5 +84,5 @@ class TestWriteAllowed:
         assert _is_write_denied("/home/user/project/main.py") is False
 
     def test_anan_config_not_env(self):
-        path = os.path.join(str(Path.home()), ".sinoclaw", "config.yaml")
+        path = os.path.join(str(Path.home()), ".anan", "config.yaml")
         assert _is_write_denied(path) is False

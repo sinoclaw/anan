@@ -1,12 +1,12 @@
 ---
 sidebar_position: 1
 title: "Tips & Best Practices"
-description: "Practical advice to get the most out of Sinoclaw Agent — prompt tips, CLI shortcuts, context files, memory, cost optimization, and security"
+description: "Practical advice to get the most out of anan Agent — prompt tips, CLI shortcuts, context files, memory, cost optimization, and security"
 ---
 
 # Tips & Best Practices
 
-A quick-wins collection of practical tips that make you immediately more effective with Sinoclaw Agent. Each section targets a different aspect — scan the headers and jump to what's relevant.
+A quick-wins collection of practical tips that make you immediately more effective with anan Agent. Each section targets a different aspect — scan the headers and jump to what's relevant.
 
 ---
 
@@ -48,7 +48,7 @@ Press **Ctrl+C** once to interrupt the agent mid-response. You can then type a n
 
 ### Resume Sessions with `-c`
 
-Forgot something from your last session? Run `sinoclaw -c` to resume exactly where you left off, with full conversation history restored. You can also resume by title: `sinoclaw -r "my research project"`.
+Forgot something from your last session? Run `anan -c` to resume exactly where you left off, with full conversation history restored. You can also resume by title: `anan -r "my research project"`.
 
 ### Clipboard Image Paste
 
@@ -78,7 +78,7 @@ Create an `AGENTS.md` in your project root with architecture decisions, coding c
 
 ### SOUL.md: Customize Personality
 
-Want Hermes to have a stable default voice? Edit `~/.anan/SOUL.md` (or `$ANAN_HOME/SOUL.md` if you use a custom Sinoclaw home). Hermes now seeds a starter SOUL automatically and uses that global file as the instance-wide personality source.
+Want Hermes to have a stable default voice? Edit `~/.anan/SOUL.md` (or `$ANAN_HOME/SOUL.md` if you use a custom anan home). Hermes now seeds a starter SOUL automatically and uses that global file as the instance-wide personality source.
 
 For a full walkthrough, see [Use SOUL.md with Hermes](/docs/guides/use-soul-with-hermes).
 
@@ -159,11 +159,11 @@ Use `/sethome` in your preferred Telegram or Discord chat to designate it as the
 
 ### Use /title to Organize Sessions
 
-Name your sessions with `/title auth-refactor` or `/title research-llm-quantization`. Named sessions are easy to find with `sinoclaw sessions list` and resume with `sinoclaw -r "auth-refactor"`. Unnamed sessions pile up and become impossible to distinguish.
+Name your sessions with `/title auth-refactor` or `/title research-llm-quantization`. Named sessions are easy to find with `anan sessions list` and resume with `anan -r "auth-refactor"`. Unnamed sessions pile up and become impossible to distinguish.
 
 ### DM Pairing for Team Access
 
-Instead of manually collecting user IDs for allowlists, enable DM pairing. When a teammate DMs the bot, they get a one-time pairing code. You approve it with `sinoclaw pairing approve telegram XKGH5N7P` — simple and secure.
+Instead of manually collecting user IDs for allowlists, enable DM pairing. When a teammate DMs the bot, they get a one-time pairing code. You approve it with `anan pairing approve telegram XKGH5N7P` — simple and secure.
 
 ### Tool Progress Display Modes
 
@@ -182,7 +182,7 @@ When working with untrusted repositories or running unfamiliar code, use Docker 
 ```bash
 # In your .env:
 TERMINAL_BACKEND=docker
-TERMINAL_DOCKER_IMAGE=sinoclaw-sandbox:latest
+TERMINAL_DOCKER_IMAGE=anan-sandbox:latest
 ```
 
 ### Avoid Windows Encoding Pitfalls

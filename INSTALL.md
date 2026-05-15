@@ -90,8 +90,8 @@ pipx install "anan[all]" --python python3.11
 ### With pip (in a virtualenv)
 
 ```bash
-python3.11 -m venv ~/sinoclaw-venv
-source ~/sinoclaw-venv/bin/activate
+python3.11 -m venv ~/anan-venv
+source ~/anan-venv/bin/activate
 pip install "anan[all]"
 anan --help
 ```

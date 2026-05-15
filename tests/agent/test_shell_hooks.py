@@ -263,7 +263,7 @@ class TestCallbackSubprocess:
         """v1 schema-bug regression gate.
 
         Shell hook returns the Claude-Code-style payload and the bridge
-        must translate it to the canonical Sinoclaw block shape so that
+        must translate it to the canonical anan block shape so that
         get_pre_tool_call_block_message() surfaces the block.
         """
         script = _write_script(
@@ -663,7 +663,7 @@ class TestAllowlistConcurrency:
         shlex token, which picked the interpreter (``python3``, ``bash``,
         ``/usr/bin/env``) instead of the actual script for any
         interpreter-prefixed command.  That broke
-        ``sinoclaw hooks doctor``'s executability check and silently
+        ``anan hooks doctor``'s executability check and silently
         disabled mtime drift detection for such hooks."""
         cases = [
             # bare path

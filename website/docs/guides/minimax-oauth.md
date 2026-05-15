@@ -1,12 +1,12 @@
 ---
 sidebar_position: 15
 title: "MiniMax OAuth"
-description: "Log into MiniMax via browser OAuth and use MiniMax-M2.7 models in Sinoclaw Agent — no API key required"
+description: "Log into MiniMax via browser OAuth and use MiniMax-M2.7 models in anan Agent — no API key required"
 ---
 
 # MiniMax OAuth
 
-Sinoclaw Agent supports **MiniMax** through a browser-based OAuth login flow, using the same credentials as the [MiniMax portal](https://www.minimax.io). No API key or credit card is required — log in once and Hermes automatically refreshes your session.
+anan Agent supports **MiniMax** through a browser-based OAuth login flow, using the same credentials as the [MiniMax portal](https://www.minimax.io). No API key or credit card is required — log in once and Hermes automatically refreshes your session.
 
 The transport reuses the `anthropic_messages` adapter (MiniMax exposes an Anthropic Messages-compatible endpoint at `/anthropic`), so all existing tool-calling, streaming, and context features work without any adapter changes.
 
@@ -26,7 +26,7 @@ The transport reuses the `anthropic_messages` adapter (MiniMax exposes an Anthro
 ## Prerequisites
 
 - Python 3.9+
-- Sinoclaw Agent installed
+- anan Agent installed
 - A MiniMax account at [minimax.io](https://www.minimax.io) (global) or [minimaxi.com](https://www.minimaxi.com) (China)
 - A browser available on the local machine (or use `--no-browser` for remote sessions)
 
@@ -51,7 +51,7 @@ After the first login, credentials are stored under `~/.anan/auth.json` and are 
 You can trigger a login without going through the model picker:
 
 ```bash
-sinoclaw auth add minimax-oauth
+anan auth add minimax-oauth
 ```
 
 ### China region
@@ -59,7 +59,7 @@ sinoclaw auth add minimax-oauth
 If your account is on the China platform (`minimaxi.com`), pass `--region cn`:
 
 ```bash
-sinoclaw auth add minimax-oauth --region cn
+anan auth add minimax-oauth --region cn
 ```
 
 ### Remote / headless sessions
@@ -67,7 +67,7 @@ sinoclaw auth add minimax-oauth --region cn
 On servers or containers where no browser is available:
 
 ```bash
-sinoclaw auth add minimax-oauth --no-browser
+anan auth add minimax-oauth --no-browser
 ```
 
 Hermes will print the verification URL and user code — open the URL on any device and enter the code when prompted.
@@ -87,7 +87,7 @@ Token refresh (standard OAuth `refresh_token` grant) runs automatically at each 
 ## Checking Login Status
 
 ```bash
-sinoclaw doctor
+anan doctor
 ```
 
 The `◆ Auth Providers` section will show:
@@ -176,15 +176,15 @@ Both models support up to 200,000 tokens of context.
 
 ### Token expired — not re-logging in automatically
 
-Sinoclaw refreshes the token on every session start if it is within 60 seconds of expiry. If the access token is already expired (for example, after a long offline period), the refresh happens automatically on the next request. If refresh fails with `refresh_token_reused` or `invalid_grant`, Hermes marks the session as requiring re-login.
+anan refreshes the token on every session start if it is within 60 seconds of expiry. If the access token is already expired (for example, after a long offline period), the refresh happens automatically on the next request. If refresh fails with `refresh_token_reused` or `invalid_grant`, Hermes marks the session as requiring re-login.
 
-**Fix:** run `sinoclaw auth add minimax-oauth` again to start a fresh login.
+**Fix:** run `anan auth add minimax-oauth` again to start a fresh login.
 
 ### Authorization timed out
 
 The device-code flow has a finite expiry window. If you don't approve the login in time, Hermes raises a timeout error.
 
-**Fix:** re-run `sinoclaw auth add minimax-oauth` (or `sinoclaw model`). The flow starts fresh.
+**Fix:** re-run `anan auth add minimax-oauth` (or `anan model`). The flow starts fresh.
 
 ### State mismatch (possible CSRF)
 
@@ -197,7 +197,7 @@ Hermes detected that the `state` value returned by the authorization server does
 If `hermes` cannot open a browser window, use `--no-browser`:
 
 ```bash
-sinoclaw auth add minimax-oauth --no-browser
+anan auth add minimax-oauth --no-browser
 ```
 
 Hermes prints the URL and code. Open the URL on any device and complete the flow there.
@@ -206,14 +206,14 @@ Hermes prints the URL and code. Open the URL on any device and complete the flow
 
 The auth store has no credentials for `minimax-oauth`. You have not logged in yet, or the credential file was deleted.
 
-**Fix:** run `sinoclaw model` and select MiniMax (OAuth), or run `sinoclaw auth add minimax-oauth`.
+**Fix:** run `anan model` and select MiniMax (OAuth), or run `anan auth add minimax-oauth`.
 
 ## Logging Out
 
 To remove stored MiniMax OAuth credentials:
 
 ```bash
-sinoclaw auth remove minimax-oauth
+anan auth remove minimax-oauth
 ```
 
 ## See Also
@@ -221,4 +221,4 @@ sinoclaw auth remove minimax-oauth
 - [AI Providers reference](../integrations/providers.md)
 - [Environment Variables](../reference/environment-variables.md)
 - [Configuration](../user-guide/configuration.md)
-- [sinoclaw doctor](../reference/cli-commands.md)
+- [anan doctor](../reference/cli-commands.md)

@@ -1,4 +1,4 @@
-import { stringWidth } from '@sinoclaw/ink'
+import { stringWidth } from '@anan/ink'
 
 import type { Role } from '../types.js'
 

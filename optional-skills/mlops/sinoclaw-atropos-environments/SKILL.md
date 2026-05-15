@@ -1,8 +1,8 @@
 ---
-name: sinoclaw-atropos-environments
-description: Build, test, and debug Sinoclaw Agent RL environments for Atropos training. Covers the SinoclawAgentBaseEnv interface, reward functions, agent loop integration, evaluation with tools, wandb logging, and the three CLI modes (serve/process/evaluate). Use when creating, reviewing, or fixing RL environments in the anan repo.
+name: anan-atropos-environments
+description: Build, test, and debug anan Agent RL environments for Atropos training. Covers the SinoclawAgentBaseEnv interface, reward functions, agent loop integration, evaluation with tools, wandb logging, and the three CLI modes (serve/process/evaluate). Use when creating, reviewing, or fixing RL environments in the anan repo.
 version: 1.1.0
-author: Sinoclaw Agent
+author: anan Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
@@ -11,7 +11,7 @@ metadata:
     related_skills: [axolotl, fine-tuning-with-trl, lm-evaluation-harness]
 ---
 
-# Sinoclaw Agent Atropos Environments
+# anan Agent Atropos Environments
 
 Guide for building RL environments in the anan repo that integrate with the Atropos training framework.
 

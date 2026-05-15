@@ -4,7 +4,7 @@
 //   logFrameEvent (ink.onFrame) → yoga / renderer / diff / optimize / write
 //                                 phases + yoga counters + scroll fast-path
 //
-// Both gate on SINOCLAW_DEV_PERF=1 and dump JSON-lines (default ~/.sinoclaw/perf.log,
+// Both gate on SINOCLAW_DEV_PERF=1 and dump JSON-lines (default ~/.anan/perf.log,
 // override SINOCLAW_DEV_PERF_LOG). Tagged { src: 'react' | 'frame' } for jq.
 // SINOCLAW_DEV_PERF_MS (default 2) skips sub-ms idle frames; set 0 to capture all.
 //
@@ -15,8 +15,8 @@ import { appendFileSync, mkdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 
-import type { FrameEvent } from '@sinoclaw/ink'
-import { scrollFastPathStats } from '@sinoclaw/ink'
+import type { FrameEvent } from '@anan/ink'
+import { scrollFastPathStats } from '@anan/ink'
 import { Profiler, type ProfilerOnRenderCallback, type ReactNode } from 'react'
 
 const ENABLED = /^(?:1|true|yes|on)$/i.test((process.env.SINOCLAW_DEV_PERF ?? '').trim())

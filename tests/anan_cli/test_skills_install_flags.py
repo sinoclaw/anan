@@ -1,5 +1,5 @@
 """
-Tests for --yes / --force flag separation in `sinoclaw skills install`.
+Tests for --yes / --force flag separation in `anan skills install`.
 
 --yes / -y  → skip_confirm (bypass interactive prompt, needed in TUI mode)
 --force     → force (install despite blocked scan verdict)

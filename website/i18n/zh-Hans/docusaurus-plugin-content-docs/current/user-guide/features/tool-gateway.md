@@ -40,7 +40,7 @@ hermes status
 
 ### 在模型配置流程中
 
-运行 `sinoclaw model` 并选择 Nous Portal 作为提供商时，Hermes 会主动询问是否启用 Tool Gateway：
+运行 `anan model` 并选择 Nous Portal 作为提供商时，Hermes 会主动询问是否启用 Tool Gateway：
 
 ```
 Your Nous subscription includes the Tool Gateway.
@@ -62,12 +62,12 @@ Your Nous subscription includes the Tool Gateway.
 
 若 `.env` 中已有部分直连 API Key，提示会相应变化：可为全部工具启用网关（直连 Key 仍保留在 `.env` 但运行时不用）、仅为未配置项启用，或完全跳过。
 
-### 通过 `sinoclaw tools`
+### 通过 `anan tools`
 
 也可在交互式工具配置中逐项启用：
 
 ```bash
-sinoclaw tools
+anan tools
 ```
 
 选择工具类别（Web、Browser、Image Generation、TTS），再将提供商选为 **Nous Subscription**。这会在配置里把对应工具的 `use_gateway` 设为 `true`。
@@ -102,7 +102,7 @@ browser:
 3. **TTS** — `text_to_speech` 走网关的 OpenAI Audio 端点  
 4. **浏览器** — `browser_navigate` 等走网关的 Browser Use 端点  
 
-网关使用 Nous Portal 凭据认证（在 `sinoclaw model` 完成后写入 `~/.anan/auth.json`）。
+网关使用 Nous Portal 凭据认证（在 `anan model` 完成后写入 `~/.anan/auth.json`）。
 
 ### 优先级
 
@@ -118,7 +118,7 @@ browser:
 对单个工具停用网关：
 
 ```bash
-sinoclaw tools    # 选择该工具 → 选直连提供商
+anan tools    # 选择该工具 → 选直连提供商
 ```
 
 或在配置中设 `use_gateway: false`：
@@ -129,7 +129,7 @@ web:
   use_gateway: false  # 此时使用 .env 中的 FIRECRAWL_API_KEY
 ```
 
-在 `sinoclaw tools` 中选择非网关提供商时，`use_gateway` 会自动设为 `false`，避免配置自相矛盾。
+在 `anan tools` 中选择非网关提供商时，`use_gateway` 会自动设为 `false`，避免配置自相矛盾。
 
 ## 查看状态
 
@@ -156,7 +156,7 @@ hermes status
 若使用自建或自定义网关，可在 `~/.anan/.env` 中用环境变量覆盖端点：
 
 ```bash
-TOOL_GATEWAY_DOMAIN=sinoclaw.com     # 网关路由基础域名
+TOOL_GATEWAY_DOMAIN=anan.com     # 网关路由基础域名
 TOOL_GATEWAY_SCHEME=https                 # http 或 https（默认 https）
 TOOL_GATEWAY_USER_TOKEN=your-token        # 鉴权 Token（通常由程序自动填充）
 FIRECRAWL_GATEWAY_URL=https://...         # 单独覆盖 Firecrawl 端点
@@ -176,7 +176,7 @@ FIRECRAWL_GATEWAY_URL=https://...         # 单独覆盖 Firecrawl 端点
 
 ### 订阅到期会怎样？
 
-经网关路由的工具会停止工作，直到你 [续订](https://portal.nousresearch.com/manage-subscription) 或通过 `sinoclaw tools` 改回直连 Key。
+经网关路由的工具会停止工作，直到你 [续订](https://portal.nousresearch.com/manage-subscription) 或通过 `anan tools` 改回直连 Key。
 
 ### 与「消息网关」（各聊天平台）是否冲突？
 
@@ -184,4 +184,4 @@ FIRECRAWL_GATEWAY_URL=https://...         # 单独覆盖 Firecrawl 端点
 
 ### Modal 算在 Tool Gateway 里吗？
 
-Modal（无服务器终端后端）可作为 Nous 订阅的可选附加能力，但**不会**由 Tool Gateway 安装向导一并打开——请单独通过 `sinoclaw setup terminal` 或在 `config.yaml` 中配置。
+Modal（无服务器终端后端）可作为 Nous 订阅的可选附加能力，但**不会**由 Tool Gateway 安装向导一并打开——请单独通过 `anan setup terminal` 或在 `config.yaml` 中配置。

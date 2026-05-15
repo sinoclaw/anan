@@ -1,12 +1,12 @@
 ---
 sidebar_position: 12
 title: "Google Chat"
-description: "Set up Sinoclaw Agent as a Google Chat bot using Cloud Pub/Sub"
+description: "Set up anan Agent as a Google Chat bot using Cloud Pub/Sub"
 ---
 
 # Google Chat Setup
 
-Connect Sinoclaw Agent to Google Chat as a bot. The integration uses Cloud Pub/Sub
+Connect anan Agent to Google Chat as a bot. The integration uses Cloud Pub/Sub
 pull subscriptions for inbound events and the Chat REST API for outbound messages.
 Equivalent ergonomics to Slack Socket Mode or Telegram long-polling: your Hermes
 process does not need a public URL, a tunnel, or a TLS certificate. It connects,
@@ -58,7 +58,7 @@ Both are free for the volumes a personal bot generates.
 
 **IAM & Admin → Service Accounts → Create Service Account.**
 
-- Name: `sinoclaw-chat-bot`
+- Name: `anan-chat-bot`
 - Skip the "Grant this service account access to project" step. IAM on the specific
   subscription is all you need — do **NOT** grant project-level Pub/Sub roles.
 
@@ -86,7 +86,7 @@ After creation, the topic's detail page has a **Subscriptions** tab. Create one:
 
 - Subscription ID: `anan-chat-events-sub`
 - Delivery type: **Pull**
-- Message retention: **7 days** (so backlog survives a sinoclaw restart)
+- Message retention: **7 days** (so backlog survives a anan restart)
 - Leave the rest default.
 
 ---
@@ -107,7 +107,7 @@ never receive anything.
 
 On the **subscription**, add your own Service Account as a principal:
 
-- Principal: `sinoclaw-chat-bot@<your-project>.iam.gserviceaccount.com`
+- Principal: `anan-chat-bot@<your-project>.iam.gserviceaccount.com`
 - Role: `Pub/Sub Subscriber`
 
 Also grant `Pub/Sub Viewer` on the same subscription — Hermes calls
@@ -150,7 +150,7 @@ Add the Google Chat section to `~/.anan/.env`:
 # Required
 GOOGLE_CHAT_PROJECT_ID=my-chat-bot-123
 GOOGLE_CHAT_SUBSCRIPTION_NAME=projects/my-chat-bot-123/subscriptions/anan-chat-events-sub
-GOOGLE_CHAT_SERVICE_ACCOUNT_JSON=/home/you/.sinoclaw/google-chat-sa.json
+GOOGLE_CHAT_SERVICE_ACCOUNT_JSON=/home/you/.anan/google-chat-sa.json
 
 # Authorization — paste the emails of people allowed to talk to the bot
 GOOGLE_CHAT_ALLOWED_USERS=you@yourdomain.com,coworker@yourdomain.com
@@ -173,7 +173,7 @@ pip install 'anan[google_chat]'
 Start the gateway:
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 You should see a log line like:
@@ -207,7 +207,7 @@ automatically split across multiple messages.
 
 Thread support: when a user replies inside a thread, Hermes detects the
 `thread.name` and posts its reply in the same thread, so each thread gets a
-separate Sinoclaw session.
+separate anan session.
 
 ---
 
@@ -295,7 +295,7 @@ evicts only that user's cache. Users don't disrupt each other.
 2. If the subscription has zero messages, Google Chat isn't publishing.
    Double-check the IAM binding on the **topic**:
    `chat-api-push@system.gserviceaccount.com` must have `Pub/Sub Publisher`.
-3. Check `sinoclaw gateway` logs for `[GoogleChat] Connected`. If you see
+3. Check `anan gateway` logs for `[GoogleChat] Connected`. If you see
    `[GoogleChat] Config validation failed`, the error message tells you which
    env var to fix.
 

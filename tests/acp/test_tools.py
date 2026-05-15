@@ -30,7 +30,7 @@ COMMON_SINOCLAW_TOOLS = ["read_file", "search_files", "terminal", "patch", "writ
 
 class TestToolKindMap:
     def test_all_anan_tools_have_kind(self):
-        """Every common sinoclaw tool should appear in TOOL_KIND_MAP."""
+        """Every common anan tool should appear in TOOL_KIND_MAP."""
         for tool in COMMON_SINOCLAW_TOOLS:
             assert tool in TOOL_KIND_MAP, f"{tool} missing from TOOL_KIND_MAP"
 
@@ -320,18 +320,18 @@ class TestBuildToolComplete:
         result = build_tool_complete(
             "tc-skill-manage",
             "skill_manage",
-            '{"success":true,"message":"Patched references/sinoclaw-acp-zed-rendering.md in skill \'anan-operations\' (1 replacement)."}',
+            '{"success":true,"message":"Patched references/anan-acp-zed-rendering.md in skill \'anan-operations\' (1 replacement)."}',
             function_args={
                 "action": "patch",
                 "name": "anan-operations",
-                "file_path": "references/sinoclaw-acp-zed-rendering.md",
+                "file_path": "references/anan-acp-zed-rendering.md",
             },
         )
         text = result.content[0].content.text
         assert "**✅ Skill updated**" in text
         assert "`patch`" in text
         assert "`anan-operations`" in text
-        assert "references/sinoclaw-acp-zed-rendering.md" in text
+        assert "references/anan-acp-zed-rendering.md" in text
         assert "{\"success\"" not in text
         assert result.raw_output is None
 

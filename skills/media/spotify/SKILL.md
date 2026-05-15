@@ -2,7 +2,7 @@
 name: spotify
 description: "Spotify: play, search, queue, manage playlists and devices."
 version: 1.0.0
-author: Sinoclaw Agent
+author: anan Agent
 license: MIT
 platforms: [linux, macos, windows]
 prerequisites:
@@ -112,7 +112,7 @@ spotify_devices({"action": "transfer", "device_id": "<id>", "play": true})
 
 **`429 Too Many Requests`** = rate limit. Wait and retry once. If it keeps happening, you're looping — stop.
 
-**`401 Unauthorized` after a retry** — refresh token revoked. Tell the user to run `sinoclaw auth spotify` again.
+**`401 Unauthorized` after a retry** — refresh token revoked. Tell the user to run `anan auth spotify` again.
 
 ## URI and ID formats
 

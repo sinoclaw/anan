@@ -65,7 +65,7 @@ maintain, gets all gateway features for free.
 
 ```
 POST /v1/chat/completions
-Authorization: Bearer sinoclaw-api-key-here
+Authorization: Bearer anan-api-key-here
 Content-Type: application/json
 
 {
@@ -122,7 +122,7 @@ data: [DONE]
 
 ```
 GET /v1/models
-Authorization: Bearer sinoclaw-api-key-here
+Authorization: Bearer anan-api-key-here
 ```
 
 Response:

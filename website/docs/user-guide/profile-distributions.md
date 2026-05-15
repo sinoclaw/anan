@@ -4,13 +4,13 @@ sidebar_position: 3
 
 # Profile Distributions: Share a Whole Agent
 
-A **profile distribution** packages a complete Sinoclaw agent — personality, skills, cron jobs, MCP connections, config — as a git repository. Anyone with access to the repo can install the whole agent with one command, update it in place, and keep their own memories, sessions, and API keys untouched.
+A **profile distribution** packages a complete anan agent — personality, skills, cron jobs, MCP connections, config — as a git repository. Anyone with access to the repo can install the whole agent with one command, update it in place, and keep their own memories, sessions, and API keys untouched.
 
 If a [profile](./profiles.md) is a local agent, a distribution is that agent made shareable.
 
 ## What this means
 
-Before distributions, sharing a Sinoclaw agent meant sending someone:
+Before distributions, sharing a anan agent meant sending someone:
 
 1. Your SOUL.md
 2. A list of skills to install
@@ -39,7 +39,7 @@ Recipients run:
 hermes profile install github.com/you/my-research-agent --alias
 ```
 
-…and they now have the whole agent. They fill in their own API keys (`.env.EXAMPLE` → `.env`), and they can run `my-research-agent chat` or address it through Telegram / Discord / Slack / any gateway platform. When you push a new version, they run `sinoclaw profile update my-research-agent` and pull your changes — their memories and sessions stay put.
+…and they now have the whole agent. They fill in their own API keys (`.env.EXAMPLE` → `.env`), and they can run `my-research-agent chat` or address it through Telegram / Discord / Slack / any gateway platform. When you push a new version, they run `anan profile update my-research-agent` and pull your changes — their memories and sessions stay put.
 
 ## Why git?
 
@@ -65,7 +65,7 @@ Good fits:
 
 Not a fit:
 
-- **You just want to back up a profile on your own machine.** Use [`sinoclaw profile export` / `import`](../reference/profile-commands.md#sinoclaw-profile-export) — that's what those are for.
+- **You just want to back up a profile on your own machine.** Use [`anan profile export` / `import`](../reference/profile-commands.md#anan-profile-export) — that's what those are for.
 - **You want to share API keys alongside the agent.** `auth.json` and `.env` are deliberately excluded from distributions. Each installer brings their own credentials.
 - **You want to share memories / sessions / conversation history.** Those are user data, not distribution content. Never shipped.
 
@@ -146,7 +146,7 @@ git tag v1.1.0
 git push --tags
 ```
 
-Recipients who run `sinoclaw profile update research-bot` will pull the latest.
+Recipients who run `anan profile update research-bot` will pull the latest.
 
 ### What the repo looks like
 
@@ -291,7 +291,7 @@ Environment variables:
   SERPAPI_KEY (optional) — SerpAPI key for web search
 ```
 
-`sinoclaw profile list` also shows a `Distribution` column so at a glance you can see which of your profiles came from repos and which you hand-built:
+`anan profile list` also shows a `Distribution` column so at a glance you can see which of your profiles came from repos and which you hand-built:
 
 ```
  Profile          Model                        Gateway      Alias        Distribution
@@ -362,7 +362,7 @@ hermes profile install github.com/you/research-bot --alias
 # Fill in .env. Done.
 ```
 
-Any iteration on the laptop (`git commit && push`) pulls onto the workstation with `sinoclaw profile update research-bot`. Memories stay per-machine — the laptop remembers its own conversations, the workstation remembers its own, they don't collide.
+Any iteration on the laptop (`git commit && push`) pulls onto the workstation with `anan profile update research-bot`. Memories stay per-machine — the laptop remembers its own conversations, the workstation remembers its own, they don't collide.
 
 ### Team: ship a reviewed internal agent
 
@@ -382,7 +382,7 @@ hermes profile install git@github.com:your-org/pr-reviewer.git --alias
 pr-reviewer chat
 ```
 
-When the lead ships v1.1 (better SOUL, new skill), engineers run `sinoclaw profile update pr-reviewer` and everyone's on the new version within minutes.
+When the lead ships v1.1 (better SOUL, new skill), engineers run `anan profile update pr-reviewer` and everyone's on the new version within minutes.
 
 ### Community: publish a public agent
 
@@ -395,18 +395,18 @@ cd ~/.anan/profiles/polymarket-trader
 git init && git add . && git commit -m "v1.0"
 git tag v1.0.0
 # Publish to a public GitHub repo
-git remote add origin https://github.com/you/sinoclaw-polymarket-trader.git
+git remote add origin https://github.com/you/anan-polymarket-trader.git
 git push -u origin main --tags
 
 # Anyone
-hermes profile install github.com/you/sinoclaw-polymarket-trader --alias
+hermes profile install github.com/you/anan-polymarket-trader --alias
 ```
 
 Tweet the install command. People who try it send you issues and PRs. If someone wants to customize, they fork — same git workflow everyone already knows.
 
 ### Product: ship an opinionated agent
 
-You built Sinoclaw-on-top — maybe a compliance-monitoring harness, a customer-support stack, a domain-specific research platform. You want to distribute it as a product.
+You built anan-on-top — maybe a compliance-monitoring harness, a customer-support stack, a domain-specific research platform. You want to distribute it as a product.
 
 ```yaml
 # distribution.yaml
@@ -457,7 +457,7 @@ The install-delete cycle is cheap enough to be disposable.
 ### Pin to a specific version
 
 :::note
-Git ref pinning (`#v1.2.0`) is planned but not in the initial release — install currently tracks the default branch. Track your installed version via `sinoclaw profile info <name>` and hold off on updates until you're ready.
+Git ref pinning (`#v1.2.0`) is planned but not in the initial release — install currently tracks the default branch. Track your installed version via `anan profile info <name>` and hold off on updates until you're ready.
 :::
 
 ### Check what version you're on vs. latest
@@ -545,7 +545,7 @@ Profile distributions are unsigned by default. You're trusting:
 - **The git host** (GitHub / GitLab / wherever) to serve the bytes the author pushed.
 - **The author** to not ship a malicious SOUL, skills, or cron jobs.
 
-Cron jobs from a distribution are **not auto-scheduled** — the installer prints `sinoclaw -p <name> cron list` and you enable them explicitly. SOUL.md and skills ARE active as soon as you start chatting with the profile, so read them before your first run if you're installing from someone you don't know.
+Cron jobs from a distribution are **not auto-scheduled** — the installer prints `anan -p <name> cron list` and you enable them explicitly. SOUL.md and skills ARE active as soon as you start chatting with the profile, so read them before your first run if you're installing from someone you don't know.
 
 Rough analogy: installing a distribution is like installing a browser extension or a VS Code extension. Low friction, high power, trust the source. For internal company distributions, use a private repo and your normal git auth — nothing new to configure.
 
@@ -557,7 +557,7 @@ For implementation details, precise CLI behavior, and all flags, see the [Profil
 
 The short version:
 
-- `install`, `update`, `info` live inside `sinoclaw profile` — not a parallel command tree.
+- `install`, `update`, `info` live inside `anan profile` — not a parallel command tree.
 - The manifest format is YAML with a tiny required schema (`name` only).
 - The installer uses your local `git` binary for cloning, so any auth your shell already handles (SSH keys, credential helpers) works transparently.
 - After clone, `.git/` is stripped — the installed profile isn't itself a git checkout, avoiding "oh my, I accidentally committed my `.env` to the distribution's git history" traps.
@@ -567,7 +567,7 @@ The short version:
 
 - [Profiles: Running Multiple Agents](./profiles.md) — the base concept
 - [Profile Commands reference](../reference/profile-commands.md) — every flag, every option
-- [`sinoclaw profile export` / `import`](../reference/profile-commands.md#sinoclaw-profile-export) — local backup / restore (not distribution)
+- [`anan profile export` / `import`](../reference/profile-commands.md#anan-profile-export) — local backup / restore (not distribution)
 - [Using SOUL with Hermes](../guides/use-soul-with-hermes.md) — authoring personalities
 - [Personality & SOUL](./features/personality.md) — how SOUL fits into the agent
 - [Skills catalog](../reference/skills-catalog.md) — skills you can bundle

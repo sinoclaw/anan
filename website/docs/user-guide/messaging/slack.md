@@ -1,12 +1,12 @@
 ---
 sidebar_position: 4
 title: "Slack"
-description: "Set up Sinoclaw Agent as a Slack bot using Socket Mode"
+description: "Set up anan Agent as a Slack bot using Socket Mode"
 ---
 
 # Slack Setup
 
-Connect Sinoclaw Agent to Slack as a bot using Socket Mode. Socket Mode uses WebSockets instead of
+Connect anan Agent to Slack as a bot using Socket Mode. Socket Mode uses WebSockets instead of
 public HTTP endpoints, so your Hermes instance doesn't need to be publicly accessible — it works
 behind firewalls, on your laptop, or on a private server.
 
@@ -34,11 +34,11 @@ declares every built-in slash command (`/btw`, `/stop`, `/model`, …),
 every required OAuth scope, every event subscription, and enables Socket
 Mode — all at once.
 
-### Option A: From a Sinoclaw-generated manifest (recommended)
+### Option A: From a anan-generated manifest (recommended)
 
 1. Generate the manifest:
    ```bash
-   sinoclaw slack manifest --write
+   anan slack manifest --write
    ```
    This writes `~/.anan/slack-manifest.json` and prints paste-in
    instructions.
@@ -54,7 +54,7 @@ Mode — all at once.
 1. Go to [https://api.slack.com/apps](https://api.slack.com/apps)
 2. Click **Create New App**
 3. Choose **From scratch**
-4. Enter an app name (e.g., "Sinoclaw Agent") and select your workspace
+4. Enter an app name (e.g., "anan Agent") and select your workspace
 5. Click **Create App**
 
 You'll land on the app's **Basic Information** page. Continue with
@@ -101,7 +101,7 @@ Socket Mode lets the bot connect via WebSocket instead of requiring a public URL
 1. In the sidebar, go to **Settings → Socket Mode**
 2. Toggle **Enable Socket Mode** to ON
 3. You'll be prompted to create an **App-Level Token**:
-   - Name it something like `sinoclaw-socket` (the name doesn't matter)
+   - Name it something like `anan-socket` (the name doesn't matter)
    - Add the **`connections:write`** scope
    - Click **Generate**
 4. **Copy the token** — it starts with `xapp-`. This is your `SLACK_APP_TOKEN`
@@ -202,15 +202,15 @@ SLACK_HOME_CHANNEL_NAME=general              # Human-readable name for the home 
 Or run the interactive setup:
 
 ```bash
-sinoclaw gateway setup    # Select Slack when prompted
+anan gateway setup    # Select Slack when prompted
 ```
 
 Then start the gateway:
 
 ```bash
-sinoclaw gateway              # Foreground
-sinoclaw gateway install      # Install as a user service
-sudo sinoclaw gateway install --system   # Linux only: boot-time system service
+anan gateway              # Foreground
+anan gateway install      # Install as a user service
+sudo anan gateway install --system   # Linux only: boot-time system service
 ```
 
 ---
@@ -220,7 +220,7 @@ sudo sinoclaw gateway install --system   # Linux only: boot-time system service
 After starting the gateway, you need to **invite the bot** to any channel where you want it to respond:
 
 ```
-/invite @Sinoclaw Agent
+/invite @anan Agent
 ```
 
 The bot will **not** automatically join channels. You must invite it to each channel individually.
@@ -236,7 +236,7 @@ Hermes command with its description.
 
 Under the hood: Hermes ships with a generated Slack app manifest (see
 Step 1, Option A) that declares every command in
-[`COMMAND_REGISTRY`](https://github.com/sinoclaw/anan/blob/main/anan_cli/commands.py)
+[`COMMAND_REGISTRY`](https://github.com/anan/anan/blob/main/anan_cli/commands.py)
 as a slash command. In Socket Mode, Slack routes the command event
 through the WebSocket regardless of the manifest's `url` field.
 
@@ -285,7 +285,7 @@ Understanding how Hermes behaves in different contexts:
 | Context | Behavior |
 |---------|----------|
 | **DMs** | Bot responds to every message — no @mention needed |
-| **Channels** | Bot **only responds when @mentioned** (e.g., `@Sinoclaw Agent what time is it?`). In channels, Hermes replies in a thread attached to that message. |
+| **Channels** | Bot **only responds when @mentioned** (e.g., `@anan Agent what time is it?`). In channels, Hermes replies in a thread attached to that message. |
 | **Threads** | If you @mention Hermes inside an existing thread, it replies in that same thread. Once the bot has an active session in a thread, **subsequent replies in that thread do not require @mention** — the bot follows the conversation naturally. |
 
 :::tip
@@ -438,7 +438,7 @@ cron job results, and other proactive notifications. To find a channel ID:
 SLACK_HOME_CHANNEL=C01234567890
 ```
 
-Make sure the bot has been **invited to the channel** (`/invite @Sinoclaw Agent`).
+Make sure the bot has been **invited to the channel** (`/invite @anan Agent`).
 
 ---
 
@@ -555,12 +555,12 @@ Notes:
 | Problem | Solution |
 |---------|----------|
 | Bot doesn't respond to DMs | Verify `message.im` is in your event subscriptions and the app is reinstalled |
-| Bot works in DMs but not in channels | **Most common issue.** Add `message.channels` and `message.groups` to event subscriptions, reinstall the app, and invite the bot to the channel with `/invite @Sinoclaw Agent` |
+| Bot works in DMs but not in channels | **Most common issue.** Add `message.channels` and `message.groups` to event subscriptions, reinstall the app, and invite the bot to the channel with `/invite @anan Agent` |
 | Bot doesn't respond to @mentions in channels | 1) Check `message.channels` event is subscribed. 2) Bot must be invited to the channel. 3) Ensure `channels:history` scope is added. 4) Reinstall the app after scope/event changes |
 | Bot ignores messages in private channels | Add both the `message.groups` event subscription and `groups:history` scope, then reinstall the app and `/invite` the bot |
 | "Sending messages to this app has been turned off" in DMs | Enable the **Messages Tab** in App Home settings (see Step 5) |
 | "not_authed" or "invalid_auth" errors | Regenerate your Bot Token and App Token, update `.env` |
-| Bot responds but can't post in a channel | Invite the bot to the channel with `/invite @Sinoclaw Agent` |
+| Bot responds but can't post in a channel | Invite the bot to the channel with `/invite @anan Agent` |
 | Bot can chat but can't read uploaded images/files | Add `files:read`, then **reinstall** the app. Hermes now surfaces attachment access diagnostics in-chat when Slack returns scope/auth/permission failures. |
 | `missing_scope` error | Add the required scope in OAuth & Permissions, then **reinstall** the app |
 | Socket disconnects frequently | Check your network; Bolt auto-reconnects but unstable connections cause lag |
@@ -576,7 +576,7 @@ If the bot isn't working in channels, verify **all** of the following:
 4. ✅ `channels:history` scope is added (for public channels)
 5. ✅ `groups:history` scope is added (for private channels)
 6. ✅ App was **reinstalled** after adding scopes/events
-7. ✅ Bot was **invited** to the channel (`/invite @Sinoclaw Agent`)
+7. ✅ Bot was **invited** to the channel (`/invite @anan Agent`)
 8. ✅ You are **@mentioning** the bot in your message
 
 ---

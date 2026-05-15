@@ -263,7 +263,7 @@ class TestDispatchMessage(unittest.TestCase):
         msg_data = {
             "uid": b"1",
             "sender_addr": "hermes@test.com",
-            "sender_name": "Sinoclaw",
+            "sender_name": "anan",
             "subject": "Test",
             "message_id": "<msg1@test.com>",
             "in_reply_to": "",
@@ -594,7 +594,7 @@ class TestThreadContext(unittest.TestCase):
             self.assertFalse(send_call["Subject"].startswith("Re: Re:"))
 
     def test_no_thread_context_uses_default_subject(self):
-        """Without thread context, subject should be 'Re: Sinoclaw Agent'."""
+        """Without thread context, subject should be 'Re: anan Agent'."""
         adapter = self._make_adapter()
 
         with patch("smtplib.SMTP") as mock_smtp:
@@ -604,7 +604,7 @@ class TestThreadContext(unittest.TestCase):
             adapter._send_email("newuser@test.com", "Hello!", None)
 
             send_call = mock_server.send_message.call_args[0][0]
-            self.assertEqual(send_call["Subject"], "Re: Sinoclaw Agent")
+            self.assertEqual(send_call["Subject"], "Re: anan Agent")
             self.assertIn("Date", send_call)
 
 
@@ -633,7 +633,7 @@ class TestSendMethods(unittest.TestCase):
             mock_smtp.return_value = mock_server
 
             result = asyncio.run(
-                adapter.send("user@test.com", "Hello from Sinoclaw!")
+                adapter.send("user@test.com", "Hello from anan!")
             )
 
             self.assertTrue(result.success)
@@ -977,7 +977,7 @@ class TestSendEmailStandalone(unittest.TestCase):
             _, kwargs = mock_server.starttls.call_args
             self.assertIsInstance(kwargs["context"], ssl.SSLContext)
             send_call = mock_server.send_message.call_args[0][0]
-            self.assertEqual(send_call["Subject"], "Sinoclaw Agent")
+            self.assertEqual(send_call["Subject"], "anan Agent")
             self.assertIn("Date", send_call)
             self.assertEqual(send_call["To"], "user@test.com")
             self.assertEqual(send_call["From"], "hermes@test.com")

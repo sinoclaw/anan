@@ -3,7 +3,7 @@
 **Target:** {target_url}
 **Date:** {date}
 **Scope:** {scope_description}
-**Tester:** Sinoclaw Agent (automated exploratory QA)
+**Tester:** anan Agent (automated exploratory QA)
 
 ---
 

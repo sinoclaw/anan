@@ -6,11 +6,11 @@ sidebar_position: 0
 
 # Integrations
 
-Sinoclaw Agent connects to external systems for AI inference, tool servers, IDE workflows, programmatic access, and more. These integrations extend what Hermes can do and where it can run.
+anan Agent connects to external systems for AI inference, tool servers, IDE workflows, programmatic access, and more. These integrations extend what Hermes can do and where it can run.
 
 ## AI Providers & Routing
 
-Hermes supports multiple AI inference providers out of the box. Use `sinoclaw model` to configure interactively, or set them in `config.yaml`.
+Hermes supports multiple AI inference providers out of the box. Use `anan model` to configure interactively, or set them in `config.yaml`.
 
 - **[AI Providers](/docs/user-guide/features/provider-routing)** — OpenRouter, Anthropic, OpenAI, Google, and any OpenAI-compatible endpoint. Hermes auto-detects capabilities like vision, streaming, and tool use per provider.
 - **[Provider Routing](/docs/user-guide/features/provider-routing)** — Fine-grained control over which underlying providers handle your OpenRouter requests. Optimize for cost, speed, or quality with sorting, whitelists, blacklists, and explicit priority ordering.
@@ -22,7 +22,7 @@ Hermes supports multiple AI inference providers out of the box. Use `sinoclaw mo
 
 ## Web Search Backends
 
-The `web_search` and `web_extract` tools support four backend providers, configured via `config.yaml` or `sinoclaw tools`:
+The `web_search` and `web_extract` tools support four backend providers, configured via `config.yaml` or `anan tools`:
 
 | Backend | Env Var | Search | Extract | Crawl |
 |---------|---------|--------|---------|-------|
@@ -67,7 +67,7 @@ Speech-to-text supports six providers: local faster-whisper (free, runs on-devic
 
 ## IDE & Editor Integration
 
-- **[IDE Integration (ACP)](/docs/user-guide/features/acp)** — Use Sinoclaw Agent inside ACP-compatible editors such as VS Code, Zed, and JetBrains. Hermes runs as an ACP server, rendering chat messages, tool activity, file diffs, and terminal commands inside your editor.
+- **[IDE Integration (ACP)](/docs/user-guide/features/acp)** — Use anan Agent inside ACP-compatible editors such as VS Code, Zed, and JetBrains. Hermes runs as an ACP server, rendering chat messages, tool activity, file diffs, and terminal commands inside your editor.
 
 ## Programmatic Access
 
@@ -93,7 +93,7 @@ See the [Messaging Gateway overview](/docs/user-guide/messaging) for the platfor
 ## Plugins
 
 - **[Plugin System](/docs/user-guide/features/plugins)** — Extend Hermes with custom tools, lifecycle hooks, and CLI commands without modifying core code. Plugins are discovered from `~/.anan/plugins/`, project-local `.hermes/plugins/`, and pip-installed entry points.
-- **[Build a Plugin](/docs/guides/build-a-sinoclaw-plugin)** — Step-by-step guide for creating Hermes plugins with tools, hooks, and CLI commands.
+- **[Build a Plugin](/docs/guides/build-a-anan-plugin)** — Step-by-step guide for creating Hermes plugins with tools, hooks, and CLI commands.
 
 ## Training & Evaluation
 

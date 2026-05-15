@@ -25,7 +25,7 @@ def _make_adapter(tmp_path=None):
         token="syt_test_token",
         extra={
             "homeserver": "https://matrix.example.org",
-            "user_id": "@sinoclaw:example.org",
+            "user_id": "@anan:example.org",
         },
     )
     adapter = MatrixAdapter(config)
@@ -89,17 +89,17 @@ class TestIsBotMentioned:
         self.adapter = _make_adapter()
 
     def test_full_user_id_in_body(self):
-        assert self.adapter._is_bot_mentioned("hey @sinoclaw:example.org help")
+        assert self.adapter._is_bot_mentioned("hey @anan:example.org help")
 
     def test_localpart_in_body(self):
-        assert self.adapter._is_bot_mentioned("sinoclaw can you help?")
+        assert self.adapter._is_bot_mentioned("anan can you help?")
 
     def test_localpart_case_insensitive(self):
         assert self.adapter._is_bot_mentioned("ANAN can you help?")
 
     def test_matrix_pill_in_formatted_body(self):
-        html = '<a href="https://matrix.to/#/@sinoclaw:example.org">Hermes</a> help'
-        assert self.adapter._is_bot_mentioned("Sinoclaw help", html)
+        html = '<a href="https://matrix.to/#/@anan:example.org">Hermes</a> help'
+        assert self.adapter._is_bot_mentioned("anan help", html)
 
     def test_no_mention(self):
         assert not self.adapter._is_bot_mentioned("hello everyone")
@@ -118,14 +118,14 @@ class TestIsBotMentioned:
         """m.mentions.user_ids alone is sufficient — no body text needed."""
         assert self.adapter._is_bot_mentioned(
             "please reply",  # no @hermes anywhere in body
-            mention_user_ids=["@sinoclaw:example.org"],
+            mention_user_ids=["@anan:example.org"],
         )
 
     def test_m_mentions_user_ids_with_body_mention(self):
         """Both m.mentions and body mention — should still be True."""
         assert self.adapter._is_bot_mentioned(
-            "hey @sinoclaw:example.org help",
-            mention_user_ids=["@sinoclaw:example.org"],
+            "hey @anan:example.org help",
+            mention_user_ids=["@anan:example.org"],
         )
 
     def test_m_mentions_user_ids_other_user_only(self):
@@ -155,7 +155,7 @@ class TestStripMention:
         self.adapter = _make_adapter()
 
     def test_strip_full_user_id(self):
-        result = self.adapter._strip_mention("@sinoclaw:example.org help me")
+        result = self.adapter._strip_mention("@anan:example.org help me")
         assert result == "help me"
 
     def test_localpart_preserved(self):
@@ -169,16 +169,16 @@ class TestStripMention:
         assert result == "read /home/hermes/config.yaml"
 
     def test_strip_localpart_when_explicit_at_mention(self):
-        result = self.adapter._strip_mention("@sinoclaw help me")
+        result = self.adapter._strip_mention("@anan help me")
         assert result == "help me"
 
     def test_does_not_strip_bare_localpart_word(self):
-        # Regression: plain words like "Sinoclaw Agent" should not be mutated.
-        result = self.adapter._strip_mention("Sinoclaw Agent")
-        assert result == "Sinoclaw Agent"
+        # Regression: plain words like "anan Agent" should not be mutated.
+        result = self.adapter._strip_mention("anan Agent")
+        assert result == "anan Agent"
 
     def test_strip_returns_empty_for_mention_only(self):
-        result = self.adapter._strip_mention("@sinoclaw:example.org")
+        result = self.adapter._strip_mention("@anan:example.org")
         assert result == ""
 
 
@@ -287,7 +287,7 @@ async def test_require_mention_default_processes_mentioned(monkeypatch):
     monkeypatch.setenv("MATRIX_AUTO_THREAD", "false")
 
     adapter = _make_adapter()
-    event = _make_event("@sinoclaw:example.org help me")
+    event = _make_event("@anan:example.org help me")
 
     await adapter._on_room_message(event)
     adapter.handle_message.assert_awaited_once()
@@ -303,8 +303,8 @@ async def test_require_mention_html_pill(monkeypatch):
     monkeypatch.setenv("MATRIX_AUTO_THREAD", "false")
 
     adapter = _make_adapter()
-    formatted = '<a href="https://matrix.to/#/@sinoclaw:example.org">Hermes</a> help'
-    event = _make_event("Sinoclaw help", formatted_body=formatted)
+    formatted = '<a href="https://matrix.to/#/@anan:example.org">Hermes</a> help'
+    event = _make_event("anan help", formatted_body=formatted)
 
     await adapter._on_room_message(event)
     adapter.handle_message.assert_awaited_once()
@@ -324,7 +324,7 @@ async def test_require_mention_m_mentions_user_ids(monkeypatch):
     # Body has NO mention, but m.mentions.user_ids includes the bot.
     event = _make_event(
         "please reply",
-        mention_user_ids=["@sinoclaw:example.org"],
+        mention_user_ids=["@anan:example.org"],
     )
 
     await adapter._on_room_message(event)
@@ -373,7 +373,7 @@ async def test_dm_strips_full_mxid(monkeypatch):
 
     adapter = _make_adapter()
     _set_dm(adapter)
-    event = _make_event("@sinoclaw:example.org help me")
+    event = _make_event("@anan:example.org help me")
 
     await adapter._on_room_message(event)
     adapter.handle_message.assert_awaited_once()
@@ -406,7 +406,7 @@ async def test_bare_mention_passes_empty_string(monkeypatch):
     monkeypatch.setenv("MATRIX_AUTO_THREAD", "false")
 
     adapter = _make_adapter()
-    event = _make_event("@sinoclaw:example.org")
+    event = _make_event("@anan:example.org")
 
     await adapter._on_room_message(event)
     adapter.handle_message.assert_awaited_once()
@@ -470,12 +470,12 @@ async def test_require_mention_disabled_skips_stripping(monkeypatch):
     monkeypatch.setenv("MATRIX_AUTO_THREAD", "false")
 
     adapter = _make_adapter()
-    event = _make_event("@sinoclaw:example.org help me")
+    event = _make_event("@anan:example.org help me")
 
     await adapter._on_room_message(event)
     adapter.handle_message.assert_awaited_once()
     msg = adapter.handle_message.await_args.args[0]
-    assert msg.text == "@sinoclaw:example.org help me"
+    assert msg.text == "@anan:example.org help me"
 
 
 # ---------------------------------------------------------------------------
@@ -642,7 +642,7 @@ async def test_dm_mention_thread_disabled_by_default(monkeypatch):
 
     adapter = _make_adapter()
     _set_dm(adapter)
-    event = _make_event("@sinoclaw:example.org help me", event_id="$dm1")
+    event = _make_event("@anan:example.org help me", event_id="$dm1")
 
     await adapter._on_room_message(event)
     adapter.handle_message.assert_awaited_once()
@@ -658,7 +658,7 @@ async def test_dm_mention_thread_creates_thread(monkeypatch):
 
     adapter = _make_adapter()
     _set_dm(adapter)
-    event = _make_event("@sinoclaw:example.org help me", event_id="$dm1")
+    event = _make_event("@anan:example.org help me", event_id="$dm1")
 
     with patch.object(adapter._threads, "_save"):
         await adapter._on_room_message(event)
@@ -694,7 +694,7 @@ async def test_dm_mention_thread_preserves_existing_thread(monkeypatch):
     adapter = _make_adapter()
     _set_dm(adapter)
     adapter._threads.mark("$existing_thread")
-    event = _make_event("@sinoclaw:example.org help me", thread_id="$existing_thread")
+    event = _make_event("@anan:example.org help me", thread_id="$existing_thread")
 
     await adapter._on_room_message(event)
     adapter.handle_message.assert_awaited_once()
@@ -710,7 +710,7 @@ async def test_dm_mention_thread_tracks_participation(monkeypatch):
 
     adapter = _make_adapter()
     _set_dm(adapter)
-    event = _make_event("@sinoclaw:example.org help", event_id="$dm1")
+    event = _make_event("@anan:example.org help", event_id="$dm1")
 
     with patch.object(adapter._threads, "_save"):
         await adapter._on_room_message(event)

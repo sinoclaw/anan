@@ -19,10 +19,10 @@ import pytest
 # ---------------------------------------------------------------------------
 
 def test_kanban_tools_hidden_without_env_var(monkeypatch, tmp_path):
-    """Normal `sinoclaw chat` sessions (no SINOCLAW_KANBAN_TASK) must have
+    """Normal `anan chat` sessions (no SINOCLAW_KANBAN_TASK) must have
     zero kanban_* tools in their schema."""
     monkeypatch.delenv("SINOCLAW_KANBAN_TASK", raising=False)
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
 
@@ -41,7 +41,7 @@ def test_kanban_tools_hidden_without_env_var(monkeypatch, tmp_path):
 def test_kanban_tools_visible_with_env_var(monkeypatch, tmp_path):
     """Worker sessions (SINOCLAW_KANBAN_TASK set) must have all 7 tools."""
     monkeypatch.setenv("SINOCLAW_KANBAN_TASK", "t_fake")
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
 
@@ -67,7 +67,7 @@ def test_kanban_tools_visible_with_env_var(monkeypatch, tmp_path):
 def worker_env(monkeypatch, tmp_path):
     """Simulate being a worker: ANAN_HOME isolated, SINOCLAW_KANBAN_TASK set
     after we've created the task."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.setenv("SINOCLAW_PROFILE", "test-worker")
@@ -299,7 +299,7 @@ def test_comment_rejects_empty_body(worker_env):
 def test_comment_ignores_caller_supplied_author(worker_env):
     """``args["author"]`` is no longer honored — the author is always
     derived from ``SINOCLAW_PROFILE`` so a worker can't forge a comment
-    under an authoritative-looking name like ``sinoclaw-system`` and
+    under an authoritative-looking name like ``anan-system`` and
     poison the next worker's prompt context. Cross-task commenting
     itself remains unrestricted (see #19713); only the author override
     is removed.
@@ -529,7 +529,7 @@ def test_kanban_guidance_not_in_normal_prompt(monkeypatch, tmp_path):
     """A normal chat session (no SINOCLAW_KANBAN_TASK) must NOT have
     KANBAN_GUIDANCE in its system prompt."""
     monkeypatch.delenv("SINOCLAW_KANBAN_TASK", raising=False)
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     from pathlib import Path as _P
@@ -552,7 +552,7 @@ def test_kanban_guidance_in_worker_prompt(monkeypatch, tmp_path):
     """A worker session (SINOCLAW_KANBAN_TASK set) MUST have the full
     lifecycle guidance in its system prompt."""
     monkeypatch.setenv("SINOCLAW_KANBAN_TASK", "t_fake")
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     from pathlib import Path as _P
@@ -582,7 +582,7 @@ def test_kanban_guidance_prompt_size_bounded(monkeypatch, tmp_path):
     """Sanity: the guidance block is under 4 KB so it doesn't blow
     up the cached prompt."""
     monkeypatch.setenv("SINOCLAW_KANBAN_TASK", "t_fake")
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     from pathlib import Path as _P
@@ -763,7 +763,7 @@ def test_orchestrator_complete_any_task_allowed(monkeypatch, tmp_path):
     """Orchestrator profiles (no SINOCLAW_KANBAN_TASK) can still complete
     any task via explicit task_id. The check only applies to workers."""
     monkeypatch.delenv("SINOCLAW_KANBAN_TASK", raising=False)
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     from pathlib import Path as _P

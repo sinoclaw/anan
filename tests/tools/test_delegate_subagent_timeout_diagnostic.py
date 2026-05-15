@@ -28,7 +28,7 @@ import pytest
 
 @pytest.fixture
 def anan_home(tmp_path, monkeypatch):
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     return home

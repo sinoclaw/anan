@@ -1,6 +1,6 @@
 """
 SQLite-backed fact store with entity resolution and trust scoring.
-Single-user Sinoclaw memory store plugin.
+Single-user anan memory store plugin.
 """
 
 import re

@@ -856,8 +856,8 @@ class TestParseTargetRefMatrix:
 
     def test_matrix_user_mxid_is_explicit(self):
         """Matrix user MXIDs (@) are recognized as explicit targets."""
-        chat_id, thread_id, is_explicit = _parse_target_ref("matrix", "@sinoclaw:matrix.org")
-        assert chat_id == "@sinoclaw:matrix.org"
+        chat_id, thread_id, is_explicit = _parse_target_ref("matrix", "@anan:matrix.org")
+        assert chat_id == "@anan:matrix.org"
         assert thread_id is None
         assert is_explicit is True
 
@@ -2068,8 +2068,8 @@ class _FakePlatform:
 class TestSendViaAdapterStandaloneFallback:
     """Coverage for the out-of-process plugin-platform send path.
 
-    When the gateway runner is not in this process (e.g. ``sinoclaw cron``
-    runs separately from ``sinoclaw gateway``), ``_send_via_adapter`` should
+    When the gateway runner is not in this process (e.g. ``anan cron``
+    runs separately from ``anan gateway``), ``_send_via_adapter`` should
     fall through to the plugin's ``standalone_sender_fn`` registered on
     its ``PlatformEntry``.  Without the hook, the existing error string
     is returned (with a more helpful tail).

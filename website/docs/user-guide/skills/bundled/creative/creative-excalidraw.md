@@ -17,7 +17,7 @@ Hand-drawn Excalidraw JSON diagrams (arch, flow, seq).
 | Source | Bundled (installed by default) |
 | Path | `skills/creative/excalidraw` |
 | Version | `1.0.0` |
-| Author | Sinoclaw Agent |
+| Author | anan Agent |
 | License | MIT |
 | Tags | `Excalidraw`, `Diagrams`, `Flowcharts`, `Architecture`, `Visualization`, `JSON` |
 

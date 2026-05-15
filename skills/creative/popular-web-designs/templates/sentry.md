@@ -1,7 +1,7 @@
 # Design System: Sentry
 
 
-> **Sinoclaw Agent — Implementation Notes**
+> **anan Agent — Implementation Notes**
 >
 > The original site uses proprietary fonts. For self-contained HTML output, use these CDN substitutes:
 > - **Primary:** `Rubik` | **Mono:** `JetBrains Mono`

@@ -3,7 +3,7 @@
 Bootstrap a video production kanban from a structured plan JSON.
 
 Reads a plan.json describing the team + brief, expands templates from
-../assets/, and writes a setup.sh that creates Sinoclaw profiles and fires the
+../assets/, and writes a setup.sh that creates anan profiles and fires the
 initial kanban task.
 
 Profile-config patching, SOUL.md-per-profile, TEAM.md task-graph convention,
@@ -98,13 +98,13 @@ def validate_plan(plan: dict) -> list[str]:
                           "responsibilities"]:
                     if k not in t:
                         errors.append(f"team[{i}] missing {k}")
-                # Profile name must match Sinoclaw's regex (lowercase
+                # Profile name must match anan's regex (lowercase
                 # alphanumeric + hyphens + underscores, up to 64 chars).
                 if "profile" in t:
                     if not PROFILE_NAME_RE.match(t["profile"]):
                         errors.append(
                             f"team[{i}].profile {t['profile']!r} must match "
-                            f"[a-z0-9][a-z0-9_-]{{0,63}} per Sinoclaw profile rules"
+                            f"[a-z0-9][a-z0-9_-]{{0,63}} per anan profile rules"
                         )
                     if t["profile"] in seen_profiles:
                         errors.append(
@@ -328,7 +328,7 @@ def render_setup_sh(plan: dict, brief_md: str, team_md: str) -> str:
     # API key checks
     key_checks = []
     for key in plan.get("api_keys_required", []):
-        key_checks.append(f'check_key {key} sinoclaw {key} || exit 1')
+        key_checks.append(f'check_key {key} anan {key} || exit 1')
     key_checks_str = "\n".join(key_checks) if key_checks else "# (no API keys required)"
 
     # Scene dirs
@@ -361,7 +361,7 @@ def render_setup_sh(plan: dict, brief_md: str, team_md: str) -> str:
     soul_writes = []
     for t in plan["team"]:
         soul_writes.append(
-            f'cat > "$HOME/.sinoclaw/profiles/{t["profile"]}/SOUL.md" <<\'SOUL_EOF\'\n'
+            f'cat > "$HOME/.anan/profiles/{t["profile"]}/SOUL.md" <<\'SOUL_EOF\'\n'
             f"{render_soul_md(t, plan)}\n"
             f"SOUL_EOF\n"
             f'echo "  ✓ SOUL.md for {t["profile"]}"'

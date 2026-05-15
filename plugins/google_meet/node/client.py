@@ -73,7 +73,7 @@ class NodeClient:
     def start_bot(
         self,
         url: str,
-        guest_name: str = "Sinoclaw Agent",
+        guest_name: str = "anan Agent",
         duration: Optional[str] = None,
         headed: bool = False,
         mode: str = "transcribe",

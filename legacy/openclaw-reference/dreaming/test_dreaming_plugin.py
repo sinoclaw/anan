@@ -38,7 +38,7 @@ import pytest
 @pytest.fixture(autouse=True)
 def _isolate_env(tmp_path, monkeypatch):
     """Isolate ANAN_HOME for each test."""
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     yield anan_home
@@ -820,7 +820,7 @@ class TestTokenizeSnippet:
         assert "endpoint" in tokens
 
 # ---------------------------------------------------------------------------
-# Sinoclaw SessionDB tests
+# anan SessionDB tests
 # ---------------------------------------------------------------------------
 
 class TestAnanSessionDB:

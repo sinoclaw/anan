@@ -30,7 +30,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate_env(monkeypatch, tmp_path):
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir(parents=True)
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("ANAN_HOME", str(home))

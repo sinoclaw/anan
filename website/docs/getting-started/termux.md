@@ -1,19 +1,19 @@
 ---
 sidebar_position: 3
 title: "Android / Termux"
-description: "Run Sinoclaw Agent directly on an Android phone with Termux"
+description: "Run anan Agent directly on an Android phone with Termux"
 ---
 
 # Hermes on Android with Termux
 
-This is the tested path for running Sinoclaw Agent directly on an Android phone through [Termux](https://termux.dev/).
+This is the tested path for running anan Agent directly on an Android phone through [Termux](https://termux.dev/).
 
 It gives you a working local CLI on the phone, plus the core extras that are currently known to install cleanly on Android.
 
 ## What is supported in the tested path?
 
 The tested Termux bundle installs:
-- the Sinoclaw CLI
+- the anan CLI
 - cron support
 - PTY/background terminal support
 - Telegram gateway support (manual / best-effort background runs)
@@ -46,7 +46,7 @@ That does not stop Hermes from working well as a phone-native CLI agent — it j
 Hermes now ships a Termux-aware installer path:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
 On Termux, the installer automatically:
@@ -80,7 +80,7 @@ Why these packages?
 ### 2. Clone Hermes
 
 ```bash
-git clone --recurse-submodules https://github.com/sinoclaw/anan.git
+git clone --recurse-submodules https://github.com/anan/anan.git
 cd anan
 ```
 
@@ -116,7 +116,7 @@ python -m pip install -e '.' -c constraints-termux.txt
 ### 5. Put `hermes` on your Termux PATH
 
 ```bash
-ln -sf "$PWD/venv/bin/sinoclaw" "$PREFIX/bin/sinoclaw"
+ln -sf "$PWD/venv/bin/anan" "$PREFIX/bin/anan"
 ```
 
 `$PREFIX/bin` is already on PATH in Termux, so this makes the `hermes` command persist across new shells without re-activating the venv every time.
@@ -125,7 +125,7 @@ ln -sf "$PWD/venv/bin/sinoclaw" "$PREFIX/bin/sinoclaw"
 
 ```bash
 hermes version
-sinoclaw doctor
+anan doctor
 ```
 
 ### 7. Start Hermes
@@ -149,7 +149,7 @@ Or set keys directly in `~/.anan/.env`.
 ### Re-run the full interactive setup wizard later
 
 ```bash
-sinoclaw setup
+anan setup
 ```
 
 ### Install optional Node dependencies manually
@@ -203,7 +203,7 @@ export ANDROID_API_LEVEL="$(getprop ro.build.version.sdk)"
 python -m pip install -e '.[termux]' -c constraints-termux.txt
 ```
 
-### `sinoclaw doctor` says ripgrep or Node is missing
+### `anan doctor` says ripgrep or Node is missing
 
 Install them with Termux packages:
 
@@ -238,5 +238,5 @@ If you hit a new Android-specific issue, please open a GitHub issue with:
 - your Android version
 - `termux-info`
 - `python --version`
-- `sinoclaw doctor`
+- `anan doctor`
 - the exact install command and full error output

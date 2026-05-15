@@ -1,4 +1,4 @@
-import { Box, Text, useStdout } from '@sinoclaw/ink'
+import { Box, Text, useStdout } from '@anan/ink'
 import { useEffect, useState } from 'react'
 import unicodeSpinners from 'unicode-animations'
 
@@ -49,11 +49,11 @@ export function Banner({ t }: { t: Theme }) {
         <ArtLines lines={logoLines} />
       ) : (
         <Text bold color={t.color.primary}>
-          {t.brand.icon} SINOCLAW
+          {t.brand.icon} anan
         </Text>
       )}
 
-      <Text color={t.color.muted}>{t.brand.icon} Sinoclaw Team · AI Agent for the Modern Builder</Text>
+      <Text color={t.color.muted}>{t.brand.icon} anan Team · AI Agent for the Modern Builder</Text>
     </Box>
   )
 }

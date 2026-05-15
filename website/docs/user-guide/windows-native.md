@@ -1,6 +1,6 @@
 ---
 title: "Windows (Native) Guide — Early Beta"
-description: "Early BETA: run Sinoclaw Agent natively on Windows 10 / 11 — install, feature matrix, UTF-8 console, Git Bash, gateway as a Scheduled Task, editor handling, PATH, uninstall, and common pitfalls"
+description: "Early BETA: run anan Agent natively on Windows 10 / 11 — install, feature matrix, UTF-8 console, Git Bash, gateway as a Scheduled Task, editor handling, PATH, uninstall, and common pitfalls"
 sidebar_label: "Windows (Native) — Beta"
 sidebar_position: 3
 ---
@@ -8,7 +8,7 @@ sidebar_position: 3
 # Windows (Native) Guide — Early Beta
 
 :::warning Early BETA
-Native Windows support is **early beta**. It installs, runs, and passes our Windows-footgun lint, but it hasn't been road-tested at the scale our Linux/macOS/WSL2 paths have. Expect rough edges — especially around subprocess handling, path quirks, and non-ASCII console output. Please [file issues](https://github.com/sinoclaw/anan/issues) with repro steps when you hit something. If you want a battle-tested setup today, use the [Linux/macOS installer under WSL2](./windows-wsl-quickstart.md) instead.
+Native Windows support is **early beta**. It installs, runs, and passes our Windows-footgun lint, but it hasn't been road-tested at the scale our Linux/macOS/WSL2 paths have. Expect rough edges — especially around subprocess handling, path quirks, and non-ASCII console output. Please [file issues](https://github.com/anan/anan/issues) with repro steps when you hit something. If you want a battle-tested setup today, use the [Linux/macOS installer under WSL2](./windows-wsl-quickstart.md) instead.
 :::
 
 Hermes runs natively on Windows 10 and Windows 11 — no WSL, no Cygwin, no Docker. This page is the deep dive: what works natively, what's WSL-only, what the installer actually does, and the Windows-specific knobs you might need to touch.
@@ -16,7 +16,7 @@ Hermes runs natively on Windows 10 and Windows 11 — no WSL, no Cygwin, no Dock
 If you just want to install, the one-liner on the [landing page](/) or [Installation page](../getting-started/installation#windows-native-powershell--early-beta) is all you need. Come back here when something surprises you.
 
 :::tip Want WSL instead?
-If you prefer a real POSIX environment (for the dashboard's embedded terminal, `fork` semantics, Linux-style file watchers, etc.), see the **[Windows (WSL2) Guide](./windows-wsl-quickstart.md)**. Both coexist cleanly: native data lives under `%LOCALAPPDATA%\hermes`, WSL data lives under `~/.sinoclaw`.
+If you prefer a real POSIX environment (for the dashboard's embedded terminal, `fork` semantics, Linux-style file watchers, etc.), see the **[Windows (WSL2) Guide](./windows-wsl-quickstart.md)**. Both coexist cleanly: native data lives under `%LOCALAPPDATA%\hermes`, WSL data lives under `~/.anan`.
 :::
 
 ## Quick install
@@ -24,7 +24,7 @@ If you prefer a real POSIX environment (for the dashboard's embedded terminal, `
 Open **PowerShell** (or Windows Terminal) and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/anan/anan/main/scripts/install.ps1 | iex
 ```
 
 No admin rights required. The installer goes to `%LOCALAPPDATA%\hermes\` and adds `hermes` to your **User PATH** — open a new terminal after it finishes.
@@ -32,14 +32,14 @@ No admin rights required. The installer goes to `%LOCALAPPDATA%\hermes\` and add
 **Installer options** (requires the scriptblock form to pass parameters):
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.ps1))) -NoVenv -SkipSetup -Branch main
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/anan/anan/main/scripts/install.ps1))) -NoVenv -SkipSetup -Branch main
 ```
 
 | Parameter | Default | Purpose |
 |---|---|---|
 | `-Branch` | `main` | Clone a specific branch (useful for testing PRs) |
 | `-NoVenv` | off | Skip venv creation (advanced — you manage Python yourself) |
-| `-SkipSetup` | off | Skip the post-install `sinoclaw setup` wizard |
+| `-SkipSetup` | off | Skip the post-install `anan setup` wizard |
 | `-HermesHome` | `%LOCALAPPDATA%\hermes` | Override data directory |
 | `-InstallDir` | `%LOCALAPPDATA%\hermes\anan` | Override code location |
 
@@ -56,7 +56,7 @@ Top-to-bottom, in order:
 7. **Auto-installs messaging SDKs** keyed off `.env` — if `TELEGRAM_BOT_TOKEN` / `DISCORD_BOT_TOKEN` / `SLACK_BOT_TOKEN` / `SLACK_APP_TOKEN` / `WHATSAPP_ENABLED` are present, runs `python -m ensurepip --upgrade` and targeted `pip install` calls so each platform's SDK is actually importable.
 8. **Sets `SINOCLAW_GIT_BASH_PATH`** to the resolved `bash.exe` so Hermes finds it deterministically in fresh shells.
 9. **Adds `%LOCALAPPDATA%\hermes\bin` to User PATH** — exposes the `hermes` command after you open a new terminal.
-10. **Runs `sinoclaw setup`** — the normal first-run wizard (model, provider, toolsets). Skip with `-SkipSetup`.
+10. **Runs `anan setup`** — the normal first-run wizard (model, provider, toolsets). Skip with `-SkipSetup`.
 
 ## Feature matrix
 
@@ -64,8 +64,8 @@ Everything except the dashboard's embedded terminal pane runs natively on Window
 
 | Feature | Native Windows | WSL2 |
 |---|---|---|
-| CLI (`sinoclaw chat`, `sinoclaw setup`, `sinoclaw gateway`, …) | ✓ | ✓ |
-| Interactive TUI (`sinoclaw --tui`) | ✓ | ✓ |
+| CLI (`anan chat`, `anan setup`, `anan gateway`, …) | ✓ | ✓ |
+| Interactive TUI (`anan --tui`) | ✓ | ✓ |
 | Messaging gateway (Telegram, Discord, Slack, WhatsApp, 15+ platforms) | ✓ | ✓ |
 | Cron scheduler | ✓ | ✓ |
 | Browser tool (Chromium via Node) | ✓ | ✓ |
@@ -142,12 +142,12 @@ On legacy `cmd.exe` consoles `Ctrl+Enter` collapses to plain `Enter` — use `Es
 
 ## Running the gateway at Windows login
 
-`sinoclaw gateway install` on Windows uses **Scheduled Tasks** with a Startup-folder fallback — no admin required.
+`anan gateway install` on Windows uses **Scheduled Tasks** with a Startup-folder fallback — no admin required.
 
 ### Install
 
 ```powershell
-sinoclaw gateway install
+anan gateway install
 ```
 
 What happens under the hood:
@@ -161,14 +161,14 @@ Flags used when spawning: `DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_
 ### Manage
 
 ```powershell
-sinoclaw gateway status      # Merged view: schtasks + Startup folder + running PID
-sinoclaw gateway start       # Starts the scheduled task now
-sinoclaw gateway stop        # Graceful SIGTERM equivalent (TerminateProcess via psutil)
-sinoclaw gateway restart
-sinoclaw gateway uninstall   # Removes schtasks entry, Startup shortcut, pid file
+anan gateway status      # Merged view: schtasks + Startup folder + running PID
+anan gateway start       # Starts the scheduled task now
+anan gateway stop        # Graceful SIGTERM equivalent (TerminateProcess via psutil)
+anan gateway restart
+anan gateway uninstall   # Removes schtasks entry, Startup shortcut, pid file
 ```
 
-`sinoclaw gateway status` is idempotent — call it a thousand times in a row and it will never accidentally kill the gateway. (Pre-PR #21561 it silently did, via `os.kill(pid, 0)` colliding with `CTRL_C_EVENT` at the C level — see "process management internals" below if you care about the story.)
+`anan gateway status` is idempotent — call it a thousand times in a row and it will never accidentally kill the gateway. (Pre-PR #21561 it silently did, via `os.kill(pid, 0)` colliding with `CTRL_C_EVENT` at the C level — see "process management internals" below if you care about the story.)
 
 ### Why not a Windows Service?
 
@@ -194,7 +194,7 @@ The browser tool uses `agent-browser` (a Node helper) to drive Chromium. On Wind
 
 - The installer puts `agent-browser` on PATH via npm.
 - `shutil.which("agent-browser", path=...)` picks up the `.cmd` shim automatically — `CreateProcessW` can't execute an extensionless shebang, so Hermes always resolves to the `.CMD` wrapper. Don't manually invoke the shebang script; always go through the `.cmd`.
-- Playwright Chromium is auto-installed on first run (`npx playwright install chromium`). If installation fails, `sinoclaw doctor` surfaces it with a fix-it hint.
+- Playwright Chromium is auto-installed on first run (`npx playwright install chromium`). If installation fails, `anan doctor` surfaces it with a fix-it hint.
 
 ## Running Hermes on Windows — practical notes
 
@@ -205,7 +205,7 @@ The installer adds `%LOCALAPPDATA%\hermes\bin` to your **User PATH** via `[Envir
 Verify:
 
 ```powershell
-Get-Command sinoclaw        # should print C:\Users\<you>\AppData\Local\hermes\bin\hermes.cmd
+Get-Command anan        # should print C:\Users\<you>\AppData\Local\hermes\bin\hermes.cmd
 hermes --version
 ```
 
@@ -248,7 +248,7 @@ Remove-Item -Recurse -Force "$env:USERPROFILE\.hermes"
 Remove-Item -Recurse -Force "$env:LOCALAPPDATA\hermes"
 ```
 
-The `sinoclaw uninstall` CLI subcommand also handles the case where the schtasks entry was registered under a different task name (older installs) — it searches by install path rather than by hardcoded task name.
+The `anan uninstall` CLI subcommand also handles the case where the schtasks entry was registered under a different task name (older installs) — it searches by install path rather than by hardcoded task name.
 
 ## Process management internals
 
@@ -272,13 +272,13 @@ You hit a shebang-script invocation that bypassed the `.cmd` shim. Hermes resolv
 Your download of `install.ps1` picked up a UTF-8 BOM. The `irm | iex` form strips BOMs automatically; `[scriptblock]::Create((irm ...))` does not. Re-run with the simple `irm | iex` form, or download the script manually and save it without a BOM via `[IO.File]::WriteAllText($path, $text, (New-Object Text.UTF8Encoding $false))`.
 
 **Gateway won't stay running after restart.**
-Check `sinoclaw gateway status` — it merges the schtasks entry, the Startup-folder shortcut (if used), and the live PID. If schtasks is registered but not running, group policy may be blocking `ONLOGON` triggers. Run `schtasks /Query /TN HermesGateway /V /FO LIST` to see the task's failure reason, or fall back to the Startup-folder path by uninstalling and reinstalling with `SINOCLAW_GATEWAY_FORCE_STARTUP=1`.
+Check `anan gateway status` — it merges the schtasks entry, the Startup-folder shortcut (if used), and the live PID. If schtasks is registered but not running, group policy may be blocking `ONLOGON` triggers. Run `schtasks /Query /TN HermesGateway /V /FO LIST` to see the task's failure reason, or fall back to the Startup-folder path by uninstalling and reinstalling with `SINOCLAW_GATEWAY_FORCE_STARTUP=1`.
 
 **`/edit` still does nothing after setting `$env:EDITOR`.**
 You set it in the current process only; close and reopen the shell, or set it at User scope in System Properties → Environment Variables. Verify with `echo $env:EDITOR` in a new PowerShell window.
 
 **Browser tool launches but tools time out.**
-Chromium is auto-installed on first run. If the install failed (rate-limited GitHub, Playwright CDN hiccup), run `sinoclaw doctor` — it will surface the missing Chromium and print the exact `npx playwright install chromium` command to fix it.
+Chromium is auto-installed on first run. If the install failed (rate-limited GitHub, Playwright CDN hiccup), run `anan doctor` — it will surface the missing Chromium and print the exact `npx playwright install chromium` command to fix it.
 
 **`agent-browser` fails with a weird Node version error.**
 The installer provisions Node 22 at `%LOCALAPPDATA%\hermes\node` but your PATH may have an older system Node 18 first. Either move Hermes's node dir earlier on PATH, or delete the system install if you don't use Node elsewhere.
@@ -287,7 +287,7 @@ The installer provisions Node 22 at `%LOCALAPPDATA%\hermes\node` but your PATH m
 The UTF-8 stdio shim didn't activate. Check that `SINOCLAW_DISABLE_WINDOWS_UTF8` is NOT set (`Get-ChildItem env:SINOCLAW_DISABLE_WINDOWS_UTF8`). If it's empty and you still see `?`, the console host (very old `cmd.exe`) may not support UTF-8 at all — switch to Windows Terminal.
 
 **Gateway can't send Telegram photos — "`BadRequest: payload contains invalid characters`".**
-This is unrelated to Windows but sometimes surfaces first there. Usually it means your file path contains unescaped backslashes in a JSON body. Telegram should be receiving paths Hermes normalizes, not raw Windows paths — if you're seeing this inside a custom plugin, make sure you're passing the Sinoclaw-provided path, not `str(Path(...))` from user input.
+This is unrelated to Windows but sometimes surfaces first there. Usually it means your file path contains unescaped backslashes in a JSON body. Telegram should be receiving paths Hermes normalizes, not raw Windows paths — if you're seeing this inside a custom plugin, make sure you're passing the anan-provided path, not `str(Path(...))` from user input.
 
 **"Works on my other machine" encoding weirdness after `git pull`.**
 If you edited Hermes config or a skill on Windows using a non-UTF-8 editor (Notepad on older Windows versions, some Chinese IMEs), the file may have been saved with a BOM. Hermes tolerates `utf-8-sig` on most config reads, but a BOM inside a folded YAML scalar (`description: >`) silently breaks YAML parsing. Re-save the file as plain UTF-8 without BOM.

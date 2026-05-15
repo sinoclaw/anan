@@ -974,7 +974,7 @@ class TestDiskFailureMarker:
 
 class TestSinoclawHomeIsolation:
     def test_sinoclaw_bin_dir_respects_anan_home(self):
-        """_sinoclaw_bin_dir must use ANAN_HOME, not hardcoded ~/.sinoclaw."""
+        """_sinoclaw_bin_dir must use ANAN_HOME, not hardcoded ~/.anan."""
         from tools.tirith_security import _sinoclaw_bin_dir
         import tempfile
         tmpdir = tempfile.mkdtemp()
@@ -984,11 +984,11 @@ class TestSinoclawHomeIsolation:
         assert os.path.isdir(result)
 
     def test_failure_marker_respects_anan_home(self):
-        """_failure_marker_path must use ANAN_HOME, not hardcoded ~/.sinoclaw."""
+        """_failure_marker_path must use ANAN_HOME, not hardcoded ~/.anan."""
         from tools.tirith_security import _failure_marker_path
-        with patch.dict(os.environ, {"ANAN_HOME": "/custom/sinoclaw"}):
+        with patch.dict(os.environ, {"ANAN_HOME": "/custom/anan"}):
             result = _failure_marker_path()
-        assert result == "/custom/sinoclaw/.tirith-install-failed"
+        assert result == "/custom/anan/.tirith-install-failed"
 
     def test_conftest_isolation_prevents_real_home_writes(self):
         """The conftest autouse fixture sets ANAN_HOME; verify it's active."""
@@ -1004,6 +1004,6 @@ class TestSinoclawHomeIsolation:
             # falls back to the account database; compute expected under the
             # same environment instead of after patch.dict restores HOME.
             os.environ.pop("ANAN_HOME", None)
-            expected = os.path.join(os.path.expanduser("~"), ".sinoclaw")
+            expected = os.path.join(os.path.expanduser("~"), ".anan")
             result = _get_anan_home()
         assert result == expected

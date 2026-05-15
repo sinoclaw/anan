@@ -1,15 +1,15 @@
 ---
 sidebar_position: 8
 title: "Memory Provider Plugins"
-description: "How to build a memory provider plugin for Sinoclaw Agent"
+description: "How to build a memory provider plugin for anan Agent"
 ---
 
 # Building a Memory Provider Plugin
 
-Memory provider plugins give Sinoclaw Agent persistent, cross-session knowledge beyond the built-in MEMORY.md and USER.md. This guide covers how to build one.
+Memory provider plugins give anan Agent persistent, cross-session knowledge beyond the built-in MEMORY.md and USER.md. This guide covers how to build one.
 
 :::tip
-Memory providers are one of two **provider plugin** types. The other is [Context Engine Plugins](/docs/developer-guide/context-engine-plugin), which replace the built-in context compressor. Both follow the same pattern: single-select, config-driven, managed via `sinoclaw plugins`.
+Memory providers are one of two **provider plugin** types. The other is [Context Engine Plugins](/docs/developer-guide/context-engine-plugin), which replace the built-in context compressor. Both follow the same pattern: single-select, config-driven, managed via `anan plugins`.
 :::
 
 ## Directory Structure
@@ -169,7 +169,7 @@ def sync_turn(self, user_content, assistant_content):
 
 ## Profile Isolation
 
-All storage paths **must** use the `anan_home` kwarg from `initialize()`, not hardcoded `~/.sinoclaw`:
+All storage paths **must** use the `anan_home` kwarg from `initialize()`, not hardcoded `~/.anan`:
 
 ```python
 # CORRECT — profile-scoped
@@ -202,16 +202,16 @@ mgr.shutdown_all()
 
 ## Adding CLI Commands
 
-Memory provider plugins can register their own CLI subcommand tree (e.g. `sinoclaw my-provider status`, `sinoclaw my-provider config`). This uses a convention-based discovery system — no changes to core files needed.
+Memory provider plugins can register their own CLI subcommand tree (e.g. `anan my-provider status`, `anan my-provider config`). This uses a convention-based discovery system — no changes to core files needed.
 
 ### How it works
 
 1. Add a `cli.py` file to your plugin directory
 2. Define a `register_cli(subparser)` function that builds the argparse tree
 3. The memory plugin system discovers it at startup via `discover_plugin_cli_commands()`
-4. Your commands appear under `sinoclaw <provider-name> <subcommand>`
+4. Your commands appear under `anan <provider-name> <subcommand>`
 
-**Active-provider gating:** Your CLI commands only appear when your provider is the active `memory.provider` in config. If a user hasn't configured your provider, your commands won't show in `sinoclaw --help`.
+**Active-provider gating:** Your CLI commands only appear when your provider is the active `memory.provider` in config. If a user hasn't configured your provider, your commands won't show in `anan --help`.
 
 ### Example
 
@@ -226,10 +226,10 @@ def my_command(args):
     elif sub == "config":
         print("Showing config...")
     else:
-        print("Usage: sinoclaw my-provider <status|config>")
+        print("Usage: anan my-provider <status|config>")
 
 def register_cli(subparser) -> None:
-    """Build the sinoclaw my-provider argparse tree.
+    """Build the anan my-provider argparse tree.
 
     Called by discover_plugin_cli_commands() at argparse setup time.
     """

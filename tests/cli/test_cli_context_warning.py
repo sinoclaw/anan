@@ -10,7 +10,7 @@ import pytest
 @pytest.fixture
 def _isolate(tmp_path, monkeypatch):
     """Isolate ANAN_HOME so tests don't touch real config."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
 

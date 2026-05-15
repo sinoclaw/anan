@@ -19,7 +19,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate_home(tmp_path, monkeypatch):
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     yield anan_home
@@ -215,11 +215,11 @@ def test_registry_resolve_by_name(tmp_path):
 def test_registry_defaults_to_anan_home(tmp_path, monkeypatch):
     from plugins.google_meet.node.registry import NodeRegistry
 
-    # _isolate_home already set ANAN_HOME to tmp_path/.sinoclaw; the
+    # _isolate_home already set ANAN_HOME to tmp_path/.anan; the
     # registry default path must live inside that tree.
     r = NodeRegistry()
     r.add("x", "ws://x", "t")
-    expected = Path(tmp_path) / ".sinoclaw" / "workspace" / "meetings" / "nodes.json"
+    expected = Path(tmp_path) / ".anan" / "workspace" / "meetings" / "nodes.json"
     assert expected.is_file()
 
 

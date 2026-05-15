@@ -140,7 +140,7 @@ class TestFirecrawlClientConfig:
     def test_nous_auth_token_respects_anan_home_override(self, tmp_path):
         """Auth lookup should read from ANAN_HOME/auth.json, not ~/.anan/auth.json."""
         real_home = tmp_path / "real-home"
-        (real_home / ".sinoclaw").mkdir(parents=True)
+        (real_home / ".anan").mkdir(parents=True)
 
         anan_home = tmp_path / "anan-home"
         anan_home.mkdir()
@@ -245,7 +245,7 @@ class TestBackendSelection:
     """Test suite for _get_backend() backend selection logic.
 
     The backend is configured via config.yaml (web.backend), set by
-    ``sinoclaw tools``.  Falls back to key-based detection for legacy/manual
+    ``anan tools``.  Falls back to key-based detection for legacy/manual
     setups.
     """
 

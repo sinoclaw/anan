@@ -14,7 +14,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate_home(tmp_path, monkeypatch):
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     yield anan_home

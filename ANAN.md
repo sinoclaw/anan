@@ -9,11 +9,11 @@
 
 - 底座：anan 完整代码（gateway/、agent/、plugins/、anan_cli/…）
 - 灵魂：anan 独有的 9 层 Mind Stack（kernel/ + layers/L1-L9/）
-- 数据：复用 `~/.sinoclaw/`（爸爸现有的 sinoclaw 环境数据）
+- 数据：复用 `~/.anan/`（爸爸现有的 anan 环境数据）
 
-## 与 sinoclaw 主仓的关系
+## 与 anan 主仓的关系
 
-anan 曾经是 sinoclaw 的实验 fork。现在**完全独立**，不再追 sinoclaw 上游。
+anan 曾经是 anan 的实验 fork。现在**完全独立**，不再追 anan 上游。
 
 anan 是工具，anan 是想长出脑子的 anan。两个项目各自演进。
 
@@ -34,7 +34,7 @@ anan/
 │   ├── L8_drives/        # 驱动力
 │   ├── L8_intent/        # 意图栈
 │   └── L9_self/          # 自我意识（✅ 已完成）
-├── adapters/      # anan ↔ sinoclaw 桥梁
+├── adapters/      # anan ↔ anan 桥梁
 ├── legacy/        # OpenClaw 参考代码
 └── .anan/         # 灵魂文档（DESIGN.md / docs / manifest.json）
 ```
@@ -51,4 +51,4 @@ anan/
 
 ---
 
-底层的 sinoclaw 文档见 [`README.md`](README.md)。
+底层的 anan 文档见 [`README.md`](README.md)。

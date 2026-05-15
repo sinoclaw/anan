@@ -1,7 +1,7 @@
 """Tests for anan_bootstrap — Windows UTF-8 stdio shim.
 
 The bootstrap module is imported at the top of every Anan entry point
-(hermes, anan, sinoclaw-acp, gateway, batch_runner, cli.py).  It
+(hermes, anan, anan-acp, gateway, batch_runner, cli.py).  It
 fixes Python's Windows UTF-8 defaults so print("café") doesn't crash and
 subprocess children inherit UTF-8 mode.
 
@@ -243,7 +243,7 @@ class TestEntryPointsImportBootstrap:
     ENTRY_POINTS = [
         "anan_cli/main.py",   # anan CLI (console_script)
         "run_agent.py",          # anan (console_script)
-        "acp_adapter/entry.py",  # sinoclaw-acp (console_script)
+        "acp_adapter/entry.py",  # anan-acp (console_script)
         "gateway/run.py",        # gateway
         "batch_runner.py",       # batch mode
         "cli.py",                # legacy direct-launch CLI

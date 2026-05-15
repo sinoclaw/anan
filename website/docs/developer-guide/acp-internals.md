@@ -22,7 +22,7 @@ Key implementation files:
 ## Boot flow
 
 ```text
-hermes acp / sinoclaw-acp / python -m acp_adapter
+hermes acp / anan-acp / python -m acp_adapter
   -> acp_adapter.entry.main()
   -> load ~/.anan/.env
   -> configure stderr logging
@@ -147,7 +147,7 @@ Instead it reuses Hermes' runtime resolver:
 - `acp_adapter/auth.py`
 - `anan_cli/runtime_provider.py`
 
-So ACP advertises and uses the currently configured Sinoclaw provider/credentials.
+So ACP advertises and uses the currently configured anan provider/credentials.
 
 ## Working directory binding
 
@@ -177,6 +177,6 @@ ACP temporarily installs an approval callback on the terminal tool during prompt
 ## Related files
 
 - `tests/acp/` — ACP test suite
-- `toolsets.py` — `sinoclaw-acp` toolset definition
-- `anan_cli/main.py` — `sinoclaw acp` CLI subcommand
-- `pyproject.toml` — `[acp]` optional dependency + `sinoclaw-acp` script
+- `toolsets.py` — `anan-acp` toolset definition
+- `anan_cli/main.py` — `anan acp` CLI subcommand
+- `pyproject.toml` — `[acp]` optional dependency + `anan-acp` script

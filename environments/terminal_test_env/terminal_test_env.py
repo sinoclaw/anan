@@ -9,7 +9,7 @@ Enables only terminal + file toolsets. Uses Modal terminal backend with
 OpenRouter (Claude) by default.
 
 Training tasks (3):
-    1. Create ~/greeting.txt with "Hello from Sinoclaw Agent"
+    1. Create ~/greeting.txt with "Hello from anan Agent"
     2. Create ~/count.txt with numbers 1-5, one per line
     3. Create ~/answer.txt with the result of 123 + 456
 
@@ -57,9 +57,9 @@ logger = logging.getLogger(__name__)
 
 TRAIN_TASKS = [
     {
-        "prompt": "Create a file at ~/greeting.txt containing exactly the text: Hello from Sinoclaw Agent",
+        "prompt": "Create a file at ~/greeting.txt containing exactly the text: Hello from anan Agent",
         "verify_path": "~/greeting.txt",
-        "expected_content": "Hello from Sinoclaw Agent",
+        "expected_content": "Hello from anan Agent",
     },
     {
         "prompt": "Create a file at ~/count.txt containing the numbers 1 through 5, one per line",

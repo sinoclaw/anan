@@ -2,7 +2,7 @@
 
 ## 概述
 
-Heartbeat Plugin 是 Sinoclaw Gateway 的周期性检查机制，复刻自 [OpenClaw Heartbeat](https://docs.openclaw.ai/heartbeat)。
+Heartbeat Plugin 是 anan Gateway 的周期性检查机制，复刻自 [OpenClaw Heartbeat](https://docs.openclaw.ai/heartbeat)。
 
 与 Cron 的区别：心跳运行在**主会话上下文**中（full context），让 AI 能够做出智能的、上下文感知的决策；Cron 则运行在独立任务中。
 
@@ -30,11 +30,11 @@ Gateway 进程
 - Wake queue + coalescing（合并多次唤醒请求）
 - HEARTBEAT_OK stripping + ackMaxChars
 
-### Sinoclaw 的适配
+### anan 的适配
 
-Sinoclaw 是 Python 架构，Gateway 是 Python 进程。OpenClaw 的心跳机制需要**作为插件重新实现**。
+anan 是 Python 架构，Gateway 是 Python 进程。OpenClaw 的心跳机制需要**作为插件重新实现**。
 
-Sinoclaw 的 PluginContext 不暴露：
+anan 的 PluginContext 不暴露：
 - `adapters`（平台适配器）
 - `send_typing()` / `stop_typing()`
 - `send_to_session()`（会话消息发送）
@@ -129,7 +129,7 @@ agents:
 
 ### Typing Indicators
 
-**问题**：Sinoclaw 的 PluginContext 不暴露 `adapters`，无法调用 `adapter.send_typing()`。
+**问题**：anan 的 PluginContext 不暴露 `adapters`，无法调用 `adapter.send_typing()`。
 
 **解决方案**：需要 gateway 配合改动：
 

@@ -9,7 +9,7 @@ from anan_cli import relaunch as relaunch_mod
 
 class TestResolveHermesBin:
     def test_prefers_absolute_argv0_when_executable(self, monkeypatch):
-        fake = "/nix/store/abc/bin/sinoclaw"
+        fake = "/nix/store/abc/bin/anan"
         monkeypatch.setattr(sys, "argv", [fake])
         monkeypatch.setattr(relaunch_mod.os.path, "isfile", lambda p: p == fake)
         monkeypatch.setattr(relaunch_mod.os, "access", lambda p, mode: p == fake)
@@ -28,9 +28,9 @@ class TestResolveHermesBin:
     def test_falls_back_to_path_which(self, monkeypatch):
         monkeypatch.setattr(sys, "argv", ["-c"])  # not a real path
         monkeypatch.setattr(
-            relaunch_mod.shutil, "which", lambda name: "/usr/bin/sinoclaw" if name == "hermes" else None
+            relaunch_mod.shutil, "which", lambda name: "/usr/bin/anan" if name == "hermes" else None
         )
-        assert relaunch_mod.resolve_sinoclaw_bin() == "/usr/bin/sinoclaw"
+        assert relaunch_mod.resolve_sinoclaw_bin() == "/usr/bin/anan"
 
     def test_returns_none_when_unresolvable(self, monkeypatch):
         monkeypatch.setattr(sys, "argv", ["-c"])
@@ -105,9 +105,9 @@ class TestInheritedFlagTable:
 
 class TestBuildRelaunchArgv:
     def test_uses_bin_when_available(self, monkeypatch):
-        monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/bin/sinoclaw")
+        monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/bin/anan")
         argv = relaunch_mod.build_relaunch_argv(["--resume", "abc"])
-        assert argv[0] == "/usr/bin/sinoclaw"
+        assert argv[0] == "/usr/bin/anan"
 
     def test_falls_back_to_python_module(self, monkeypatch):
         monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: None)
@@ -115,7 +115,7 @@ class TestBuildRelaunchArgv:
         assert argv == [sys.executable, "-m", "anan_cli.main", "--resume", "abc"]
 
     def test_preserves_inherited_flags(self, monkeypatch):
-        monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/bin/sinoclaw")
+        monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/bin/anan")
         original = ["--tui", "--dev", "--profile", "work", "sessions", "browse"]
         argv = relaunch_mod.build_relaunch_argv(["--resume", "abc"], original_argv=original)
         assert "--tui" in argv
@@ -129,13 +129,13 @@ class TestBuildRelaunchArgv:
         assert "browse" not in argv
 
     def test_can_disable_preserve(self, monkeypatch):
-        monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/bin/sinoclaw")
+        monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/bin/anan")
         original = ["--tui", "chat"]
         argv = relaunch_mod.build_relaunch_argv(
             ["--resume", "abc"], preserve_inherited=False, original_argv=original
         )
         assert "--tui" not in argv
-        assert argv == ["/usr/bin/sinoclaw", "--resume", "abc"]
+        assert argv == ["/usr/bin/anan", "--resume", "abc"]
 
 
 class TestRelaunch:
@@ -147,12 +147,12 @@ class TestRelaunch:
             raise SystemExit(0)
 
         monkeypatch.setattr(relaunch_mod.os, "execvp", fake_execvp)
-        monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/bin/sinoclaw")
+        monkeypatch.setattr(relaunch_mod, "resolve_sinoclaw_bin", lambda: "/usr/bin/anan")
 
         with pytest.raises(SystemExit):
             relaunch_mod.relaunch(["--resume", "abc"])
 
-        assert calls == [("/usr/bin/sinoclaw", ["/usr/bin/sinoclaw", "--resume", "abc"])]
+        assert calls == [("/usr/bin/anan", ["/usr/bin/anan", "--resume", "abc"])]
 
     def test_windows_uses_subprocess_not_execvp(self, monkeypatch):
         """On Windows, os.execvp raises OSError "Exec format error" when the

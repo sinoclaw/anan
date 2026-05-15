@@ -1,6 +1,6 @@
 # Computer Use (macOS)
 
-Sinoclaw Agent can drive your Mac's desktop — clicking, typing, scrolling,
+anan Agent can drive your Mac's desktop — clicking, typing, scrolling,
 dragging — in the **background**. Your cursor doesn't move, keyboard focus
 doesn't change, and macOS doesn't switch Spaces on you. You and the agent
 co-work on the same machine.
@@ -27,7 +27,7 @@ cua-driver is the open-source equivalent.
 
 ## Enabling
 
-1. Run `sinoclaw tools`, pick `🖱️ Computer Use (macOS)` → `cua-driver (background)`.
+1. Run `anan tools`, pick `🖱️ Computer Use (macOS)` → `cua-driver (background)`.
 2. The setup runs the upstream installer:
    `curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh`.
 3. Grant macOS permissions when prompted:
@@ -37,7 +37,7 @@ cua-driver is the open-source equivalent.
      the same.
 4. Start a session with the toolset enabled:
    ```
-   sinoclaw -t computer_use chat
+   anan -t computer_use chat
    ```
    or add `computer_use` to your enabled toolsets in `~/.anan/config.yaml`.
 
@@ -143,7 +143,7 @@ SINOCLAW_COMPUTER_USE_BACKEND=noop   # records calls, no side effects
 ## Troubleshooting
 
 **`computer_use backend unavailable: cua-driver is not installed`** — Run
-`sinoclaw tools` and enable Computer Use.
+`anan tools` and enable Computer Use.
 
 **Clicks seem to have no effect** — Capture and verify. A modal you
 didn't see may be blocking input. Dismiss it with `escape` or the close
@@ -158,6 +158,6 @@ reconsider.
 
 ## See also
 
-- [Universal skill: `macos-computer-use`](https://github.com/sinoclaw/anan/blob/main/skills/apple/macos-computer-use/SKILL.md)
+- [Universal skill: `macos-computer-use`](https://github.com/anan/anan/blob/main/skills/apple/macos-computer-use/SKILL.md)
 - [cua-driver source (trycua/cua)](https://github.com/trycua/cua)
 - [Browser automation](./browser-use.md) for cross-platform web tasks.

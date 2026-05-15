@@ -178,7 +178,7 @@ def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:
 
 # Example config for documentation
 EXAMPLE_CONFIG = """
-# Sinoclaw config.yaml addition for heartbeat plugin
+# anan config.yaml addition for heartbeat plugin
 
 plugins:
   heartbeat:

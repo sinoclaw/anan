@@ -1,4 +1,4 @@
-import { AlternateScreen, Box, NoSelect, ScrollBox, Text } from '@sinoclaw/ink'
+import { AlternateScreen, Box, NoSelect, ScrollBox, Text } from '@anan/ink'
 import { useStore } from '@nanostores/react'
 import { Fragment, memo, useMemo, useRef } from 'react'
 

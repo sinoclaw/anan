@@ -1,6 +1,6 @@
 """Resolve ANAN_HOME for standalone skill scripts.
 
-Skill scripts may run outside the Sinoclaw process (e.g. system Python,
+Skill scripts may run outside the anan process (e.g. system Python,
 nix env, CI) where ``sinoclaw_constants`` is not importable.  This module
 provides the same ``get_anan_home()`` and ``display_anan_home()``
 contracts as ``sinoclaw_constants`` without requiring it on ``sys.path``.
@@ -25,7 +25,7 @@ try:
 except (ModuleNotFoundError, ImportError):
 
     def get_anan_home() -> Path:
-        """Return the Sinoclaw home directory (default: ~/.sinoclaw).
+        """Return the anan home directory (default: ~/.anan).
 
         Mirrors ``sinoclaw_constants.get_anan_home()``."""
         val = os.environ.get("ANAN_HOME", "").strip()

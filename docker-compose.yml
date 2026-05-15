@@ -57,7 +57,7 @@ services:
 
   dashboard:
     image: anan
-    container_name: sinoclaw-dashboard
+    container_name: anan-dashboard
     restart: unless-stopped
     network_mode: host
     depends_on:

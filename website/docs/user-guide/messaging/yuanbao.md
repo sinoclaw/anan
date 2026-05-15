@@ -1,7 +1,7 @@
 ---
 sidebar_position: 16
 title: "Yuanbao"
-description: "Connect Sinoclaw Agent to the Yuanbao enterprise messaging platform via WebSocket gateway"
+description: "Connect anan Agent to the Yuanbao enterprise messaging platform via WebSocket gateway"
 ---
 
 # Yuanbao
@@ -38,7 +38,7 @@ pip install websockets httpx aiofiles
 The easiest way to configure Yuanbao is through the interactive setup:
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 Select **Yuanbao** when prompted. The wizard will:
@@ -79,7 +79,7 @@ YUANBAO_ALLOWED_USERS=user_account_1,user_account_2
 ### 4. Start the Gateway
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 The adapter will connect to the Yuanbao WebSocket gateway, authenticate using HMAC signatures, and begin processing messages.
@@ -302,7 +302,7 @@ These values are currently not configurable via environment variables. They are 
 Enable debug logging to troubleshoot connection issues:
 
 ```bash
-SINOCLAW_LOG_LEVEL=debug sinoclaw gateway
+SINOCLAW_LOG_LEVEL=debug anan gateway
 ```
 
 ## Integration with Other Features

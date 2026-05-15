@@ -4,7 +4,7 @@ sidebar_position: 9
 
 # Adding a Platform Adapter
 
-This guide covers adding a new messaging platform to the Sinoclaw gateway. A platform adapter connects Hermes to an external messaging service (Telegram, Discord, WeCom, etc.) so users can interact with the agent through that service.
+This guide covers adding a new messaging platform to the anan gateway. A platform adapter connects Hermes to an external messaging service (Telegram, Discord, WeCom, etc.) so users can interact with the agent through that service.
 
 :::tip
 There are two ways to add a platform:
@@ -40,7 +40,7 @@ The plugin system lets you add a platform adapter without modifying any core Her
 
 ### PLUGIN.yaml
 
-Plugin metadata. The `requires_env` and `optional_env` blocks auto-populate `sinoclaw config` UI entries (see [Surfacing Env Vars](#surfacing-env-vars-in-sinoclaw-config) below).
+Plugin metadata. The `requires_env` and `optional_env` blocks auto-populate `anan config` UI entries (see [Surfacing Env Vars](#surfacing-env-vars-in-anan-config) below).
 
 ```yaml
 name: my-platform
@@ -183,7 +183,7 @@ When you call `ctx.register_platform()`, the following integration points are ha
 | User authorization | `allowed_users_env` / `allow_all_env` checked |
 | Env-only auto-enable | `env_enablement_fn` seeds `PlatformConfig.extra` + `home_channel` |
 | Cron delivery | `cron_deliver_env_var` makes `deliver=<name>` work |
-| `sinoclaw config` UI entries | `requires_env` / `optional_env` in `plugin.yaml` auto-populate |
+| `anan config` UI entries | `requires_env` / `optional_env` in `plugin.yaml` auto-populate |
 | send_message tool | Routes through live gateway adapter |
 | Webhook cross-platform delivery | Registry checked for known platforms |
 | `/update` command access | `allow_update_command` flag |
@@ -191,15 +191,15 @@ When you call `ctx.register_platform()`, the following integration points are ha
 | System prompt hints | `platform_hint` injected into LLM context |
 | Message chunking | `max_message_length` for smart splitting |
 | PII redaction | `pii_safe` flag |
-| `sinoclaw status` | Shows plugin platforms with `(plugin)` tag |
-| `sinoclaw gateway setup` | Plugin platforms appear in setup menu |
-| `sinoclaw tools` / `sinoclaw skills` | Plugin platforms in per-platform config |
+| `anan status` | Shows plugin platforms with `(plugin)` tag |
+| `anan gateway setup` | Plugin platforms appear in setup menu |
+| `anan tools` / `anan skills` | Plugin platforms in per-platform config |
 | Token lock (multi-profile) | Use `acquire_scoped_lock()` in your `connect()` |
 | Orphaned config warning | Descriptive log when plugin is missing |
 
 ## Env-Driven Auto-Configuration
 
-Most users set up a platform by dropping env vars into `~/.anan/.env` rather than editing `config.yaml`. The `env_enablement_fn` hook lets your plugin pick those env vars up **before** the adapter is constructed, so `sinoclaw gateway status`, `get_connected_platforms()`, and cron delivery see the correct state without instantiating the platform SDK.
+Most users set up a platform by dropping env vars into `~/.anan/.env` rather than editing `config.yaml`. The `env_enablement_fn` hook lets your plugin pick those env vars up **before** the adapter is constructed, so `anan gateway status`, `get_connected_platforms()`, and cron delivery see the correct state without instantiating the platform SDK.
 
 ```python
 def _env_enablement() -> dict | None:
@@ -255,7 +255,7 @@ The scheduler reads this env var when resolving the home target for `deliver=my_
 
 ### Out-of-process cron delivery
 
-`cron_deliver_env_var` makes your platform a recognized `deliver=` target. To make the actual send succeed when the cron job runs in a separate process from the gateway (i.e., `sinoclaw cron run` separate from `sinoclaw gateway`), register a `standalone_sender_fn`:
+`cron_deliver_env_var` makes your platform a recognized `deliver=` target. To make the actual send succeed when the cron job runs in a separate process from the gateway (i.e., `anan cron run` separate from `anan gateway`), register a `standalone_sender_fn`:
 
 ```python
 async def _standalone_send(
@@ -284,7 +284,7 @@ Why this hook is necessary: built-in platforms (Telegram, Discord, Slack, etc.) 
 
 The function receives the same `pconfig` and `chat_id` that the live adapter would, plus optional `thread_id`, `media_files`, and `force_document` keyword arguments. Returning `{"success": True, "message_id": ...}` is treated as a successful delivery; returning `{"error": "..."}` surfaces the message in cron's `delivery_errors`. Exceptions raised inside the function are caught by the dispatcher and reported as `Plugin standalone send failed: <reason>`. Reference implementations live in `plugins/platforms/{irc,teams,google_chat}/adapter.py`.
 
-## Surfacing Env Vars in `sinoclaw config`
+## Surfacing Env Vars in `anan config`
 
 `anan_cli/config.py` scans `plugins/platforms/*/plugin.yaml` at import time and auto-populates `OPTIONAL_ENV_VARS` from `requires_env` and (optional) `optional_env` blocks. Use the rich-dict form to contribute proper descriptions, prompts, password flags, and URLs — the CLI setup UI picks them up for free.
 
@@ -295,7 +295,7 @@ label: My Platform
 kind: platform
 version: 1.0.0
 description: >
-  My Platform gateway adapter for Sinoclaw Agent.
+  My Platform gateway adapter for anan Agent.
 author: Your Name
 requires_env:
   - name: MY_PLATFORM_TOKEN
@@ -304,7 +304,7 @@ requires_env:
     url: "https://my-platform.example.com/bots"
     password: true
   - name: MY_PLATFORM_CHANNEL
-    description: "Channel to join (e.g. #sinoclaw)"
+    description: "Channel to join (e.g. #anan)"
     prompt: "Channel"
     password: false
 optional_env:
@@ -476,7 +476,7 @@ Create `tests/gateway/test_newplat.py` covering:
 | `website/docs/user-guide/messaging/newplat.md` | Full platform setup page |
 | `website/docs/user-guide/messaging/index.md` | Platform comparison table, architecture diagram, toolsets table, security section, next-steps link |
 | `website/docs/reference/environment-variables.md` | All NEWPLAT_* env vars |
-| `website/docs/reference/toolsets-reference.md` | sinoclaw-newplat toolset |
+| `website/docs/reference/toolsets-reference.md` | anan-newplat toolset |
 | `website/docs/integrations/index.md` | Platform link |
 | `website/sidebars.ts` | Sidebar entry for the docs page |
 | `website/docs/developer-guide/architecture.md` | Adapter count + listing |

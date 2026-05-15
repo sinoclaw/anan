@@ -1,4 +1,4 @@
-"""Tests for Codex auth — tokens stored in Sinoclaw auth store (~/.anan/auth.json)."""
+"""Tests for Codex auth — tokens stored in anan auth store (~/.anan/auth.json)."""
 
 import json
 import time
@@ -26,7 +26,7 @@ from anan_cli.auth import (
 
 
 def _setup_sinoclaw_auth(anan_home: Path, *, access_token: str = "access", refresh_token: str = "refresh"):
-    """Write Codex tokens into the Sinoclaw auth store."""
+    """Write Codex tokens into the anan auth store."""
     anan_home.mkdir(parents=True, exist_ok=True)
     auth_store = {
         "version": 1,
@@ -164,7 +164,7 @@ def test_import_codex_cli_tokens_missing(tmp_path, monkeypatch):
 
 
 def test_codex_tokens_not_written_to_shared_file(tmp_path, monkeypatch):
-    """Verify _save_codex_tokens writes only to Sinoclaw auth store, not ~/.codex/."""
+    """Verify _save_codex_tokens writes only to anan auth store, not ~/.codex/."""
     anan_home = tmp_path / "hermes"
     codex_home = tmp_path / "codex-cli"
     anan_home.mkdir(parents=True, exist_ok=True)
@@ -176,10 +176,10 @@ def test_codex_tokens_not_written_to_shared_file(tmp_path, monkeypatch):
 
     _save_codex_tokens({"access_token": "anan-at", "refresh_token": "anan-rt"})
 
-    # ~/.codex/auth.json should NOT exist — _save_codex_tokens only touches Sinoclaw store
+    # ~/.codex/auth.json should NOT exist — _save_codex_tokens only touches anan store
     assert not (codex_home / "auth.json").exists()
 
-    # Sinoclaw auth store should have the tokens
+    # anan auth store should have the tokens
     data = _read_codex_tokens()
     assert data["tokens"]["access_token"] == "anan-at"
 

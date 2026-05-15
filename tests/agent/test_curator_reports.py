@@ -17,7 +17,7 @@ import pytest
 @pytest.fixture
 def curator_env(tmp_path, monkeypatch):
     """Isolated ANAN_HOME with a skills/ dir + reset curator module state."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     (home / "skills").mkdir()
     (home / "logs").mkdir()

@@ -37,7 +37,7 @@ busy locally.
 The test mirrors the bootstrap snippet from
 `gateway/platforms/matrix.py` (the "if MATRIX_RECOVERY_KEY else
 get_own_cross_signing_public_keys / generate_recovery_key" branch)
-inline so it runs without importing the entire sinoclaw gateway and its
+inline so it runs without importing the entire anan gateway and its
 many dependencies. **If the source diverges from what's in
 `_connect_with_bootstrap`, this test must be updated to match.** A
 small price for not requiring the full anan runtime in CI.

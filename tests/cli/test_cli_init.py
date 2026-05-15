@@ -264,7 +264,7 @@ class TestHistoryDisplay:
             },
             {
                 "id": "20260401_201329_d85961",
-                "title": "Checking Running Sinoclaw Agent",
+                "title": "Checking Running anan Agent",
                 "preview": "check running gateways for anan agent",
                 "last_active": 0,
             },
@@ -274,7 +274,7 @@ class TestHistoryDisplay:
         output = capsys.readouterr().out
 
         assert "No messages in the current chat yet" in output
-        assert "Checking Running Sinoclaw Agen" in output
+        assert "Checking Running anan Agen" in output
         assert "20260401_201329_d85961" in output
         assert "/resume" in output
         assert "Current preview" not in output
@@ -292,7 +292,7 @@ class TestHistoryDisplay:
             },
             {
                 "id": "20260401_201329_d85961",
-                "title": "Checking Running Sinoclaw Agent",
+                "title": "Checking Running anan Agent",
                 "preview": "check running gateways for anan agent",
                 "last_active": 0,
             },
@@ -302,7 +302,7 @@ class TestHistoryDisplay:
         output = capsys.readouterr().out
 
         assert "Recent sessions" in output
-        assert "Checking Running Sinoclaw Agen" in output
+        assert "Checking Running anan Agen" in output
         assert "Use /resume <session id or title> to continue" in output
 
 
@@ -313,7 +313,7 @@ class TestRootLevelProviderOverride:
         """model.provider takes priority — root-level provider is only a fallback."""
         import yaml
 
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
@@ -336,7 +336,7 @@ class TestRootLevelProviderOverride:
         """Even when model.provider is the default 'auto', root-level provider is ignored."""
         import yaml
 
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
@@ -360,7 +360,7 @@ class TestRootLevelProviderOverride:
         """Classic CLI must expose terminal.vercel_runtime to terminal_tool.py."""
         import yaml
 
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.delenv("TERMINAL_VERCEL_RUNTIME", raising=False)

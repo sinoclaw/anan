@@ -2,7 +2,7 @@
 name: 1password
 description: Set up and use 1Password CLI (op). Use when installing the CLI, enabling desktop app integration, signing in, and reading/injecting secrets for commands.
 version: 1.0.0
-author: arceus77-7, enhanced by Sinoclaw Agent
+author: arceus77-7, enhanced by anan Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
@@ -93,9 +93,9 @@ For reliable `op` use with desktop app integration, run sign-in and secret opera
 Note: This is NOT needed when using `OP_SERVICE_ACCOUNT_TOKEN` — the token persists across terminal calls automatically.
 
 ```bash
-SOCKET_DIR="${TMPDIR:-/tmp}/sinoclaw-tmux-sockets"
+SOCKET_DIR="${TMPDIR:-/tmp}/anan-tmux-sockets"
 mkdir -p "$SOCKET_DIR"
-SOCKET="$SOCKET_DIR/sinoclaw-op.sock"
+SOCKET="$SOCKET_DIR/anan-op.sock"
 SESSION="op-auth-$(date +%Y%m%d-%H%M%S)"
 
 tmux -S "$SOCKET" new -d -s "$SESSION" -n shell

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""OpenClaw -> Sinoclaw migration helper.
+"""OpenClaw -> anan migration helper.
 
 This script migrates the parts of an OpenClaw user footprint that map cleanly
-into Sinoclaw Agent, archives selected unmapped docs for manual review, and
+into anan Agent, archives selected unmapped docs for manual review, and
 reports exactly what was skipped and why.
 """
 
@@ -45,7 +45,7 @@ WORKSPACE_INSTRUCTIONS_FILENAME = "AGENTS" + ".md"
 MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     "soul": {
         "label": "SOUL.md",
-        "description": "Import the OpenClaw persona file into Sinoclaw.",
+        "description": "Import the OpenClaw persona file into anan.",
     },
     "workspace-agents": {
         "label": "Workspace instructions",
@@ -53,23 +53,23 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "memory": {
         "label": "MEMORY.md",
-        "description": "Import long-term memory entries into Sinoclaw memories.",
+        "description": "Import long-term memory entries into anan memories.",
     },
     "user-profile": {
         "label": "USER.md",
-        "description": "Import user profile entries into Sinoclaw memories.",
+        "description": "Import user profile entries into anan memories.",
     },
     "messaging-settings": {
         "label": "Messaging settings",
-        "description": "Import Sinoclaw-compatible messaging settings such as allowlists and working directory.",
+        "description": "Import anan-compatible messaging settings such as allowlists and working directory.",
     },
     "secret-settings": {
         "label": "Allowlisted secrets",
-        "description": "Import the small allowlist of Sinoclaw-compatible secrets when explicitly enabled.",
+        "description": "Import the small allowlist of anan-compatible secrets when explicitly enabled.",
     },
     "command-allowlist": {
         "label": "Command allowlist",
-        "description": "Merge OpenClaw exec approval patterns into Sinoclaw command_allowlist.",
+        "description": "Merge OpenClaw exec approval patterns into anan command_allowlist.",
     },
     "skills": {
         "label": "User skills",
@@ -81,39 +81,39 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "discord-settings": {
         "label": "Discord settings",
-        "description": "Import Discord bot token and allowlist into Sinoclaw .env.",
+        "description": "Import Discord bot token and allowlist into anan .env.",
     },
     "slack-settings": {
         "label": "Slack settings",
-        "description": "Import Slack bot/app tokens and allowlist into Sinoclaw .env.",
+        "description": "Import Slack bot/app tokens and allowlist into anan .env.",
     },
     "whatsapp-settings": {
         "label": "WhatsApp settings",
-        "description": "Import WhatsApp allowlist into Sinoclaw .env.",
+        "description": "Import WhatsApp allowlist into anan .env.",
     },
     "signal-settings": {
         "label": "Signal settings",
-        "description": "Import Signal account, HTTP URL, and allowlist into Sinoclaw .env.",
+        "description": "Import Signal account, HTTP URL, and allowlist into anan .env.",
     },
     "provider-keys": {
         "label": "Provider API keys",
-        "description": "Import model provider API keys into Sinoclaw .env (requires --migrate-secrets).",
+        "description": "Import model provider API keys into anan .env (requires --migrate-secrets).",
     },
     "model-config": {
         "label": "Default model",
-        "description": "Import the default model setting into Sinoclaw config.yaml.",
+        "description": "Import the default model setting into anan config.yaml.",
     },
     "tts-config": {
         "label": "TTS configuration",
-        "description": "Import TTS provider and voice settings into Sinoclaw config.yaml.",
+        "description": "Import TTS provider and voice settings into anan config.yaml.",
     },
     "shared-skills": {
         "label": "Shared skills",
-        "description": "Copy shared OpenClaw skills from ~/.anan/skills/ into Sinoclaw.",
+        "description": "Copy shared OpenClaw skills from ~/.anan/skills/ into anan.",
     },
     "daily-memory": {
         "label": "Daily memory files",
-        "description": "Merge daily memory entries from workspace/memory/ into Sinoclaw MEMORY.md.",
+        "description": "Merge daily memory entries from workspace/memory/ into anan MEMORY.md.",
     },
     "archive": {
         "label": "Archive unmapped docs",
@@ -121,7 +121,7 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "mcp-servers": {
         "label": "MCP servers",
-        "description": "Import MCP server definitions from OpenClaw into Sinoclaw config.yaml.",
+        "description": "Import MCP server definitions from OpenClaw into anan config.yaml.",
     },
     "plugins-config": {
         "label": "Plugins configuration",
@@ -137,7 +137,7 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "agent-config": {
         "label": "Agent defaults and multi-agent setup",
-        "description": "Import agent defaults (compaction, context, thinking) into Sinoclaw config. Archive multi-agent list.",
+        "description": "Import agent defaults (compaction, context, thinking) into anan config. Archive multi-agent list.",
     },
     "gateway-config": {
         "label": "Gateway configuration",
@@ -145,11 +145,11 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "session-config": {
         "label": "Session configuration",
-        "description": "Import session reset policies (daily/idle) into Sinoclaw session_reset config.",
+        "description": "Import session reset policies (daily/idle) into anan session_reset config.",
     },
     "full-providers": {
         "label": "Full model provider definitions",
-        "description": "Import custom model providers (baseUrl, apiType, headers) into Sinoclaw custom_providers.",
+        "description": "Import custom model providers (baseUrl, apiType, headers) into anan custom_providers.",
     },
     "deep-channels": {
         "label": "Deep channel configuration",
@@ -157,15 +157,15 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "browser-config": {
         "label": "Browser configuration",
-        "description": "Import browser automation settings into Sinoclaw config.yaml.",
+        "description": "Import browser automation settings into anan config.yaml.",
     },
     "tools-config": {
         "label": "Tools configuration",
-        "description": "Import tool settings (exec timeout, sandbox, web search) into Sinoclaw config.yaml.",
+        "description": "Import tool settings (exec timeout, sandbox, web search) into anan config.yaml.",
     },
     "approvals-config": {
         "label": "Approval rules",
-        "description": "Import approval mode and rules into Sinoclaw config.yaml approvals section.",
+        "description": "Import approval mode and rules into anan config.yaml approvals section.",
     },
     "memory-backend": {
         "label": "Memory backend configuration",
@@ -355,7 +355,7 @@ def load_yaml_file(path: Path) -> Dict[str, Any]:
 
 def dump_yaml_file(path: Path, data: Dict[str, Any]) -> None:
     if yaml is None:
-        raise RuntimeError("PyYAML is required to update Sinoclaw config.yaml")
+        raise RuntimeError("PyYAML is required to update anan config.yaml")
     ensure_parent(path)
     path.write_text(
         yaml.safe_dump(data, sort_keys=False, allow_unicode=False),
@@ -396,17 +396,17 @@ def backup_existing(path: Path, backup_root: Path) -> Optional[Path]:
 
 
 # ── Brand rewriting ─────────────────────────────────────────
-# Replace OpenClaw brand names with Sinoclaw in migrated text so that
+# Replace OpenClaw brand names with anan in migrated text so that
 # memory entries, user profiles, SOUL.md, and workspace instructions
 # read as self-referential to the new agent identity.
 #
-# Case-preserving: ``OpenClaw`` → ``Sinoclaw`` (prose), but lowercase matches
+# Case-preserving: ``OpenClaw`` → ``anan`` (prose), but lowercase matches
 # like ``openclaw`` → ``hermes`` (so filesystem paths like ``~/.anan``
-# become ``~/.sinoclaw`` — the real Sinoclaw home — not the broken ``~/.Sinoclaw``).
+# become ``~/.anan`` — the real anan home — not the broken ``~/.anan``).
 _REBRAND_PATTERNS: List[Tuple[re.Pattern, str]] = [
-    (re.compile(r'\bOpen[\s-]?Claw\b', re.IGNORECASE), 'Sinoclaw'),
-    (re.compile(r'\bClawdBot\b', re.IGNORECASE), 'Sinoclaw'),
-    (re.compile(r'\bMoltBot\b', re.IGNORECASE), 'Sinoclaw'),
+    (re.compile(r'\bOpen[\s-]?Claw\b', re.IGNORECASE), 'anan'),
+    (re.compile(r'\bClawdBot\b', re.IGNORECASE), 'anan'),
+    (re.compile(r'\bMoltBot\b', re.IGNORECASE), 'anan'),
 ]
 
 
@@ -414,10 +414,10 @@ def _case_preserving_replacement(replacement: str):
     """Return a re.sub replacement fn that lowercases the result when the
     matched text was all-lowercase.
 
-    Keeps ``OpenClaw`` → ``Sinoclaw`` but maps ``openclaw`` → ``hermes`` so a
+    Keeps ``OpenClaw`` → ``anan`` but maps ``openclaw`` → ``hermes`` so a
     filesystem path like ``~/.anan/config.yaml`` rewrites to
-    ``~/.anan/config.yaml`` (the real Sinoclaw home) instead of the broken
-    ``~/.Sinoclaw/config.yaml``.
+    ``~/.anan/config.yaml`` (the real anan home) instead of the broken
+    ``~/.anan/config.yaml``.
     """
     def _sub(match: "re.Match[str]") -> str:
         matched = match.group(0)
@@ -428,7 +428,7 @@ def _case_preserving_replacement(replacement: str):
 
 
 def rebrand_text(text: str) -> str:
-    """Replace OpenClaw / ClawdBot / MoltBot brand names with Sinoclaw.
+    """Replace OpenClaw / ClawdBot / MoltBot brand names with anan.
 
     Preserves case so filesystem-path matches (lowercase) don't become
     capitalized directory names that don't exist.
@@ -668,7 +668,7 @@ def write_report(output_dir: Path, report: Dict[str, Any]) -> None:
         grouped.setdefault(item["status"], []).append(item)
 
     lines = [
-        "# OpenClaw -> Sinoclaw Migration Report",
+        "# OpenClaw -> anan Migration Report",
         "",
         f"- Timestamp: {redacted['timestamp']}",
         f"- Mode: {redacted['mode']}",
@@ -781,7 +781,7 @@ class Migrator:
     def is_selected(self, option_id: str) -> bool:
         return option_id in self.selected_options
 
-    # Option ids that mutate the Sinoclaw config.yaml file.  Once any one of
+    # Option ids that mutate the anan config.yaml file.  Once any one of
     # them records a conflict/error on config.yaml, subsequent ones are
     # short-circuited to avoid partial writes.  Keep in sync with methods
     # that call load_yaml_file(target_root / "config.yaml") + dump_yaml_file.
@@ -1062,7 +1062,7 @@ class Migrator:
             warnings.append(
                 "API keys and other credentials were detected but not imported. "
                 "Re-run with --migrate-secrets to copy supported keys into the "
-                "Sinoclaw env file."
+                "anan env file."
             )
         return warnings
 
@@ -1083,7 +1083,7 @@ class Migrator:
                 else "Review the migration report."
             )
             steps.append(
-                "Start a new Sinoclaw session (or /reset) to pick up the imported config."
+                "Start a new anan session (or /reset) to pick up the imported config."
             )
         if summary.get("conflict", 0) > 0:
             steps.append(
@@ -1228,7 +1228,7 @@ class Migrator:
             self.record("command-allowlist", source, destination, "skipped", "No allowlist patterns found")
             return
         if not destination.exists():
-            self.record("command-allowlist", source, destination, "skipped", "Sinoclaw config.yaml does not exist yet")
+            self.record("command-allowlist", source, destination, "skipped", "anan config.yaml does not exist yet")
             return
 
         config = load_yaml_file(destination)
@@ -1330,7 +1330,7 @@ class Migrator:
         if isinstance(workspace, str) and workspace.strip():
             ws_path = workspace.strip()
             # Skip if the workspace points inside the OpenClaw source directory —
-            # that path will be stale after migration and would cause the Sinoclaw
+            # that path will be stale after migration and would cause the anan
             # gateway to use the old OpenClaw workspace as its cwd, picking up
             # OpenClaw's AGENTS.md, MEMORY.md, etc.
             try:
@@ -1356,7 +1356,7 @@ class Migrator:
         if additions:
             self.merge_env_values(additions, "messaging-settings", self.source_root / "openclaw.json")
         else:
-            self.record("messaging-settings", self.source_root / "openclaw.json", self.target_root / ".env", "skipped", "No Sinoclaw-compatible messaging settings found")
+            self.record("messaging-settings", self.source_root / "openclaw.json", self.target_root / ".env", "skipped", "No anan-compatible messaging settings found")
 
     def handle_secret_settings(self, config: Optional[Dict[str, Any]] = None) -> None:
         config = config or self.load_openclaw_config()
@@ -1400,7 +1400,7 @@ class Migrator:
                 self.source_root / "openclaw.json",
                 self.target_root / ".env",
                 "skipped",
-                "No allowlisted Sinoclaw-compatible secrets found",
+                "No allowlisted anan-compatible secrets found",
                 supported_targets=sorted(SUPPORTED_SECRET_TARGETS),
             )
 
@@ -1737,7 +1737,7 @@ class Migrator:
 
         provider = tts.get("provider")
         if isinstance(provider, str) and provider in ("elevenlabs", "openai", "edge", "microsoft"):
-            # OpenClaw renamed "edge" to "microsoft"; Sinoclaw still uses "edge"
+            # OpenClaw renamed "edge" to "microsoft"; anan still uses "edge"
             tts_data["provider"] = "edge" if provider == "microsoft" else provider
 
         # TTS provider settings live under messages.tts.providers.{provider}
@@ -2059,16 +2059,16 @@ class Migrator:
         ]
         for candidate in candidates:
             if candidate:
-                self.archive_path(candidate, reason="No direct Sinoclaw destination; archived for manual review")
+                self.archive_path(candidate, reason="No direct anan destination; archived for manual review")
 
         for rel in ("workspace/.learnings", "workspace/memory"):
             candidate = self.source_root / rel
             if candidate.exists():
-                self.archive_path(candidate, reason="No direct Sinoclaw destination; archived for manual review")
+                self.archive_path(candidate, reason="No direct anan destination; archived for manual review")
 
         partially_extracted = [
-            ("openclaw.json", "Selected Sinoclaw-compatible values were extracted; raw OpenClaw config was not copied."),
-            ("credentials/telegram-default-allowFrom.json", "Selected Sinoclaw-compatible values were extracted; raw credentials file was not copied."),
+            ("openclaw.json", "Selected anan-compatible values were extracted; raw OpenClaw config was not copied."),
+            ("credentials/telegram-default-allowFrom.json", "Selected anan-compatible values were extracted; raw credentials file was not copied."),
         ]
         for rel, reason in partially_extracted:
             candidate = self.source_root / rel
@@ -2117,7 +2117,7 @@ class Migrator:
                 continue
             if name in existing_mcp and not self.overwrite:
                 self.record("mcp-servers", f"mcp.servers.{name}", f"mcp_servers.{name}", "conflict",
-                            "MCP server already exists in Sinoclaw config")
+                            "MCP server already exists in anan config")
                 continue
 
             sinoclaw_srv: Dict[str, Any] = {}
@@ -2302,7 +2302,7 @@ class Migrator:
             agent_cfg["verbose"] = defaults["verboseDefault"]
             changes = True
         if defaults.get("thinkingDefault"):
-            # Map OpenClaw thinking -> Sinoclaw reasoning_effort
+            # Map OpenClaw thinking -> anan reasoning_effort
             thinking = defaults["thinkingDefault"]
             if thinking in ("always", "high", "xhigh"):
                 agent_cfg["reasoning_effort"] = "high"
@@ -2373,7 +2373,7 @@ class Migrator:
                 self.maybe_backup(sinoclaw_cfg_path)
                 dump_yaml_file(sinoclaw_cfg_path, sinoclaw_cfg)
             self.record("agent-config", "openclaw.json agents.defaults", "config.yaml agent/compression/terminal",
-                        "migrated", "Agent defaults mapped to Sinoclaw config")
+                        "migrated", "Agent defaults mapped to anan config")
 
         # Archive multi-agent list
         if agent_list:
@@ -2408,7 +2408,7 @@ class Migrator:
             dest = self.archive_dir / "gateway-config.json"
             dest.write_text(json.dumps(gateway, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         self.record("gateway-config", "openclaw.json gateway.*", "archive/gateway-config.json",
-                    "archived", "Gateway config archived. Use 'sinoclaw gateway' to configure.")
+                    "archived", "Gateway config archived. Use 'anan gateway' to configure.")
 
         # Extract gateway auth token to .env if present
         auth = gateway.get("auth") or {}
@@ -2603,7 +2603,7 @@ class Migrator:
                         continue
                     self._set_env_var(env_key, str(val), f"channels.{ch_name}.{oc_key}")
 
-        # Map Discord-specific settings to Sinoclaw config
+        # Map Discord-specific settings to anan config
         discord_cfg = channels.get("discord") or {}
         if discord_cfg:
             sinoclaw_cfg_path = self.target_root / "config.yaml"
@@ -2653,7 +2653,7 @@ class Migrator:
         browser_hermes = anan_cfg.get("browser") or {}
         changed = False
 
-        # Map fields that have Sinoclaw equivalents
+        # Map fields that have anan equivalents
         if browser.get("cdpUrl"):
             browser_hermes["cdp_url"] = browser["cdpUrl"]
             changed = True
@@ -2842,7 +2842,7 @@ class Migrator:
         if not self.output_dir:
             return
         notes = [
-            "# OpenClaw -> Sinoclaw Migration Notes",
+            "# OpenClaw -> anan Migration Notes",
             "",
             "This document lists items that require manual attention after migration.",
             "",
@@ -2860,7 +2860,7 @@ class Migrator:
                 "## Archived Items (Manual Review Needed)",
                 "",
                 "These OpenClaw configurations were archived because they don't have a",
-                "direct 1:1 mapping in Sinoclaw. Review each file and recreate manually:",
+                "direct 1:1 mapping in anan. Review each file and recreate manually:",
                 "",
             ])
             for item in archived:
@@ -2870,9 +2870,9 @@ class Migrator:
         conflicts = [i for i in self.items if i.status == "conflict"]
         if conflicts:
             notes.extend([
-                "## Conflicts (Existing Sinoclaw Config Not Overwritten)",
+                "## Conflicts (Existing anan Config Not Overwritten)",
                 "",
-                "These items already existed in your Sinoclaw config. Re-run with",
+                "These items already existed in your anan config. Re-run with",
                 "`--overwrite` to force, or merge manually:",
                 "",
             ])
@@ -2893,29 +2893,29 @@ class Migrator:
             "## IMPORTANT: Archive the OpenClaw Directory",
             "",
             "After migration, your OpenClaw directory still exists on disk with workspace",
-            "state files (todo.json, sessions, logs). If the Sinoclaw agent discovers these",
-            "directories, it may read/write to them instead of the Sinoclaw state, causing",
+            "state files (todo.json, sessions, logs). If the anan agent discovers these",
+            "directories, it may read/write to them instead of the anan state, causing",
             "confusion (e.g., cron jobs reading a different todo list than interactive sessions).",
             "",
-            "**Strongly recommended:** Run `sinoclaw claw cleanup` to rename the OpenClaw",
+            "**Strongly recommended:** Run `anan claw cleanup` to rename the OpenClaw",
             "directory to `.openclaw.pre-migration`. This prevents the agent from finding it.",
             "The directory is renamed, not deleted — you can undo this at any time.",
             "",
             "If you skip this step and notice the agent getting confused about workspaces",
-            "or todo lists, run `sinoclaw claw cleanup` to fix it.",
+            "or todo lists, run `anan claw cleanup` to fix it.",
             "",
-            "## Sinoclaw-Specific Setup",
+            "## anan-Specific Setup",
             "",
             "After migration, you may want to:",
-            "- Run `sinoclaw claw cleanup` to archive the OpenClaw directory (prevents state confusion)",
-            "- Run `sinoclaw setup` to configure any remaining settings",
-            "- Run `sinoclaw mcp list` to verify MCP servers were imported correctly",
+            "- Run `anan claw cleanup` to archive the OpenClaw directory (prevents state confusion)",
+            "- Run `anan setup` to configure any remaining settings",
+            "- Run `anan mcp list` to verify MCP servers were imported correctly",
         ])
 
         if has_cron_config_archive:
-            notes.append("- Run `sinoclaw cron` to recreate scheduled tasks (see archive/cron-config.json)")
+            notes.append("- Run `anan cron` to recreate scheduled tasks (see archive/cron-config.json)")
         elif has_cron_store_archive:
-            notes.append("- Run `sinoclaw cron` to recreate scheduled tasks (see archived cron-store)")
+            notes.append("- Run `anan cron` to recreate scheduled tasks (see archived cron-store)")
 
         # Check if skills were imported
         has_skills = any(i.kind == "skills" and i.status == "migrated" for i in self.items)
@@ -2940,12 +2940,12 @@ class Migrator:
                 "WhatsApp uses QR-code pairing, not token-based auth. Your allowlist",
                 "was migrated, but you must re-pair the device by running:",
                 "",
-                "    sinoclaw whatsapp",
+                "    anan whatsapp",
                 "",
             ])
 
         notes.extend([
-            "- Run `sinoclaw gateway install` if you need the gateway service",
+            "- Run `anan gateway install` if you need the gateway service",
             "- Review `~/.anan/config.yaml` for any adjustments",
             "",
         ])
@@ -2958,19 +2958,19 @@ class Migrator:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Migrate OpenClaw user state into Sinoclaw Agent.")
+    parser = argparse.ArgumentParser(description="Migrate OpenClaw user state into anan Agent.")
     parser.add_argument("--source", default=str(Path.home() / ".openclaw"), help="OpenClaw home directory")
-    parser.add_argument("--target", default=os.environ.get("ANAN_HOME") or str(Path.home() / ".anan"), help="Sinoclaw home directory")
+    parser.add_argument("--target", default=os.environ.get("ANAN_HOME") or str(Path.home() / ".anan"), help="anan home directory")
     parser.add_argument(
         "--workspace-target",
         help="Optional workspace root where the workspace instructions file should be copied",
     )
     parser.add_argument("--execute", action="store_true", help="Apply changes instead of reporting a dry run")
-    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing Sinoclaw targets after backing them up")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing anan targets after backing them up")
     parser.add_argument(
         "--migrate-secrets",
         action="store_true",
-        help="Import a narrow allowlist of Sinoclaw-compatible secrets into the target env file",
+        help="Import a narrow allowlist of anan-compatible secrets into the target env file",
     )
     parser.add_argument(
         "--skill-conflict",
@@ -3044,7 +3044,7 @@ def main() -> int:
 
     print()
     print(f"  ╔══════════════════════════════════════════════════════╗")
-    print(f"  ║   OpenClaw -> Sinoclaw Migration   [{mode_label:>8s}]   ║")
+    print(f"  ║   OpenClaw -> anan Migration   [{mode_label:>8s}]   ║")
     print(f"  ╠══════════════════════════════════════════════════════╣")
     print(f"  ║  Source:  {str(report['source_root'])[:42]:<42s}  ║")
     print(f"  ║  Target:  {str(report['target_root'])[:42]:<42s}  ║")
@@ -3116,7 +3116,7 @@ def main() -> int:
         print("    1. Review ~/.anan/config.yaml")
         print("    2. Run: anan mcp list")
         if any(i["kind"] == "cron-jobs" and i["status"] == "archived" for i in items):
-            print("    3. Recreate cron jobs: sinoclaw cron")
+            print("    3. Recreate cron jobs: anan cron")
         if report.get("output_dir"):
             print(f"    → Full report: {report['output_dir']}/MIGRATION_NOTES.md")
     elif not args.execute:

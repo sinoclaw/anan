@@ -490,7 +490,7 @@ class RetainDBMemoryProvider(MemoryProvider):
         api_key = os.environ.get("RETAINDB_API_KEY", "")
         base_url = re.sub(r"/+$", "", os.environ.get("RETAINDB_BASE_URL", _DEFAULT_BASE_URL))
 
-        # Project resolution: RETAINDB_PROJECT > sinoclaw-<profile> > "default"
+        # Project resolution: RETAINDB_PROJECT > anan-<profile> > "default"
         # If unset, the API auto-creates and uses the "default" project — no config required.
         explicit = os.environ.get("RETAINDB_PROJECT")
         if explicit:
@@ -498,7 +498,7 @@ class RetainDBMemoryProvider(MemoryProvider):
         else:
             anan_home = str(kwargs.get("anan_home", ""))
             profile_name = os.path.basename(anan_home) if anan_home else ""
-            project = f"anan-{profile_name}" if (profile_name and profile_name not in {"", ".sinoclaw"}) else "default"
+            project = f"anan-{profile_name}" if (profile_name and profile_name not in {"", ".anan"}) else "default"
 
         self._client = _Client(api_key, base_url, project)
         self._session_id = session_id

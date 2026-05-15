@@ -629,22 +629,22 @@ def test_resolve_model_strips_config_model(monkeypatch):
     monkeypatch.delenv("SINOCLAW_MODEL", raising=False)
     monkeypatch.delenv("SINOCLAW_INFERENCE_MODEL", raising=False)
     monkeypatch.setattr(
-        server, "_load_cfg", lambda: {"model": {"default": " nous/sinoclaw-test "}}
+        server, "_load_cfg", lambda: {"model": {"default": " nous/anan-test "}}
     )
 
-    assert server._resolve_model() == "nous/sinoclaw-test"
+    assert server._resolve_model() == "nous/anan-test"
 
 
 def test_startup_runtime_uses_tui_provider_env(monkeypatch):
-    monkeypatch.setenv("SINOCLAW_MODEL", "nous/sinoclaw-test")
+    monkeypatch.setenv("SINOCLAW_MODEL", "nous/anan-test")
     monkeypatch.setenv("SINOCLAW_TUI_PROVIDER", "nous")
     monkeypatch.delenv("SINOCLAW_INFERENCE_PROVIDER", raising=False)
 
-    assert server._resolve_startup_runtime() == ("nous/sinoclaw-test", "nous")
+    assert server._resolve_startup_runtime() == ("nous/anan-test", "nous")
 
 
 def test_startup_runtime_does_not_treat_inference_provider_as_explicit(monkeypatch):
-    monkeypatch.setenv("SINOCLAW_MODEL", "nous/sinoclaw-test")
+    monkeypatch.setenv("SINOCLAW_MODEL", "nous/anan-test")
     monkeypatch.delenv("SINOCLAW_TUI_PROVIDER", raising=False)
     monkeypatch.setenv("SINOCLAW_INFERENCE_PROVIDER", "nous")
     monkeypatch.setattr(
@@ -652,7 +652,7 @@ def test_startup_runtime_does_not_treat_inference_provider_as_explicit(monkeypat
         lambda model, provider: None,
     )
 
-    assert server._resolve_startup_runtime() == ("nous/sinoclaw-test", None)
+    assert server._resolve_startup_runtime() == ("nous/anan-test", None)
 
 
 def test_startup_runtime_detects_provider_for_model_env(monkeypatch):

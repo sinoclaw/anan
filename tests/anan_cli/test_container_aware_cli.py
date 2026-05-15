@@ -24,7 +24,7 @@ from anan_cli.config import (
 @pytest.fixture
 def container_env(tmp_path, monkeypatch):
     """Set up a fake ANAN_HOME with .container-mode file."""
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     monkeypatch.delenv("SINOCLAW_DEV", raising=False)
@@ -35,7 +35,7 @@ def container_env(tmp_path, monkeypatch):
         "backend=podman\n"
         "container_name=anan\n"
         "exec_user=hermes\n"
-        "sinoclaw_bin=/data/current-package/bin/sinoclaw\n"
+        "sinoclaw_bin=/data/current-package/bin/anan\n"
     )
     return anan_home
 
@@ -49,7 +49,7 @@ def test_get_container_exec_info_returns_metadata(container_env):
     assert info["backend"] == "podman"
     assert info["container_name"] == "anan"
     assert info["exec_user"] == "hermes"
-    assert info["sinoclaw_bin"] == "/data/current-package/bin/sinoclaw"
+    assert info["sinoclaw_bin"] == "/data/current-package/bin/anan"
 
 
 def test_get_container_exec_info_none_inside_container(container_env):
@@ -62,7 +62,7 @@ def test_get_container_exec_info_none_inside_container(container_env):
 
 def test_get_container_exec_info_none_without_file(tmp_path, monkeypatch):
     """Returns None when .container-mode doesn't exist (native mode)."""
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     monkeypatch.delenv("SINOCLAW_DEV", raising=False)
@@ -98,7 +98,7 @@ def test_get_container_exec_info_defaults():
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        anan_home = Path(tmpdir) / ".sinoclaw"
+        anan_home = Path(tmpdir) / ".anan"
         anan_home.mkdir()
         (anan_home / ".container-mode").write_text(
             "# minimal file with no keys\n"
@@ -114,16 +114,16 @@ def test_get_container_exec_info_defaults():
         assert info["backend"] == "docker"
         assert info["container_name"] == "anan"
         assert info["exec_user"] == "hermes"
-        assert info["sinoclaw_bin"] == "/data/current-package/bin/sinoclaw"
+        assert info["sinoclaw_bin"] == "/data/current-package/bin/anan"
 
 
 def test_get_container_exec_info_docker_backend(container_env):
     """Correctly reads docker backend with custom exec_user."""
     (container_env / ".container-mode").write_text(
         "backend=docker\n"
-        "container_name=sinoclaw-custom\n"
+        "container_name=anan-custom\n"
         "exec_user=myuser\n"
-        "sinoclaw_bin=/opt/hermes/bin/sinoclaw\n"
+        "sinoclaw_bin=/opt/hermes/bin/anan\n"
     )
 
     with patch("sinoclaw_constants.is_container", return_value=False):
@@ -132,7 +132,7 @@ def test_get_container_exec_info_docker_backend(container_env):
     assert info["backend"] == "docker"
     assert info["container_name"] == "anan-custom"
     assert info["exec_user"] == "myuser"
-    assert info["sinoclaw_bin"] == "/opt/hermes/bin/sinoclaw"
+    assert info["sinoclaw_bin"] == "/opt/hermes/bin/anan"
 
 
 def test_get_container_exec_info_crashes_on_permission_error(container_env):
@@ -154,7 +154,7 @@ def docker_container_info():
         "backend": "docker",
         "container_name": "anan",
         "exec_user": "hermes",
-        "sinoclaw_bin": "/data/current-package/bin/sinoclaw",
+        "sinoclaw_bin": "/data/current-package/bin/anan",
     }
 
 
@@ -164,7 +164,7 @@ def podman_container_info():
         "backend": "podman",
         "container_name": "anan",
         "exec_user": "hermes",
-        "sinoclaw_bin": "/data/current-package/bin/sinoclaw",
+        "sinoclaw_bin": "/data/current-package/bin/anan",
     }
 
 
@@ -196,7 +196,7 @@ def test_exec_in_container_calls_execvp(docker_container_info):
     assert "TERM=xterm-256color" in e_values
     assert "LANG=en_US.UTF-8" in e_values
     assert "anan" in cmd
-    assert "/data/current-package/bin/sinoclaw" in cmd
+    assert "/data/current-package/bin/anan" in cmd
     assert "chat" in cmd
 
 

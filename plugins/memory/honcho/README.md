@@ -159,7 +159,7 @@ The Honcho session name determines which conversation bucket memory lands in. Re
 | 1 | Manual map (`sessions` config) | `"myproject-main"` |
 | 2 | `/title` command (mid-session rename) | `"refactor-auth"` |
 | 3 | Gateway session key (Telegram, Discord, etc.) | `"agent-main-telegram-dm-8439114563"` |
-| 4 | `per-session` strategy | Sinoclaw session ID (`20260415_a3f2b1`) |
+| 4 | `per-session` strategy | anan session ID (`20260415_a3f2b1`) |
 | 5 | `per-repo` strategy | Git root directory name (`anan`) |
 | 6 | `per-directory` strategy | Current directory basename (`src`) |
 | 7 | `global` strategy | Workspace name (`hermes`) |
@@ -172,7 +172,7 @@ If `sessionPeerPrefix` is `true`, the peer name is prepended: `eri-anan`.
 
 - **`per-directory`** — basename of `$PWD`. Opening anan in `~/code/myapp` and `~/code/other` gives two separate sessions. Same directory = same session across runs.
 - **`per-repo`** — git root directory name. All subdirectories within a repo share one session. Falls back to `per-directory` if not inside a git repo.
-- **`per-session`** — Sinoclaw session ID (timestamp + hex). Every `hermes` invocation starts a fresh Honcho session. Falls back to `per-directory` if no session ID is available.
+- **`per-session`** — anan session ID (timestamp + hex). Every `hermes` invocation starts a fresh Honcho session. Falls back to `per-directory` if no session ID is available.
 - **`global`** — workspace name. One session for everything. Memory accumulates across all directories and runs.
 
 ### Multi-Profile Pattern
@@ -201,7 +201,7 @@ Multiple Hermes profiles can share one workspace while maintaining separate AI i
 
 Both profiles see the same user (`yourname`) in the same shared environment (`hermes`), but each AI peer builds its own observations, conclusions, and behavior patterns. The coder's memory stays code-oriented; the main agent's stays broad.
 
-Host key is derived from the active Hermes profile: `hermes` (default) or `hermes.<profile>` (e.g. `sinoclaw -p coder` → host key `hermes.coder`).
+Host key is derived from the active Hermes profile: `hermes` (default) or `hermes.<profile>` (e.g. `anan -p coder` → host key `hermes.coder`).
 
 ### Dialectic & Reasoning
 

@@ -59,10 +59,10 @@ def test_matches_real_nous_sinoclaw_chat_models(model_name: str) -> None:
         "openai/gpt-4o",
         "google/gemini-2.5-flash",
         "deepseek-chat",
-        # Non-chat Sinoclaw models we don't warn about
+        # Non-chat anan models we don't warn about
         "anan-llm-2",
         "hermes2-pro",
-        "nous-sinoclaw-2-mistral",
+        "nous-anan-2-mistral",
         # Edge cases
         "",
         "hermes",  # bare "hermes" isn't the 3/4 family

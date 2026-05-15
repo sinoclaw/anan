@@ -1,4 +1,4 @@
-"""Tests for the interactive session browser (`sinoclaw sessions browse`).
+"""Tests for the interactive session browser (`anan sessions browse`).
 
 Covers:
 - _session_browse_picker logic (curses mocked, fallback tested)

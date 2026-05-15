@@ -7,7 +7,7 @@
   "entry": "anan_plugin.py",
   "doc": "README.md",
   "author": "陈亦安 (anan)",
-  "homepage": "https://github.com/sinoclaw/anan",
+  "homepage": "https://github.com/anan/anan",
   "status": {
     "L1_sleep": "partial",
     "L2_memory": "partial",

@@ -2,7 +2,7 @@
 name: node-inspect-debugger
 description: "Debug Node.js via --inspect + Chrome DevTools Protocol CLI."
 version: 1.0.0
-author: Sinoclaw Agent
+author: anan Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
@@ -167,7 +167,7 @@ Run it:
 node /tmp/cdp-debug.js
 ```
 
-Sinoclaw-specific note: `chrome-remote-interface` is NOT in `ui-tui/package.json`. Install it to a throwaway location if you don't want to dirty the project:
+anan-specific note: `chrome-remote-interface` is NOT in `ui-tui/package.json`. Install it to a throwaway location if you don't want to dirty the project:
 
 ```bash
 mkdir -p /tmp/cdp-tools && cd /tmp/cdp-tools && npm i chrome-remote-interface
@@ -199,7 +199,7 @@ cont
 
 When it pauses, `repl` → inspect `props`, state refs, `useInput` handler values, etc.
 
-### Debugging a running `sinoclaw --tui`
+### Debugging a running `anan --tui`
 
 The TUI spawns Node from the Python CLI. Easiest path:
 

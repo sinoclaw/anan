@@ -1,4 +1,4 @@
-"""Tests for anan_cli.plugins_cmd — the ``sinoclaw plugins`` CLI subcommand."""
+"""Tests for anan_cli.plugins_cmd — the ``anan plugins`` CLI subcommand."""
 
 from __future__ import annotations
 

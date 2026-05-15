@@ -1,4 +1,4 @@
-"""Tests for the `sinoclaw memory reset` CLI command.
+"""Tests for the `anan memory reset` CLI command.
 
 Covers:
 - Reset both stores (MEMORY.md + USER.md)
@@ -17,7 +17,7 @@ from pathlib import Path
 @pytest.fixture
 def memory_env(tmp_path, monkeypatch):
     """Set up a fake ANAN_HOME with memory files."""
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     memories = anan_home / "memories"
     memories.mkdir(parents=True)
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
@@ -37,7 +37,7 @@ def memory_env(tmp_path, monkeypatch):
 def _run_memory_reset(target="all", yes=False, monkeypatch=None, confirm_input="no"):
     """Invoke the memory reset logic from cmd_memory in main.py.
 
-    Simulates what happens when `sinoclaw memory reset` is run.
+    Simulates what happens when `anan memory reset` is run.
     """
     from anan_constants import get_anan_home, display_anan_home
 
@@ -63,7 +63,7 @@ def _run_memory_reset(target="all", yes=False, monkeypatch=None, confirm_input="
 
 
 class TestMemoryReset:
-    """Tests for `sinoclaw memory reset` subcommand."""
+    """Tests for `anan memory reset` subcommand."""
 
     def test_reset_all_with_yes_flag(self, memory_env):
         """--yes flag should skip confirmation and delete both files."""
@@ -96,7 +96,7 @@ class TestMemoryReset:
 
     def test_reset_no_files_exist(self, tmp_path, monkeypatch):
         """Should return 'nothing' when no memory files exist."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         (anan_home / "memories").mkdir(parents=True)
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
@@ -147,7 +147,7 @@ class TestMemoryReset:
 
     def test_reset_empty_memories_dir(self, tmp_path, monkeypatch):
         """No memories dir at all should report nothing."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir(parents=True)
         # No memories dir
         monkeypatch.setenv("ANAN_HOME", str(anan_home))

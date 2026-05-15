@@ -1,7 +1,7 @@
 ---
 sidebar_position: 3
 title: "Updating & Uninstalling"
-description: "How to update Sinoclaw Agent to the latest version or uninstall it"
+description: "How to update anan Agent to the latest version or uninstall it"
 ---
 
 # Updating & Uninstalling
@@ -17,14 +17,14 @@ anan update
 This pulls the latest code, updates dependencies, and prompts you to configure any new options that were added since your last update.
 
 :::tip
-`anan update` automatically detects new configuration options and prompts you to add them. If you skipped that prompt, you can manually run `sinoclaw config check` to see missing options, then `sinoclaw config migrate` to interactively add them.
+`anan update` automatically detects new configuration options and prompts you to add them. If you skipped that prompt, you can manually run `anan config check` to see missing options, then `anan config migrate` to interactively add them.
 :::
 
 ### What happens during an update
 
 When you run `anan update`, the following steps occur:
 
-1. **Pairing-data snapshot** — a lightweight pre-update state snapshot is saved (covers `~/.anan/pairing/`, Feishu comment rules, and other state files that get modified at runtime). Rollbackable via `sinoclaw backup restore --state pre-update`.
+1. **Pairing-data snapshot** — a lightweight pre-update state snapshot is saved (covers `~/.anan/pairing/`, Feishu comment rules, and other state files that get modified at runtime). Rollbackable via `anan backup restore --state pre-update`.
 2. **Git pull** — pulls the latest code from the `main` branch and updates submodules
 3. **Dependency install** — runs `uv pip install -e ".[all]"` to pick up new or changed dependencies
 4. **Config migration** — detects new config options added since your version and prompts you to set them
@@ -56,7 +56,7 @@ Expected output looks like:
 
 ```
 $ anan update
-Updating Sinoclaw Agent...
+Updating anan Agent...
 📥 Pulling latest code...
 Already up to date.  (or: Updating abc1234..def5678)
 📦 Updating dependencies...
@@ -65,7 +65,7 @@ Already up to date.  (or: Updating abc1234..def5678)
 ✅ Config is up to date  (or: Found 2 new options — running migration...)
 🔄 Restarting gateways...
 ✅ Gateway restarted
-✅ Sinoclaw Agent updated successfully!
+✅ anan Agent updated successfully!
 ```
 
 ### Recommended Post-Update Validation
@@ -73,9 +73,9 @@ Already up to date.  (or: Updating abc1234..def5678)
 `anan update` handles the main update path, but a quick validation confirms everything landed cleanly:
 
 1. `git status --short` — if the tree is unexpectedly dirty, inspect before continuing
-2. `sinoclaw doctor` — checks config, dependencies, and service health
-3. `sinoclaw --version` — confirm the version bumped as expected
-4. If you use the gateway: `sinoclaw gateway status`
+2. `anan doctor` — checks config, dependencies, and service health
+3. `anan --version` — confirm the version bumped as expected
+4. If you use the gateway: `anan gateway status`
 5. If `doctor` reports npm audit issues: run `npm audit fix` in the flagged directory
 
 :::warning Dirty working tree after update
@@ -103,7 +103,7 @@ You no longer need to wrap `anan update` in `screen` or `tmux` to survive a term
 hermes version
 ```
 
-Compare against the latest release at the [GitHub releases page](https://github.com/sinoclaw/anan/releases).
+Compare against the latest release at the [GitHub releases page](https://github.com/anan/anan/releases).
 
 ### Updating from Messaging Platforms
 
@@ -132,8 +132,8 @@ uv pip install -e ".[all]"
 uv pip install -e "./tinker-atropos"
 
 # Check for new config options
-sinoclaw config check
-sinoclaw config migrate   # Interactively add any missing options
+anan config check
+anan config migrate   # Interactively add any missing options
 ```
 
 ### Rollback instructions
@@ -152,7 +152,7 @@ git submodule update --init --recursive
 uv pip install -e ".[all]"
 
 # Restart the gateway if running
-sinoclaw gateway restart
+anan gateway restart
 ```
 
 To roll back to a specific release tag:
@@ -164,7 +164,7 @@ uv pip install -e ".[all]"
 ```
 
 :::warning
-Rolling back may cause config incompatibilities if new options were added. Run `sinoclaw config check` after rolling back and remove any unrecognized options from `config.yaml` if you encounter errors.
+Rolling back may cause config incompatibilities if new options were added. Run `anan config check` after rolling back and remove any unrecognized options from `config.yaml` if you encounter errors.
 :::
 
 ### Note for Nix users
@@ -202,13 +202,13 @@ The uninstaller gives you the option to keep your configuration files (`~/.anan/
 ```bash
 rm -f ~/.local/bin/hermes
 rm -rf /path/to/anan
-rm -rf ~/.sinoclaw            # Optional — keep if you plan to reinstall
+rm -rf ~/.anan            # Optional — keep if you plan to reinstall
 ```
 
 :::info
 If you installed the gateway as a system service, stop and disable it first:
 ```bash
-sinoclaw gateway stop
+anan gateway stop
 # Linux: systemctl --user disable anan-gateway
 # macOS: launchctl remove ai.hermes.gateway
 ```

@@ -47,12 +47,12 @@ from anan_cli.profiles import (
 def profile_env(tmp_path, monkeypatch):
     """Set up an isolated environment for profile tests.
 
-    * Path.home() -> tmp_path  (so _get_profiles_root() = tmp_path/.sinoclaw/profiles)
+    * Path.home() -> tmp_path  (so _get_profiles_root() = tmp_path/.anan/profiles)
     * ANAN_HOME  -> tmp_path/.hermes  (so get_anan_home() agrees)
-    * Creates the bare-minimum ~/.sinoclaw directory.
+    * Creates the bare-minimum ~/.anan directory.
     """
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    default_home = tmp_path / ".sinoclaw"
+    default_home = tmp_path / ".anan"
     default_home.mkdir(exist_ok=True)
     monkeypatch.setenv("ANAN_HOME", str(default_home))
     return tmp_path
@@ -118,7 +118,7 @@ class TestValidateProfileName:
 
     @pytest.mark.parametrize("name", ["hermes", "test", "tmp", "root", "sudo"])
     def test_reserved_names_rejected(self, name):
-        """Reserved names collide with the Sinoclaw install itself or with
+        """Reserved names collide with the anan install itself or with
         common system binaries — reject them at validate time so
         create/install/rename all share one gate."""
         with pytest.raises(ValueError, match="reserved"):
@@ -135,16 +135,16 @@ class TestGetProfileDir:
     def test_default_returns_anan_home(self, profile_env):
         tmp_path = profile_env
         result = get_profile_dir("default")
-        assert result == tmp_path / ".sinoclaw"
+        assert result == tmp_path / ".anan"
 
     def test_named_profile_returns_profiles_subdir(self, profile_env):
         tmp_path = profile_env
         result = get_profile_dir("coder")
-        assert result == tmp_path / ".sinoclaw" / "profiles" / "coder"
+        assert result == tmp_path / ".anan" / "profiles" / "coder"
 
     def test_named_profile_matching_is_case_insensitive(self, profile_env):
         tmp_path = profile_env
-        assert get_profile_dir("Coder") == tmp_path / ".sinoclaw" / "profiles" / "coder"
+        assert get_profile_dir("Coder") == tmp_path / ".anan" / "profiles" / "coder"
 
 
 # ===================================================================
@@ -176,7 +176,7 @@ class TestCreateProfile:
 
     def test_clone_config_copies_files(self, profile_env):
         tmp_path = profile_env
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         # Create source config files in default profile
         (default_home / "config.yaml").write_text("model: test")
         (default_home / ".env").write_text("KEY=val")
@@ -190,7 +190,7 @@ class TestCreateProfile:
 
     def test_clone_config_copies_source_skills(self, profile_env):
         tmp_path = profile_env
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         skill_dir = default_home / "skills" / "custom" / "installed-skill"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text("---\nname: installed-skill\n---\n")
@@ -207,7 +207,7 @@ class TestCreateProfile:
 
     def test_clone_all_copies_entire_tree(self, profile_env):
         tmp_path = profile_env
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         # Populate default with some content
         (default_home / "memories").mkdir(exist_ok=True)
         (default_home / "memories" / "note.md").write_text("remember this")
@@ -228,9 +228,9 @@ class TestCreateProfile:
         assert not (profile_dir / "processes.json").exists()
 
     def test_clone_all_excludes_sibling_profiles_tree(self, profile_env):
-        """--clone-all from default ~/.sinoclaw must not copy profiles/* (nested explosion)."""
+        """--clone-all from default ~/.anan must not copy profiles/* (nested explosion)."""
         tmp_path = profile_env
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         profiles_root = default_home / "profiles"
         profiles_root.mkdir(exist_ok=True)
         (profiles_root / "other").mkdir(parents=True, exist_ok=True)
@@ -252,7 +252,7 @@ class TestCreateProfile:
         minus infrastructure."
         """
         tmp_path = profile_env
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
         # Simulate infrastructure dirs that only the default profile has
         (default_home / "anan" / ".git").mkdir(parents=True)
         (default_home / "anan" / "venv" / "bin").mkdir(parents=True)
@@ -317,7 +317,7 @@ class TestCreateProfile:
 # ===================================================================
 
 class TestNoSkillsOptOut:
-    """Tests for `sinoclaw profile create --no-skills` and the opt-out marker."""
+    """Tests for `anan profile create --no-skills` and the opt-out marker."""
 
     def test_no_skills_writes_marker_and_skips_seeding(self, profile_env):
         profile_dir = create_profile("orchestrator", no_alias=True, no_skills=True)
@@ -498,7 +498,7 @@ class TestActiveProfile:
 
     def test_empty_file_returns_default(self, profile_env):
         tmp_path = profile_env
-        active_path = tmp_path / ".sinoclaw" / "active_profile"
+        active_path = tmp_path / ".anan" / "active_profile"
         active_path.write_text("")
         assert get_active_profile() == "default"
 
@@ -506,7 +506,7 @@ class TestActiveProfile:
         tmp_path = profile_env
         create_profile("coder", no_alias=True)
         set_active_profile("coder")
-        active_path = tmp_path / ".sinoclaw" / "active_profile"
+        active_path = tmp_path / ".anan" / "active_profile"
         assert active_path.exists()
 
         set_active_profile("default")
@@ -531,7 +531,7 @@ class TestGetActiveProfileName:
     def test_profile_path_returns_profile_name(self, profile_env, monkeypatch):
         tmp_path = profile_env
         create_profile("coder", no_alias=True)
-        profile_dir = tmp_path / ".sinoclaw" / "profiles" / "coder"
+        profile_dir = tmp_path / ".anan" / "profiles" / "coder"
         monkeypatch.setenv("ANAN_HOME", str(profile_dir))
         assert get_active_profile_name() == "coder"
 
@@ -558,12 +558,12 @@ class TestResolveProfileEnv:
         tmp_path = profile_env
         create_profile("coder", no_alias=True)
         result = resolve_profile_env("coder")
-        assert result == str(tmp_path / ".sinoclaw" / "profiles" / "coder")
+        assert result == str(tmp_path / ".anan" / "profiles" / "coder")
 
     def test_default_returns_default_home(self, profile_env):
         tmp_path = profile_env
         result = resolve_profile_env("default")
-        assert result == str(tmp_path / ".sinoclaw")
+        assert result == str(tmp_path / ".anan")
 
     def test_nonexistent_raises_file_not_found(self, profile_env):
         with pytest.raises(FileNotFoundError):
@@ -614,7 +614,7 @@ class TestRenameProfile:
     def test_renames_directory(self, profile_env):
         tmp_path = profile_env
         create_profile("oldname", no_alias=True)
-        old_dir = tmp_path / ".sinoclaw" / "profiles" / "oldname"
+        old_dir = tmp_path / ".anan" / "profiles" / "oldname"
         assert old_dir.is_dir()
 
         # Mock alias collision to avoid subprocess calls
@@ -623,12 +623,12 @@ class TestRenameProfile:
 
         assert not old_dir.is_dir()
         assert new_dir.is_dir()
-        assert new_dir == tmp_path / ".sinoclaw" / "profiles" / "newname"
+        assert new_dir == tmp_path / ".anan" / "profiles" / "newname"
 
     def test_renames_root_honcho_host_without_changing_ai_peer(self, profile_env):
         tmp_path = profile_env
         create_profile("ssi_health", no_alias=True)
-        honcho_path = tmp_path / ".sinoclaw" / "honcho.json"
+        honcho_path = tmp_path / ".anan" / "honcho.json"
         honcho_path.write_text(json.dumps({
             "hosts": {
                 "hermes.ssi_health": {
@@ -655,7 +655,7 @@ class TestRenameProfile:
     def test_pins_ai_peer_when_absent_on_honcho_host_rename(self, profile_env):
         tmp_path = profile_env
         create_profile("ssi_health", no_alias=True)
-        honcho_path = tmp_path / ".sinoclaw" / "honcho.json"
+        honcho_path = tmp_path / ".anan" / "honcho.json"
         honcho_path.write_text(json.dumps({
             "hosts": {
                 "hermes.ssi_health": {"workspace": "hermes", "enabled": True}
@@ -673,7 +673,7 @@ class TestRenameProfile:
     def test_does_not_overwrite_existing_honcho_host_on_rename(self, profile_env):
         tmp_path = profile_env
         create_profile("ssi_health", no_alias=True)
-        honcho_path = tmp_path / ".sinoclaw" / "honcho.json"
+        honcho_path = tmp_path / ".anan" / "honcho.json"
         honcho_path.write_text(json.dumps({
             "hosts": {
                 "hermes.ssi_health": {"aiPeer": "ssi_health"},
@@ -1049,15 +1049,15 @@ class TestInternalHelpers:
     def test_profiles_root_under_home(self, profile_env):
         tmp_path = profile_env
         root = _get_profiles_root()
-        assert root == tmp_path / ".sinoclaw" / "profiles"
+        assert root == tmp_path / ".anan" / "profiles"
 
     def test_default_anan_home(self, profile_env):
         tmp_path = profile_env
         home = _get_default_anan_home()
-        assert home == tmp_path / ".sinoclaw"
+        assert home == tmp_path / ".anan"
 
     def test_profiles_root_docker_deployment(self, tmp_path, monkeypatch):
-        """In Docker (ANAN_HOME outside ~/.sinoclaw), profiles go under ANAN_HOME."""
+        """In Docker (ANAN_HOME outside ~/.anan), profiles go under ANAN_HOME."""
         docker_home = tmp_path / "opt" / "data"
         docker_home.mkdir(parents=True)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -1075,8 +1075,8 @@ class TestInternalHelpers:
         assert home == docker_home
 
     def test_profiles_root_profile_mode(self, tmp_path, monkeypatch):
-        """In profile mode (ANAN_HOME under ~/.sinoclaw), profiles root is still ~/.anan/profiles."""
-        native = tmp_path / ".sinoclaw"
+        """In profile mode (ANAN_HOME under ~/.anan), profiles root is still ~/.anan/profiles."""
+        native = tmp_path / ".anan"
         profile_dir = native / "profiles" / "coder"
         profile_dir.mkdir(parents=True)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -1133,7 +1133,7 @@ class TestEdgeCases:
     def test_create_profile_returns_correct_path(self, profile_env):
         tmp_path = profile_env
         result = create_profile("mybot", no_alias=True)
-        expected = tmp_path / ".sinoclaw" / "profiles" / "mybot"
+        expected = tmp_path / ".anan" / "profiles" / "mybot"
         assert result == expected
 
     def test_list_profiles_default_info_fields(self, profile_env):
@@ -1147,7 +1147,7 @@ class TestEdgeCases:
         """Verify _check_gateway_running uses the shared gateway PID validator."""
         from anan_cli.profiles import _check_gateway_running
         tmp_path = profile_env
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
 
         with patch("gateway.status.get_running_pid", return_value=99999) as mock_get_running_pid:
             assert _check_gateway_running(default_home) is True
@@ -1160,7 +1160,7 @@ class TestEdgeCases:
         """Shared PID validator returning None means the profile is not running."""
         from anan_cli.profiles import _check_gateway_running
         tmp_path = profile_env
-        default_home = tmp_path / ".sinoclaw"
+        default_home = tmp_path / ".anan"
 
         with patch("gateway.status.get_running_pid", return_value=None) as mock_get_running_pid:
             assert _check_gateway_running(default_home) is False

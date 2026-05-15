@@ -50,7 +50,7 @@ class TestReloadEnv:
         os.environ.pop("TEST_RELOAD_VAR", None)
 
     def test_removes_deleted_known_vars(self, tmp_path):
-        """reload_env() removes known Sinoclaw vars not present in .env."""
+        """reload_env() removes known anan vars not present in .env."""
         env_file = tmp_path / ".env"
         env_file.write_text("")  # empty .env
         # Pick a known key from OPTIONAL_ENV_VARS
@@ -675,7 +675,7 @@ class TestNewEndpoints:
         resp = self.client.get("/api/profiles/default/setup-command")
 
         assert resp.status_code == 200
-        assert resp.json()["command"] == "sinoclaw setup"
+        assert resp.json()["command"] == "anan setup"
 
     def test_profiles_create_creates_wrapper_alias_when_safe(self, monkeypatch, tmp_path):
         import anan_cli.profiles as profiles_mod
@@ -692,7 +692,7 @@ class TestNewEndpoints:
         assert resp.status_code == 200
         wrapper_path = wrapper_dir / "writer"
         assert wrapper_path.exists()
-        assert wrapper_path.read_text() == '#!/bin/sh\nexec sinoclaw -p writer "$@"\n'
+        assert wrapper_path.read_text() == '#!/bin/sh\nexec anan -p writer "$@"\n'
 
     def test_profiles_create_with_clone_from_default_copies_default_skills(self, monkeypatch):
         from anan_constants import get_anan_home
@@ -1944,7 +1944,7 @@ class TestDashboardPluginManifestExtensions:
 # /api/pty WebSocket — terminal bridge for the dashboard "Chat" tab.
 #
 # These tests drive the endpoint with a tiny fake command (typically ``cat``
-# or ``sh -c 'printf …'``) instead of the real ``sinoclaw --tui`` binary.  The
+# or ``sh -c 'printf …'``) instead of the real ``anan --tui`` binary.  The
 # endpoint resolves its argv through ``_resolve_chat_argv``, so tests
 # monkeypatch that hook.
 # ---------------------------------------------------------------------------
@@ -2021,7 +2021,7 @@ class TestPtyWebSocket:
             self.ws_module,
             "_resolve_chat_argv",
             lambda resume=None, sidecar_url=None: (
-                ["/bin/sh", "-c", "printf sinoclaw-ws-ok"],
+                ["/bin/sh", "-c", "printf anan-ws-ok"],
                 None,
                 None,
             ),

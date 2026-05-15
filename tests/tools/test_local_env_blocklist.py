@@ -1,8 +1,8 @@
 """Tests for subprocess env sanitization in LocalEnvironment.
 
-Verifies that Sinoclaw-managed provider, tool, and gateway env vars are
+Verifies that anan-managed provider, tool, and gateway env vars are
 stripped from subprocess environments so external CLIs are not silently
-misrouted or handed Sinoclaw secrets.
+misrouted or handed anan secrets.
 
 See: https://github.com/NousResearch/anan/issues/1002
 See: https://github.com/NousResearch/anan/issues/1264

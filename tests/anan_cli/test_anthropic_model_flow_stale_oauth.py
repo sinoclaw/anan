@@ -1,6 +1,6 @@
-"""Tests for Bug #12905 fix — stale OAuth token detection in sinoclaw model flow.
+"""Tests for Bug #12905 fix — stale OAuth token detection in anan model flow.
 
-Bug 3: `sinoclaw model` with `provider=anthropic` skips OAuth re-authentication
+Bug 3: `anan model` with `provider=anthropic` skips OAuth re-authentication
 when a stale ANTHROPIC_TOKEN exists in ~/.anan/.env but no valid
 Claude Code credentials are available. The fast-path silently proceeds to
 model selection with a broken token instead of offering re-auth.

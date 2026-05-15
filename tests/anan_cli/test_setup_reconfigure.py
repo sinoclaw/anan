@@ -1,10 +1,10 @@
 """Tests for the setup wizard's returning-user behavior.
 
 On an existing install:
-- Bare `sinoclaw setup` drops straight into the full reconfigure wizard
+- Bare `anan setup` drops straight into the full reconfigure wizard
   (every prompt shows the current value as its default).
-- `sinoclaw setup --quick` runs the narrower "fill in missing items" flow.
-- `sinoclaw setup --reconfigure` is a backwards-compat alias for the
+- `anan setup --quick` runs the narrower "fill in missing items" flow.
+- `anan setup --reconfigure` is a backwards-compat alias for the
   bare-setup default.
 
 On a fresh install, all three are no-ops — fall through to first-time setup.
@@ -30,7 +30,7 @@ def _make_setup_args(**overrides):
 @pytest.fixture
 def existing_install(tmp_path, monkeypatch):
     """Simulate a returning user with an existing configured install."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
     monkeypatch.setenv("ANAN_HOME", str(home))
@@ -40,7 +40,7 @@ def existing_install(tmp_path, monkeypatch):
 @pytest.fixture
 def fresh_install(tmp_path, monkeypatch):
     """Simulate a first-time user with no existing configuration."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
     monkeypatch.setenv("ANAN_HOME", str(home))
@@ -99,7 +99,7 @@ def _enter_fresh_install_patches(stack, **extra):
 
 
 class TestExistingInstallDefault:
-    """Bare `sinoclaw setup` on an existing install = full reconfigure wizard."""
+    """Bare `anan setup` on an existing install = full reconfigure wizard."""
 
     def test_bare_setup_runs_full_reconfigure_without_menu(self, existing_install):
         """No menu, no prompt_choice — just run every section in sequence."""
@@ -131,7 +131,7 @@ class TestExistingInstallDefault:
         m["tools"].assert_called_once()
 
     def test_reconfigure_flag_is_backwards_compat_noop(self, existing_install):
-        """`sinoclaw setup --reconfigure` behaves the same as bare `sinoclaw setup`."""
+        """`anan setup --reconfigure` behaves the same as bare `anan setup`."""
         args = _make_setup_args(reconfigure=True)
 
         with ExitStack() as stack:

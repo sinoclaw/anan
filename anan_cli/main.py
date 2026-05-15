@@ -9874,7 +9874,7 @@ Examples:
     backup_parser.add_argument(
         "-o",
         "--output",
-        help="Output path for the zip file (default: ~/sinoclaw-backup-<timestamp>.zip)",
+        help="Output path for the zip file (default: ~/anan-backup-<timestamp>.zip)",
     )
     backup_parser.add_argument(
         "-q",
@@ -10204,7 +10204,7 @@ Examples:
     )
     plugins_install.add_argument(
         "identifier",
-        help="Git URL or owner/repo shorthand (e.g. anpicasso/sinoclaw-plugin-chrome-profiles)",
+        help="Git URL or owner/repo shorthand (e.g. anpicasso/anan-plugin-chrome-profiles)",
     )
     plugins_install.add_argument(
         "--force",

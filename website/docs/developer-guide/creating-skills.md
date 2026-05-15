@@ -1,12 +1,12 @@
 ---
 sidebar_position: 3
 title: "Creating Skills"
-description: "How to create skills for Sinoclaw Agent — SKILL.md format, guidelines, and publishing"
+description: "How to create skills for anan Agent — SKILL.md format, guidelines, and publishing"
 ---
 
 # Creating Skills
 
-Skills are the preferred way to add new capabilities to Sinoclaw Agent. They're easier to create than tools, require no code changes to the agent, and can be shared with the community.
+Skills are the preferred way to add new capabilities to anan Agent. They're easier to create than tools, require no code changes to the agent, and can be shared with the community.
 
 ## Should it be a Skill or a Tool?
 
@@ -200,7 +200,7 @@ Each entry supports:
 - `key` (required) — dotpath for the setting (e.g., `myplugin.path`)
 - `description` (required) — explains what the setting controls
 - `default` (optional) — default value if the user doesn't configure it
-- `prompt` (optional) — prompt text shown during `sinoclaw config migrate`; falls back to `description`
+- `prompt` (optional) — prompt text shown during `anan config migrate`; falls back to `description`
 
 **How it works:**
 
@@ -212,7 +212,7 @@ Each entry supports:
          path: ~/my-data
    ```
 
-2. **Discovery:** `sinoclaw config migrate` scans all enabled skills, finds unconfigured settings, and prompts the user. Settings also appear in `sinoclaw config show` under "Skill Settings."
+2. **Discovery:** `anan config migrate` scans all enabled skills, finds unconfigured settings, and prompts the user. Settings also appear in `anan config show` under "Skill Settings."
 
 3. **Runtime injection:** When a skill loads, its config values are resolved and appended to the skill message:
    ```
@@ -326,16 +326,16 @@ Bundled skills (in `skills/`) ship with every Hermes install. They should be **b
 - Document handling, web research, common dev workflows, system administration
 - Used regularly by a wide range of people
 
-If your skill is official and useful but not universally needed (e.g., a paid service integration, a heavyweight dependency), put it in **`optional-skills/`** — it ships with the repo, is discoverable via `sinoclaw skills browse` (labeled "official"), and installs with builtin trust.
+If your skill is official and useful but not universally needed (e.g., a paid service integration, a heavyweight dependency), put it in **`optional-skills/`** — it ships with the repo, is discoverable via `anan skills browse` (labeled "official"), and installs with builtin trust.
 
-If your skill is specialized, community-contributed, or niche, it's better suited for a **Skills Hub** — upload it to a registry and share it via `sinoclaw skills install`.
+If your skill is specialized, community-contributed, or niche, it's better suited for a **Skills Hub** — upload it to a registry and share it via `anan skills install`.
 
 ## Publishing Skills
 
 ### To the Skills Hub
 
 ```bash
-sinoclaw skills publish skills/my-skill --to github --repo owner/repo
+anan skills publish skills/my-skill --to github --repo owner/repo
 ```
 
 ### To a Custom Repository
@@ -343,7 +343,7 @@ sinoclaw skills publish skills/my-skill --to github --repo owner/repo
 Add your repo as a tap:
 
 ```bash
-sinoclaw skills tap add owner/repo
+anan skills tap add owner/repo
 ```
 
 Users can then search and install from your repository.

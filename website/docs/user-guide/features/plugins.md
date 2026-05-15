@@ -14,7 +14,7 @@ this is usually the right path. The developer guide's
 [Adding Tools](/docs/developer-guide/adding-tools) page is for built-in Hermes
 core tools that live in `tools/` and `toolsets.py`.
 
-**→ [Build a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin)** — step-by-step guide with a complete working example.
+**→ [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin)** — step-by-step guide with a complete working example.
 
 ## Quick overview
 
@@ -89,7 +89,7 @@ def register(ctx):
 
 Drop both files into `~/.anan/plugins/hello-world/`, restart Hermes, and the model can immediately call `hello_world`. The hook prints a log line after every tool invocation.
 
-Project-local plugins under `./.sinoclaw/plugins/` are disabled by default. Enable them only for trusted repositories by setting `SINOCLAW_ENABLE_PROJECT_PLUGINS=true` before starting Hermes.
+Project-local plugins under `./.anan/plugins/` are disabled by default. Enable them only for trusted repositories by setting `SINOCLAW_ENABLE_PROJECT_PLUGINS=true` before starting Hermes.
 
 ## What plugins can do
 
@@ -101,11 +101,11 @@ Every `ctx.*` API below is available inside a plugin's `register(ctx)` function.
 | Add hooks | `ctx.register_hook("post_tool_call", callback)` |
 | Add slash commands | `ctx.register_command(name, handler, description)` — adds `/name` in CLI and gateway sessions |
 | Dispatch tools from commands | `ctx.dispatch_tool(name, args)` — invokes a registered tool with parent-agent context auto-wired |
-| Add CLI commands | `ctx.register_cli_command(name, help, setup_fn, handler_fn)` — adds `sinoclaw <plugin> <subcommand>` |
+| Add CLI commands | `ctx.register_cli_command(name, help, setup_fn, handler_fn)` — adds `anan <plugin> <subcommand>` |
 | Inject messages | `ctx.inject_message(content, role="user")` — see [Injecting Messages](#injecting-messages) |
 | Ship data files | `Path(__file__).parent / "data" / "file.yaml"` |
 | Bundle skills | `ctx.register_skill(name, path)` — namespaced as `plugin:skill`, loaded via `skill_view("plugin:skill")` |
-| Gate on env vars | `requires_env: [API_KEY]` in plugin.yaml — prompted during `sinoclaw plugins install` |
+| Gate on env vars | `requires_env: [API_KEY]` in plugin.yaml — prompted during `anan plugins install` |
 | Distribute via pip | `[project.entry-points."sinoclaw_agent.plugins"]` |
 | Register a gateway platform (Discord, Telegram, IRC, …) | `ctx.register_platform(name, label, adapter_factory, check_fn, ...)` — see [Adding Platform Adapters](/docs/developer-guide/adding-platform-adapters) |
 | Register an image-generation backend | `ctx.register_image_gen_provider(provider)` — see [Image Generation Provider Plugins](/docs/developer-guide/image-gen-provider-plugin) |
@@ -142,7 +142,7 @@ User plugins at `~/.anan/plugins/model-providers/<name>/` and `~/.anan/plugins/m
 
 ## Plugins are opt-in (with a few exceptions)
 
-**General plugins and user-installed backends are disabled by default** — discovery finds them (so they show up in `sinoclaw plugins` and `/plugins`), but nothing with hooks or tools loads until you add the plugin's name to `plugins.enabled` in `~/.anan/config.yaml`. This stops third-party code from running without your explicit consent.
+**General plugins and user-installed backends are disabled by default** — discovery finds them (so they show up in `anan plugins` and `/plugins`), but nothing with hooks or tools loads until you add the plugin's name to `plugins.enabled` in `~/.anan/config.yaml`. This stops third-party code from running without your explicit consent.
 
 ```yaml
 plugins:
@@ -161,7 +161,7 @@ hermes plugins enable <name>      # add to allow-list
 hermes plugins disable <name>     # remove from allow-list + add to disabled
 ```
 
-After `sinoclaw plugins install owner/repo`, you're asked `Enable 'name' now? [y/N]` — defaults to no. Skip the prompt for scripted installs with `--enable` or `--no-enable`.
+After `anan plugins install owner/repo`, you're asked `Enable 'name' now? [y/N]` — defaults to no. Skip the prompt for scripted installs with `--enable` or `--no-enable`.
 
 ### What the allow-list does NOT gate
 
@@ -219,10 +219,10 @@ The table above shows the four plugin categories, but within "General plugins" t
 
 | Want to add… | How | Authoring guide |
 |---|---|---|
-| A **tool** the LLM can call | Python plugin — `ctx.register_tool()` | [Build a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin) · [Adding Tools](/docs/developer-guide/adding-tools) |
-| A **lifecycle hook** (pre/post LLM, session start/end, tool filter) | Python plugin — `ctx.register_hook()` | [Hooks reference](/docs/user-guide/features/hooks) · [Build a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin) |
-| A **slash command** for the CLI / gateway | Python plugin — `ctx.register_command()` | [Build a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin) · [Extending the CLI](/docs/developer-guide/extending-the-cli) |
-| A **subcommand** for `sinoclaw <thing>` | Python plugin — `ctx.register_cli_command()` | [Extending the CLI](/docs/developer-guide/extending-the-cli) |
+| A **tool** the LLM can call | Python plugin — `ctx.register_tool()` | [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin) · [Adding Tools](/docs/developer-guide/adding-tools) |
+| A **lifecycle hook** (pre/post LLM, session start/end, tool filter) | Python plugin — `ctx.register_hook()` | [Hooks reference](/docs/user-guide/features/hooks) · [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin) |
+| A **slash command** for the CLI / gateway | Python plugin — `ctx.register_command()` | [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin) · [Extending the CLI](/docs/developer-guide/extending-the-cli) |
+| A **subcommand** for `anan <thing>` | Python plugin — `ctx.register_cli_command()` | [Extending the CLI](/docs/developer-guide/extending-the-cli) |
 | A bundled **skill** that your plugin ships | Python plugin — `ctx.register_skill()` | [Creating Skills](/docs/developer-guide/creating-skills) |
 | An **inference backend** (LLM provider: OpenAI-compat, Codex, Anthropic-Messages, Bedrock) | Provider plugin — `register_provider(ProviderProfile(...))` in `plugins/model-providers/<name>/` | **[Model Provider Plugins](/docs/developer-guide/model-provider-plugin)** · [Adding Providers](/docs/developer-guide/adding-providers) |
 | A **gateway channel** (Discord / Telegram / IRC / Teams / etc.) | Platform plugin — `ctx.register_platform()` in `plugins/platforms/<name>/` | [Adding Platform Adapters](/docs/developer-guide/adding-platform-adapters) |
@@ -232,7 +232,7 @@ The table above shows the four plugin categories, but within "General plugins" t
 | A **TTS backend** (any CLI — Piper, VoxCPM, Kokoro, xtts, voice-cloning scripts, …) | Config-driven — declare under `tts.providers.<name>` with `type: command` in `config.yaml` | [TTS setup](/docs/user-guide/features/tts#custom-command-providers) |
 | An **STT backend** (custom whisper binary, local ASR CLI) | Config-driven — set `SINOCLAW_LOCAL_STT_COMMAND` env var to a shell template | [Voice Message Transcription (STT)](/docs/user-guide/features/tts#voice-message-transcription-stt) |
 | **External tools via MCP** (filesystem, GitHub, Linear, Notion, any MCP server) | Config-driven — declare `mcp_servers.<name>` with `command:` / `url:` in `config.yaml`. Hermes auto-discovers the server's tools and registers them alongside built-ins. | [MCP](/docs/user-guide/features/mcp) |
-| **Additional skill sources** (custom GitHub repos, private skill indexes) | CLI — `sinoclaw skills tap add <repo>` | [Skills Hub](/docs/user-guide/features/skills#skills-hub) · [Publishing a custom tap](/docs/user-guide/features/skills#publishing-a-custom-skill-tap) |
+| **Additional skill sources** (custom GitHub repos, private skill indexes) | CLI — `anan skills tap add <repo>` | [Skills Hub](/docs/user-guide/features/skills#skills-hub) · [Publishing a custom tap](/docs/user-guide/features/skills#publishing-a-custom-skill-tap) |
 | **Gateway event hooks** (fire on `gateway:startup`, `session:start`, `agent:end`, `command:*`) | Drop `HOOK.yaml` + `handler.py` into `~/.anan/hooks/<name>/` | [Event Hooks](/docs/user-guide/features/hooks#gateway-event-hooks) |
 | **Shell hooks** (run a shell command on events — notifications, audit logs, desktop alerts) | Config-driven — declare under `hooks:` in `config.yaml` | [Shell Hooks](/docs/user-guide/features/hooks#shell-hooks) |
 
@@ -242,7 +242,7 @@ Not everything is a Python plugin. Some extension surfaces intentionally use **c
 
 ## NixOS declarative plugins
 
-On NixOS, plugins can be installed declaratively via the module options — no `sinoclaw plugins install` needed. See the **[Nix Setup guide](/docs/getting-started/nix-setup#plugins)** for full details.
+On NixOS, plugins can be installed declaratively via the module options — no `anan plugins install` needed. See the **[Nix Setup guide](/docs/getting-started/nix-setup#plugins)** for full details.
 
 ```nix
 services.anan = {
@@ -273,7 +273,7 @@ hermes plugins disable my-plugin             # remove from allow-list + add to d
 
 ### Interactive UI
 
-Running `sinoclaw plugins` with no arguments opens a composite interactive screen:
+Running `anan plugins` with no arguments opens a composite interactive screen:
 
 ```
 Plugins
@@ -313,7 +313,7 @@ Plugins occupy one of three states:
 | `disabled` | Explicitly off — won't load even if also in `enabled` | (irrelevant) | Yes |
 | `not enabled` | Discovered but never opted in | No | No |
 
-The default for a newly-installed or bundled plugin is `not enabled`. `sinoclaw plugins list` shows all three distinct states so you can tell what's been explicitly turned off vs. what's just waiting to be enabled.
+The default for a newly-installed or bundled plugin is `not enabled`. `anan plugins list` shows all three distinct states so you can tell what's been explicitly turned off vs. what's just waiting to be enabled.
 
 In a running session, `/plugins` shows which plugins are currently loaded.
 
@@ -340,4 +340,4 @@ This enables plugins like remote control viewers, messaging bridges, or webhook 
 `inject_message` is only available in CLI mode. In gateway mode, there is no CLI reference and the method returns `False`.
 :::
 
-See the **[full guide](/docs/guides/build-a-sinoclaw-plugin)** for handler contracts, schema format, hook behavior, error handling, and common mistakes.
+See the **[full guide](/docs/guides/build-a-anan-plugin)** for handler contracts, schema format, hook behavior, error handling, and common mistakes.

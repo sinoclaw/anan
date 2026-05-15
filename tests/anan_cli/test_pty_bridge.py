@@ -56,7 +56,7 @@ class TestPtyBridgeSpawn:
 @skip_on_windows
 class TestPtyBridgeIO:
     def test_reads_child_stdout(self):
-        bridge = PtyBridge.spawn(["/bin/sh", "-c", "printf sinoclaw-ok"])
+        bridge = PtyBridge.spawn(["/bin/sh", "-c", "printf anan-ok"])
         try:
             output = _read_until(bridge, b"anan-ok")
             assert b"anan-ok" in output

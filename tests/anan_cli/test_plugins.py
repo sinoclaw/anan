@@ -1,4 +1,4 @@
-"""Tests for the Sinoclaw plugin system (anan_cli.plugins)."""
+"""Tests for the anan plugin system (anan_cli.plugins)."""
 
 import logging
 import os
@@ -102,12 +102,12 @@ class TestPluginDiscovery:
         assert mgr._plugins["hello_plugin"].enabled
 
     def test_discover_project_plugins(self, tmp_path, monkeypatch):
-        """Plugins in ./.sinoclaw/plugins/ are discovered."""
+        """Plugins in ./.anan/plugins/ are discovered."""
         project_dir = tmp_path / "project"
         project_dir.mkdir()
         monkeypatch.chdir(project_dir)
         monkeypatch.setenv("SINOCLAW_ENABLE_PROJECT_PLUGINS", "true")
-        plugins_dir = project_dir / ".sinoclaw" / "plugins"
+        plugins_dir = project_dir / ".anan" / "plugins"
         _make_plugin_dir(plugins_dir, "proj_plugin")
 
         mgr = PluginManager()
@@ -121,7 +121,7 @@ class TestPluginDiscovery:
         project_dir = tmp_path / "project"
         project_dir.mkdir()
         monkeypatch.chdir(project_dir)
-        plugins_dir = project_dir / ".sinoclaw" / "plugins"
+        plugins_dir = project_dir / ".anan" / "plugins"
         _make_plugin_dir(plugins_dir, "proj_plugin")
 
         mgr = PluginManager()

@@ -1,12 +1,12 @@
 ---
 sidebar_position: 16
 title: "Google Gemini"
-description: "Use Sinoclaw Agent with Google Gemini — native AI Studio API, API-key setup, OAuth option, tool calling, streaming, and quota guidance"
+description: "Use anan Agent with Google Gemini — native AI Studio API, API-key setup, OAuth option, tool calling, streaming, and quota guidance"
 ---
 
 # Google Gemini
 
-Sinoclaw Agent supports Google Gemini as a native provider using the **Google AI Studio / Gemini API** — not the OpenAI-compatible endpoint. This lets Hermes translate its internal OpenAI-shaped message and tool loop into Gemini's native `generateContent` API while preserving tool calling, streaming, multimodal inputs, and Gemini-specific response metadata.
+anan Agent supports Google Gemini as a native provider using the **Google AI Studio / Gemini API** — not the OpenAI-compatible endpoint. This lets Hermes translate its internal OpenAI-shaped message and tool loop into Gemini's native `generateContent` API while preserving tool calling, streaming, multimodal inputs, and Gemini-specific response metadata.
 
 Hermes also supports a separate **Google Gemini (OAuth)** provider that uses the same Cloud Code Assist backend as Google's Gemini CLI. Use the API-key provider (`gemini`) for the lowest-risk official API path.
 
@@ -47,7 +47,7 @@ model:
 
 ## Configuration
 
-After running `sinoclaw model`, your `~/.anan/config.yaml` will contain:
+After running `anan model`, your `~/.anan/config.yaml` will contain:
 
 ```yaml
 model:
@@ -92,7 +92,7 @@ Google also exposes an OpenAI-compatible endpoint:
 https://generativelanguage.googleapis.com/v1beta/openai/
 ```
 
-For Sinoclaw agent sessions, prefer the native Gemini endpoint above. Hermes includes a native Gemini adapter so it can map multi-turn tool use, tool-call results, streaming, multimodal inputs, and Gemini response metadata directly onto Gemini's `generateContent` API. The OpenAI-compatible endpoint is still useful when you specifically need OpenAI API compatibility.
+For anan agent sessions, prefer the native Gemini endpoint above. Hermes includes a native Gemini adapter so it can map multi-turn tool use, tool-call results, streaming, multimodal inputs, and Gemini response metadata directly onto Gemini's `generateContent` API. The OpenAI-compatible endpoint is still useful when you specifically need OpenAI API compatibility.
 
 If you previously set `GEMINI_BASE_URL` to the `/openai` URL, remove it or change it:
 
@@ -113,7 +113,7 @@ This uses browser PKCE login and the Cloud Code Assist backend. It can be useful
 
 ## Available Models
 
-The `sinoclaw model` picker shows Gemini models maintained in Hermes' provider registry. Common choices include:
+The `anan model` picker shows Gemini models maintained in Hermes' provider registry. Common choices include:
 
 | Model | ID | Notes |
 |-------|----|-------|
@@ -122,7 +122,7 @@ The `sinoclaw model` picker shows Gemini models maintained in Hermes' provider r
 | Gemini 3 Flash Preview | `gemini-3-flash-preview` | Recommended default balance of speed and capability |
 | Gemini 3.1 Flash Lite Preview | `gemini-3.1-flash-lite-preview` | Fastest / lowest-cost option when available |
 
-Model availability changes over time. If a model disappears or is not enabled for your key, run `sinoclaw model` again and pick one from the current list.
+Model availability changes over time. If a model disappears or is not enabled for your key, run `anan model` again and pick one from the current list.
 
 :::info Model IDs
 Use Gemini's native model IDs such as `gemini-3-flash-preview`, not OpenRouter-style IDs like `google/gemini-3-flash-preview`, when `provider: gemini`.
@@ -157,7 +157,7 @@ Useful evaluation IDs include:
 | Gemma 4 31B IT | `gemma-4-31b-it` | Larger Gemma model; useful for compatibility and quality evaluation |
 | Gemma 4 26B A4B IT | `gemma-4-26b-a4b-it` | Smaller active-parameter variant when available |
 
-These models are best treated as evaluation options on Gemini API keys. Google's Gemma API pricing is free-tier-only and the usage caps are low compared with production Gemini models, so sustained Sinoclaw agent use should normally move to a paid Gemini model, a self-hosted deployment, or another provider with appropriate quota.
+These models are best treated as evaluation options on Gemini API keys. Google's Gemma API pricing is free-tier-only and the usage caps are low compared with production Gemini models, so sustained anan agent use should normally move to a paid Gemini model, a self-hosted deployment, or another provider with appropriate quota.
 
 To use a Gemma model that is hidden from the picker, set it directly:
 
@@ -181,12 +181,12 @@ Use the `/model` command during a conversation:
 /model gemini-3.1-flash-lite-preview
 ```
 
-If you have not configured Gemini yet, exit the session and run `sinoclaw model` first. `/model` switches among already-configured providers and models; it does not collect new API keys.
+If you have not configured Gemini yet, exit the session and run `anan model` first. `/model` switches among already-configured providers and models; it does not collect new API keys.
 
 ## Diagnostics
 
 ```bash
-sinoclaw doctor
+anan doctor
 ```
 
 The doctor checks:
@@ -195,7 +195,7 @@ The doctor checks:
 - Whether Gemini OAuth credentials exist for `google-gemini-cli`
 - Whether configured provider credentials can be resolved
 
-For OAuth quota usage, run this inside a Sinoclaw session:
+For OAuth quota usage, run this inside a anan session:
 
 ```text
 /gquota
@@ -205,11 +205,11 @@ For OAuth quota usage, run this inside a Sinoclaw session:
 
 ## Gateway (Messaging Platforms)
 
-Gemini works with all Sinoclaw gateway platforms (Telegram, Discord, Slack, WhatsApp, LINE, Feishu, etc.). Configure Gemini as your provider, then start the gateway normally:
+Gemini works with all anan gateway platforms (Telegram, Discord, Slack, WhatsApp, LINE, Feishu, etc.). Configure Gemini as your provider, then start the gateway normally:
 
 ```bash
-sinoclaw gateway setup
-sinoclaw gateway start
+anan gateway setup
+anan gateway start
 ```
 
 The gateway reads `config.yaml` and uses the same Gemini provider configuration.
@@ -226,7 +226,7 @@ GOOGLE_API_KEY=...
 GEMINI_API_KEY=...
 ```
 
-Then run `sinoclaw model` again.
+Then run `anan model` again.
 
 ### "This Google API key is on the free tier"
 
@@ -240,9 +240,9 @@ hermes model
 
 ### "404 model not found"
 
-The selected model is not available for your account, region, or key. Run `sinoclaw model` again and pick another Gemini model from the current list.
+The selected model is not available for your account, region, or key. Run `anan model` again and pick another Gemini model from the current list.
 
-### Gemma model is not shown in `sinoclaw model`
+### Gemma model is not shown in `anan model`
 
 Hermes may hide low-throughput Gemma models from the picker by default. If you intentionally want to evaluate one, set the model ID directly in `~/.anan/config.yaml`.
 
@@ -270,7 +270,7 @@ The `google-gemini-cli` provider uses a Gemini CLI / Cloud Code Assist OAuth flo
 
 ### Tool calling fails with schema errors
 
-Upgrade Hermes and rerun `sinoclaw model`. The native Gemini adapter sanitizes tool schemas for Gemini's stricter function-declaration format; older builds or custom endpoints may not.
+Upgrade Hermes and rerun `anan model`. The native Gemini adapter sanitizes tool schemas for Gemini's stricter function-declaration format; older builds or custom endpoints may not.
 
 ## Related
 

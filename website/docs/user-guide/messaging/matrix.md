@@ -1,12 +1,12 @@
 ---
 sidebar_position: 9
 title: "Matrix"
-description: "Set up Sinoclaw Agent as a Matrix bot"
+description: "Set up anan Agent as a Matrix bot"
 ---
 
 # Matrix Setup
 
-Sinoclaw Agent integrates with Matrix, the open, federated messaging protocol. Matrix lets you run your own homeserver or use a public one like matrix.org — either way, you keep control of your communications. The bot connects via the `mautrix` Python SDK, processes messages through the Sinoclaw Agent pipeline (including tool use, memory, and reasoning), and responds in real time. It supports text, file attachments, images, audio, video, and optional end-to-end encryption (E2EE).
+anan Agent integrates with Matrix, the open, federated messaging protocol. Matrix lets you run your own homeserver or use a public one like matrix.org — either way, you keep control of your communications. The bot connects via the `mautrix` Python SDK, processes messages through the anan Agent pipeline (including tool use, memory, and reasoning), and responds in real time. It supports text, file attachments, images, audio, video, and optional end-to-end encryption (E2EE).
 
 Hermes works with any Matrix homeserver — Synapse, Conduit, Dendrite, or matrix.org.
 
@@ -100,7 +100,7 @@ If you run your own homeserver (Synapse, Conduit, Dendrite):
 register_new_matrix_user -c /etc/synapse/homeserver.yaml http://localhost:8008
 ```
 
-2. Choose a username like `hermes` — the full user ID will be `@sinoclaw:your-server.org`.
+2. Choose a username like `hermes` — the full user ID will be `@anan:your-server.org`.
 
 ### Option B: Use matrix.org or Another Public Homeserver
 
@@ -132,7 +132,7 @@ curl -X POST https://your-server/_matrix/client/v3/login \
   -H "Content-Type: application/json" \
   -d '{
     "type": "m.login.password",
-    "user": "@sinoclaw:your-server.org",
+    "user": "@anan:your-server.org",
     "password": "your-password"
   }'
 ```
@@ -148,13 +148,13 @@ The access token gives full access to the bot's Matrix account. Never share it p
 Instead of providing an access token, you can give Hermes the bot's user ID and password. Hermes will log in automatically on startup. This is simpler but means the password is stored in your `.env` file.
 
 ```bash
-MATRIX_USER_ID=@sinoclaw:your-server.org
+MATRIX_USER_ID=@anan:your-server.org
 MATRIX_PASSWORD=your-password
 ```
 
 ## Step 3: Find Your Matrix User ID
 
-Sinoclaw Agent uses your Matrix User ID to control who can interact with the bot. Matrix User IDs follow the format `@username:server`.
+anan Agent uses your Matrix User ID to control who can interact with the bot. Matrix User IDs follow the format `@username:server`.
 
 To find yours:
 
@@ -166,14 +166,14 @@ To find yours:
 Matrix User IDs always start with `@` and contain a `:` followed by the server name. For example: `@alice:matrix.org`, `@bob:your-server.com`.
 :::
 
-## Step 4: Configure Sinoclaw Agent
+## Step 4: Configure anan Agent
 
 ### Option A: Interactive Setup (Recommended)
 
 Run the guided setup command:
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 Select **Matrix** when prompted, then provide your homeserver URL, access token (or user ID + password), and allowed user IDs when asked.
@@ -190,7 +190,7 @@ MATRIX_HOMESERVER=https://matrix.example.org
 MATRIX_ACCESS_TOKEN=***
 
 # Optional: user ID (auto-detected from token if omitted)
-# MATRIX_USER_ID=@sinoclaw:matrix.example.org
+# MATRIX_USER_ID=@anan:matrix.example.org
 
 # Security: restrict who can interact with the bot
 MATRIX_ALLOWED_USERS=@alice:matrix.example.org
@@ -204,7 +204,7 @@ MATRIX_ALLOWED_USERS=@alice:matrix.example.org
 ```bash
 # Required
 MATRIX_HOMESERVER=https://matrix.example.org
-MATRIX_USER_ID=@sinoclaw:matrix.example.org
+MATRIX_USER_ID=@anan:matrix.example.org
 MATRIX_PASSWORD=***
 
 # Security
@@ -224,13 +224,13 @@ group_sessions_per_user: true
 Once configured, start the Matrix gateway:
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 The bot should connect to your homeserver and start syncing within a few seconds. Send it a message — either a DM or in a room it has joined — to test.
 
 :::tip
-You can run `sinoclaw gateway` in the background or as a systemd service for persistent operation. See the deployment docs for details.
+You can run `anan gateway` in the background or as a systemd service for persistent operation. See the deployment docs for details.
 :::
 
 ## End-to-End Encryption (E2EE)
@@ -245,7 +245,7 @@ E2EE requires the `mautrix` library with encryption extras and the `libolm` C li
 # Install mautrix with E2EE support
 pip install 'mautrix[encryption]'
 
-# Or install with sinoclaw extras
+# Or install with anan extras
 pip install 'anan[matrix]'
 ```
 
@@ -302,10 +302,10 @@ Hermes detects this condition on startup and refuses to enable E2EE, logging: `d
    ```bash
    sudo systemctl stop matrix-synapse
    sudo sqlite3 /var/lib/matrix-synapse/homeserver.db "
-     DELETE FROM e2e_device_keys_json WHERE device_id = 'DEVICE_ID' AND user_id = '@sinoclaw:your-server';
-     DELETE FROM e2e_one_time_keys_json WHERE device_id = 'DEVICE_ID' AND user_id = '@sinoclaw:your-server';
-     DELETE FROM e2e_fallback_keys_json WHERE device_id = 'DEVICE_ID' AND user_id = '@sinoclaw:your-server';
-     DELETE FROM devices WHERE device_id = 'DEVICE_ID' AND user_id = '@sinoclaw:your-server';
+     DELETE FROM e2e_device_keys_json WHERE device_id = 'DEVICE_ID' AND user_id = '@anan:your-server';
+     DELETE FROM e2e_one_time_keys_json WHERE device_id = 'DEVICE_ID' AND user_id = '@anan:your-server';
+     DELETE FROM e2e_fallback_keys_json WHERE device_id = 'DEVICE_ID' AND user_id = '@anan:your-server';
+     DELETE FROM devices WHERE device_id = 'DEVICE_ID' AND user_id = '@anan:your-server';
    "
    sudo systemctl start matrix-synapse
    ```
@@ -426,9 +426,9 @@ changed identity keys for the same device as suspicious.
      -H "Content-Type: application/json" \
      -d '{
        "type": "m.login.password",
-       "identifier": {"type": "m.id.user", "user": "@sinoclaw:your-server.org"},
+       "identifier": {"type": "m.id.user", "user": "@anan:your-server.org"},
        "password": "***",
-       "initial_device_display_name": "Sinoclaw Agent"
+       "initial_device_display_name": "anan Agent"
      }'
    ```
 
@@ -456,7 +456,7 @@ changed identity keys for the same device as suspicious.
 5. **Restart the gateway**:
 
    ```bash
-   sinoclaw gateway run
+   anan gateway run
    ```
 
    If `MATRIX_RECOVERY_KEY` is set, you should see `Matrix: cross-signing verified via recovery key` in the logs.
@@ -488,14 +488,14 @@ Matrix E2EE requires `libolm`, which doesn't compile on macOS ARM64 (Apple Silic
 
 ```
 macOS (Host):
-  └─ sinoclaw gateway
+  └─ anan gateway
        ├─ api_server adapter ← listens on 0.0.0.0:8642
        ├─ AIAgent ← single source of truth
        ├─ Sessions, memory, skills
        └─ Local file access (Obsidian, projects, etc.)
 
 Linux VM (Docker):
-  └─ sinoclaw gateway (proxy mode)
+  └─ anan gateway (proxy mode)
        ├─ Matrix adapter ← E2EE decryption/encryption
        └─ HTTP forward → macOS:8642/v1/chat/completions
            (no LLM API keys, no agent, no inference)
@@ -522,7 +522,7 @@ API_SERVER_HOST=0.0.0.0
 Start the gateway:
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 You should see the API server start alongside any other platforms you have configured. Verify it's reachable from the VM:
@@ -540,7 +540,7 @@ The container needs Matrix credentials and the proxy URL. It does NOT need LLM A
 
 ```yaml
 services:
-  sinoclaw-matrix:
+  anan-matrix:
     build: .
     environment:
       # Matrix credentials
@@ -574,7 +574,7 @@ That's the entire container. No API keys for OpenRouter, Anthropic, or any infer
 
 1. Start the host gateway first:
    ```bash
-   sinoclaw gateway
+   anan gateway
    ```
 
 2. Start the Docker container:
@@ -590,7 +590,7 @@ Proxy mode is configured on the **container side** (the thin gateway):
 
 | Setting | Description |
 |---------|-------------|
-| `GATEWAY_PROXY_URL` | URL of the remote Sinoclaw API server (e.g., `http://192.168.1.100:8642`) |
+| `GATEWAY_PROXY_URL` | URL of the remote anan API server (e.g., `http://192.168.1.100:8642`) |
 | `GATEWAY_PROXY_KEY` | Bearer token for authentication (must match `API_SERVER_KEY` on the host) |
 | `gateway.proxy_url` | Same as `GATEWAY_PROXY_URL` but in `config.yaml` |
 
@@ -608,7 +608,7 @@ The host side needs:
 Proxy mode is not limited to Matrix. Any platform adapter can use it — set `GATEWAY_PROXY_URL` on any gateway instance and it will forward to the remote agent instead of running one locally. This is useful for any deployment where the platform adapter needs to run in a different environment from the agent (network isolation, E2EE requirements, resource constraints).
 
 :::tip
-Session continuity is maintained via the `X-Sinoclaw-Session-Id` header. The host's API server tracks sessions by this ID, so conversations persist across messages just like they would with a local agent.
+Session continuity is maintained via the `X-anan-Session-Id` header. The host's API server tracks sessions by this ID, so conversations persist across messages just like they would with a local agent.
 :::
 
 :::note
@@ -623,9 +623,9 @@ Session continuity is maintained via the `X-Sinoclaw-Session-Id` header. The hos
 
 ### Bot is offline
 
-**Cause**: The Sinoclaw gateway isn't running, or it failed to connect.
+**Cause**: The anan gateway isn't running, or it failed to connect.
 
-**Fix**: Check that `sinoclaw gateway` is running. Look at the terminal output for error messages. Common issues: wrong homeserver URL, expired access token, homeserver unreachable.
+**Fix**: Check that `anan gateway` is running. Look at the terminal output for error messages. Common issues: wrong homeserver URL, expired access token, homeserver unreachable.
 
 ### "User not allowed" / Bot ignores you
 
@@ -639,7 +639,7 @@ Session continuity is maintained via the `X-Sinoclaw-Session-Id` header. The hos
 Always set `MATRIX_ALLOWED_USERS` to restrict who can interact with the bot. Without it, the gateway denies all users by default as a safety measure. Only add User IDs of people you trust — authorized users have full access to the agent's capabilities, including tool use and system access.
 :::
 
-For more information on securing your Sinoclaw Agent deployment, see the [Security Guide](../security.md).
+For more information on securing your anan Agent deployment, see the [Security Guide](../security.md).
 
 ## Notes
 

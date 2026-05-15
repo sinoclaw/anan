@@ -172,7 +172,7 @@ events:
 # ~/.anan/hooks/session-webhook/handler.py
 import httpx
 
-WEBHOOK_URL = "https://your-service.example.com/sinoclaw-events"
+WEBHOOK_URL = "https://your-service.example.com/anan-events"
 
 async def handle(event_type: str, context: dict):
     async with httpx.AsyncClient() as client:
@@ -201,7 +201,7 @@ Create `~/.anan/BOOT.md`. Write it as if you were giving instructions to a human
 ```markdown
 # Startup Checklist
 
-1. Run `sinoclaw cron list` and check if any scheduled jobs failed overnight.
+1. Run `anan cron list` and check if any scheduled jobs failed overnight.
 2. If any failed, send a summary to Discord #ops using the `send_message` tool.
 3. Check if `/opt/app/deploy.log` has any ERROR lines from the last 24 hours. If yes, summarize them and include in the same Discord message.
 4. If nothing went wrong, reply with only `[SILENT]` so no message is sent.
@@ -314,7 +314,7 @@ Without these, a bare `AIAgent()` falls back to built-in defaults and will 401 a
 Restart the gateway:
 
 ```bash
-sinoclaw gateway restart
+anan gateway restart
 ```
 
 Watch the logs:
@@ -801,7 +801,7 @@ def my_callback(session_id: str, platform: str, **kwargs):
 
 ---
 
-See the **[Build a Plugin guide](/docs/guides/build-a-sinoclaw-plugin)** for the full walkthrough including tool schemas, handlers, and advanced hook patterns.
+See the **[Build a Plugin guide](/docs/guides/build-a-anan-plugin)** for the full walkthrough including tool schemas, handlers, and advanced hook patterns.
 
 ---
 
@@ -1202,7 +1202,7 @@ Each time the event fires, Hermes spawns a subprocess for every matching hook (m
 ```jsonc
 // Block a pre_tool_call (both shapes accepted; normalised internally):
 {"decision": "block", "reason":  "Forbidden: rm -rf"}   // Claude-Code style
-{"action":   "block", "message": "Forbidden: rm -rf"}   // Sinoclaw-canonical
+{"action":   "block", "message": "Forbidden: rm -rf"}   // anan-canonical
 
 // Inject context for pre_llm_call:
 {"context": "Today is Friday, 2026-04-17"}
@@ -1277,7 +1277,7 @@ else
 fi
 ```
 
-Claude Code's `UserPromptSubmit` event is intentionally not a separate Sinoclaw event — `pre_llm_call` fires at the same place and already supports context injection. Use it here.
+Claude Code's `UserPromptSubmit` event is intentionally not a separate anan event — `pre_llm_call` fires at the same place and already supports context injection. Use it here.
 
 #### 4. Log every subagent completion
 
@@ -1301,22 +1301,22 @@ Each unique `(event, command)` pair prompts the user for approval the first time
 
 Three escape hatches bypass the interactive prompt — any one is sufficient:
 
-1. `--accept-hooks` flag on the CLI (e.g. `sinoclaw --accept-hooks chat`)
+1. `--accept-hooks` flag on the CLI (e.g. `anan --accept-hooks chat`)
 2. `SINOCLAW_ACCEPT_HOOKS=1` environment variable
 3. `hooks_auto_accept: true` in `cli-config.yaml`
 
 Non-TTY runs (gateway, cron, CI) need one of these three — otherwise any newly-added hook silently stays un-registered and logs a warning.
 
-**Script edits are silently trusted.** The allowlist keys on the exact command string, not the script's hash, so editing the script on disk does not invalidate consent. `sinoclaw hooks doctor` flags mtime drift so you can spot edits and decide whether to re-approve.
+**Script edits are silently trusted.** The allowlist keys on the exact command string, not the script's hash, so editing the script on disk does not invalidate consent. `anan hooks doctor` flags mtime drift so you can spot edits and decide whether to re-approve.
 
-### The `sinoclaw hooks` CLI
+### The `anan hooks` CLI
 
 | Command | What it does |
 |---------|--------------|
-| `sinoclaw hooks list` | Dump configured hooks with matcher, timeout, and consent status |
-| `sinoclaw hooks test <event> [--for-tool X] [--payload-file F]` | Fire every matching hook against a synthetic payload and print the parsed response |
-| `sinoclaw hooks revoke <command>` | Remove every allowlist entry matching `<command>` (takes effect on next restart) |
-| `sinoclaw hooks doctor` | For every configured hook: check exec bit, allowlist status, mtime drift, JSON output validity, and rough execution time |
+| `anan hooks list` | Dump configured hooks with matcher, timeout, and consent status |
+| `anan hooks test <event> [--for-tool X] [--payload-file F]` | Fire every matching hook against a synthetic payload and print the parsed response |
+| `anan hooks revoke <command>` | Remove every allowlist entry matching `<command>` (takes effect on next restart) |
+| `anan hooks doctor` | For every configured hook: check exec bit, allowlist status, mtime drift, JSON output validity, and rough execution time |
 
 ### Security
 
@@ -1324,7 +1324,7 @@ Shell hooks run with **your full user credentials** — same trust boundary as a
 
 - Only reference scripts you wrote or fully reviewed.
 - Keep scripts inside `~/.anan/agent-hooks/` so the path is easy to audit.
-- Re-run `sinoclaw hooks doctor` after you pull a shared config to spot newly-added hooks before they register.
+- Re-run `anan hooks doctor` after you pull a shared config to spot newly-added hooks before they register.
 - If your config.yaml is version-controlled across a team, review PRs that change the `hooks:` section the same way you'd review CI config.
 
 ### Ordering and precedence

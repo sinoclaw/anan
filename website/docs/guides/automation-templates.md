@@ -14,8 +14,8 @@ Every template works with **any model** — not locked to a single provider.
 | Trigger | How | Tool |
 |---------|-----|------|
 | **Schedule** | Runs on a cadence (hourly, nightly, weekly) | `cronjob` tool or `/cron` slash command |
-| **GitHub Event** | Fires on PR opens, pushes, issues, CI results | Webhook platform (`sinoclaw webhook subscribe`) |
-| **API Call** | External service POSTs JSON to your endpoint | Webhook platform (config.yaml routes or `sinoclaw webhook subscribe`) |
+| **GitHub Event** | Fires on PR opens, pushes, issues, CI results | Webhook platform (`anan webhook subscribe`) |
+| **API Call** | External service POSTs JSON to your endpoint | Webhook platform (config.yaml routes or `anan webhook subscribe`) |
 
 All three support delivery to Telegram, Discord, Slack, SMS, email, GitHub comments, or local files.
 :::
@@ -32,9 +32,9 @@ Label, prioritize, and summarize new issues every night. Delivers a digest to yo
 
 ```bash
 hermes cron create "0 2 * * *" \
-  "You are a project manager triaging the sinoclaw/anan GitHub repo.
+  "You are a project manager triaging the anan/anan GitHub repo.
 
-1. Run: gh issue list --repo sinoclaw/anan --state open --json number,title,labels,author,createdAt --limit 30
+1. Run: gh issue list --repo anan/anan --state open --json number,title,labels,author,createdAt --limit 30
 2. Identify issues opened in the last 24 hours
 3. For each new issue:
    - Suggest a priority label (P0-critical, P1-high, P2-medium, P3-low)
@@ -114,9 +114,9 @@ Weekly scan of merged PRs to find API changes that need documentation updates.
 
 ```bash
 hermes cron create "0 9 * * 1" \
-  "Scan the sinoclaw/anan repo for documentation drift.
+  "Scan the anan/anan repo for documentation drift.
 
-1. Run: gh pr list --repo sinoclaw/anan --state merged --json number,title,files,mergedAt --limit 30
+1. Run: gh pr list --repo anan/anan --state merged --json number,title,files,mergedAt --limit 30
 2. Filter to PRs merged in the last 7 days
 3. For each merged PR, check if it modified:
    - Tool schemas (tools/*.py) — may need docs/reference/tools-reference.md update
@@ -239,7 +239,7 @@ results = []
 for ep in ENDPOINTS:
     try:
         start = time.time()
-        req = urllib.request.Request(ep["url"], headers={"User-Agent": "Sinoclaw-Monitor/1.0"})
+        req = urllib.request.Request(ep["url"], headers={"User-Agent": "anan-Monitor/1.0"})
         resp = urllib.request.urlopen(req, timeout=10)
         elapsed = round((time.time() - start) * 1000)
         results.append({"name": ep["name"], "status": resp.getcode(), "ms": elapsed})
@@ -334,7 +334,7 @@ Daily arXiv scan that saves summaries to your note-taking system.
 
 ```bash
 hermes cron create "0 8 * * *" \
-  "Search arXiv for the 3 most interesting papers on 'language model reasoning' OR 'tool-use agents' from the past day. For each paper, create an Obsidian note with the title, authors, abstract summary, key contribution, and potential relevance to Sinoclaw Agent development." \
+  "Search arXiv for the 3 most interesting papers on 'language model reasoning' OR 'tool-use agents' from the past day. For each paper, create an Obsidian note with the title, authors, abstract summary, key contribution, and potential relevance to anan Agent development." \
   --skills "arxiv,obsidian" \
   --name "Paper digest" \
   --deliver local

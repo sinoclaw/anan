@@ -59,7 +59,7 @@ class TestGatewayPrompt:
     def test_writes_prompt_file_and_reads_response(self, tmp_path):
         """Writes .update_prompt.json, reads .update_response, returns answer."""
         import threading
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
 
         # Simulate the response arriving after a short delay
@@ -83,7 +83,7 @@ class TestGatewayPrompt:
     def test_prompt_file_content(self, tmp_path):
         """Verifies the prompt JSON structure."""
         import threading
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
 
         prompt_data = None
@@ -113,7 +113,7 @@ class TestGatewayPrompt:
 
     def test_timeout_returns_default(self, tmp_path):
         """Returns default when no response within timeout."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
 
         with patch.dict(os.environ, {"ANAN_HOME": str(anan_home)}):
@@ -124,7 +124,7 @@ class TestGatewayPrompt:
 
     def test_empty_response_returns_default(self, tmp_path):
         """Empty response file returns default."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / ".update_response").write_text("")
 

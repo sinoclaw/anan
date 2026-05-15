@@ -1,12 +1,12 @@
 ---
 sidebar_position: 3
 title: "Nix & NixOS Setup"
-description: "Install and deploy Sinoclaw Agent with Nix — from quick `nix run` to fully declarative NixOS module with container mode"
+description: "Install and deploy anan Agent with Nix — from quick `nix run` to fully declarative NixOS module with container mode"
 ---
 
 # Nix & NixOS Setup
 
-Sinoclaw Agent ships a Nix flake with three levels of integration:
+anan Agent ships a Nix flake with three levels of integration:
 
 | Level | Who it's for | What you get |
 |-------|-------------|--------------|
@@ -17,9 +17,9 @@ Sinoclaw Agent ships a Nix flake with three levels of integration:
 :::info What's different from the standard install
 The `curl | bash` installer manages Python, Node, and dependencies itself. The Nix flake replaces all of that — every Python dependency is a Nix derivation built by [uv2nix](https://github.com/pyproject-nix/uv2nix), and runtime tools (Node.js, git, ripgrep, ffmpeg) are wrapped into the binary's PATH. There is no runtime pip, no venv activation, no `npm install`.
 
-**For non-NixOS users**, this only changes the install step. Everything after (`sinoclaw setup`, `sinoclaw gateway install`, config editing) works identically to the standard install.
+**For non-NixOS users**, this only changes the install step. Everything after (`anan setup`, `anan gateway install`, config editing) works identically to the standard install.
 
-**For NixOS module users**, the entire lifecycle is different: configuration lives in `configuration.nix`, secrets go through sops-nix/agenix, the service is a systemd unit, and CLI config commands are blocked. You manage sinoclaw the same way you manage any other NixOS service.
+**For NixOS module users**, the entire lifecycle is different: configuration lives in `configuration.nix`, secrets go through sops-nix/agenix, the service is a systemd unit, and CLI config commands are blocked. You manage anan the same way you manage any other NixOS service.
 :::
 
 ## Prerequisites
@@ -35,25 +35,25 @@ No clone needed. Nix fetches, builds, and runs everything:
 
 ```bash
 # Run directly (builds on first use, cached after)
-nix run github:sinoclaw/anan -- setup
-nix run github:sinoclaw/anan -- chat
+nix run github:anan/anan -- setup
+nix run github:anan/anan -- chat
 
 # Or install persistently
-nix profile install github:sinoclaw/anan
-sinoclaw setup
+nix profile install github:anan/anan
+anan setup
 hermes chat
 ```
 
-After `nix profile install`, `hermes`, `anan`, and `sinoclaw-acp` are on your PATH. From here, the workflow is identical to the [standard installation](./installation.md) — `sinoclaw setup` walks you through provider selection, `sinoclaw gateway install` sets up a launchd (macOS) or systemd user service, and config lives in `~/.anan/`.
+After `nix profile install`, `hermes`, `anan`, and `anan-acp` are on your PATH. From here, the workflow is identical to the [standard installation](./installation.md) — `anan setup` walks you through provider selection, `anan gateway install` sets up a launchd (macOS) or systemd user service, and config lives in `~/.anan/`.
 
 <details>
 <summary><strong>Building from a local clone</strong></summary>
 
 ```bash
-git clone https://github.com/sinoclaw/anan.git
+git clone https://github.com/anan/anan.git
 cd anan
 nix build
-./result/bin/sinoclaw setup
+./result/bin/anan setup
 ```
 
 </details>
@@ -75,7 +75,7 @@ This module requires NixOS. For non-NixOS systems (macOS, other Linux distros), 
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    anan.url = "github:sinoclaw/anan";
+    anan.url = "github:anan/anan";
   };
 
   outputs = { nixpkgs, anan, ... }: {
@@ -110,7 +110,7 @@ That's it. `nixos-rebuild switch` creates the `hermes` user, generates `config.y
 The `environmentFiles` line above assumes you have [sops-nix](https://github.com/Mic92/sops-nix) or [agenix](https://github.com/ryantm/agenix) configured. The file should contain at least one LLM provider key (e.g., `OPENROUTER_API_KEY=sk-or-...`). See [Secrets Management](#secrets-management) for full setup. If you don't have a secrets manager yet, you can use a plain file as a starting point — just ensure it's not world-readable:
 
 ```bash
-echo "OPENROUTER_API_KEY=sk-or-your-key" | sudo install -m 0600 -o sinoclaw /dev/stdin /var/lib/hermes/env
+echo "OPENROUTER_API_KEY=sk-or-your-key" | sudo install -m 0600 -o anan /dev/stdin /var/lib/hermes/env
 ```
 
 ```nix
@@ -127,12 +127,12 @@ Setting `addToSystemPackages = true` does two things: puts the `hermes` CLI on y
 :::info
 When `container.enable = true` and `addToSystemPackages = true`, **every** `hermes` command on the host automatically routes into the managed container. This means your interactive CLI session runs inside the same environment as the gateway service — with access to all container-installed packages and tools.
 
-- The routing is transparent: `sinoclaw chat`, `sinoclaw sessions list`, `sinoclaw version`, etc. all exec into the container under the hood
+- The routing is transparent: `anan chat`, `anan sessions list`, `anan version`, etc. all exec into the container under the hood
 - All CLI flags are forwarded as-is
 - If the container isn't running, the CLI retries briefly (5s with a spinner for interactive use, 10s silently for scripts) then fails with a clear error — no silent fallback
-- For developers working on the sinoclaw codebase, set `SINOCLAW_DEV=1` to bypass container routing and run the local checkout directly
+- For developers working on the anan codebase, set `SINOCLAW_DEV=1` to bypass container routing and run the local checkout directly
 
-Set `container.hostUsers` to create a `~/.sinoclaw` symlink to the service state directory, so the host CLI and the container share sessions, config, and memories:
+Set `container.hostUsers` to create a `~/.anan` symlink to the service state directory, so the host CLI and the container share sessions, config, and memories:
 
 ```nix
 services.anan = {
@@ -156,7 +156,7 @@ security.sudo.extraRules = [{
 }];
 ```
 
-The CLI auto-detects when sudo is needed and uses it transparently. Without this, you'll need to run `sudo sinoclaw chat` manually.
+The CLI auto-detects when sudo is needed and uses it transparently. Without this, you'll need to run `sudo anan chat` manually.
 :::
 
 ### Verify It Works
@@ -172,7 +172,7 @@ journalctl -u anan -f
 
 # If addToSystemPackages is true, test the CLI
 hermes version
-sinoclaw config       # shows the generated config
+anan config       # shows the generated config
 ```
 
 ### Choosing a Deployment Mode
@@ -317,7 +317,7 @@ Quick reference for the most common things Nix users want to customize:
 | Change the LLM model | `settings.model.default` | `"anthropic/claude-sonnet-4"` |
 | Use a different provider endpoint | `settings.model.base_url` | `"https://openrouter.ai/api/v1"` |
 | Add API keys | `environmentFiles` | `[ config.sops.secrets."anan-env".path ]` |
-| Give the agent a personality | `${services.anan.stateDir}/.sinoclaw/SOUL.md` | manage the file directly |
+| Give the agent a personality | `${services.anan.stateDir}/.anan/SOUL.md` | manage the file directly |
 | Add MCP tool servers | `mcpServers.<name>` | See [MCP Servers](#mcp-servers) |
 | Mount host directories into container | `container.extraVolumes` | `[ "/data:/data:rw" ]` |
 | Pass GPU access to container | `container.extraOptions` | `[ "--gpus" "all" ]` |
@@ -325,8 +325,8 @@ Quick reference for the most common things Nix users want to customize:
 | Share state between host CLI and container | `container.hostUsers` | `[ "sidbin" ]` |
 | Make extra tools available to the agent | `extraPackages` | `[ pkgs.pandoc pkgs.imagemagick ]` |
 | Use a custom base image | `container.image` | `"ubuntu:24.04"` |
-| Override the sinoclaw package | `package` | `inputs.anan.packages.${system}.default.override { ... }` |
-| Change state directory | `stateDir` | `"/opt/sinoclaw"` |
+| Override the anan package | `package` | `inputs.anan.packages.${system}.default.override { ... }` |
+| Change state directory | `stateDir` | `"/opt/anan"` |
 | Set the agent's working directory | `workingDirectory` | `"/home/user/projects"` |
 
 ---
@@ -359,7 +359,7 @@ The secrets file contains key-value pairs:
 
 ```yaml
 # secrets/hermes.yaml (encrypted with sops)
-sinoclaw-env: |
+anan-env: |
     OPENROUTER_API_KEY=sk-or-...
     TELEGRAM_BOT_TOKEN=123456:ABC...
     ANTHROPIC_API_KEY=sk-ant-...
@@ -369,10 +369,10 @@ sinoclaw-env: |
 
 ```nix
 {
-  age.secrets.sinoclaw-env.file = ./secrets/sinoclaw-env.age;
+  age.secrets.anan-env.file = ./secrets/anan-env.age;
 
   services.anan.environmentFiles = [
-    config.age.secrets.sinoclaw-env.path
+    config.age.secrets.anan-env.path
   ];
 }
 ```
@@ -401,7 +401,7 @@ The `documents` option installs files into the agent's working directory (the `w
 - **`USER.md`** — context about the user the agent is interacting with.
 - Any other files you place here are visible to the agent as workspace files.
 
-The agent identity file is separate: Hermes loads its primary `SOUL.md` from `$ANAN_HOME/SOUL.md`, which in the NixOS module is `${services.anan.stateDir}/.sinoclaw/SOUL.md`. Putting `SOUL.md` in `documents` only creates a workspace file and will not replace the main persona file.
+The agent identity file is separate: Hermes loads its primary `SOUL.md` from `$ANAN_HOME/SOUL.md`, which in the NixOS module is `${services.anan.stateDir}/.anan/SOUL.md`. Putting `SOUL.md` in `documents` only creates a workspace file and will not replace the main persona file.
 
 ```nix
 {
@@ -478,11 +478,11 @@ The first OAuth authorization requires a browser-based consent flow. In a headle
 ```bash
 # Container mode
 docker exec -it anan \
-  sinoclaw mcp add my-oauth-server --url https://mcp.example.com/mcp --auth oauth
+  anan mcp add my-oauth-server --url https://mcp.example.com/mcp --auth oauth
 
 # Native mode
-sudo -u sinoclaw ANAN_HOME=/var/lib/hermes/.hermes \
-  sinoclaw mcp add my-oauth-server --url https://mcp.example.com/mcp --auth oauth
+sudo -u anan ANAN_HOME=/var/lib/hermes/.hermes \
+  anan mcp add my-oauth-server --url https://mcp.example.com/mcp --auth oauth
 ```
 
 The container uses `--network=host`, so the OAuth callback listener on `127.0.0.1` is reachable from the host browser.
@@ -492,7 +492,7 @@ The container uses `--network=host`, so the OAuth callback listener on `127.0.0.
 ```bash
 hermes mcp add my-oauth-server --url https://mcp.example.com/mcp --auth oauth
 scp ~/.anan/mcp-tokens/my-oauth-server{,.client}.json \
-    server:/var/lib/hermes/.sinoclaw/mcp-tokens/
+    server:/var/lib/hermes/.anan/mcp-tokens/
 # Ensure: chown hermes:hermes, chmod 0600
 ```
 
@@ -522,15 +522,15 @@ Some MCP servers can request LLM completions from the agent:
 
 ## Managed Mode
 
-When sinoclaw runs via the NixOS module, the following CLI commands are **blocked** with a descriptive error pointing you to `configuration.nix`:
+When anan runs via the NixOS module, the following CLI commands are **blocked** with a descriptive error pointing you to `configuration.nix`:
 
 | Blocked command | Why |
 |---|---|
-| `sinoclaw setup` | Config is declarative — edit `settings` in your Nix config |
-| `sinoclaw config edit` | Config is generated from `settings` |
+| `anan setup` | Config is declarative — edit `settings` in your Nix config |
+| `anan config edit` | Config is generated from `settings` |
 | `anan config set <key> <value>` | Config is generated from `settings` |
-| `sinoclaw gateway install` | The systemd service is managed by NixOS |
-| `sinoclaw gateway uninstall` | The systemd service is managed by NixOS |
+| `anan gateway install` | The systemd service is managed by NixOS |
+| `anan gateway uninstall` | The systemd service is managed by NixOS |
 
 This prevents drift between what Nix declares and what's on disk. Detection uses two signals:
 
@@ -547,13 +547,13 @@ To change configuration, edit your Nix config and run `sudo nixos-rebuild switch
 This section is only relevant if you're using `container.enable = true`. Skip it for native mode deployments.
 :::
 
-When container mode is enabled, sinoclaw runs inside a persistent Ubuntu container with the Nix-built binary bind-mounted read-only from the host:
+When container mode is enabled, anan runs inside a persistent Ubuntu container with the Nix-built binary bind-mounted read-only from the host:
 
 ```
 Host                                    Container
 ────                                    ─────────
 /nix/store/...-anan-0.1.0  ──►  /nix/store/... (ro)
-~/.sinoclaw -> /var/lib/hermes/.hermes       (symlink bridge, per hostUsers)
+~/.anan -> /var/lib/hermes/.hermes       (symlink bridge, per hostUsers)
 /var/lib/hermes/                    ──►  /data/          (rw)
   ├── current-package -> /nix/store/...    (symlink, updated each rebuild)
   ├── .gc-root -> /nix/store/...           (prevents nix-collect-garbage)
@@ -573,7 +573,7 @@ Host                                    Container
 Container writable layer (apt/pip/npm):   /usr, /usr/local, /tmp
 ```
 
-The Nix-built binary works inside the Ubuntu container because `/nix/store` is bind-mounted — it brings its own interpreter and all dependencies, so there's no reliance on the container's system libraries. The container entrypoint resolves through a `current-package` symlink: `/data/current-package/bin/sinoclaw gateway run --replace`. On `nixos-rebuild switch`, only the symlink is updated — the container keeps running.
+The Nix-built binary works inside the Ubuntu container because `/nix/store` is bind-mounted — it brings its own interpreter and all dependencies, so there's no reliance on the container's system libraries. The container entrypoint resolves through a `current-package` symlink: `/data/current-package/bin/anan gateway run --replace`. On `nixos-rebuild switch`, only the symlink is updated — the container keeps running.
 
 ### What Persists Across What
 
@@ -587,27 +587,27 @@ The Nix-built binary works inside the Ubuntu container because `/nix/store` is b
 | Volume/options change | **Yes** | Persists | Persists | **Lost** |
 | `environment`/`environmentFiles` change | No | Persists | Persists | Persists |
 
-The container is only recreated when its **identity hash** changes. The hash covers: schema version, image, `extraVolumes`, `extraOptions`, and the entrypoint script. Changes to environment variables, settings, documents, or the sinoclaw package itself do **not** trigger recreation.
+The container is only recreated when its **identity hash** changes. The hash covers: schema version, image, `extraVolumes`, `extraOptions`, and the entrypoint script. Changes to environment variables, settings, documents, or the anan package itself do **not** trigger recreation.
 
 :::warning Writable layer loss
 When the identity hash changes (image upgrade, new volumes, new container options), the container is destroyed and recreated from a fresh pull of `container.image`. Any `apt install`, `pip install`, or `npm install` packages in the writable layer are lost. State in `/data` and `/home/hermes` is preserved (these are bind mounts).
 
-If the agent relies on specific packages, consider baking them into a custom image (`container.image = "my-registry/sinoclaw-base:latest"`) or scripting their installation in the agent's SOUL.md.
+If the agent relies on specific packages, consider baking them into a custom image (`container.image = "my-registry/anan-base:latest"`) or scripting their installation in the agent's SOUL.md.
 :::
 
 ### GC Root Protection
 
-The `preStart` script creates a GC root at `${stateDir}/.gc-root` pointing to the current sinoclaw package. This prevents `nix-collect-garbage` from removing the running binary. If the GC root somehow breaks, restarting the service recreates it.
+The `preStart` script creates a GC root at `${stateDir}/.gc-root` pointing to the current anan package. This prevents `nix-collect-garbage` from removing the running binary. If the GC root somehow breaks, restarting the service recreates it.
 
 ---
 
 ## Plugins
 
-The NixOS module supports declarative plugin installation — no imperative `sinoclaw plugins install` needed.
+The NixOS module supports declarative plugin installation — no imperative `anan plugins install` needed.
 
 ### Directory Plugins (`extraPlugins`)
 
-For plugins that are just a source tree with `plugin.yaml` + `__init__.py` (e.g., [sinoclaw-lcm](https://github.com/stephenschoettler/sinoclaw-lcm)):
+For plugins that are just a source tree with `plugin.yaml` + `__init__.py` (e.g., [anan-lcm](https://github.com/stephenschoettler/anan-lcm)):
 
 ```nix
 services.anan.extraPlugins = [
@@ -643,7 +643,7 @@ services.anan.extraPythonPackages = [
 ];
 ```
 
-The package's `site-packages` is added to PYTHONPATH in the sinoclaw wrapper. `importlib.metadata` discovers the entry point at session start.
+The package's `site-packages` is added to PYTHONPATH in the anan wrapper. `importlib.metadata` discovers the entry point at session start.
 
 ### Combining Both
 
@@ -663,7 +663,7 @@ External flakes can override the package directly:
 
 ```nix
 {
-  inputs.anan.url = "github:sinoclaw/anan";
+  inputs.anan.url = "github:anan/anan";
   outputs = { anan, nixpkgs, ... }: {
     nixpkgs.overlays = [ anan.overlays.default ];
     # Then: pkgs.anan.override { extraPythonPackages = [...]; }
@@ -683,7 +683,7 @@ services.anan.settings.plugins.enabled = [
 ```
 
 :::note
-A build-time collision check prevents plugin packages from shadowing core sinoclaw dependencies. If a plugin provides a package already in the sealed venv, `nixos-rebuild` fails with a clear error.
+A build-time collision check prevents plugin packages from shadowing core anan dependencies. If a plugin provides a package already in the sealed venv, `nixos-rebuild` fails with a clear error.
 :::
 
 ---
@@ -703,7 +703,7 @@ nix develop
 #   - Node.js 20, ripgrep, git, openssh, ffmpeg on PATH
 #   - Stamp-file optimization: re-entry is near-instant if deps haven't changed
 
-sinoclaw setup
+anan setup
 hermes chat
 ```
 
@@ -739,9 +739,9 @@ nix build .#checks.x86_64-linux.config-roundtrip    # merge script preserves use
 
 | Check | What it tests |
 |---|---|
-| `package-contents` | `hermes` and `anan` binaries exist and `sinoclaw version` runs |
+| `package-contents` | `hermes` and `anan` binaries exist and `anan version` runs |
 | `entry-points-sync` | Every `[project.scripts]` entry in `pyproject.toml` has a wrapped binary in the Nix package |
-| `cli-commands` | `sinoclaw --help` exposes `gateway` and `config` subcommands |
+| `cli-commands` | `anan --help` exposes `gateway` and `config` subcommands |
 | `managed-guard` | `SINOCLAW_MANAGED=true anan config set ...` prints the NixOS error |
 | `bundled-skills` | Skills directory exists, contains SKILL.md files, `SINOCLAW_BUNDLED_SKILLS` is set in wrapper |
 | `config-roundtrip` | 7 merge scenarios: fresh install, Nix override, user key preservation, mixed merge, MCP additive merge, nested deep merge, idempotency |
@@ -761,7 +761,7 @@ nix build .#checks.x86_64-linux.config-roundtrip    # merge script preserves use
 | `user` | `str` | `"hermes"` | System user |
 | `group` | `str` | `"hermes"` | System group |
 | `createUser` | `bool` | `true` | Auto-create user/group |
-| `stateDir` | `str` | `"/var/lib/sinoclaw"` | State directory (`ANAN_HOME` parent) |
+| `stateDir` | `str` | `"/var/lib/anan"` | State directory (`ANAN_HOME` parent) |
 | `workingDirectory` | `str` | `"${stateDir}/workspace"` | Agent working directory (`MESSAGING_CWD`) |
 | `addToSystemPackages` | `bool` | `false` | Add `hermes` CLI to system PATH and set `ANAN_HOME` system-wide |
 
@@ -808,8 +808,8 @@ nix build .#checks.x86_64-linux.config-roundtrip    # merge script preserves use
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `extraArgs` | `listOf str` | `[]` | Extra args for `sinoclaw gateway` |
-| `extraPackages` | `listOf package` | `[]` | Extra packages available to the agent. Added to the sinoclaw user's per-user profile so terminal commands, skills, and cron jobs all see them |
+| `extraArgs` | `listOf str` | `[]` | Extra args for `anan gateway` |
+| `extraPackages` | `listOf package` | `[]` | Extra packages available to the agent. Added to the anan user's per-user profile so terminal commands, skills, and cron jobs all see them |
 | `extraPlugins` | `listOf package` | `[]` | Directory plugin packages to symlink into `$ANAN_HOME/plugins/`. Each must contain `plugin.yaml` |
 | `extraPythonPackages` | `listOf package` | `[]` | Python packages added to PYTHONPATH for entry-point plugin discovery. Build with `python312Packages` |
 | `restart` | `str` | `"always"` | systemd `Restart=` policy |
@@ -824,7 +824,7 @@ nix build .#checks.x86_64-linux.config-roundtrip    # merge script preserves use
 | `container.image` | `str` | `"ubuntu:24.04"` | Base image (pulled at runtime) |
 | `container.extraVolumes` | `listOf str` | `[]` | Extra volume mounts (`host:container:mode`) |
 | `container.extraOptions` | `listOf str` | `[]` | Extra args passed to `docker create` |
-| `container.hostUsers` | `listOf str` | `[]` | Interactive users who get a `~/.sinoclaw` symlink to the service stateDir and are auto-added to the `hermes` group |
+| `container.hostUsers` | `listOf str` | `[]` | Interactive users who get a `~/.anan` symlink to the service stateDir and are auto-added to the `hermes` group |
 
 ---
 
@@ -924,10 +924,10 @@ If the agent starts but can't authenticate with the LLM provider, check that the
 
 ```bash
 # Native mode
-sudo -u sinoclaw cat /var/lib/hermes/.sinoclaw/.env
+sudo -u anan cat /var/lib/hermes/.anan/.env
 
 # Container mode
-docker exec anan cat /data/.sinoclaw/.env
+docker exec anan cat /data/.anan/.env
 ```
 
 ### GC Root Verification
@@ -942,9 +942,9 @@ nix-store --query --roots $(docker exec anan readlink /data/current-package)
 |---|---|---|
 | `Cannot save configuration: managed by NixOS` | CLI guards active | Edit `configuration.nix` and `nixos-rebuild switch` |
 | Container recreated unexpectedly | `extraVolumes`, `extraOptions`, or `image` changed | Expected — writable layer resets. Reinstall packages or use a custom image |
-| `sinoclaw version` shows old version | Container not restarted | `systemctl restart anan` |
+| `anan version` shows old version | Container not restarted | `systemctl restart anan` |
 | Permission denied on `/var/lib/hermes` | State dir is `0750 hermes:hermes` | Use `docker exec` or `sudo -u hermes` |
-| `nix-collect-garbage` removed sinoclaw | GC root missing | Restart the service (preStart recreates the GC root) |
+| `nix-collect-garbage` removed anan | GC root missing | Restart the service (preStart recreates the GC root) |
 | `no container with name or ID "anan"` (Podman) | Podman rootful container not visible to regular user | Add passwordless sudo for podman (see [Container Mode](#container-mode) section) |
 | `unable to find user hermes` | Container still starting (entrypoint hasn't created user yet) | Wait a few seconds and retry — the CLI retries automatically |
 | Tool added via `extraPackages` not found in terminal | Requires `nixos-rebuild switch` to update the per-user profile | Rebuild and restart: `nixos-rebuild switch && systemctl restart anan` |

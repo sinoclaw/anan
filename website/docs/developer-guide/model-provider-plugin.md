@@ -1,7 +1,7 @@
 ---
 sidebar_position: 10
 title: "Model Provider Plugins"
-description: "How to build a model provider (inference backend) plugin for Sinoclaw Agent"
+description: "How to build a model provider (inference backend) plugin for anan Agent"
 ---
 
 # Building a Model Provider Plugin
@@ -31,7 +31,7 @@ plugins/model-providers/my-provider/
 └── README.md         # Setup instructions (optional)
 ```
 
-The only required file is `__init__.py`. `plugin.yaml` is used by `sinoclaw plugins` for introspection and by the general PluginManager to route the plugin to the right loader; without it, the general loader falls back to a source-text heuristic.
+The only required file is `__init__.py`. `plugin.yaml` is used by `anan plugins` for introspection and by the general PluginManager to route the plugin to the right loader; without it, the general loader falls back to a source-text heuristic.
 
 ## Minimal example — a simple API-key provider
 
@@ -75,9 +75,9 @@ That's it. After dropping these two files, the following **auto-wire** with no o
 |---|---|---|
 | Credential resolution | `anan_cli/auth.py` | `PROVIDER_REGISTRY["acme-inference"]` populated from profile |
 | `--provider` CLI flag | `anan_cli/main.py` | Accepts `acme-inference` |
-| `sinoclaw model` picker | `anan_cli/models.py` | Appears in `CANONICAL_PROVIDERS`, model list fetched from `{base_url}/models` |
-| `sinoclaw doctor` | `anan_cli/doctor.py` | Health check for `ACME_API_KEY` + `{base_url}/models` probe |
-| `sinoclaw setup` | `anan_cli/config.py` | `ACME_API_KEY` appears in `OPTIONAL_ENV_VARS` and the setup wizard |
+| `anan model` picker | `anan_cli/models.py` | Appears in `CANONICAL_PROVIDERS`, model list fetched from `{base_url}/models` |
+| `anan doctor` | `anan_cli/doctor.py` | Health check for `ACME_API_KEY` + `{base_url}/models` probe |
+| `anan setup` | `anan_cli/config.py` | `ACME_API_KEY` appears in `OPTIONAL_ENV_VARS` and the setup wizard |
 | URL reverse-mapping | `agent/model_metadata.py` | Hostname → provider name for auto-detection |
 | Auxiliary model | `agent/auxiliary_client.py` | Uses `default_aux_model` for compression / summarization |
 | Runtime resolution | `anan_cli/runtime_provider.py` | Returns correct `base_url`, `api_key`, `api_mode` |
@@ -92,7 +92,7 @@ Full definition in `providers/base.py`. The most useful ones:
 | `name` | str | Canonical id — matches `--provider` choices and `SINOCLAW_INFERENCE_PROVIDER` |
 | `aliases` | `tuple[str, ...]` | Alternative names resolved by `get_provider_profile()` (e.g. `grok` → `xai`) |
 | `api_mode` | str | `chat_completions` \| `codex_responses` \| `anthropic_messages` \| `bedrock_converse` |
-| `display_name` | str | Human label shown in `sinoclaw model` picker |
+| `display_name` | str | Human label shown in `anan model` picker |
 | `description` | str | Picker subtitle |
 | `signup_url` | str | Shown during first-run setup ("get an API key here") |
 | `env_vars` | `tuple[str, ...]` | API-key env vars in priority order; a final `*_BASE_URL` entry is used as the user base-URL override |
@@ -206,7 +206,7 @@ Set `profile.api_mode` to match the default your provider ships — it acts as a
 Provider discovery is **lazy** — triggered by the first `get_provider_profile()` or `list_providers()` call in the process. In practice this happens early at startup (`auth.py` module load extends `PROVIDER_REGISTRY` eagerly). If you need to verify your plugin loaded, run:
 
 ```bash
-sinoclaw doctor
+anan doctor
 ```
 
 — a successful `auth_type="api_key"` profile appears under the Provider Connectivity section with a `/models` probe.
@@ -243,7 +243,7 @@ hermes -z "hello" --provider my-provider -m some-model
 
 ## General PluginManager integration
 
-The general `PluginManager` (the thing `sinoclaw plugins` operates on) **sees** model-provider plugins but does not import them — `providers/__init__.py` owns their lifecycle. The manager records the manifest for introspection and categorizes by `kind: model-provider`. When you drop an unlabeled user plugin into `$ANAN_HOME/plugins/` that happens to call `register_provider` with a `ProviderProfile`, the manager auto-coerces it to `kind: model-provider` via a source-text heuristic — so the plugin still routes correctly even without `plugin.yaml`.
+The general `PluginManager` (the thing `anan plugins` operates on) **sees** model-provider plugins but does not import them — `providers/__init__.py` owns their lifecycle. The manager records the manifest for introspection and categorizes by `kind: model-provider`. When you drop an unlabeled user plugin into `$ANAN_HOME/plugins/` that happens to call `register_provider` with a `ProviderProfile`, the manager auto-coerces it to `kind: model-provider` via a source-text heuristic — so the plugin still routes correctly even without `plugin.yaml`.
 
 ## Distribute via pip
 
@@ -256,7 +256,7 @@ acme-inference = "acme_sinoclaw_plugin:register"
 
 …where `acme_sinoclaw_plugin:register` is a function that calls `register_provider(profile)`. The general PluginManager picks up entry-point plugins during `discover_and_load()`. For `kind: model-provider` pip plugins, you still need to declare the kind in your manifest (or rely on the source-text heuristic).
 
-See [Building a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin#distribute-via-pip) for the full entry-points setup.
+See [Building a Hermes Plugin](/docs/guides/build-a-anan-plugin#distribute-via-pip) for the full entry-points setup.
 
 ## Related pages
 
@@ -264,4 +264,4 @@ See [Building a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin#distribute-v
 - [Adding Providers](/docs/developer-guide/adding-providers) — end-to-end checklist for new inference backends (covers both the fast plugin path and the full CLI/auth integration)
 - [Memory Provider Plugins](/docs/developer-guide/memory-provider-plugin)
 - [Context Engine Plugins](/docs/developer-guide/context-engine-plugin)
-- [Building a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin) — general plugin authoring
+- [Building a Hermes Plugin](/docs/guides/build-a-anan-plugin) — general plugin authoring

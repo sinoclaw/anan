@@ -3,7 +3,7 @@
 
 Usage (via cron with --no-agent):
 
-    sinoclaw cron create my-feed \\
+    anan cron create my-feed \\
       --schedule "*/15 * * * *" --no-agent \\
       --script "$ANAN_HOME/skills/devops/watchers/scripts/watch_rss.py" \\
       --script-args "--name hn --url https://news.ycombinator.com/rss"
@@ -88,7 +88,7 @@ def main() -> int:
     args = p.parse_args()
 
     try:
-        req = urllib.request.Request(args.url, headers={"User-Agent": "Sinoclaw-Watcher/1.0"})
+        req = urllib.request.Request(args.url, headers={"User-Agent": "anan-Watcher/1.0"})
         with urllib.request.urlopen(req, timeout=args.timeout) as resp:
             xml_bytes = resp.read()
     except urllib.error.HTTPError as e:

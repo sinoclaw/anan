@@ -6,13 +6,13 @@ sidebar_position: 7
 
 This page covers all commands related to [Hermes profiles](../user-guide/profiles.md). For general CLI commands, see [CLI Commands Reference](./cli-commands.md).
 
-## `sinoclaw profile`
+## `anan profile`
 
 ```bash
 hermes profile <subcommand>
 ```
 
-Top-level command for managing profiles. Running `sinoclaw profile` without a subcommand shows help.
+Top-level command for managing profiles. Running `anan profile` without a subcommand shows help.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -26,7 +26,7 @@ Top-level command for managing profiles. Running `sinoclaw profile` without a su
 | `export` | Export a profile to a tar.gz archive. |
 | `import` | Import a profile from a tar.gz archive. |
 
-## `sinoclaw profile list`
+## `anan profile list`
 
 ```bash
 hermes profile list
@@ -37,7 +37,7 @@ Lists all profiles. The currently active profile is marked with `*`.
 **Example:**
 
 ```bash
-$ sinoclaw profile list
+$ anan profile list
   default
 * work
   dev
@@ -46,7 +46,7 @@ $ sinoclaw profile list
 
 No options.
 
-## `sinoclaw profile use`
+## `anan profile use`
 
 ```bash
 hermes profile use <name>
@@ -65,7 +65,7 @@ hermes profile use work
 hermes profile use default
 ```
 
-## `sinoclaw profile create`
+## `anan profile create`
 
 ```bash
 hermes profile create <name> [options]
@@ -99,7 +99,7 @@ hermes profile create backup --clone-all
 hermes profile create work2 --clone --clone-from work
 ```
 
-## `sinoclaw profile delete`
+## `anan profile delete`
 
 ```bash
 hermes profile delete <name> [options]
@@ -123,7 +123,7 @@ hermes profile delete mybot --yes
 This permanently deletes the profile's entire directory including all config, memories, sessions, and skills. Cannot delete the currently active profile.
 :::
 
-## `sinoclaw profile show`
+## `anan profile show`
 
 ```bash
 hermes profile show <name>
@@ -131,7 +131,7 @@ hermes profile show <name>
 
 Displays details about a profile including its home directory, configured model, gateway status, skills count, and configuration file status.
 
-This shows the profile's Sinoclaw home directory, not the terminal working directory. Terminal commands start from `terminal.cwd` (or the launch directory on the local backend when `cwd: "."`).
+This shows the profile's anan home directory, not the terminal working directory. Terminal commands start from `terminal.cwd` (or the launch directory on the local backend when `cwd: "."`).
 
 | Argument | Description |
 |----------|-------------|
@@ -140,7 +140,7 @@ This shows the profile's Sinoclaw home directory, not the terminal working direc
 **Example:**
 
 ```bash
-$ sinoclaw profile show work
+$ anan profile show work
 Profile: work
 Path:    ~/.anan/profiles/work
 Model:   anthropic/claude-sonnet-4 (anthropic)
@@ -151,7 +151,7 @@ SOUL.md: exists
 Alias:   ~/.local/bin/work
 ```
 
-## `sinoclaw profile alias`
+## `anan profile alias`
 
 ```bash
 hermes profile alias <name> [options]
@@ -178,7 +178,7 @@ hermes profile alias work --remove
 # Removes the wrapper script
 ```
 
-## `sinoclaw profile rename`
+## `anan profile rename`
 
 ```bash
 hermes profile rename <old-name> <new-name>
@@ -199,7 +199,7 @@ hermes profile rename mybot assistant
 # ~/.local/bin/mybot → ~/.local/bin/assistant
 ```
 
-## `sinoclaw profile export`
+## `anan profile export`
 
 ```bash
 hermes profile export <name> [options]
@@ -221,7 +221,7 @@ hermes profile export work
 hermes profile export work -o ./work-2026-03-29.tar.gz
 ```
 
-## `sinoclaw profile import`
+## `anan profile import`
 
 ```bash
 hermes profile import <archive> [options]
@@ -262,13 +262,13 @@ The recipient's user data (memories, sessions, auth, their own edits to
 updates.
 
 :::info
-`sinoclaw profile export` / `import` are still the right commands for
+`anan profile export` / `import` are still the right commands for
 **local backup and restore** of a profile on your own machine. Distribution
 (`install` / `update` / `info`) is a separate concept: ship a profile via
 git so someone else can install it.
 :::
 
-### `sinoclaw profile install`
+### `anan profile install`
 
 ```bash
 hermes profile install <source> [--name <name>] [--alias] [--force] [--yes]
@@ -280,7 +280,7 @@ Installs a profile distribution from a git URL or a local directory.
 |--------|-------------|
 | `<source>` | Git URL (`github.com/user/repo`, `https://...`, `git@...`, `ssh://`, `git://`) or a local directory containing `distribution.yaml` at its root. |
 | `--name NAME` | Override the profile name from the manifest. |
-| `--alias` | Also create a shell wrapper (e.g. `telemetry` → `sinoclaw -p telemetry`). |
+| `--alias` | Also create a shell wrapper (e.g. `telemetry` → `anan -p telemetry`). |
 | `--force` | Overwrite an existing profile of the same name. User data is still preserved. |
 | `-y`, `--yes` | Skip the manifest-preview confirmation prompt. |
 
@@ -304,7 +304,7 @@ hermes profile install git@github.com:kyle/telemetry-distribution.git
 hermes profile install ./telemetry/
 ```
 
-### `sinoclaw profile update`
+### `anan profile update`
 
 ```bash
 hermes profile update <name> [--force-config] [--yes]
@@ -317,7 +317,7 @@ overwritten; user data (memories, sessions, auth, .env) is never touched.
 `config.yaml` is preserved by default to keep your local overrides.
 Pass `--force-config` to reset it to the distribution's shipped config.
 
-### `sinoclaw profile info`
+### `anan profile info`
 
 ```bash
 hermes profile info <name>
@@ -330,8 +330,8 @@ the `Installed:` timestamp recorded when the distribution was last
 needs before installing it, and for spotting "this profile was installed
 6 months ago and hasn't been updated."
 
-`sinoclaw profile list` also shows the distribution name and version in a
-`Distribution` column, and `sinoclaw profile show <name>` / `delete <name>`
+`anan profile list` also shows the distribution name and version in a
+`Distribution` column, and `anan profile show <name>` / `delete <name>`
 surface the source URL so you can tell at a glance which profiles came
 from a git repo vs. were created locally.
 
@@ -397,15 +397,15 @@ Authoring a distribution is just a git push:
    and `version`.
 2. Initialize a git repo (or use an existing one) and push to GitHub /
    GitLab / any host Hermes can clone from.
-3. Tell recipients to run `sinoclaw profile install <your-repo-url>`.
+3. Tell recipients to run `anan profile install <your-repo-url>`.
 
 Use git tags for versioned releases — recipients who clone `HEAD` get your
 latest state, and you can always bump `version:` in the manifest.
 
-## `sinoclaw -p` / `sinoclaw --profile`
+## `anan -p` / `anan --profile`
 
 ```bash
-sinoclaw -p <name> <command> [options]
+anan -p <name> <command> [options]
 hermes --profile <name> <command> [options]
 ```
 
@@ -418,13 +418,13 @@ Global flag to run any Hermes command under a specific profile without changing 
 **Examples:**
 
 ```bash
-sinoclaw -p work chat -q "Check the server status"
+anan -p work chat -q "Check the server status"
 hermes --profile dev gateway start
-sinoclaw -p personal skills list
-sinoclaw -p work config edit
+anan -p personal skills list
+anan -p work config edit
 ```
 
-## `sinoclaw completion`
+## `anan completion`
 
 ```bash
 hermes completion <shell>
@@ -448,9 +448,9 @@ source ~/.bashrc
 ```
 
 After installation, tab completion works for:
-- `sinoclaw profile <TAB>` — subcommands (list, use, create, etc.)
-- `sinoclaw profile use <TAB>` — profile names
-- `sinoclaw -p <TAB>` — profile names
+- `anan profile <TAB>` — subcommands (list, use, create, etc.)
+- `anan profile use <TAB>` — profile names
+- `anan -p <TAB>` — profile names
 
 ## See also
 

@@ -143,7 +143,7 @@ required_environment_variables:
     required_for: full functionality
 ```
 
-When a missing value is encountered, Hermes asks for it securely only when the skill is actually loaded in the local CLI. You can skip setup and keep using the skill. Messaging surfaces never ask for secrets in chat — they tell you to use `sinoclaw setup` or `~/.anan/.env` locally instead.
+When a missing value is encountered, Hermes asks for it securely only when the skill is actually loaded in the local CLI. You can skip setup and keep using the skill. Messaging surfaces never ask for secrets in chat — they tell you to use `anan setup` or `~/.anan/.env` locally instead.
 
 Once set, declared env vars are **automatically passed through** to `execute_code` and `terminal` sandboxes — the skill's scripts can use `$TENOR_API_KEY` directly. For non-skill env vars, use the `terminal.env_passthrough` config option. See [Environment Variable Passthrough](/docs/user-guide/security#environment-variable-passthrough) for details.
 
@@ -161,7 +161,7 @@ metadata:
         prompt: Plugin data directory path
 ```
 
-Settings are stored under `skills.config` in your config.yaml. `sinoclaw config migrate` prompts for unconfigured settings, and `sinoclaw config show` displays them. When a skill loads, its resolved config values are injected into the context so the agent knows the configured values automatically.
+Settings are stored under `skills.config` in your config.yaml. `anan config migrate` prompts for unconfigured settings, and `anan config show` displays them. When a skill loads, its resolved config values are injected into the context so the agent knows the configured values automatically.
 
 See [Skill Settings](/docs/user-guide/configuration#skill-settings) and [Creating Skills — Config Settings](/docs/developer-guide/creating-skills#config-settings-configyaml) for details.
 
@@ -263,28 +263,28 @@ Browse, search, install, and manage skills from online registries, `skills.sh`, 
 ### Common commands
 
 ```bash
-sinoclaw skills browse                              # Browse all hub skills (official first)
-sinoclaw skills browse --source official            # Browse only official optional skills
-sinoclaw skills search kubernetes                   # Search all sources
-sinoclaw skills search react --source skills-sh     # Search the skills.sh directory
-sinoclaw skills search https://mintlify.com/docs --source well-known
-sinoclaw skills inspect openai/skills/k8s           # Preview before installing
-sinoclaw skills install openai/skills/k8s           # Install with security scan
-sinoclaw skills install official/security/1password
-sinoclaw skills install skills-sh/vercel-labs/json-render/json-render-react --force
-sinoclaw skills install well-known:https://mintlify.com/docs/.well-known/skills/mintlify
-sinoclaw skills install https://sharethis.chat/SKILL.md              # Direct URL (single-file SKILL.md)
-sinoclaw skills install https://example.com/SKILL.md --name my-skill # Override name when frontmatter has none
-sinoclaw skills list --source hub                   # List hub-installed skills
-sinoclaw skills check                               # Check installed hub skills for upstream updates
-sinoclaw skills update                              # Reinstall hub skills with upstream changes when needed
-sinoclaw skills audit                               # Re-scan all hub skills for security
-sinoclaw skills uninstall k8s                       # Remove a hub skill
-sinoclaw skills reset google-workspace              # Un-stick a bundled skill from "user-modified" (see below)
-sinoclaw skills reset google-workspace --restore    # Also restore the bundled version, deleting your local edits
-sinoclaw skills publish skills/my-skill --to github --repo owner/repo
-sinoclaw skills snapshot export setup.json          # Export skill config
-sinoclaw skills tap add myorg/skills-repo           # Add a custom GitHub source
+anan skills browse                              # Browse all hub skills (official first)
+anan skills browse --source official            # Browse only official optional skills
+anan skills search kubernetes                   # Search all sources
+anan skills search react --source skills-sh     # Search the skills.sh directory
+anan skills search https://mintlify.com/docs --source well-known
+anan skills inspect openai/skills/k8s           # Preview before installing
+anan skills install openai/skills/k8s           # Install with security scan
+anan skills install official/security/1password
+anan skills install skills-sh/vercel-labs/json-render/json-render-react --force
+anan skills install well-known:https://mintlify.com/docs/.well-known/skills/mintlify
+anan skills install https://sharethis.chat/SKILL.md              # Direct URL (single-file SKILL.md)
+anan skills install https://example.com/SKILL.md --name my-skill # Override name when frontmatter has none
+anan skills list --source hub                   # List hub-installed skills
+anan skills check                               # Check installed hub skills for upstream updates
+anan skills update                              # Reinstall hub skills with upstream changes when needed
+anan skills audit                               # Re-scan all hub skills for security
+anan skills uninstall k8s                       # Remove a hub skill
+anan skills reset google-workspace              # Un-stick a bundled skill from "user-modified" (see below)
+anan skills reset google-workspace --restore    # Also restore the bundled version, deleting your local edits
+anan skills publish skills/my-skill --to github --repo owner/repo
+anan skills snapshot export setup.json          # Export skill config
+anan skills tap add myorg/skills-repo           # Add a custom GitHub source
 ```
 
 ### Supported hub sources
@@ -292,7 +292,7 @@ sinoclaw skills tap add myorg/skills-repo           # Add a custom GitHub source
 | Source | Example | Notes |
 |--------|---------|-------|
 | `official` | `official/security/1password` | Optional skills shipped with Hermes. |
-| `skills-sh` | `skills-sh/vercel-labs/agent-skills/vercel-react-best-practices` | Searchable via `sinoclaw skills search <query> --source skills-sh`. Hermes resolves alias-style skills when the skills.sh slug differs from the repo folder. |
+| `skills-sh` | `skills-sh/vercel-labs/agent-skills/vercel-react-best-practices` | Searchable via `anan skills search <query> --source skills-sh`. Hermes resolves alias-style skills when the skills.sh slug differs from the repo folder. |
 | `well-known` | `well-known:https://mintlify.com/docs/.well-known/skills/mintlify` | Skills served directly from `/.well-known/skills/index.json` on a website. Search using the site or docs URL. |
 | `url` | `https://sharethis.chat/SKILL.md` | Direct HTTP(S) URL to a single-file `SKILL.md`. Name resolution: frontmatter → URL slug → interactive prompt → `--name` flag. |
 | `github` | `openai/skills/k8s` | Direct GitHub repo/path installs and custom taps. |
@@ -311,8 +311,8 @@ These are maintained in the Hermes repository itself and install with builtin tr
 - Example:
 
 ```bash
-sinoclaw skills browse --source official
-sinoclaw skills install official/security/1password
+anan skills browse --source official
+anan skills install official/security/1password
 ```
 
 #### 2. skills.sh (`skills-sh`)
@@ -325,9 +325,9 @@ This is Vercel's public skills directory. Hermes can search it directly, inspect
 - Example:
 
 ```bash
-sinoclaw skills search react --source skills-sh
-sinoclaw skills inspect skills-sh/vercel-labs/json-render/json-render-react
-sinoclaw skills install skills-sh/vercel-labs/json-render/json-render-react --force
+anan skills search react --source skills-sh
+anan skills inspect skills-sh/vercel-labs/json-render/json-render-react
+anan skills install skills-sh/vercel-labs/json-render/json-render-react --force
 ```
 
 #### 3. Well-known skill endpoints (`well-known`)
@@ -339,9 +339,9 @@ This is URL-based discovery from sites that publish `/.well-known/skills/index.j
 - Example:
 
 ```bash
-sinoclaw skills search https://mintlify.com/docs --source well-known
-sinoclaw skills inspect well-known:https://mintlify.com/docs/.well-known/skills/mintlify
-sinoclaw skills install well-known:https://mintlify.com/docs/.well-known/skills/mintlify
+anan skills search https://mintlify.com/docs --source well-known
+anan skills inspect well-known:https://mintlify.com/docs/.well-known/skills/mintlify
+anan skills install well-known:https://mintlify.com/docs/.well-known/skills/mintlify
 ```
 
 #### 4. Direct GitHub skills (`github`)
@@ -357,8 +357,8 @@ Default taps (browsable without any setup):
 - Example:
 
 ```bash
-sinoclaw skills install openai/skills/k8s
-sinoclaw skills tap add myorg/skills-repo
+anan skills install openai/skills/k8s
+anan skills tap add myorg/skills-repo
 ```
 
 #### 5. ClawHub (`clawhub`)
@@ -396,8 +396,8 @@ Install a single-file `SKILL.md` directly from any HTTP(S) URL — useful when a
 - Scope: **single-file `SKILL.md`** only. Multi-file skills with `references/` or `scripts/` need a manifest and should be published via one of the other sources above.
 
 ```bash
-sinoclaw skills install https://sharethis.chat/SKILL.md
-sinoclaw skills install https://example.com/my-skill/SKILL.md --category productivity
+anan skills install https://sharethis.chat/SKILL.md
+anan skills install https://example.com/my-skill/SKILL.md --category productivity
 ```
 
 Name resolution, in order:
@@ -408,19 +408,19 @@ Name resolution, in order:
 
 ```bash
 # Frontmatter has no name and the URL slug is unhelpful — supply one:
-sinoclaw skills install https://example.com/SKILL.md --name sharethis-chat
+anan skills install https://example.com/SKILL.md --name sharethis-chat
 
 # Or inside a chat session:
 /skills install https://example.com/SKILL.md --name sharethis-chat
 ```
 
-Trust level is always `community` — the same security scan runs as for every other source. The URL is stored as the install identifier, so `sinoclaw skills update` re-fetches from the same URL automatically when you want to refresh.
+Trust level is always `community` — the same security scan runs as for every other source. The URL is stored as the install identifier, so `anan skills update` re-fetches from the same URL automatically when you want to refresh.
 
 ### Security scanning and `--force`
 
 All hub-installed skills go through a **security scanner** that checks for data exfiltration, prompt injection, destructive commands, supply-chain signals, and other threats.
 
-`sinoclaw skills inspect ...` now also surfaces upstream metadata when available:
+`anan skills inspect ...` now also surfaces upstream metadata when available:
 - repo URL
 - skills.sh detail page URL
 - install command
@@ -431,7 +431,7 @@ All hub-installed skills go through a **security scanner** that checks for data 
 Use `--force` when you have reviewed a third-party skill and want to override a non-dangerous policy block:
 
 ```bash
-sinoclaw skills install skills-sh/anthropics/skills/pdf --force
+anan skills install skills-sh/anthropics/skills/pdf --force
 ```
 
 Important behavior:
@@ -453,9 +453,9 @@ Important behavior:
 The hub now tracks enough provenance to re-check upstream copies of installed skills:
 
 ```bash
-sinoclaw skills check          # Report which installed hub skills changed upstream
-sinoclaw skills update         # Reinstall only the skills with updates available
-sinoclaw skills update react   # Update one specific installed hub skill
+anan skills check          # Report which installed hub skills changed upstream
+anan skills update         # Reinstall only the skills with updates available
+anan skills update react   # Update one specific installed hub skill
 ```
 
 This uses the stored source identifier plus the current upstream bundle content hash to detect drift.
@@ -466,7 +466,7 @@ Skills hub operations use the GitHub API, which has a rate limit of 60 requests/
 
 ### Publishing a custom skill tap
 
-If you want to share a curated set of skills — for your team, your org, or publicly — you can publish them as a **tap**: a GitHub repository other Hermes users add with `sinoclaw skills tap add <owner/repo>`. No server, no registry sign-up, no release pipeline. Just a directory of `SKILL.md` files.
+If you want to share a curated set of skills — for your team, your org, or publicly — you can publish them as a **tap**: a GitHub repository other Hermes users add with `anan skills tap add <owner/repo>`. No server, no registry sign-up, no release pipeline. Just a directory of `SKILL.md` files.
 
 #### Repo layout
 
@@ -499,7 +499,7 @@ Hermes discovers skills by listing every subdirectory of the tap path and probin
 #### Minimal tap example
 
 ```
-my-org/sinoclaw-skills
+my-org/anan-skills
 └── skills/
     └── deploy-runbook/
         └── SKILL.md
@@ -526,9 +526,9 @@ Step 1: ...
 After pushing that to GitHub, any Hermes user can subscribe and install:
 
 ```bash
-sinoclaw skills tap add my-org/sinoclaw-skills
-sinoclaw skills search deploy
-sinoclaw skills install my-org/sinoclaw-skills/deploy-runbook
+anan skills tap add my-org/anan-skills
+anan skills search deploy
+anan skills install my-org/anan-skills/deploy-runbook
 ```
 
 #### Non-default paths
@@ -543,14 +543,14 @@ If your skills don't live under `skills/` (common when you're adding a `skills/`
 }
 ```
 
-The `sinoclaw skills tap add` CLI defaults new taps to `path: "skills/"`; edit the file directly if you need a different path. `sinoclaw skills tap list` shows the effective path per tap.
+The `anan skills tap add` CLI defaults new taps to `path: "skills/"`; edit the file directly if you need a different path. `anan skills tap list` shows the effective path per tap.
 
 #### Installing individual skills directly (without adding a tap)
 
 Users can also install a single skill from any public GitHub repo without adding the whole repo as a tap:
 
 ```bash
-sinoclaw skills install owner/repo/skills/my-workflow
+anan skills install owner/repo/skills/my-workflow
 ```
 
 Useful when you want to share one skill without asking the user to subscribe to your whole registry.
@@ -562,9 +562,9 @@ New taps are assigned `community` trust by default. Skills installed from them r
 #### Tap management
 
 ```bash
-sinoclaw skills tap list                                # show all configured taps
-sinoclaw skills tap add myorg/skills-repo               # add (default path: skills/)
-sinoclaw skills tap remove myorg/skills-repo            # remove
+anan skills tap list                                # show all configured taps
+anan skills tap add myorg/skills-repo               # add (default path: skills/)
+anan skills tap remove myorg/skills-repo            # remove
 ```
 
 Inside a running session:
@@ -577,7 +577,7 @@ Inside a running session:
 
 Taps are stored in `~/.anan/.hub/taps.json` (created on demand).
 
-## Bundled skill updates (`sinoclaw skills reset`)
+## Bundled skill updates (`anan skills reset`)
 
 Hermes ships with a set of bundled skills in `skills/` inside the repo. On install and on every `anan update`, a sync pass copies those into `~/.anan/skills/` and records a manifest at `~/.anan/skills/.bundled_manifest` mapping each skill name to the content hash at the time it was synced (the **origin hash**).
 
@@ -588,19 +588,19 @@ On each sync, Hermes recomputes the hash of your local copy and compares it to t
 
 The protection is good, but it has one sharp edge. If you edit a bundled skill and then later want to abandon your changes and go back to the bundled version by just copy-pasting from `~/.anan/anan/skills/`, the manifest still holds the *old* origin hash from whenever the last successful sync ran. Your fresh copy-paste contents (current bundled hash) won't match that stale origin hash, so sync keeps flagging it as user-modified.
 
-`sinoclaw skills reset` is the escape hatch:
+`anan skills reset` is the escape hatch:
 
 ```bash
 # Safe: clears the manifest entry for this skill. Your current copy is preserved,
 # but the next sync re-baselines against it so future updates work normally.
-sinoclaw skills reset google-workspace
+anan skills reset google-workspace
 
 # Full restore: also deletes your local copy and re-copies the current bundled
 # version. Use this when you want the pristine upstream skill back.
-sinoclaw skills reset google-workspace --restore
+anan skills reset google-workspace --restore
 
 # Non-interactive (e.g. in scripts or TUI mode) — skip the --restore confirmation.
-sinoclaw skills reset google-workspace --restore --yes
+anan skills reset google-workspace --restore --yes
 ```
 
 The same command works in chat as a slash command:
@@ -611,7 +611,7 @@ The same command works in chat as a slash command:
 ```
 
 :::note Profiles
-Each profile has its own `.bundled_manifest` under its own `ANAN_HOME`, so `sinoclaw -p coder skills reset <name>` only affects that profile.
+Each profile has its own `.bundled_manifest` under its own `ANAN_HOME`, so `anan -p coder skills reset <name>` only affects that profile.
 :::
 
 ### Slash commands (inside chat)

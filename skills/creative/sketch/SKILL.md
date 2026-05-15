@@ -2,7 +2,7 @@
 name: sketch
 description: "Throwaway HTML mockups: 2-3 design variants to compare."
 version: 1.0.0
-author: Sinoclaw Agent (adapted from gsd-build/get-shit-done)
+author: anan Agent (adapted from gsd-build/get-shit-done)
 license: MIT
 platforms: [linux, macos, windows]
 metadata:

@@ -25,7 +25,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate_home(tmp_path, monkeypatch):
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     yield anan_home
@@ -650,11 +650,11 @@ def test_looks_like_human_speaker():
     from plugins.google_meet.meet_bot import _looks_like_human_speaker
 
     # Blank, "unknown", "you", and the bot's own name → not human (no barge-in)
-    for s in ("", "   ", "Unknown", "unknown", "You", "you", "Sinoclaw Agent"):
-        assert not _looks_like_human_speaker(s, "Sinoclaw Agent"), f"{s!r} should NOT be human"
+    for s in ("", "   ", "Unknown", "unknown", "You", "you", "anan Agent"):
+        assert not _looks_like_human_speaker(s, "anan Agent"), f"{s!r} should NOT be human"
     # Real names → human (barge-in)
     for s in ("Alice", "Bob Lee", "@teknium"):
-        assert _looks_like_human_speaker(s, "Sinoclaw Agent"), f"{s!r} SHOULD be human"
+        assert _looks_like_human_speaker(s, "anan Agent"), f"{s!r} SHOULD be human"
 
 
 def test_detect_admission_returns_false_on_error():

@@ -2,22 +2,22 @@
 
 Hermes can control Spotify directly — playback, queue, search, playlists, saved tracks/albums, and listening history — using Spotify's official Web API with PKCE OAuth. Tokens are stored in `~/.anan/auth.json` and refreshed automatically on 401; you only log in once per machine.
 
-Unlike Hermes' built-in OAuth integrations (Google, GitHub Copilot, Codex), Spotify requires every user to register their own lightweight developer app. Spotify does not let third parties ship a public OAuth app that anyone can use. It takes about two minutes and `sinoclaw auth spotify` walks you through it.
+Unlike Hermes' built-in OAuth integrations (Google, GitHub Copilot, Codex), Spotify requires every user to register their own lightweight developer app. Spotify does not let third parties ship a public OAuth app that anyone can use. It takes about two minutes and `anan auth spotify` walks you through it.
 
 ## Prerequisites
 
 - A Spotify account. **Free** works for search, playlist, library, and activity tools. **Premium** is required for playback control (play, pause, skip, seek, volume, queue add, transfer).
-- Sinoclaw Agent installed and running.
+- anan Agent installed and running.
 - For playback tools: an **active Spotify Connect device** — the Spotify app must be open on at least one device (phone, desktop, web player, speaker) so the Web API has something to control. If nothing is active you'll get a `403 Forbidden` with a "no active device" message; open Spotify on any device and retry.
 
 ## Setup
 
-### One-shot: `sinoclaw tools`
+### One-shot: `anan tools`
 
 The fastest path. Run:
 
 ```bash
-sinoclaw tools
+anan tools
 ```
 
 Scroll to `🎵 Spotify`, press space to toggle it on, then `s` to save. Hermes drops you straight into the OAuth flow — if you don't have a Spotify app yet, it walks you through creating one inline. Once you finish, the toolset is enabled AND authenticated in one pass.
@@ -29,7 +29,7 @@ If you prefer to do the steps separately (or you're re-authing later), use the t
 #### 1. Enable the toolset
 
 ```bash
-sinoclaw tools
+anan tools
 ```
 
 Toggle `🎵 Spotify` on, save, and when the inline wizard opens, dismiss it (Ctrl+C). The toolset stays on; only the auth step is deferred.
@@ -37,7 +37,7 @@ Toggle `🎵 Spotify` on, save, and when the inline wizard opens, dismiss it (Ct
 #### 2. Run the login wizard
 
 ```bash
-sinoclaw auth spotify
+anan auth spotify
 ```
 
 The 7 Spotify tools only appear in the agent's toolset after step 1 — they're off by default so users who don't want them don't ship extra tool schemas on every API call.
@@ -73,10 +73,10 @@ If `SSH_CLIENT` or `SSH_TTY` is set, Hermes skips the automatic browser open dur
 ## Verify
 
 ```bash
-sinoclaw auth status spotify
+anan auth status spotify
 ```
 
-Shows whether tokens are present and when the access token expires. Refresh is automatic: when any Spotify API call returns 401, the client exchanges the refresh token and retries once. Refresh tokens persist across Hermes restarts, so you only re-auth if you revoke the app in your Spotify account settings or run `sinoclaw auth logout spotify`.
+Shows whether tokens are present and when the access token expires. Refresh is automatic: when any Spotify API call returns 401, the client exchanges the refresh token and retries once. Refresh tokens persist across Hermes restarts, so you only re-auth if you revoke the app in your Spotify account settings or run `anan auth logout spotify`.
 
 ## Using it
 
@@ -171,7 +171,7 @@ Read-only tools work on Free accounts. Anything that mutates playback or the que
 
 ## Scheduling: Spotify + cron
 
-Because Spotify tools are regular Hermes tools, a cron job running in a Sinoclaw session can trigger playback on any schedule. No new code needed.
+Because Spotify tools are regular Hermes tools, a cron job running in a anan session can trigger playback on any schedule. No new code needed.
 
 ### Morning wake-up playlist
 
@@ -183,7 +183,7 @@ hermes cron add \
 ```
 
 What happens at 7am every weekday:
-1. Cron spins up a headless Sinoclaw session.
+1. Cron spins up a headless anan session.
 2. Agent reads the prompt, calls `spotify_devices list` to find "kitchen speaker" by name, then `spotify_devices transfer` → `spotify_playback set_volume` → `spotify_playback set_shuffle` → `spotify_search` + `spotify_playback play`.
 3. Music starts on the target speaker. Total cost: one session, a few tool calls, no human input.
 
@@ -200,7 +200,7 @@ hermes cron add \
 
 - **An active device must exist when the cron fires.** If no Spotify client is running (phone/desktop/Connect speaker), playback actions return `403 no active device`. For morning playlists, the trick is to target a device that's always on (Sonos, Echo, a smart speaker) rather than your phone.
 - **Premium required for anything that mutates playback** — play, pause, skip, volume, transfer. Read-only cron jobs (scheduled "email me my recently played tracks") work fine on Free.
-- **The cron agent inherits your active toolsets.** Spotify must be enabled in `sinoclaw tools` for the cron session to see the Spotify tools.
+- **The cron agent inherits your active toolsets.** Spotify must be enabled in `anan tools` for the cron session to see the Spotify tools.
 - **Cron jobs run with `skip_memory=True`** so they don't write to your memory store.
 
 Full cron reference: [Cron Jobs](./cron).
@@ -208,7 +208,7 @@ Full cron reference: [Cron Jobs](./cron).
 ## Sign out
 
 ```bash
-sinoclaw auth logout spotify
+anan auth logout spotify
 ```
 
 Removes tokens from `~/.anan/auth.json`. To also clear the app config, delete `SINOCLAW_SPOTIFY_CLIENT_ID` (and `SINOCLAW_SPOTIFY_REDIRECT_URI` if you set it) from `~/.anan/.env`, or run the wizard again.
@@ -227,7 +227,7 @@ To revoke the app on Spotify's side, visit [Apps connected to your account](http
 
 **`429 Too Many Requests`** — Spotify's rate limit. Hermes returns a friendly error; wait a minute and retry. If this persists, you're probably running a tight loop in a script — Spotify's quota resets roughly every 30 seconds.
 
-**`401 Unauthorized` keeps coming back** — Your refresh token was revoked (usually because you removed the app from your account, or the app was deleted). Run `sinoclaw auth spotify` again.
+**`401 Unauthorized` keeps coming back** — Your refresh token was revoked (usually because you removed the app from your account, or the app was deleted). Run `anan auth spotify` again.
 
 **Wizard doesn't open the browser** — If you're over SSH or in a container without a display, Hermes detects it and skips the auto-open. Copy the dashboard URL it prints and open it manually.
 
@@ -236,7 +236,7 @@ To revoke the app on Spotify's side, visit [Apps connected to your account](http
 By default Hermes requests the scopes needed for every shipped tool. Override if you want to restrict access:
 
 ```bash
-sinoclaw auth spotify --scope "user-read-playback-state user-modify-playback-state playlist-read-private"
+anan auth spotify --scope "user-read-playback-state user-modify-playback-state playlist-read-private"
 ```
 
 Scope reference: [Spotify Web API scopes](https://developer.spotify.com/documentation/web-api/concepts/scopes). If you request fewer scopes than a tool needs, that tool's calls will fail with 403.
@@ -244,7 +244,7 @@ Scope reference: [Spotify Web API scopes](https://developer.spotify.com/document
 ## Advanced: custom client ID / redirect URI
 
 ```bash
-sinoclaw auth spotify --client-id <id> --redirect-uri http://localhost:3000/callback
+anan auth spotify --client-id <id> --redirect-uri http://localhost:3000/callback
 ```
 
 Or set them permanently in `~/.anan/.env`:

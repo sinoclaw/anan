@@ -722,7 +722,7 @@ class TestHasAnyProviderConfigured:
     def test_glm_key_counts(self, monkeypatch, tmp_path):
         from anan_cli import config as config_module
         monkeypatch.setenv("GLM_API_KEY", "test-key")
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setattr(config_module, "get_env_path", lambda: anan_home / ".env")
         monkeypatch.setattr(config_module, "get_anan_home", lambda: anan_home)
@@ -732,7 +732,7 @@ class TestHasAnyProviderConfigured:
     def test_minimax_key_counts(self, monkeypatch, tmp_path):
         from anan_cli import config as config_module
         monkeypatch.setenv("MINIMAX_API_KEY", "test-key")
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setattr(config_module, "get_env_path", lambda: anan_home / ".env")
         monkeypatch.setattr(config_module, "get_anan_home", lambda: anan_home)
@@ -742,7 +742,7 @@ class TestHasAnyProviderConfigured:
     def test_gh_cli_token_counts(self, monkeypatch, tmp_path):
         from anan_cli import config as config_module
         monkeypatch.setattr("anan_cli.copilot_auth._try_gh_cli_token", lambda: "gho_cli_secret")
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setattr(config_module, "get_env_path", lambda: anan_home / ".env")
         monkeypatch.setattr(config_module, "get_anan_home", lambda: anan_home)
@@ -750,10 +750,10 @@ class TestHasAnyProviderConfigured:
         assert _has_any_provider_configured() is True
 
     def test_claude_code_creds_ignored_on_fresh_install(self, monkeypatch, tmp_path):
-        """Claude Code credentials should NOT skip the wizard when Sinoclaw is unconfigured."""
+        """Claude Code credentials should NOT skip the wizard when anan is unconfigured."""
         from anan_cli import config as config_module
         from anan_cli.auth import PROVIDER_REGISTRY
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setattr(config_module, "get_env_path", lambda: anan_home / ".env")
         monkeypatch.setattr(config_module, "get_anan_home", lambda: anan_home)
@@ -784,7 +784,7 @@ class TestHasAnyProviderConfigured:
         """config.yaml with model.provider set should count as configured."""
         import yaml
         from anan_cli import config as config_module
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         config_file = anan_home / "config.yaml"
         config_file.write_text(yaml.dump({
@@ -804,7 +804,7 @@ class TestHasAnyProviderConfigured:
         """config.yaml with model.base_url set (custom endpoint) should count."""
         import yaml
         from anan_cli import config as config_module
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         config_file = anan_home / "config.yaml"
         config_file.write_text(yaml.dump({
@@ -823,7 +823,7 @@ class TestHasAnyProviderConfigured:
         """config.yaml with model.api_key set should count."""
         import yaml
         from anan_cli import config as config_module
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         config_file = anan_home / "config.yaml"
         config_file.write_text(yaml.dump({
@@ -843,7 +843,7 @@ class TestHasAnyProviderConfigured:
         import yaml
         from anan_cli import config as config_module
         from anan_cli.auth import PROVIDER_REGISTRY
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         config_file = anan_home / "config.yaml"
         config_file.write_text(yaml.dump({
@@ -866,10 +866,10 @@ class TestHasAnyProviderConfigured:
         assert _has_any_provider_configured() is False
 
     def test_claude_code_creds_counted_when_anan_configured(self, monkeypatch, tmp_path):
-        """Claude Code credentials should count when Sinoclaw has been explicitly configured."""
+        """Claude Code credentials should count when anan has been explicitly configured."""
         import yaml
         from anan_cli import config as config_module
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         # Write a config with a non-default model to simulate explicit configuration
         config_file = anan_home / "config.yaml"

@@ -2827,11 +2827,11 @@ def _poll_for_token(
 # import instead of running the full device-code flow every time.
 #
 # File lives at ${SINOCLAW_SHARED_AUTH_DIR}/nous_auth.json, defaulting to
-# ``<sinoclaw-root>/shared/nous_auth.json`` where ``<sinoclaw-root>`` is what
+# ``<anan-root>/shared/nous_auth.json`` where ``<anan-root>`` is what
 # ``get_default_anan_root()`` returns — ``~/.anan`` on Linux/macOS,
 # ``%LOCALAPPDATA%\hermes`` on native Windows, or the Docker/custom root.
 # It is OUTSIDE any named profile's ANAN_HOME so named profiles (which
-# typically live under ``<sinoclaw-root>/profiles/<name>/``) all see the
+# typically live under ``<anan-root>/profiles/<name>/``) all see the
 # same file.
 #
 # Written on successful login and on every runtime refresh so the stored
@@ -2849,7 +2849,7 @@ def _nous_shared_auth_dir() -> Path:
 
     Honors ``SINOCLAW_SHARED_AUTH_DIR`` so tests can redirect it to a tmp
     path without touching the real user's home. Defaults to
-    ``<sinoclaw-root>/shared/``, where ``<sinoclaw-root>`` is what
+    ``<anan-root>/shared/``, where ``<anan-root>`` is what
     :func:`anan_constants.get_default_anan_root` returns — so
     Linux/macOS classic installs land at ``~/.anan/shared/``, native
     Windows installs at ``%LOCALAPPDATA%\\hermes\\shared\\``, and

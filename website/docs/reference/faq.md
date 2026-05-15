@@ -1,7 +1,7 @@
 ---
 sidebar_position: 3
 title: "FAQ & Troubleshooting"
-description: "Frequently asked questions and solutions to common issues with Sinoclaw Agent"
+description: "Frequently asked questions and solutions to common issues with anan Agent"
 ---
 
 # FAQ & Troubleshooting
@@ -14,10 +14,10 @@ Quick answers and fixes for the most common questions and issues.
 
 ### What LLM providers work with Hermes?
 
-Sinoclaw Agent works with any OpenAI-compatible API. Supported providers include:
+anan Agent works with any OpenAI-compatible API. Supported providers include:
 
 - **[OpenRouter](https://openrouter.ai/)** — access hundreds of models through one API key (recommended for flexibility)
-- **Nous Portal** — Sinoclaw Team's own inference endpoint
+- **Nous Portal** — anan Team's own inference endpoint
 - **OpenAI** — GPT-4o, o1, o3, etc.
 - **Anthropic** — Claude models (via OpenRouter or compatible proxy)
 - **Google** — Gemini models (via OpenRouter or compatible proxy)
@@ -26,14 +26,14 @@ Sinoclaw Agent works with any OpenAI-compatible API. Supported providers include
 - **MiniMax** — global and China endpoints
 - **Local models** — via [Ollama](https://ollama.com/), [vLLM](https://docs.vllm.ai/), [llama.cpp](https://github.com/ggerganov/llama.cpp), [SGLang](https://github.com/sgl-project/sglang), or any OpenAI-compatible server
 
-Set your provider with `sinoclaw model` or by editing `~/.anan/.env`. See the [Environment Variables](./environment-variables.md) reference for all provider keys.
+Set your provider with `anan model` or by editing `~/.anan/.env`. See the [Environment Variables](./environment-variables.md) reference for all provider keys.
 
 ### Does it work on Windows?
 
-**Not natively.** Sinoclaw Agent requires a Unix-like environment. On Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run Hermes from inside it. The standard install command works perfectly in WSL2:
+**Not natively.** anan Agent requires a Unix-like environment. On Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run Hermes from inside it. The standard install command works perfectly in WSL2:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
 ### I run Hermes in WSL2. What's the best way to control my normal Windows Chrome?
@@ -51,7 +51,7 @@ This is more reliable than trying to force Hermes core browser transport to atta
 
 See:
 
-- [Use MCP with Hermes](../guides/use-mcp-with-hermes.md#wsl2-bridge-sinoclaw-in-wsl-to-windows-chrome)
+- [Use MCP with Hermes](../guides/use-mcp-with-hermes.md#wsl2-bridge-anan-in-wsl-to-windows-chrome)
 - [Browser Automation](../user-guide/features/browser.md#wsl2--windows-chrome-prefer-mcp-over-browser-connect)
 
 ### Does it work on Android / Termux?
@@ -61,7 +61,7 @@ Yes — Hermes now has a tested Termux install path for Android phones.
 Quick install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
 For the fully explicit manual steps, supported extras, and current limitations, see the [Termux guide](../getting-started/termux.md).
@@ -70,11 +70,11 @@ Important caveat: the full `.[all]` extra is not currently available on Android 
 
 ### Is my data sent anywhere?
 
-API calls go **only to the LLM provider you configure** (e.g., OpenRouter, your local Ollama instance). Sinoclaw Agent does not collect telemetry, usage data, or analytics. Your conversations, memory, and skills are stored locally in `~/.anan/`.
+API calls go **only to the LLM provider you configure** (e.g., OpenRouter, your local Ollama instance). anan Agent does not collect telemetry, usage data, or analytics. Your conversations, memory, and skills are stored locally in `~/.anan/`.
 
 ### Can I use it offline / with local models?
 
-Yes. Run `sinoclaw model`, select **Custom endpoint**, and enter your server's URL:
+Yes. Run `anan model`, select **Custom endpoint**, and enter your server's URL:
 
 ```bash
 hermes model
@@ -108,11 +108,11 @@ Hermes auto-detects local endpoints and relaxes streaming timeouts (read timeout
 
 ### How much does it cost?
 
-Sinoclaw Agent itself is **free and open-source** (MIT license). You pay only for the LLM API usage from your chosen provider. Local models are completely free to run.
+anan Agent itself is **free and open-source** (MIT license). You pay only for the LLM API usage from your chosen provider. Local models are completely free to run.
 
 ### Can multiple people use one instance?
 
-Yes. The [messaging gateway](../user-guide/messaging/index.md) lets multiple users interact with the same Sinoclaw Agent instance via Telegram, Discord, Slack, WhatsApp, or Home Assistant. Access is controlled through allowlists (specific user IDs) and DM pairing (first user to message claims access).
+Yes. The [messaging gateway](../user-guide/messaging/index.md) lets multiple users interact with the same anan Agent instance via Telegram, Discord, Slack, WhatsApp, or Home Assistant. Access is controlled through allowlists (specific user IDs) and DM pairing (first user to message claims access).
 
 ### What's the difference between memory and skills?
 
@@ -225,7 +225,7 @@ source ~/.bashrc
 # If you previously installed with sudo, clean up:
 sudo rm /usr/local/bin/hermes
 # Then re-run the standard installer
-curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
 ---
@@ -236,7 +236,7 @@ curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.
 
 **Cause:** `/model` (inside a chat session) can only switch between providers you've **already configured**. If you've only set up OpenRouter, that's all `/model` will show.
 
-**Solution:** Exit your session and use `sinoclaw model` from your terminal to add new providers:
+**Solution:** Exit your session and use `anan model` from your terminal to add new providers:
 
 ```bash
 # Exit the Hermes chat session first (Ctrl+C or /quit)
@@ -247,13 +247,13 @@ hermes model
 # This lets you: add providers, run OAuth, enter API keys, configure endpoints
 ```
 
-After adding a new provider via `sinoclaw model`, start a new chat session — `/model` will now show all your configured providers.
+After adding a new provider via `anan model`, start a new chat session — `/model` will now show all your configured providers.
 
 :::tip Quick reference
 | Want to... | Use |
 |-----------|-----|
-| Add a new provider | `sinoclaw model` (from terminal) |
-| Enter/change API keys | `sinoclaw model` (from terminal) |
+| Add a new provider | `anan model` (from terminal) |
+| Enter/change API keys | `anan model` (from terminal) |
 | Switch model mid-session | `/model <name>` (inside session) |
 | Switch to different configured provider | `/model provider:model` (inside session) |
 :::
@@ -265,7 +265,7 @@ After adding a new provider via `sinoclaw model`, start a new chat session — `
 **Solution:**
 ```bash
 # Check your configuration
-sinoclaw config show
+anan config show
 
 # Re-configure your provider
 hermes model
@@ -301,7 +301,7 @@ hermes chat --model openrouter/meta-llama/llama-3.1-70b-instruct
 **Solution:** Wait a moment and retry. For sustained usage, consider:
 - Upgrading your provider plan
 - Switching to a different model or provider
-- Using `sinoclaw chat --provider <alternative>` to route to a different backend
+- Using `anan chat --provider <alternative>` to route to a different backend
 
 #### Context length exceeded
 
@@ -368,7 +368,7 @@ This is working as intended — Hermes never silently runs destructive commands.
 **Solution:**
 - Avoid `sudo` in messaging — ask the agent to find alternatives
 - If you must use `sudo`, configure passwordless sudo for specific commands in `/etc/sudoers`
-- Or switch to the terminal interface for administrative tasks: `sinoclaw chat`
+- Or switch to the terminal interface for administrative tasks: `anan chat`
 
 #### Docker backend not connecting
 
@@ -398,10 +398,10 @@ docker run hello-world
 **Solution:**
 ```bash
 # Check if the gateway is running
-sinoclaw gateway status
+anan gateway status
 
 # Start the gateway
-sinoclaw gateway start
+anan gateway start
 
 # Check logs for errors
 cat ~/.anan/logs/gateway.log | tail -50
@@ -412,7 +412,7 @@ cat ~/.anan/logs/gateway.log | tail -50
 **Cause:** Network issues, bot token expired, or platform webhook misconfiguration.
 
 **Solution:**
-- Verify your bot token is valid with `sinoclaw gateway setup`
+- Verify your bot token is valid with `anan gateway setup`
 - Check gateway logs: `cat ~/.anan/logs/gateway.log | tail -50`
 - For webhook-based platforms (Slack, WhatsApp), ensure your server is publicly accessible
 
@@ -443,10 +443,10 @@ pip install "anan[messaging]"  # Telegram, Discord, Slack, and shared gateway de
 lsof -i :8080
 
 # Verify configuration
-sinoclaw config show
+anan config show
 ```
 
-#### WSL: Gateway keeps disconnecting or `sinoclaw gateway start` fails
+#### WSL: Gateway keeps disconnecting or `anan gateway start` fails
 
 **Cause:** WSL's systemd support is unreliable. Many WSL2 installations don't have systemd enabled, and even when enabled, services may not survive WSL restarts or Windows idle shutdowns.
 
@@ -454,14 +454,14 @@ sinoclaw config show
 
 ```bash
 # Option 1: Direct foreground (simplest)
-sinoclaw gateway run
+anan gateway run
 
 # Option 2: Persistent via tmux (survives terminal close)
-tmux new -s sinoclaw 'sinoclaw gateway run'
+tmux new -s anan 'anan gateway run'
 # Reattach later: tmux attach -t hermes
 
 # Option 3: Background via nohup
-nohup sinoclaw gateway run > ~/.anan/logs/gateway.log 2>&1 &
+nohup anan gateway run > ~/.anan/logs/gateway.log 2>&1 &
 ```
 
 If you want to try systemd anyway, make sure it's enabled:
@@ -478,7 +478,7 @@ If you want to try systemd anyway, make sure it's enabled:
 
 :::tip Auto-start on Windows boot
 For reliable auto-start, use Windows Task Scheduler to launch WSL + the gateway on login:
-1. Create a task that runs `wsl -d Ubuntu -- bash -lc 'sinoclaw gateway run'`
+1. Create a task that runs `wsl -d Ubuntu -- bash -lc 'anan gateway run'`
 2. Set it to trigger on user logon
 :::
 
@@ -486,11 +486,11 @@ For reliable auto-start, use Windows Task Scheduler to launch WSL + the gateway 
 
 **Cause:** launchd services inherit a minimal PATH (`/usr/bin:/bin:/usr/sbin:/sbin`) that doesn't include Homebrew, nvm, cargo, or other user-installed tool directories. This commonly breaks the WhatsApp bridge (`node not found`) or voice transcription (`ffmpeg not found`).
 
-**Solution:** The gateway captures your shell PATH when you run `sinoclaw gateway install`. If you installed tools after setting up the gateway, re-run the install to capture the updated PATH:
+**Solution:** The gateway captures your shell PATH when you run `anan gateway install`. If you installed tools after setting up the gateway, re-run the install to capture the updated PATH:
 
 ```bash
-sinoclaw gateway install    # Re-snapshots your current PATH
-sinoclaw gateway start      # Detects the updated plist and reloads
+anan gateway install    # Re-snapshots your current PATH
+anan gateway start      # Detects the updated plist and reloads
 ```
 
 You can verify the plist has the correct PATH:
@@ -508,8 +508,8 @@ You can verify the plist has the correct PATH:
 **Cause:** Large model, distant API server, or heavy system prompt with many tools.
 
 **Solution:**
-- Try a faster/smaller model: `sinoclaw chat --model openrouter/meta-llama/llama-3.1-8b-instruct`
-- Reduce active toolsets: `sinoclaw chat -t "terminal"`
+- Try a faster/smaller model: `anan chat --model openrouter/meta-llama/llama-3.1-8b-instruct`
+- Reduce active toolsets: `anan chat -t "terminal"`
 - Check your network latency to the provider
 - For local models, ensure you have enough GPU VRAM
 
@@ -588,9 +588,9 @@ mcp_servers:
 
 ```bash
 # Verify MCP servers are configured
-sinoclaw config show | grep -A 12 mcp_servers
+anan config show | grep -A 12 mcp_servers
 
-# Restart Sinoclaw or reload MCP after config changes
+# Restart anan or reload MCP after config changes
 hermes chat
 ```
 
@@ -618,7 +618,7 @@ If an MCP server crashes mid-request, Hermes will report a timeout. Check the se
 
 ### How do profiles differ from just setting ANAN_HOME?
 
-Profiles are a managed layer on top of `ANAN_HOME`. You *could* manually set `ANAN_HOME=/some/path` before every command, but profiles handle all the plumbing for you: creating the directory structure, generating shell aliases (`sinoclaw-work`), tracking the active profile in `~/.anan/active_profile`, and syncing skill updates across all profiles automatically. They also integrate with tab completion so you don't have to remember paths.
+Profiles are a managed layer on top of `ANAN_HOME`. You *could* manually set `ANAN_HOME=/some/path` before every command, but profiles handle all the plumbing for you: creating the directory structure, generating shell aliases (`anan-work`), tracking the active profile in `~/.anan/active_profile`, and syncing skill updates across all profiles automatically. They also integrate with tab completion so you don't have to remember paths.
 
 ### Can two profiles share the same bot token?
 
@@ -626,7 +626,7 @@ No. Each messaging platform (Telegram, Discord, etc.) requires exclusive access 
 
 ### Do profiles share memory or sessions?
 
-No. Each profile has its own memory store, session database, and skills directory. They are completely isolated. If you want to start a new profile with existing memories and sessions, use `sinoclaw profile create newname --clone-all` to copy everything from the current profile.
+No. Each profile has its own memory store, session database, and skills directory. They are completely isolated. If you want to start a new profile with existing memories and sessions, use `anan profile create newname --clone-all` to copy everything from the current profile.
 
 ### What happens when I run `anan update`?
 
@@ -712,9 +712,9 @@ display:
 
 ### Managing skills on Telegram (slash command limit)
 
-**Scenario:** Telegram has a 100 slash command limit, and your skills are pushing past it. You want to disable skills you don't need on Telegram, but `sinoclaw skills config` settings don't seem to take effect.
+**Scenario:** Telegram has a 100 slash command limit, and your skills are pushing past it. You want to disable skills you don't need on Telegram, but `anan skills config` settings don't seem to take effect.
 
-**Solution:** Use `sinoclaw skills config` to disable skills per-platform. This writes to `config.yaml`:
+**Solution:** Use `anan skills config` to disable skills per-platform. This writes to `config.yaml`:
 
 ```yaml
 skills:
@@ -723,7 +723,7 @@ skills:
     telegram: [skill-a, skill-b]  # disabled only on telegram
 ```
 
-After changing this, **restart the gateway** (`sinoclaw gateway restart` or kill and relaunch). The Telegram bot command menu rebuilds on startup.
+After changing this, **restart the gateway** (`anan gateway restart` or kill and relaunch). The Telegram bot command menu rebuilds on startup.
 
 :::tip
 Skills with very long descriptions are truncated to 40 characters in the Telegram menu to stay within payload size limits. If skills aren't appearing, it may be a total payload size issue rather than the 100 command count limit — disabling unused skills helps with both.
@@ -749,27 +749,27 @@ Skills with very long descriptions are truncated to 40 characters in the Telegra
 
 **Solution:**
 
-1. Install Sinoclaw Agent on the new machine:
+1. Install anan Agent on the new machine:
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/sinoclaw/anan/main/scripts/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
    ```
 
 2. On the **source machine**, create a full backup:
    ```bash
-   sinoclaw backup
+   anan backup
    ```
-   This creates a zip of your entire `~/.anan/` directory — config, API keys, memories, skills, sessions, and profiles — saved to your home directory as `~/sinoclaw-backup-<timestamp>.zip`.
+   This creates a zip of your entire `~/.anan/` directory — config, API keys, memories, skills, sessions, and profiles — saved to your home directory as `~/anan-backup-<timestamp>.zip`.
 
 3. Copy the zip to the new machine and import it:
    ```bash
    # On the source machine
-   scp ~/sinoclaw-backup-<timestamp>.zip newmachine:~/
+   scp ~/anan-backup-<timestamp>.zip newmachine:~/
 
    # On the new machine
-   sinoclaw import ~/sinoclaw-backup-<timestamp>.zip
+   anan import ~/anan-backup-<timestamp>.zip
    ```
 
-4. On the new machine, run `sinoclaw setup` to verify API keys and provider config are working.
+4. On the new machine, run `anan setup` to verify API keys and provider config are working.
 
 ### Moving a single profile to another machine
 
@@ -785,12 +785,12 @@ hermes profile import ./work-backup.tar.gz work
 
 The imported profile will have all config, memories, sessions, and skills from the export. You may need to update paths or re-authenticate with providers if the new machine has a different setup.
 
-### `sinoclaw backup` vs `sinoclaw profile export`
+### `anan backup` vs `anan profile export`
 
-| Feature | `sinoclaw backup` | `sinoclaw profile export` |
+| Feature | `anan backup` | `anan profile export` |
 | :--- | :--- | :--- |
 | **Use Case** | **Full machine migration** | **Porting/sharing a specific profile** |
-| **Scope** | Global (entire `~/.sinoclaw` directory) | Local (single profile directory) |
+| **Scope** | Global (entire `~/.anan` directory) | Local (single profile directory) |
 | **Includes** | All profiles, global config, API keys, sessions | Single profile: SOUL.md, memories, sessions, skills |
 | **Credentials** | **Included** (`.env` and `auth.json`) | **Excluded** (stripped for safe sharing) |
 | **Format** | `.zip` | `.tar.gz` |
@@ -801,14 +801,14 @@ rsync -av --exclude='anan' ~/.anan/ newmachine:~/.anan/
 ```
 
 :::tip
-`sinoclaw backup` produces a consistent snapshot even while Hermes is actively running. The restored archive excludes machine-local runtime files like `gateway.pid` and `cron.pid`.
+`anan backup` produces a consistent snapshot even while Hermes is actively running. The restored archive excludes machine-local runtime files like `gateway.pid` and `cron.pid`.
 :::
 
 ### Permission denied when reloading shell after install
 
 **Scenario:** After running the Hermes installer, `source ~/.zshrc` gives a permission denied error.
 
-**Cause:** This usually happens when `~/.zshrc` (or `~/.bashrc`) has incorrect file permissions, or when the installer couldn't write to it cleanly. It's not a Sinoclaw-specific issue — it's a shell config permissions problem.
+**Cause:** This usually happens when `~/.zshrc` (or `~/.bashrc`) has incorrect file permissions, or when the installer couldn't write to it cleanly. It's not a anan-specific issue — it's a shell config permissions problem.
 
 **Solution:**
 ```bash
@@ -838,7 +838,7 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 **Solution:**
 ```bash
 # Check what model and provider are configured
-sinoclaw config show | head -20
+anan config show | head -20
 
 # Re-run model selection
 hermes model
@@ -855,6 +855,6 @@ If using OpenRouter, make sure your API key has credits. A 400 from OpenRouter o
 
 If your issue isn't covered here:
 
-1. **Search existing issues:** [GitHub Issues](https://github.com/sinoclaw/anan/issues)
-2. **Ask the community:** [Sinoclaw Team Discord](https://discord.gg/sinoclaw)
-3. **File a bug report:** Include your OS, Python version (`python3 --version`), Hermes version (`sinoclaw --version`), and the full error message
+1. **Search existing issues:** [GitHub Issues](https://github.com/anan/anan/issues)
+2. **Ask the community:** [anan Team Discord](https://discord.gg/anan)
+3. **File a bug report:** Include your OS, Python version (`python3 --version`), Hermes version (`anan --version`), and the full error message

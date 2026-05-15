@@ -109,7 +109,7 @@ REPLACEMENTS = [
     # 第七优先级：HTTP Header
     # --------------------------
     ('X-Hermes-', 'X-Anan-'),
-    ('x-hermes-', 'x-sinoclaw-'),
+    ('x-hermes-', 'x-anan-'),
     
     # --------------------------
     # 第八优先级：测试类名
@@ -172,7 +172,7 @@ RENAMES = [
     ('tests/hermes_state', 'tests/anan_state'),
     ('plugins/hermes-achievements', 'plugins/anan-achievements'),
     ('environments/hermes_swe_env', 'environments/anan_swe_env'),
-    ('optional-skills/mlops/hermes-atropos-environments', 'optional-skills/mlops/sinoclaw-atropos-environments'),
+    ('optional-skills/mlops/hermes-atropos-environments', 'optional-skills/mlops/anan-atropos-environments'),
     ('skills/autonomous-ai-agents/hermes-agent', 'skills/autonomous-ai-agents/anan'),
     ('skills/software-development/debugging-hermes-tui-commands', 'skills/software-development/debugging-anan-tui-commands'),
     ('skills/software-development/hermes-agent-skill-authoring', 'skills/software-development/hermes-agent-skill-authoring'),

@@ -14,10 +14,10 @@ Configure and use Honcho memory with Hermes -- cross-session user modeling, mult
 
 | | |
 |---|---|
-| Source | Optional — install with `sinoclaw skills install official/autonomous-ai-agents/honcho` |
+| Source | Optional — install with `anan skills install official/autonomous-ai-agents/honcho` |
 | Path | `optional-skills/autonomous-ai-agents/honcho` |
 | Version | `2.0.0` |
-| Author | Sinoclaw Agent |
+| Author | anan Agent |
 | License | MIT |
 | Tags | `Honcho`, `Memory`, `Profiles`, `Observation`, `Dialectic`, `User-Modeling`, `Session-Summary` |
 | Related skills | [`anan`](/docs/user-guide/skills/bundled/autonomous-ai-agents/autonomous-ai-agents-anan) |
@@ -409,7 +409,7 @@ Run `anan honcho setup`. Ensure `memory.provider: honcho` is in `~/.anan/config.
 Check `anan honcho status` -- verify `saveMessages: true` and `writeFrequency` isn't `session` (which only writes on exit).
 
 ### Profile not getting its own peer
-Use `--clone` when creating: `sinoclaw profile create <name> --clone`. For existing profiles: `anan honcho sync`.
+Use `--clone` when creating: `anan profile create <name> --clone`. For existing profiles: `anan honcho sync`.
 
 ### Observation changes in dashboard not reflected
 Observation config is synced from the server on each session init. Start a new session after changing settings in the Honcho UI.

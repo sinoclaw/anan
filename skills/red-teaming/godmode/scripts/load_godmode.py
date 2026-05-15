@@ -3,7 +3,7 @@ Loader for G0DM0D3 scripts. Handles the exec-scoping issues.
 
 Usage in execute_code:
     exec(open(os.path.expanduser(
-        os.path.join(os.environ.get("ANAN_HOME", os.path.expanduser("~/.sinoclaw")), "skills/red-teaming/godmode/scripts/load_godmode.py")
+        os.path.join(os.environ.get("ANAN_HOME", os.path.expanduser("~/.anan")), "skills/red-teaming/godmode/scripts/load_godmode.py")
     )).read())
     
     # Now all functions are available:

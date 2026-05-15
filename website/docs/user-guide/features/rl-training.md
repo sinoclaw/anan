@@ -6,13 +6,13 @@ description: "Reinforcement learning on agent behaviors with Tinker-Atropos — 
 
 # RL Training
 
-Sinoclaw Agent includes an integrated RL (Reinforcement Learning) training pipeline built on **Tinker-Atropos**. This enables training language models on environment-specific tasks using GRPO (Group Relative Policy Optimization) with LoRA adapters, orchestrated entirely through the agent's tool interface.
+anan Agent includes an integrated RL (Reinforcement Learning) training pipeline built on **Tinker-Atropos**. This enables training language models on environment-specific tasks using GRPO (Group Relative Policy Optimization) with LoRA adapters, orchestrated entirely through the agent's tool interface.
 
 ## Overview
 
 The RL training system consists of three components:
 
-1. **[Atropos](https://github.com/sinoclaw/atropos)** — A trajectory API server that coordinates environment interactions, manages rollout groups, and computes advantages
+1. **[Atropos](https://github.com/anan/atropos)** — A trajectory API server that coordinates environment interactions, manages rollout groups, and computes advantages
 2. **[Tinker](https://thinkingmachines.ai/tinker/)** — A training service that handles model weights, LoRA training, sampling/inference, and optimizer steps
 3. **Environments** — Python classes that define tasks, scoring, and reward functions (e.g., GSM8K math problems)
 

@@ -1,22 +1,22 @@
 ---
 sidebar_position: 3
 title: 'Learning Path'
-description: 'Choose your learning path through the Sinoclaw Agent documentation based on your experience level and goals.'
+description: 'Choose your learning path through the anan Agent documentation based on your experience level and goals.'
 ---
 
 # Learning Path
 
-Sinoclaw Agent can do a lot — CLI assistant, Telegram/Discord bot, task automation, RL training, and more. This page helps you figure out where to start and what to read based on your experience level and what you're trying to accomplish.
+anan Agent can do a lot — CLI assistant, Telegram/Discord bot, task automation, RL training, and more. This page helps you figure out where to start and what to read based on your experience level and what you're trying to accomplish.
 
 :::tip Start Here
-If you haven't installed Sinoclaw Agent yet, begin with the [Installation guide](/docs/getting-started/installation) and then run through the [Quickstart](/docs/getting-started/quickstart). Everything below assumes you have a working installation.
+If you haven't installed anan Agent yet, begin with the [Installation guide](/docs/getting-started/installation) and then run through the [Quickstart](/docs/getting-started/quickstart). Everything below assumes you have a working installation.
 :::
 
 ## How to Use This Page
 
 - **Know your level?** Jump to the [experience-level table](#by-experience-level) and follow the reading order for your tier.
 - **Have a specific goal?** Skip to [By Use Case](#by-use-case) and find the scenario that matches.
-- **Just browsing?** Check the [Key Features](#key-features-at-a-glance) table for a quick overview of everything Sinoclaw Agent can do.
+- **Just browsing?** Check the [Key Features](#key-features-at-a-glance) table for a quick overview of everything anan Agent can do.
 
 ## By Experience Level
 
@@ -32,7 +32,7 @@ Pick the scenario that matches what you want to do. Each one links you to the re
 
 ### "I want a CLI coding assistant"
 
-Use Sinoclaw Agent as an interactive terminal assistant for writing, reviewing, and running code.
+Use anan Agent as an interactive terminal assistant for writing, reviewing, and running code.
 
 1. [Installation](/docs/getting-started/installation)
 2. [Quickstart](/docs/getting-started/quickstart)
@@ -42,12 +42,12 @@ Use Sinoclaw Agent as an interactive terminal assistant for writing, reviewing, 
 6. [Tips & Tricks](/docs/guides/tips)
 
 :::tip
-Pass files directly into your conversation with context files. Sinoclaw Agent can read, edit, and run code in your projects.
+Pass files directly into your conversation with context files. anan Agent can read, edit, and run code in your projects.
 :::
 
 ### "I want a Telegram/Discord bot"
 
-Deploy Sinoclaw Agent as a bot on your favorite messaging platform.
+Deploy anan Agent as a bot on your favorite messaging platform.
 
 1. [Installation](/docs/getting-started/installation)
 2. [Configuration](/docs/user-guide/configuration)
@@ -73,15 +73,15 @@ Schedule recurring tasks, run batch jobs, or chain agent actions together.
 5. [Hooks](/docs/user-guide/features/hooks)
 
 :::tip
-Cron jobs let Sinoclaw Agent run tasks on a schedule — daily summaries, periodic checks, automated reports — without you being present.
+Cron jobs let anan Agent run tasks on a schedule — daily summaries, periodic checks, automated reports — without you being present.
 :::
 
 ### "I want to build custom tools/skills"
 
-Extend Sinoclaw Agent with your own tools and reusable skill packages.
+Extend anan Agent with your own tools and reusable skill packages.
 
 1. [Plugins](/docs/user-guide/features/plugins)
-2. [Build a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin)
+2. [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin)
 3. [Tools Overview](/docs/user-guide/features/tools)
 4. [Skills Overview](/docs/user-guide/features/skills)
 5. [MCP (Model Context Protocol)](/docs/user-guide/features/mcp)
@@ -96,7 +96,7 @@ page is for built-in Hermes core development, not the usual user/custom-tool pat
 
 ### "I want to train models"
 
-Use reinforcement learning to fine-tune model behavior with Sinoclaw Agent's built-in RL training pipeline.
+Use reinforcement learning to fine-tune model behavior with anan Agent's built-in RL training pipeline.
 
 1. [Quickstart](/docs/getting-started/quickstart)
 2. [Configuration](/docs/user-guide/configuration)
@@ -105,12 +105,12 @@ Use reinforcement learning to fine-tune model behavior with Sinoclaw Agent's bui
 5. [Architecture](/docs/developer-guide/architecture)
 
 :::tip
-RL training works best when you already understand the basics of how Sinoclaw Agent handles conversations and tool calls. Run through the Beginner path first if you're new.
+RL training works best when you already understand the basics of how anan Agent handles conversations and tool calls. Run through the Beginner path first if you're new.
 :::
 
 ### "I want to use it as a Python library"
 
-Integrate Sinoclaw Agent into your own Python applications programmatically.
+Integrate anan Agent into your own Python applications programmatically.
 
 1. [Installation](/docs/getting-started/installation)
 2. [Quickstart](/docs/getting-started/quickstart)

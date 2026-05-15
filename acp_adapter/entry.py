@@ -10,7 +10,7 @@ Usage::
     # or
     anan acp
     # or
-    sinoclaw-acp
+    anan-acp
 """
 
 # IMPORTANT: anan_bootstrap must be the very first import — UTF-8 stdio

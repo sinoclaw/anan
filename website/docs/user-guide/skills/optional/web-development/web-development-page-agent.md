@@ -14,10 +14,10 @@ Embed alibaba/page-agent into your own web application — a pure-JavaScript in-
 
 | | |
 |---|---|
-| Source | Optional — install with `sinoclaw skills install official/web-development/page-agent` |
+| Source | Optional — install with `anan skills install official/web-development/page-agent` |
 | Path | `optional-skills/web-development/page-agent` |
 | Version | `1.0.0` |
-| Author | Sinoclaw Agent |
+| Author | anan Agent |
 | License | MIT |
 | Tags | `web`, `javascript`, `agent`, `browser`, `gui`, `alibaba`, `embed`, `copilot`, `saas` |
 

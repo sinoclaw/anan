@@ -1,4 +1,4 @@
-import { Box, Text } from '@sinoclaw/ink'
+import { Box, Text } from '@anan/ink'
 
 import { compactPreview } from '../lib/text.js'
 import type { Theme } from '../theme.js'

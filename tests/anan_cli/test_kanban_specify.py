@@ -21,7 +21,7 @@ from anan_cli import kanban_specify as spec
 
 @pytest.fixture
 def kanban_home(tmp_path, monkeypatch):
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)

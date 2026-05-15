@@ -1,15 +1,15 @@
 ---
 sidebar_position: 1
 title: "CLI Interface"
-description: "Master the Sinoclaw Agent terminal interface — commands, keybindings, personalities, and more"
+description: "Master the anan Agent terminal interface — commands, keybindings, personalities, and more"
 ---
 
 # CLI Interface
 
-Sinoclaw Agent's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
+anan Agent's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
 
 :::tip
-Hermes also ships a modern TUI with modal overlays, mouse selection, and non-blocking input. Launch it with `sinoclaw --tui` — see the [TUI](tui.md) guide.
+Hermes also ships a modern TUI with modal overlays, mouse selection, and non-blocking input. Launch it with `anan --tui` — see the [TUI](tui.md) guide.
 :::
 
 ## Running the CLI
@@ -49,8 +49,8 @@ hermes -w -q "Fix issue #123"     # Single query in worktree
 
 ## Interface Layout
 
-<img className="docs-terminal-figure" src="/img/docs/cli-layout.svg" alt="Stylized preview of the Sinoclaw CLI layout showing the banner, conversation area, and fixed input prompt." />
-<p className="docs-figure-caption">The Sinoclaw CLI banner, conversation stream, and fixed input prompt rendered as a stable docs figure instead of fragile text art.</p>
+<img className="docs-terminal-figure" src="/img/docs/cli-layout.svg" alt="Stylized preview of the anan CLI layout showing the banner, conversation area, and fixed input prompt." />
+<p className="docs-figure-caption">The anan CLI banner, conversation stream, and fixed input prompt rendered as a stable docs figure instead of fragile text art.</p>
 
 The welcome banner shows your model, terminal backend, working directory, available tools, and installed skills at a glance.
 
@@ -85,7 +85,7 @@ Use `/usage` for a detailed breakdown including per-category costs (input vs out
 
 ### Session Resume Display
 
-When resuming a previous session (`sinoclaw -c` or `sinoclaw --resume <id>`), a "Previous Conversation" panel appears between the banner and the input prompt, showing a compact recap of the conversation history. See [Sessions — Conversation Recap on Resume](sessions.md#conversation-recap-on-resume) for details and configuration.
+When resuming a previous session (`anan -c` or `anan --resume <id>`), a "Previous Conversation" panel appears between the banner and the input prompt, showing a compact recap of the conversation history. See [Sessions — Conversation Recap on Resume](sessions.md#conversation-recap-on-resume) for details and configuration.
 
 ## Keybindings
 
@@ -277,7 +277,7 @@ The very first time you press Enter while Hermes is working, Hermes prints a one
 On Unix systems, press **`Ctrl+Z`** to suspend Hermes to the background — just like any terminal process. The shell prints a confirmation:
 
 ```
-Sinoclaw Agent has been suspended. Run `fg` to bring Sinoclaw Agent back.
+anan Agent has been suspended. Run `fg` to bring anan Agent back.
 ```
 
 Type `fg` in your shell to resume the session exactly where you left off. This is not supported on Windows.
@@ -322,7 +322,7 @@ When you exit a CLI session, a resume command is printed:
 
 ```
 Resume this session with:
-  sinoclaw --resume 20260225_143052_a1b2c3
+  anan --resume 20260225_143052_a1b2c3
 
 Session:        20260225_143052_a1b2c3
 Duration:       12m 34s
@@ -342,7 +342,7 @@ hermes -r 20260225_143052_a1b2c3           # Short form
 
 Resuming restores the full conversation history from SQLite. The agent sees all previous messages, tool calls, and responses — just as if you never left.
 
-Use `/title My Session Name` inside a chat to name the current session, or `sinoclaw sessions rename <id> <title>` from the command line. Use `sinoclaw sessions list` to browse past sessions.
+Use `/title My Session Name` inside a chat to name the current session, or `anan sessions rename <id> <title>` from the command line. Use `anan sessions list` to browse past sessions.
 
 ### Session Storage
 

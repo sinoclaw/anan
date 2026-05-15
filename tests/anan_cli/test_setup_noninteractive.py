@@ -51,7 +51,7 @@ class TestNonInteractiveSetup:
         mock_run_setup.assert_called_once_with(args)
 
     def test_cmd_setup_defers_no_tty_handling_to_setup_wizard(self):
-        """Bare `sinoclaw setup` should reach setup.py, which prints headless guidance."""
+        """Bare `anan setup` should reach setup.py, which prints headless guidance."""
         from anan_cli.main import cmd_setup
 
         args = _make_setup_args(non_interactive=False)
@@ -145,7 +145,7 @@ class TestNonInteractiveSetup:
         assert "anan config set model.provider custom" in out
 
     def test_main_accepts_tts_setup_section(self, monkeypatch):
-        """`sinoclaw setup tts` should parse and dispatch like other setup sections."""
+        """`anan setup tts` should parse and dispatch like other setup sections."""
         from anan_cli import main as main_mod
 
         received = {}

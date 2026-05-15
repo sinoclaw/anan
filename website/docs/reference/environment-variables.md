@@ -1,7 +1,7 @@
 ---
 sidebar_position: 2
 title: "Environment Variables"
-description: "Complete reference of all environment variables used by Sinoclaw Agent"
+description: "Complete reference of all environment variables used by anan Agent"
 ---
 
 # Environment Variables Reference
@@ -91,10 +91,10 @@ All variables go in `~/.anan/.env`. You can also set them with `anan config set 
 | `VOICE_TOOLS_OPENAI_KEY` | Preferred OpenAI key for OpenAI speech-to-text and text-to-speech providers |
 | `SINOCLAW_LOCAL_STT_COMMAND` | Optional local speech-to-text command template. Supports `{input_path}`, `{output_dir}`, `{language}`, and `{model}` placeholders |
 | `SINOCLAW_LOCAL_STT_LANGUAGE` | Default language passed to `SINOCLAW_LOCAL_STT_COMMAND` or auto-detected local `whisper` CLI fallback (default: `en`) |
-| `ANAN_HOME` | Override Hermes config directory (default: `~/.sinoclaw`). Also scopes the gateway PID file and systemd service name, so multiple installations can run concurrently |
-| `SINOCLAW_GIT_BASH_PATH` | **Windows only.** Override `bash.exe` discovery for the terminal tool. Points at any bash — full Git-for-Windows install, WSL bash via symlink, MSYS2, Cygwin. The installer sets this automatically to the PortableGit it provisioned. See the [Windows (Native) Guide](../user-guide/windows-native.md#how-sinoclaw-runs-shell-commands-on-windows) |
+| `ANAN_HOME` | Override Hermes config directory (default: `~/.anan`). Also scopes the gateway PID file and systemd service name, so multiple installations can run concurrently |
+| `SINOCLAW_GIT_BASH_PATH` | **Windows only.** Override `bash.exe` discovery for the terminal tool. Points at any bash — full Git-for-Windows install, WSL bash via symlink, MSYS2, Cygwin. The installer sets this automatically to the PortableGit it provisioned. See the [Windows (Native) Guide](../user-guide/windows-native.md#how-anan-runs-shell-commands-on-windows) |
 | `SINOCLAW_DISABLE_WINDOWS_UTF8` | **Windows only.** Set to `1` to disable the UTF-8 stdio shim (`configure_windows_stdio()`) and fall back to the console's locale code page. Useful for bisecting encoding bugs; rarely the right setting in normal operation |
-| `SINOCLAW_KANBAN_HOME` | Override the shared Sinoclaw root that anchors the kanban board (db + workspaces + worker logs). Falls back to `get_default_sinoclaw_root()` (the parent of any active profile). Useful for tests and unusual deployments |
+| `SINOCLAW_KANBAN_HOME` | Override the shared anan root that anchors the kanban board (db + workspaces + worker logs). Falls back to `get_default_sinoclaw_root()` (the parent of any active profile). Useful for tests and unusual deployments |
 | `SINOCLAW_KANBAN_BOARD` | Pin the active kanban board for this process. Takes precedence over `~/.anan/kanban/current`; the dispatcher injects this into worker subprocess env so workers physically cannot see tasks on other boards. Defaults to `default`. Slug validation: lowercase alphanumerics + hyphens + underscores, 1-64 chars |
 | `SINOCLAW_KANBAN_DB` | Pin the kanban database file path directly (highest precedence; beats `SINOCLAW_KANBAN_BOARD` and `SINOCLAW_KANBAN_HOME`). The dispatcher injects this into worker subprocess env so profile workers converge on the dispatcher's board |
 | `SINOCLAW_KANBAN_WORKSPACES_ROOT` | Pin the kanban workspaces root directly (highest precedence for workspaces; beats `SINOCLAW_KANBAN_HOME`). The dispatcher injects this into worker subprocess env |
@@ -154,7 +154,7 @@ For native Anthropic auth, Hermes prefers Claude Code's own credential files whe
 
 ### Langfuse Observability
 
-Environment variables for the bundled [`observability/langfuse`](/docs/user-guide/features/built-in-plugins#observabilitylangfuse) plugin. Set these with `sinoclaw tools → Langfuse Observability` or manually in `~/.anan/.env`. The plugin must also be enabled (`sinoclaw plugins enable observability/langfuse`) before any of these take effect.
+Environment variables for the bundled [`observability/langfuse`](/docs/user-guide/features/built-in-plugins#observabilitylangfuse) plugin. Set these with `anan tools → Langfuse Observability` or manually in `~/.anan/.env`. The plugin must also be enabled (`anan plugins enable observability/langfuse`) before any of these take effect.
 
 | Variable | Description |
 |----------|-------------|
@@ -170,11 +170,11 @@ Environment variables for the bundled [`observability/langfuse`](/docs/user-guid
 
 ### Nous Tool Gateway
 
-These variables configure the [Tool Gateway](/docs/user-guide/features/tool-gateway) for paid Nous subscribers or self-hosted gateway deployments. Most users don't need to set these — the gateway is configured automatically via `sinoclaw model` or `sinoclaw tools`.
+These variables configure the [Tool Gateway](/docs/user-guide/features/tool-gateway) for paid Nous subscribers or self-hosted gateway deployments. Most users don't need to set these — the gateway is configured automatically via `anan model` or `anan tools`.
 
 | Variable | Description |
 |----------|-------------|
-| `TOOL_GATEWAY_DOMAIN` | Base domain for Tool Gateway routing (default: `sinoclaw.com`) |
+| `TOOL_GATEWAY_DOMAIN` | Base domain for Tool Gateway routing (default: `anan.com`) |
 | `TOOL_GATEWAY_SCHEME` | HTTP or HTTPS scheme for gateway URLs (default: `https`) |
 | `TOOL_GATEWAY_USER_TOKEN` | Auth token for the Tool Gateway (normally auto-populated from Nous auth) |
 | `FIRECRAWL_GATEWAY_URL` | Override URL for the Firecrawl gateway endpoint specifically |
@@ -379,7 +379,7 @@ For cloud sandbox backends, persistence is filesystem-oriented. `TERMINAL_LIFETI
 | `MATTERMOST_REPLY_MODE` | Reply style: `thread` (threaded replies) or `off` (flat messages, default) |
 | `MATRIX_HOMESERVER` | Matrix homeserver URL (e.g. `https://matrix.org`) |
 | `MATRIX_ACCESS_TOKEN` | Matrix access token for bot authentication |
-| `MATRIX_USER_ID` | Matrix user ID (e.g. `@sinoclaw:matrix.org`) — required for password login, optional with access token |
+| `MATRIX_USER_ID` | Matrix user ID (e.g. `@anan:matrix.org`) — required for password login, optional with access token |
 | `MATRIX_PASSWORD` | Matrix password (alternative to access token) |
 | `MATRIX_ALLOWED_USERS` | Comma-separated Matrix user IDs allowed to message the bot (e.g. `@alice:matrix.org`) |
 | `MATRIX_HOME_ROOM` | Room ID for proactive message delivery (e.g. `!abc123:matrix.org`) |
@@ -402,7 +402,7 @@ For cloud sandbox backends, persistence is filesystem-oriented. `TERMINAL_LIFETI
 | `API_SERVER_PORT` | Port for the API server (default: `8642`) |
 | `API_SERVER_HOST` | Host/bind address for the API server (default: `127.0.0.1`). Use `0.0.0.0` for network access — requires `API_SERVER_KEY` and a narrow `API_SERVER_CORS_ORIGINS` allowlist. |
 | `API_SERVER_MODEL_NAME` | Model name advertised on `/v1/models`. Defaults to the profile name (or `anan` for the default profile). Useful for multi-user setups where frontends like Open WebUI need distinct model names per connection. |
-| `GATEWAY_PROXY_URL` | URL of a remote Sinoclaw API server to forward messages to ([proxy mode](/docs/user-guide/messaging/matrix#proxy-mode-e2ee-on-macos)). When set, the gateway handles platform I/O only — all agent work is delegated to the remote server. Also configurable via `gateway.proxy_url` in `config.yaml`. |
+| `GATEWAY_PROXY_URL` | URL of a remote anan API server to forward messages to ([proxy mode](/docs/user-guide/messaging/matrix#proxy-mode-e2ee-on-macos)). When set, the gateway handles platform I/O only — all agent work is delegated to the remote server. Also configurable via `gateway.proxy_url` in `config.yaml`. |
 | `GATEWAY_PROXY_KEY` | Bearer token for authenticating with the remote API server in proxy mode. Must match `API_SERVER_KEY` on the remote host. |
 | `MESSAGING_CWD` | Working directory for terminal commands in messaging mode (default: `~`) |
 | `GATEWAY_ALLOWED_USERS` | Comma-separated user IDs allowed across all platforms |
@@ -501,7 +501,7 @@ Advanced per-platform knobs for throttling the outbound message batcher. Most us
 | `SINOCLAW_AGENT_NOTIFY_INTERVAL` | Gateway: interval in seconds between progress notifications on long-running agent turns. |
 | `SINOCLAW_CHECKPOINT_TIMEOUT` | Timeout for filesystem checkpoint creation in seconds (default: `30`). |
 | `SINOCLAW_EXEC_ASK` | Enable execution approval prompts in gateway mode (`true`/`false`) |
-| `SINOCLAW_ENABLE_PROJECT_PLUGINS` | Enable auto-discovery of repo-local plugins from `./.sinoclaw/plugins/` (`true`/`false`, default: `false`) |
+| `SINOCLAW_ENABLE_PROJECT_PLUGINS` | Enable auto-discovery of repo-local plugins from `./.anan/plugins/` (`true`/`false`, default: `false`) |
 | `SINOCLAW_BACKGROUND_NOTIFICATIONS` | Background process notification mode in gateway: `all` (default), `result`, `error`, `off` |
 | `SINOCLAW_EPHEMERAL_SYSTEM_PROMPT` | Ephemeral system prompt injected at API-call time (never persisted to sessions) |
 | `SINOCLAW_PREFILL_MESSAGES_FILE` | Path to a JSON file of ephemeral prefill messages injected at API-call time. |
@@ -527,9 +527,9 @@ Advanced per-platform knobs for throttling the outbound message batcher. Most us
 |----------|-------------|
 | `SINOCLAW_TUI` | Launch the [TUI](../user-guide/tui.md) instead of the classic CLI when set to `1`. Equivalent to passing `--tui`. |
 | `SINOCLAW_TUI_DIR` | Path to a prebuilt `ui-tui/` directory (must contain `dist/entry.js` and populated `node_modules`). Used by distros and Nix to skip the first-launch `npm install`. |
-| `SINOCLAW_TUI_RESUME` | Resume a specific TUI session by ID on launch. When set, `sinoclaw --tui` skips forging a fresh session and picks up the named session instead — useful for re-attaching after a disconnect or terminal crash. |
+| `SINOCLAW_TUI_RESUME` | Resume a specific TUI session by ID on launch. When set, `anan --tui` skips forging a fresh session and picks up the named session instead — useful for re-attaching after a disconnect or terminal crash. |
 | `SINOCLAW_TUI_THEME` | Force the TUI color theme: `light`, `dark`, or a raw 6-character background hex (e.g. `ffffff` or `1a1a2e`). When unset, Hermes auto-detects using `COLORFGBG` and terminal background queries; this variable overrides detection on terminals (Ghostty, Warp, iTerm2, etc.) that don't set `COLORFGBG`. |
-| `SINOCLAW_INFERENCE_MODEL` | Force the model for `sinoclaw -z` / `sinoclaw chat` without mutating `config.yaml`. Pairs with `SINOCLAW_INFERENCE_PROVIDER`. Useful for scripted callers (sweeper, CI, batch runners) that need to override the default model per run. |
+| `SINOCLAW_INFERENCE_MODEL` | Force the model for `anan -z` / `anan chat` without mutating `config.yaml`. Pairs with `SINOCLAW_INFERENCE_PROVIDER`. Useful for scripted callers (sweeper, CI, batch runners) that need to override the default model per run. |
 
 ## Session Settings
 

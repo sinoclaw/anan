@@ -6,7 +6,7 @@ description: "Build themes and plugins for the Hermes web dashboard — palettes
 
 # Extending the Dashboard
 
-The Hermes web dashboard (`sinoclaw dashboard`) is built to be reskinned and extended without forking the codebase. Three layers are exposed:
+The Hermes web dashboard (`anan dashboard`) is built to be reskinned and extended without forking the codebase. Three layers are exposed:
 
 1. **Themes** — YAML files that repaint the dashboard's palette, typography, layout, and per-component chrome. Drop a file in `~/.anan/dashboard-themes/`; it appears in the theme switcher.
 2. **UI plugins** — a directory with `manifest.json` + a JavaScript bundle that registers a tab, replaces a built-in page, augments one via page-scoped slots, or injects components into named shell slots.
@@ -256,7 +256,7 @@ customCSS: |
   }
 ```
 
-The CSS is injected as a single scoped `<style data-sinoclaw-theme-css>` tag on theme apply and cleaned up on theme switch. **Capped at 32 KiB per theme.**
+The CSS is injected as a single scoped `<style data-anan-theme-css>` tag on theme apply and cleaned up on theme switch. **Capped at 32 KiB per theme.**
 
 ### Built-in themes
 
@@ -791,7 +791,7 @@ The dashboard scans three directories for `dashboard/manifest.json`:
 | 1 (wins on conflict) | `~/.anan/plugins/<name>/dashboard/` | `user` |
 | 2 | `<repo>/plugins/memory/<name>/dashboard/` | `bundled` |
 | 2 | `<repo>/plugins/<name>/dashboard/` | `bundled` |
-| 3 | `./.sinoclaw/plugins/<name>/dashboard/` | `project` — only when `SINOCLAW_ENABLE_PROJECT_PLUGINS` is set |
+| 3 | `./.anan/plugins/<name>/dashboard/` | `project` — only when `SINOCLAW_ENABLE_PROJECT_PLUGINS` is set |
 
 Discovery results are cached per dashboard process. After adding a new plugin, either:
 
@@ -800,7 +800,7 @@ Discovery results are cached per dashboard process. After adding a new plugin, e
 curl http://127.0.0.1:9119/api/dashboard/plugins/rescan
 ```
 
-…or restart `sinoclaw dashboard`.
+…or restart `anan dashboard`.
 
 #### Plugin load lifecycle
 
@@ -891,7 +891,7 @@ The `sidebar` slot only renders when the active theme has `layoutVariant: cockpi
 
 **Plugin backend routes return 404.**
 1. Confirm the manifest has `"api": "plugin_api.py"` pointing to an existing file inside `dashboard/`.
-2. Restart `sinoclaw dashboard` — plugin API routes are mounted once at startup, **not** on rescan.
+2. Restart `anan dashboard` — plugin API routes are mounted once at startup, **not** on rescan.
 3. Check that `plugin_api.py` exports a module-level `router = APIRouter()`. Other export names are not picked up.
 4. Tail `~/.anan/logs/errors.log` for `Failed to load plugin <name> API routes` — import errors are logged there.
 

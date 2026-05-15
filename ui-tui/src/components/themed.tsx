@@ -1,4 +1,4 @@
-import { Text } from '@sinoclaw/ink'
+import { Text } from '@anan/ink'
 import { useStore } from '@nanostores/react'
 import type { ReactNode } from 'react'
 

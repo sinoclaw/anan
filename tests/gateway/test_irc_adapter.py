@@ -88,7 +88,7 @@ class TestIRCAdapterInit:
                 "server": "irc.libera.chat",
                 "port": 6697,
                 "nickname": "anan",
-                "channel": "#sinoclaw-dev",
+                "channel": "#anan-dev",
                 "use_tls": True,
             },
         )
@@ -97,7 +97,7 @@ class TestIRCAdapterInit:
         assert adapter.server == "irc.libera.chat"
         assert adapter.port == 6697
         assert adapter.nickname == "anan"
-        assert adapter.channel == "#sinoclaw-dev"
+        assert adapter.channel == "#anan-dev"
         assert adapter.use_tls is True
 
     def test_env_overrides_config(self, monkeypatch):
@@ -207,7 +207,7 @@ class TestIRCAdapterMessageParsing:
         adapter._registered = False
         adapter._registration_event = asyncio.Event()
 
-        await adapter._handle_line(":server 001 sinoclaw :Welcome to IRC")
+        await adapter._handle_line(":server 001 anan :Welcome to IRC")
         assert adapter._registered is True
         assert adapter._registration_event.is_set()
 
@@ -268,7 +268,7 @@ class TestIRCAdapterMessageParsing:
         adapter._dispatch_message = capture_dispatch
         adapter._message_handler = AsyncMock()
 
-        await adapter._handle_line(":user!u@host PRIVMSG sinoclaw :private message")
+        await adapter._handle_line(":user!u@host PRIVMSG anan :private message")
         assert len(dispatched) == 1
         assert dispatched[0]["text"] == "private message"
         assert dispatched[0]["chat_type"] == "dm"
@@ -298,7 +298,7 @@ class TestIRCAdapterMessageParsing:
         adapter._dispatch_message = capture_dispatch
         adapter._message_handler = AsyncMock()
 
-        await adapter._handle_line(":user!u@host PRIVMSG sinoclaw :\x01ACTION waves\x01")
+        await adapter._handle_line(":user!u@host PRIVMSG anan :\x01ACTION waves\x01")
         assert len(dispatched) == 1
         assert dispatched[0]["text"] == "* user waves"
 
@@ -331,7 +331,7 @@ class TestIRCAdapterMessageParsing:
         adapter._message_handler = AsyncMock()
 
         # "admin" matches "Admin" in allowlist
-        await adapter._handle_line(":admin!u@host PRIVMSG #test :sinoclaw: hello")
+        await adapter._handle_line(":admin!u@host PRIVMSG #test :anan: hello")
         assert len(dispatched) == 1
         assert dispatched[0]["text"] == "hello"
 
@@ -363,7 +363,7 @@ class TestIRCAdapterMessageParsing:
         adapter._dispatch_message = capture_dispatch
         adapter._message_handler = AsyncMock()
 
-        await adapter._handle_line(":eve!u@host PRIVMSG #test :sinoclaw: hello")
+        await adapter._handle_line(":eve!u@host PRIVMSG #test :anan: hello")
         assert len(dispatched) == 0
 
     @pytest.mark.asyncio
@@ -557,11 +557,11 @@ class TestIRCStandaloneSend:
 
         monkeypatch.setenv("IRC_SERVER", "irc.test.net")
         monkeypatch.setenv("IRC_CHANNEL", "#cron")
-        monkeypatch.setenv("IRC_NICKNAME", "sinoclawbot")
+        monkeypatch.setenv("IRC_NICKNAME", "ananbot")
         monkeypatch.setenv("IRC_USE_TLS", "false")
 
         # Server greets us with 001 RPL_WELCOME, then nothing for QUIT drain.
-        conn = _FakeIRCConnection([b":server 001 sinoclawbot-cron :Welcome"])
+        conn = _FakeIRCConnection([b":server 001 ananbot-cron :Welcome"])
 
         async def _fake_open(host, port, **kwargs):
             return conn, conn  # reader and writer share the same fake
@@ -580,8 +580,8 @@ class TestIRCStandaloneSend:
         sent_lines = b"".join(conn.writes).decode("utf-8").splitlines()
         # NICK uses the cron-suffixed identity to avoid colliding with the
         # long-running gateway adapter that may already hold the nickname.
-        assert any(line.startswith("NICK sinoclawbot-cron") for line in sent_lines)
-        assert any(line.startswith("USER sinoclawbot-cron 0 * :Sinoclaw Agent (cron)")
+        assert any(line.startswith("NICK ananbot-cron") for line in sent_lines)
+        assert any(line.startswith("USER ananbot-cron 0 * :anan Agent (cron)")
                    for line in sent_lines)
         assert any(line == "PRIVMSG #cron :hello from cron" for line in sent_lines)
         assert any(line.startswith("QUIT ") for line in sent_lines)
@@ -608,7 +608,7 @@ class TestIRCStandaloneSend:
 
         monkeypatch.setenv("IRC_SERVER", "irc.test.net")
         monkeypatch.setenv("IRC_CHANNEL", "#cron")
-        monkeypatch.setenv("IRC_NICKNAME", "sinoclawbot")
+        monkeypatch.setenv("IRC_NICKNAME", "ananbot")
         monkeypatch.setenv("IRC_USE_TLS", "false")
 
         # No 001 response: the readuntil call returns IncompleteReadError so
@@ -644,13 +644,13 @@ class TestIRCStandaloneSend:
 
         monkeypatch.setenv("IRC_SERVER", "irc.test.net")
         monkeypatch.setenv("IRC_CHANNEL", "#cron")
-        monkeypatch.setenv("IRC_NICKNAME", "sinoclawbot")
+        monkeypatch.setenv("IRC_NICKNAME", "ananbot")
         monkeypatch.setenv("IRC_USE_TLS", "false")
 
         # Attempt to inject a second IRC command via CRLF in chat_id
         result = await _standalone_send(
             PlatformConfig(enabled=True, extra={}),
-            "#cron\r\nKICK #cron sinoclawbot",
+            "#cron\r\nKICK #cron ananbot",
             "hi",
         )
 
@@ -663,10 +663,10 @@ class TestIRCStandaloneSend:
 
         monkeypatch.setenv("IRC_SERVER", "irc.test.net")
         monkeypatch.setenv("IRC_CHANNEL", "#cron")
-        monkeypatch.setenv("IRC_NICKNAME", "sinoclawbot")
+        monkeypatch.setenv("IRC_NICKNAME", "ananbot")
         monkeypatch.setenv("IRC_USE_TLS", "false")
 
-        conn = _FakeIRCConnection([b":server 001 sinoclawbot-cron :Welcome"])
+        conn = _FakeIRCConnection([b":server 001 ananbot-cron :Welcome"])
 
         async def _fake_open(host, port, **kwargs):
             return conn, conn
@@ -685,7 +685,7 @@ class TestIRCStandaloneSend:
         # No injected NICK command after the legitimate registration NICK
         nick_lines = [line for line in sent_lines if line.startswith("NICK ")]
         # Only the original registration NICK should be present (no injected one)
-        assert all(line.startswith("NICK sinoclawbot-cron") for line in nick_lines)
+        assert all(line.startswith("NICK ananbot-cron") for line in nick_lines)
         # The PRIVMSG should contain "hello NICK eviltwin" as one line (with \r blanked)
         assert any("PRIVMSG #cron :hello NICK eviltwin" in line for line in sent_lines)
 
@@ -695,13 +695,13 @@ class TestIRCStandaloneSend:
 
         monkeypatch.setenv("IRC_SERVER", "irc.test.net")
         monkeypatch.setenv("IRC_CHANNEL", "#cron")
-        monkeypatch.setenv("IRC_NICKNAME", "sinoclawbot")
+        monkeypatch.setenv("IRC_NICKNAME", "ananbot")
         monkeypatch.setenv("IRC_USE_TLS", "false")
 
         # Register, then accept JOIN with 366 RPL_ENDOFNAMES, then PRIVMSG.
         conn = _FakeIRCConnection([
-            b":server 001 sinoclawbot-cron :Welcome",
-            b":server 366 sinoclawbot-cron #cron :End of /NAMES list.",
+            b":server 001 ananbot-cron :Welcome",
+            b":server 366 ananbot-cron #cron :End of /NAMES list.",
         ])
 
         async def _fake_open(host, port, **kwargs):

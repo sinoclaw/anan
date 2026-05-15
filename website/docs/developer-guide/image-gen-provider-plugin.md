@@ -1,7 +1,7 @@
 ---
 sidebar_position: 11
 title: "Image Generation Provider Plugins"
-description: "How to build an image-generation backend plugin for Sinoclaw Agent"
+description: "How to build an image-generation backend plugin for anan Agent"
 ---
 
 # Building an Image Generation Provider Plugin
@@ -9,7 +9,7 @@ description: "How to build an image-generation backend plugin for Sinoclaw Agent
 Image-gen provider plugins register a backend that services every `image_generate` tool call — DALL·E, gpt-image, Grok, Flux, Imagen, Stable Diffusion, fal, Replicate, a local ComfyUI rig, anything. Built-in providers (OpenAI, OpenAI-Codex, xAI) all ship as plugins. You can add a new one, or override a bundled one, by dropping a directory into `plugins/image_gen/<name>/`.
 
 :::tip
-Image-gen is one of several **backend plugins** Hermes supports. The others (with more specialized ABCs) are [Memory Provider Plugins](/docs/developer-guide/memory-provider-plugin), [Context Engine Plugins](/docs/developer-guide/context-engine-plugin), and [Model Provider Plugins](/docs/developer-guide/model-provider-plugin). General tool/hook/CLI plugins live in [Build a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin).
+Image-gen is one of several **backend plugins** Hermes supports. The others (with more specialized ABCs) are [Memory Provider Plugins](/docs/developer-guide/memory-provider-plugin), [Context Engine Plugins](/docs/developer-guide/context-engine-plugin), and [Model Provider Plugins](/docs/developer-guide/model-provider-plugin). General tool/hook/CLI plugins live in [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin).
 :::
 
 ## How discovery works
@@ -20,9 +20,9 @@ Hermes scans for image-gen backends in three places:
 2. **User** — `~/.anan/plugins/image_gen/<name>/` (opt-in via `plugins.enabled`)
 3. **Pip** — packages declaring a `sinoclaw_agent.plugins` entry point
 
-Each plugin's `register(ctx)` function calls `ctx.register_image_gen_provider(...)` — that puts it into the registry in `agent/image_gen_registry.py`. The active provider is picked by `image_gen.provider` in `config.yaml`; `sinoclaw tools` walks users through selection.
+Each plugin's `register(ctx)` function calls `ctx.register_image_gen_provider(...)` — that puts it into the registry in `agent/image_gen_registry.py`. The active provider is picked by `image_gen.provider` in `config.yaml`; `anan tools` walks users through selection.
 
-The `image_generate` tool wrapper asks the registry for the active provider and dispatches there. If no provider is registered, the tool surfaces a helpful error pointing at `sinoclaw tools`.
+The `image_generate` tool wrapper asks the registry for the active provider and dispatches there. If no provider is registered, the tool surfaces a helpful error pointing at `anan tools`.
 
 ## Directory structure
 
@@ -32,7 +32,7 @@ plugins/image_gen/my-backend/
 └── plugin.yaml      # Manifest with kind: backend
 ```
 
-A bundled plugin is complete at this point. User plugins at `~/.anan/plugins/image_gen/<name>/` need to be added to `plugins.enabled` in `config.yaml` (or run `sinoclaw plugins enable <name>`).
+A bundled plugin is complete at this point. User plugins at `~/.anan/plugins/image_gen/<name>/` need to be added to `plugins.enabled` in `config.yaml` (or run `anan plugins enable <name>`).
 
 ## The ImageGenProvider ABC
 
@@ -61,7 +61,7 @@ class MyBackendImageGenProvider(ImageGenProvider):
 
     @property
     def display_name(self) -> str:
-        # Human label shown in `sinoclaw tools`. Defaults to name.title() if omitted.
+        # Human label shown in `anan tools`. Defaults to name.title() if omitted.
         return "My Backend"
 
     def is_available(self) -> bool:
@@ -76,7 +76,7 @@ class MyBackendImageGenProvider(ImageGenProvider):
         return True
 
     def list_models(self) -> List[Dict[str, Any]]:
-        # Catalog shown in `sinoclaw tools` model picker.
+        # Catalog shown in `anan tools` model picker.
         return [
             {
                 "id": "my-model-fast",
@@ -98,7 +98,7 @@ class MyBackendImageGenProvider(ImageGenProvider):
         return "my-model-fast"
 
     def get_setup_schema(self) -> Dict[str, Any]:
-        # Metadata for the `sinoclaw tools` picker — keys to prompt for at setup.
+        # Metadata for the `anan tools` picker — keys to prompt for at setup.
         return {
             "name": "My Backend",
             "badge": "paid",        # optional; shown as a short tag in the picker
@@ -191,7 +191,7 @@ requires_env:
   - MY_BACKEND_API_KEY
 ```
 
-`kind: backend` is what routes the plugin to the image-gen registration path. `requires_env` is prompted during `sinoclaw plugins install`.
+`kind: backend` is what routes the plugin to the image-gen registration path. `requires_env` is prompted during `anan plugins install`.
 
 ## ABC reference
 
@@ -200,9 +200,9 @@ Full contract in `agent/image_gen_provider.py`. The methods you'll typically ove
 | Member | Required | Default | Purpose |
 |---|---|---|---|
 | `name` | ✅ | — | Stable id used in `image_gen.provider` config |
-| `display_name` | — | `name.title()` | Label shown in `sinoclaw tools` |
+| `display_name` | — | `name.title()` | Label shown in `anan tools` |
 | `is_available()` | — | `True` | Gate for missing creds/deps |
-| `list_models()` | — | `[]` | Catalog for `sinoclaw tools` model picker |
+| `list_models()` | — | `[]` | Catalog for `anan tools` model picker |
 | `default_model()` | — | first from `list_models()` | Fallback when no model is configured |
 | `get_setup_schema()` | — | minimal | Picker metadata + env-var prompts |
 | `generate(prompt, aspect_ratio, **kwargs)` | ✅ | — | The call |
@@ -243,7 +243,7 @@ Some backends return image URLs (fal, Replicate); others return base64 payloads 
 
 ## User overrides
 
-Drop a user plugin at `~/.anan/plugins/image_gen/<name>/` with the same `name` property as a bundled one and enable it via `sinoclaw plugins enable <name>` — the registry is last-writer-wins, so your version replaces the built-in. Useful for pointing an `openai` plugin at a private proxy, or swapping in a custom model catalog.
+Drop a user plugin at `~/.anan/plugins/image_gen/<name>/` with the same `name` property as a bundled one and enable it via `anan plugins enable <name>` — the registry is last-writer-wins, so your version replaces the built-in. Useful for pointing an `openai` plugin at a private proxy, or swapping in a custom model catalog.
 
 ## Testing
 
@@ -263,7 +263,7 @@ echo "  provider: my-backend" >> $ANAN_HOME/config.yaml
 hermes -z "Generate an image of a corgi in a spacesuit"
 ```
 
-Or interactively: `sinoclaw tools` → "Image Generation" → select `my-backend` → enter API key if prompted.
+Or interactively: `anan tools` → "Image Generation" → select `my-backend` → enter API key if prompted.
 
 ## Reference implementations
 
@@ -279,10 +279,10 @@ Or interactively: `sinoclaw tools` → "Image Generation" → select `my-backend
 my-backend-imggen = "my_backend_imggen_package"
 ```
 
-`my_backend_imggen_package` must expose a top-level `register` function. See [Distribute via pip](/docs/guides/build-a-sinoclaw-plugin#distribute-via-pip) in the general plugin guide for the full setup.
+`my_backend_imggen_package` must expose a top-level `register` function. See [Distribute via pip](/docs/guides/build-a-anan-plugin#distribute-via-pip) in the general plugin guide for the full setup.
 
 ## Related pages
 
 - [Image Generation](/docs/user-guide/features/image-generation) — user-facing feature documentation
 - [Plugins overview](/docs/user-guide/features/plugins) — all plugin types at a glance
-- [Build a Hermes Plugin](/docs/guides/build-a-sinoclaw-plugin) — general tools/hooks/slash commands guide
+- [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin) — general tools/hooks/slash commands guide

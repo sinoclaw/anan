@@ -7,13 +7,13 @@ sidebar_position: 6
 
 # Web Search & Extract
 
-Sinoclaw Agent includes three web tools backed by multiple providers:
+anan Agent includes three web tools backed by multiple providers:
 
 - **`web_search`** — search the web and return ranked results
 - **`web_extract`** — fetch and extract readable content from one or more URLs
 - **`web_crawl`** — recursively crawl a site and return structured content
 
-All three are configured through a single backend selection. Providers are chosen via `sinoclaw tools` or set directly in `config.yaml`.
+All three are configured through a single backend selection. Providers are chosen via `anan tools` or set directly in `config.yaml`.
 
 ## Backends
 
@@ -28,19 +28,19 @@ All three are configured through a single backend selection. Providers are chose
 **Per-capability split:** you can use different providers for search and extract independently — for example SearXNG (free) for search and Firecrawl for extract. See [Per-capability configuration](#per-capability-configuration) below.
 
 :::tip Nous Subscribers
-If you have a paid [Nous Portal](https://portal.nousresearch.com) subscription, web search and extract are available through the **[Tool Gateway](tool-gateway.md)** via managed Firecrawl — no API key needed. Run `sinoclaw tools` to enable it.
+If you have a paid [Nous Portal](https://portal.nousresearch.com) subscription, web search and extract are available through the **[Tool Gateway](tool-gateway.md)** via managed Firecrawl — no API key needed. Run `anan tools` to enable it.
 :::
 
 ---
 
 ## Setup
 
-### Quick setup via `sinoclaw tools`
+### Quick setup via `anan tools`
 
-Run `sinoclaw tools`, navigate to **Web Search & Extract**, and pick a provider. The wizard prompts for the required URL or API key and writes it to your config.
+Run `anan tools`, navigate to **Web Search & Extract**, and pick a provider. The wizard prompts for the required URL or API key and writes it to your config.
 
 ```bash
-sinoclaw tools
+anan tools
 ```
 
 ---
@@ -159,7 +159,7 @@ web:
   search_backend: "searxng"
 ```
 
-Or set via `sinoclaw tools` → Web Search & Extract → SearXNG.
+Or set via `anan tools` → Web Search & Extract → SearXNG.
 
 ---
 
@@ -278,7 +278,7 @@ If no backend is explicitly configured, Hermes picks the first available one bas
 
 ## Verify your setup
 
-Run `sinoclaw setup` to see which web backend is detected:
+Run `anan setup` to see which web backend is detected:
 
 ```
 ✅ Web Search & Extract (searxng)
@@ -337,7 +337,7 @@ Switch to a self-hosted instance (see [Option A](#option-a--self-host-with-docke
 For agents that need to use SearXNG via `curl` directly (e.g. as a fallback when the web toolset isn't available), install the `searxng-search` optional skill:
 
 ```bash
-sinoclaw skills install official/research/searxng-search
+anan skills install official/research/searxng-search
 ```
 
 This adds a skill that teaches the agent how to:

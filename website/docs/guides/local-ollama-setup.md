@@ -1,7 +1,7 @@
 ---
 sidebar_position: 9
 title: "Run Hermes Locally with Ollama — Zero API Cost"
-description: "Step-by-step guide to running Sinoclaw Agent entirely on your own machine with Ollama and open-weight models like Gemma 4, no cloud API keys or paid subscriptions needed"
+description: "Step-by-step guide to running anan Agent entirely on your own machine with Ollama and open-weight models like Gemma 4, no cloud API keys or paid subscriptions needed"
 ---
 
 # Run Hermes Locally with Ollama — Zero API Cost
@@ -12,7 +12,7 @@ Cloud LLM APIs charge per token. A heavy coding session can cost $5–20. For pe
 
 ## What This Guide Solves
 
-You'll set up Sinoclaw Agent running entirely on your own hardware, using [Ollama](https://ollama.com) as the model backend. No API keys, no subscriptions, no data leaving your machine. Once configured, Hermes works exactly like it does with OpenRouter or Anthropic — terminal commands, file editing, web browsing, delegation — but the model runs locally.
+You'll set up anan Agent running entirely on your own hardware, using [Ollama](https://ollama.com) as the model backend. No API keys, no subscriptions, no data leaving your machine. Once configured, Hermes works exactly like it does with OpenRouter or Anthropic — terminal commands, file editing, web browsing, delegation — but the model runs locally.
 
 By the end, you'll have:
 
@@ -96,7 +96,7 @@ You should see a JSON response with the model's reply.
 Run the Hermes setup wizard:
 
 ```bash
-sinoclaw setup
+anan setup
 ```
 
 When prompted for a provider, select **Custom Endpoint** and enter:
@@ -222,7 +222,7 @@ platforms:
 3. Start the gateway:
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 Now message your bot on Telegram — it responds using your local model.
@@ -239,7 +239,7 @@ platforms:
     token: "YOUR_DISCORD_BOT_TOKEN"
 ```
 
-3. Start: `sinoclaw gateway`
+3. Start: `anan gateway`
 
 ## Step 8: Set Up Fallbacks (Optional)
 

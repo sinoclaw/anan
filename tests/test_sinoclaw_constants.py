@@ -52,7 +52,7 @@ class TestGetDefaultAnanRoot:
 
     def test_anan_home_is_custom_path(self, tmp_path, monkeypatch):
         """Any ANAN_HOME outside ~/.anan is treated as the root."""
-        custom = tmp_path / "my-sinoclaw-data"
+        custom = tmp_path / "my-anan-data"
         custom.mkdir()
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         monkeypatch.setenv("ANAN_HOME", str(custom))

@@ -1,12 +1,12 @@
 ---
-title: "Sinoclaw Agent Skill Authoring — Author in-repo SKILL"
-sidebar_label: "Sinoclaw Agent Skill Authoring"
+title: "anan Agent Skill Authoring — Author in-repo SKILL"
+sidebar_label: "anan Agent Skill Authoring"
 description: "Author in-repo SKILL"
 ---
 
 {/* This page is auto-generated from the skill's SKILL.md by website/scripts/generate-skill-docs.py. Edit the source SKILL.md, not this page. */}
 
-# Sinoclaw Agent Skill Authoring
+# anan Agent Skill Authoring
 
 Author in-repo SKILL.md: frontmatter, validator, structure.
 
@@ -17,7 +17,7 @@ Author in-repo SKILL.md: frontmatter, validator, structure.
 | Source | Bundled (installed by default) |
 | Path | `skills/software-development/anan-skill-authoring` |
 | Version | `1.0.0` |
-| Author | Sinoclaw Agent |
+| Author | anan Agent |
 | License | MIT |
 | Tags | `skills`, `authoring`, `anan`, `conventions`, `skill-md` |
 | Related skills | [`writing-plans`](/docs/user-guide/skills/bundled/software-development/software-development-writing-plans), [`requesting-code-review`](/docs/user-guide/skills/bundled/software-development/software-development-requesting-code-review) |
@@ -28,7 +28,7 @@ Author in-repo SKILL.md: frontmatter, validator, structure.
 The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
-# Authoring Sinoclaw-Agent Skills (in-repo)
+# Authoring anan-Agent Skills (in-repo)
 
 ## Overview
 
@@ -61,7 +61,7 @@ Peer-matched shape used by every skill under `skills/software-development/`:
 name: my-skill-name               # lowercase, hyphens, ≤64 chars (MAX_NAME_LENGTH)
 description: Use when <trigger>. <one-line behavior>.
 version: 1.0.0
-author: Sinoclaw Agent
+author: anan Agent
 license: MIT
 metadata:
   hermes:
@@ -95,7 +95,7 @@ One or two paragraphs: what and why.
 ## <Topic sections specific to the skill>
 - Quick-reference tables are common
 - Code blocks with exact commands
-- Sinoclaw-specific recipes (tests via scripts/run_tests.sh, ui-tui paths, etc.)
+- anan-specific recipes (tests via scripts/run_tests.sh, ui-tui paths, etc.)
 
 ## Common Pitfalls
 Numbered list of mistakes and their fixes.

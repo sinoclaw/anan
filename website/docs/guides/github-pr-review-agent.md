@@ -15,7 +15,7 @@ description: "Build an automated AI code reviewer that monitors your repos, revi
 ```
 ┌───────────────────────────────────────────────────────────────────┐
 │                                                                   │
-│   Cron Timer  ──▶  Sinoclaw Agent  ──▶  GitHub API  ──▶  Review     │
+│   Cron Timer  ──▶  anan Agent  ──▶  GitHub API  ──▶  Review     │
 │   (every 2h)       + gh CLI           (PR diffs)       delivery   │
 │                    + skill                             (Telegram, │
 │                    + memory                            Discord,   │
@@ -34,12 +34,12 @@ If you have a public endpoint available, check out [Automated GitHub PR Comments
 
 ## Prerequisites
 
-- **Sinoclaw Agent installed** — see the [Installation guide](/docs/getting-started/installation)
+- **anan Agent installed** — see the [Installation guide](/docs/getting-started/installation)
 - **Gateway running** for cron jobs:
   ```bash
-  sinoclaw gateway install   # Install as a service
+  anan gateway install   # Install as a service
   # or
-  sinoclaw gateway           # Run in foreground
+  anan gateway           # Run in foreground
   ```
 - **GitHub CLI (`gh`) installed and authenticated**:
   ```bash
@@ -69,7 +69,7 @@ hermes
 Test with a simple command:
 
 ```
-Run: gh pr list --repo sinoclaw/anan --state open --limit 3
+Run: gh pr list --repo anan/anan --state open --limit 3
 ```
 
 You should see a list of open PRs. If this works, you're ready.
@@ -84,7 +84,7 @@ Still in the chat, ask Hermes to review a real PR:
 Review this pull request. Read the diff, check for bugs, security issues,
 and code quality. Be specific about line numbers and quote problematic code.
 
-Run: gh pr diff 3888 --repo sinoclaw/anan
+Run: gh pr diff 3888 --repo anan/anan
 ```
 
 Hermes will:
@@ -285,7 +285,7 @@ The gateway runs in a minimal environment. Ensure `gh` is in the system PATH and
 
 ### Cron job doesn't run
 ```bash
-sinoclaw gateway status    # Is the gateway running?
+anan gateway status    # Is the gateway running?
 hermes cron list         # Is the job enabled?
 ```
 
@@ -298,6 +298,6 @@ GitHub allows 5,000 API requests/hour for authenticated users. Each PR review us
 
 - **[Webhook-Based PR Reviews](./webhook-github-pr-review.md)** — get instant reviews when PRs are opened (requires a public endpoint)
 - **[Daily Briefing Bot](/docs/guides/daily-briefing-bot)** — combine PR reviews with your morning news digest
-- **[Build a Plugin](/docs/guides/build-a-sinoclaw-plugin)** — wrap the review logic into a shareable plugin
+- **[Build a Plugin](/docs/guides/build-a-anan-plugin)** — wrap the review logic into a shareable plugin
 - **[Profiles](/docs/user-guide/profiles)** — run a dedicated reviewer profile with its own memory and config
 - **[Fallback Providers](/docs/user-guide/features/fallback-providers)** — ensure reviews run even when one provider is down

@@ -28,17 +28,17 @@ def _make_auth_store(pool: dict | None = None, providers: dict | None = None) ->
 
 @pytest.fixture()
 def profile_env(tmp_path, monkeypatch):
-    """Set up a global root + an active profile under Path.home()/.sinoclaw/profiles/coder.
+    """Set up a global root + an active profile under Path.home()/.anan/profiles/coder.
 
     * Path.home() -> tmp_path
     * Global root -> tmp_path/.hermes            (has its own auth.json fixture)
-    * Profile     -> tmp_path/.sinoclaw/profiles/coder   (active, ANAN_HOME points here)
+    * Profile     -> tmp_path/.anan/profiles/coder   (active, ANAN_HOME points here)
 
     This mirrors the real "named profile mounted under the default root"
     layout that profile users actually have on disk.
     """
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    global_root = tmp_path / ".sinoclaw"
+    global_root = tmp_path / ".anan"
     global_root.mkdir()
     profile_dir = global_root / "profiles" / "coder"
     profile_dir.mkdir(parents=True)

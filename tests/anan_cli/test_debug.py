@@ -1,4 +1,4 @@
-"""Tests for ``sinoclaw debug`` CLI command and debug utilities."""
+"""Tests for ``anan debug`` CLI command and debug utilities."""
 
 import os
 import sys
@@ -15,7 +15,7 @@ import pytest
 @pytest.fixture
 def anan_home(tmp_path, monkeypatch):
     """Set up an isolated ANAN_HOME with minimal logs."""
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(home))
 
@@ -149,7 +149,7 @@ class TestCaptureLogSnapshot:
         assert "session started" in snap.tail_text
 
     def test_returns_none_for_missing(self, tmp_path, monkeypatch):
-        home = tmp_path / ".sinoclaw"
+        home = tmp_path / ".anan"
         home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(home))
 
@@ -288,7 +288,7 @@ class TestCaptureLogSnapshotRedaction:
     @pytest.fixture
     def anan_home_with_secret(self, tmp_path, monkeypatch):
         """Isolated ANAN_HOME whose agent.log contains a vendor-prefixed token."""
-        home = tmp_path / ".sinoclaw"
+        home = tmp_path / ".anan"
         home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(home))
         # Baseline fixture: no explicit env-var opinion. With the post-#17691
@@ -387,11 +387,11 @@ class TestCollectDebugReport:
 
         with patch("anan_cli.dump.run_dump") as mock_dump:
             mock_dump.side_effect = lambda args: print(
-                "--- sinoclaw dump ---\nversion: 0.8.0\n--- end dump ---"
+                "--- anan dump ---\nversion: 0.8.0\n--- end dump ---"
             )
             report = collect_debug_report(log_lines=50)
 
-        assert "--- sinoclaw dump ---" in report
+        assert "--- anan dump ---" in report
         assert "version: 0.8.0" in report
 
     def test_report_includes_agent_log(self, anan_home):
@@ -421,7 +421,7 @@ class TestCollectDebugReport:
         assert "--- gateway.log" in report
 
     def test_missing_logs_handled(self, tmp_path, monkeypatch):
-        home = tmp_path / ".sinoclaw"
+        home = tmp_path / ".anan"
         home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(home))
 
@@ -514,7 +514,7 @@ class TestRunDebugShare:
         with patch("anan_cli.dump.run_dump") as mock_dump, \
              patch("anan_cli.debug.upload_to_pastebin",
                     side_effect=_mock_upload):
-            mock_dump.side_effect = lambda a: print("--- sinoclaw dump ---\nversion: test\n--- end dump ---")
+            mock_dump.side_effect = lambda a: print("--- anan dump ---\nversion: test\n--- end dump ---")
             run_debug_share(args)
 
         out = capsys.readouterr().out
@@ -529,10 +529,10 @@ class TestRunDebugShare:
 
         # Each log paste should start with the dump header
         agent_paste = uploaded_content[1]
-        assert "--- sinoclaw dump ---" in agent_paste
+        assert "--- anan dump ---" in agent_paste
         assert "--- full agent.log ---" in agent_paste
         gateway_paste = uploaded_content[2]
-        assert "--- sinoclaw dump ---" in gateway_paste
+        assert "--- anan dump ---" in gateway_paste
         assert "--- full gateway.log ---" in gateway_paste
 
     def test_share_keeps_report_and_full_log_on_same_snapshot(self, anan_home, capsys):
@@ -586,7 +586,7 @@ class TestRunDebugShare:
 
     def test_share_skips_missing_logs(self, tmp_path, monkeypatch, capsys):
         """Only uploads logs that exist."""
-        home = tmp_path / ".sinoclaw"
+        home = tmp_path / ".anan"
         home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(home))
 
@@ -668,7 +668,7 @@ class TestRunDebugShareRedaction:
     @pytest.fixture
     def anan_home_with_secret(self, tmp_path, monkeypatch):
         """Isolated ANAN_HOME whose agent.log contains a vendor-prefixed token."""
-        home = tmp_path / ".sinoclaw"
+        home = tmp_path / ".anan"
         home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(home))
         monkeypatch.delenv("SINOCLAW_REDACT_SECRETS", raising=False)
@@ -790,7 +790,7 @@ class TestRunDebug:
         run_debug(args)
 
         out = capsys.readouterr().out
-        assert "sinoclaw debug" in out
+        assert "anan debug" in out
         assert "share" in out
         assert "delete" in out
 
@@ -870,7 +870,7 @@ class TestScheduleAutoDelete:
 
     The new implementation is stateless: it records pending deletions to
     ``~/.anan/pastes/pending.json`` and lets ``_sweep_expired_pastes``
-    handle the DELETE requests synchronously on the next ``sinoclaw debug``
+    handle the DELETE requests synchronously on the next ``anan debug``
     invocation.
     """
 
@@ -1128,7 +1128,7 @@ class TestRunDebugSweepsOnInvocation:
 
         # Default subcommand still printed help
         out = capsys.readouterr().out
-        assert "Usage: sinoclaw debug" in out
+        assert "Usage: anan debug" in out
 
 
 class TestRunDebugDelete:

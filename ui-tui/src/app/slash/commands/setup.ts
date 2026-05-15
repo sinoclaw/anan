@@ -1,4 +1,4 @@
-import { withInkSuspended } from '@sinoclaw/ink'
+import { withInkSuspended } from '@anan/ink'
 
 import { launchSinoclawCommand } from '../../../lib/externalCli.js'
 import { runExternalSetup } from '../../setupHandoff.js'
@@ -6,7 +6,7 @@ import type { SlashCommand } from '../types.js'
 
 export const setupCommands: SlashCommand[] = [
   {
-    help: 'run full setup wizard (launches `sinoclaw setup`)',
+    help: 'run full setup wizard (launches `anan setup`)',
     name: 'setup',
     run: (arg, ctx) =>
       void runExternalSetup({

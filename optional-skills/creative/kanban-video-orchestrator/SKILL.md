@@ -14,7 +14,7 @@ metadata:
       SOUL.md-per-profile model, TEAM.md task-graph convention, and
       `--workspace dir:<path>` discipline are adapted from alt-glitch's
       original multi-agent video pipeline at
-      https://github.com/sinoclaw/kanban-video-pipeline.
+      https://github.com/anan/kanban-video-pipeline.
 ---
 
 # Kanban Video Orchestrator
@@ -99,7 +99,7 @@ Generate a setup script (`setup.sh`) and run it. The script:
 
 1. Creates the project workspace (`~/projects/video-pipeline/<slug>/`)
 2. Copies any provided assets into `taste/`, `audio/`, `assets/`
-3. Creates each Hermes profile via `sinoclaw profile create --clone`
+3. Creates each Hermes profile via `anan profile create --clone`
 4. Writes per-profile `SOUL.md` (personality + role definition)
 5. Configures profile YAML (toolsets, always_load skills, cwd)
 6. Writes `brief.md`, `TEAM.md`, and `taste/` content

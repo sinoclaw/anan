@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Google Workspace API CLI for Sinoclaw Agent.
+"""Google Workspace API CLI for anan Agent.
 
 Uses the Google Workspace CLI (`gws`) when available, but preserves the
-existing Sinoclaw-facing JSON contract and falls back to the Python client
+existing anan-facing JSON contract and falls back to the Python client
 libraries if `gws` is not installed.
 
 Usage:
@@ -1048,7 +1048,7 @@ def _docs_insert_text(doc_id: str, text: str, index: int) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Google Workspace API for Sinoclaw Agent")
+    parser = argparse.ArgumentParser(description="Google Workspace API for anan Agent")
     sub = parser.add_subparsers(dest="service", required=True)
 
     # --- Gmail ---

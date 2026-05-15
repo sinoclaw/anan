@@ -1,7 +1,7 @@
 """CLI for the Anan Kanban board — ``anan kanban …`` subcommand.
 
 Exposes the full 15-verb surface documented in the design spec
-(``docs/sinoclaw-kanban-v1-spec.pdf``).  All DB work is delegated to
+(``docs/anan-kanban-v1-spec.pdf``).  All DB work is delegated to
 ``kanban_db``.  This module adds:
 
   * Argparse subcommand construction (``build_parser``).
@@ -167,7 +167,7 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
             "Tasks are claimed atomically, can depend on other tasks, and "
             "are executed by a named profile in an isolated workspace. "
             "See https://anan.nousresearch.com/docs/user-guide/features/kanban "
-            "or docs/sinoclaw-kanban-v1-spec.pdf for the full design."
+            "or docs/anan-kanban-v1-spec.pdf for the full design."
         ),
     )
     # --- global --board flag ---

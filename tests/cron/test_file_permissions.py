@@ -106,7 +106,7 @@ class TestConfigFilePermissions(unittest.TestCase):
             self.assertEqual(file_mode, 0o600)
 
     def test_ensure_anan_home_sets_0700(self):
-        home = Path(self.tmpdir) / ".sinoclaw"
+        home = Path(self.tmpdir) / ".anan"
         with patch("anan_cli.config.get_anan_home", return_value=home):
             from anan_cli.config import ensure_anan_home
             ensure_anan_home()

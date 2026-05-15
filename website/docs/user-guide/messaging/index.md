@@ -41,7 +41,7 @@ For the full voice feature set — including CLI microphone mode, spoken replies
 
 ```mermaid
 flowchart TB
-    subgraph Gateway["Sinoclaw Gateway"]
+    subgraph Gateway["anan Gateway"]
         subgraph Adapters["Platform adapters"]
             tg[Telegram]
             dc[Discord]
@@ -105,7 +105,7 @@ Each platform adapter receives messages, routes them through a per-chat session 
 The easiest way to configure messaging platforms is the interactive wizard:
 
 ```bash
-sinoclaw gateway setup        # Interactive setup for all messaging platforms
+anan gateway setup        # Interactive setup for all messaging platforms
 ```
 
 This walks you through configuring each platform with arrow-key selection, shows which platforms are already configured, and offers to start/restart the gateway when done.
@@ -113,14 +113,14 @@ This walks you through configuring each platform with arrow-key selection, shows
 ## Gateway Commands
 
 ```bash
-sinoclaw gateway              # Run in foreground
-sinoclaw gateway setup        # Configure messaging platforms interactively
-sinoclaw gateway install      # Install as a user service (Linux) / launchd service (macOS)
-sudo sinoclaw gateway install --system   # Linux only: install a boot-time system service
-sinoclaw gateway start        # Start the default service
-sinoclaw gateway stop         # Stop the default service
-sinoclaw gateway status       # Check default service status
-sinoclaw gateway status --system         # Linux only: inspect the system service explicitly
+anan gateway              # Run in foreground
+anan gateway setup        # Configure messaging platforms interactively
+anan gateway install      # Install as a user service (Linux) / launchd service (macOS)
+sudo anan gateway install --system   # Linux only: install a boot-time system service
+anan gateway start        # Start the default service
+anan gateway stop         # Stop the default service
+anan gateway status       # Check default service status
+anan gateway status --system         # Linux only: inspect the system service explicitly
 ```
 
 ## Chat Commands (Inside Messaging)
@@ -147,7 +147,7 @@ sinoclaw gateway status --system         # Linux only: inspect the system servic
 | `/rollback [number]` | List or restore filesystem checkpoints |
 | `/background <prompt>` | Run a prompt in a separate background session |
 | `/reload-mcp` | Reload MCP servers from config |
-| `/update` | Update Sinoclaw Agent to the latest version |
+| `/update` | Update anan Agent to the latest version |
 | `/help` | Show available commands |
 | `/<skill-name>` | Invoke any installed skill |
 
@@ -327,19 +327,19 @@ Background tasks on messaging platforms are fire-and-forget — you don't need t
 ### Linux (systemd)
 
 ```bash
-sinoclaw gateway install               # Install as user service
-sinoclaw gateway start                 # Start the service
-sinoclaw gateway stop                  # Stop the service
-sinoclaw gateway status                # Check status
+anan gateway install               # Install as user service
+anan gateway start                 # Start the service
+anan gateway stop                  # Stop the service
+anan gateway status                # Check status
 journalctl --user -u anan-gateway -f  # View logs
 
 # Enable lingering (keeps running after logout)
 sudo loginctl enable-linger $USER
 
 # Or install a boot-time system service that still runs as your user
-sudo sinoclaw gateway install --system
-sudo sinoclaw gateway start --system
-sudo sinoclaw gateway status --system
+sudo anan gateway install --system
+sudo anan gateway start --system
+sudo anan gateway status --system
 journalctl -u anan-gateway -f
 ```
 
@@ -348,16 +348,16 @@ Use the user service on laptops and dev boxes. Use the system service on VPS or 
 Avoid keeping both the user and system gateway units installed at once unless you really mean to. Hermes will warn if it detects both because start/stop/status behavior gets ambiguous.
 
 :::info Multiple installations
-If you run multiple Hermes installations on the same machine (with different `ANAN_HOME` directories), each gets its own systemd service name. The default `~/.sinoclaw` uses `anan-gateway`; other installations use `anan-gateway-<hash>`. The `sinoclaw gateway` commands automatically target the correct service for your current `ANAN_HOME`.
+If you run multiple Hermes installations on the same machine (with different `ANAN_HOME` directories), each gets its own systemd service name. The default `~/.anan` uses `anan-gateway`; other installations use `anan-gateway-<hash>`. The `anan gateway` commands automatically target the correct service for your current `ANAN_HOME`.
 :::
 
 ### macOS (launchd)
 
 ```bash
-sinoclaw gateway install               # Install as launchd agent
-sinoclaw gateway start                 # Start the service
-sinoclaw gateway stop                  # Stop the service
-sinoclaw gateway status                # Check status
+anan gateway install               # Install as launchd agent
+anan gateway start                 # Start the service
+anan gateway stop                  # Stop the service
+anan gateway status                # Check status
 tail -f ~/.anan/logs/gateway.log   # View logs
 ```
 
@@ -368,11 +368,11 @@ The generated plist lives at `~/Library/LaunchAgents/ai.hermes.gateway.plist`. I
 - **ANAN_HOME** — scopes the gateway to your Hermes installation.
 
 :::tip PATH changes after install
-launchd plists are static — if you install new tools (e.g. a new Node.js version via nvm, or ffmpeg via Homebrew) after setting up the gateway, run `sinoclaw gateway install` again to capture the updated PATH. The gateway will detect the stale plist and reload automatically.
+launchd plists are static — if you install new tools (e.g. a new Node.js version via nvm, or ffmpeg via Homebrew) after setting up the gateway, run `anan gateway install` again to capture the updated PATH. The gateway will detect the stale plist and reload automatically.
 :::
 
 :::info Multiple installations
-Like the Linux systemd service, each `ANAN_HOME` directory gets its own launchd label. The default `~/.sinoclaw` uses `ai.hermes.gateway`; other installations use `ai.hermes.gateway-<suffix>`.
+Like the Linux systemd service, each `ANAN_HOME` directory gets its own launchd label. The default `~/.anan` uses `ai.hermes.gateway`; other installations use `ai.hermes.gateway-<suffix>`.
 :::
 
 ## Platform-Specific Toolsets
@@ -382,26 +382,26 @@ Each platform has its own toolset:
 | Platform | Toolset | Capabilities |
 |----------|---------|--------------|
 | CLI | `anan-cli` | Full access |
-| Telegram | `sinoclaw-telegram` | Full tools including terminal |
+| Telegram | `anan-telegram` | Full tools including terminal |
 | Discord | `anan-discord` | Full tools including terminal |
-| WhatsApp | `sinoclaw-whatsapp` | Full tools including terminal |
-| Slack | `sinoclaw-slack` | Full tools including terminal |
-| Google Chat | `sinoclaw-google-chat` | Full tools including terminal |
-| Signal | `sinoclaw-signal` | Full tools including terminal |
-| SMS | `sinoclaw-sms` | Full tools including terminal |
-| Email | `sinoclaw-email` | Full tools including terminal |
-| Home Assistant | `sinoclaw-homeassistant` | Full tools + HA device control (ha_list_entities, ha_get_state, ha_call_service, ha_list_services) |
-| Mattermost | `sinoclaw-mattermost` | Full tools including terminal |
-| Matrix | `sinoclaw-matrix` | Full tools including terminal |
-| DingTalk | `sinoclaw-dingtalk` | Full tools including terminal |
-| Feishu/Lark | `sinoclaw-feishu` | Full tools including terminal |
-| WeCom | `sinoclaw-wecom` | Full tools including terminal |
-| WeCom Callback | `sinoclaw-wecom-callback` | Full tools including terminal |
-| Weixin | `sinoclaw-weixin` | Full tools including terminal |
-| BlueBubbles | `sinoclaw-bluebubbles` | Full tools including terminal |
-| QQBot | `sinoclaw-qqbot` | Full tools including terminal |
+| WhatsApp | `anan-whatsapp` | Full tools including terminal |
+| Slack | `anan-slack` | Full tools including terminal |
+| Google Chat | `anan-google-chat` | Full tools including terminal |
+| Signal | `anan-signal` | Full tools including terminal |
+| SMS | `anan-sms` | Full tools including terminal |
+| Email | `anan-email` | Full tools including terminal |
+| Home Assistant | `anan-homeassistant` | Full tools + HA device control (ha_list_entities, ha_get_state, ha_call_service, ha_list_services) |
+| Mattermost | `anan-mattermost` | Full tools including terminal |
+| Matrix | `anan-matrix` | Full tools including terminal |
+| DingTalk | `anan-dingtalk` | Full tools including terminal |
+| Feishu/Lark | `anan-feishu` | Full tools including terminal |
+| WeCom | `anan-wecom` | Full tools including terminal |
+| WeCom Callback | `anan-wecom-callback` | Full tools including terminal |
+| Weixin | `anan-weixin` | Full tools including terminal |
+| BlueBubbles | `anan-bluebubbles` | Full tools including terminal |
+| QQBot | `anan-qqbot` | Full tools including terminal |
 | Yuanbao | `anan-yuanbao` | Full tools including terminal |
-| Microsoft Teams | `sinoclaw-teams` | Full tools including terminal |
+| Microsoft Teams | `anan-teams` | Full tools including terminal |
 | API Server | `hermes` (default) | Full tools including terminal |
 | Webhooks | `anan-webhook` | Full tools including terminal |
 

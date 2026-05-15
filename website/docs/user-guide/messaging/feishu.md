@@ -1,12 +1,12 @@
 ---
 sidebar_position: 11
 title: "Feishu / Lark"
-description: "Set up Sinoclaw Agent as a Feishu or Lark bot"
+description: "Set up anan Agent as a Feishu or Lark bot"
 ---
 
 # Feishu / Lark Setup
 
-Sinoclaw Agent integrates with Feishu and Lark as a full-featured bot. Once connected, you can chat with the agent in direct messages or group chats, receive cron job results in a home chat, and send text, images, audio, and file attachments through the normal gateway flow.
+anan Agent integrates with Feishu and Lark as a full-featured bot. Once connected, you can chat with the agent in direct messages or group chats, receive cron job results in a home chat, and send text, images, audio, and file attachments through the normal gateway flow.
 
 The integration supports both connection modes:
 
@@ -34,7 +34,7 @@ Set it to `false` only if you explicitly want one shared conversation per chat.
 ### Recommended: Scan-to-Create (one command)
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 Select **Feishu / Lark** and scan the QR code with your Feishu or Lark mobile app. Hermes will automatically create a bot application with the correct permissions and save the credentials.
@@ -49,7 +49,7 @@ If scan-to-create is not available, the wizard falls back to manual input:
 2. Create a new app.
 3. In **Credentials & Basic Info**, copy the **App ID** and **App Secret**.
 4. Enable the **Bot** capability for the app.
-5. Run `sinoclaw gateway setup`, select **Feishu / Lark**, and enter the credentials when prompted.
+5. Run `anan gateway setup`, select **Feishu / Lark**, and enter the credentials when prompted.
 
 :::warning
 Keep the App Secret private. Anyone with it can impersonate your app.
@@ -100,7 +100,7 @@ When Feishu sends a URL verification challenge (`type: url_verification`), the w
 ### Option A: Interactive Setup
 
 ```bash
-sinoclaw gateway setup
+anan gateway setup
 ```
 
 Select **Feishu / Lark** and fill in the prompts.
@@ -128,7 +128,7 @@ FEISHU_HOME_CHANNEL=oc_xxx
 ## Step 4: Start the Gateway
 
 ```bash
-sinoclaw gateway
+anan gateway
 ```
 
 Then message the bot from Feishu/Lark to confirm that the connection is live.
@@ -515,8 +515,8 @@ WebSocket and per-group ACL settings are configured via `config.yaml` under `pla
 | `lark-oapi not installed` | Install the SDK: `pip install lark-oapi` |
 | `websockets not installed; websocket mode unavailable` | Install websockets: `pip install websockets` |
 | `aiohttp not installed; webhook mode unavailable` | Install aiohttp: `pip install aiohttp` |
-| `FEISHU_APP_ID or FEISHU_APP_SECRET not set` | Set both env vars or configure via `sinoclaw gateway setup` |
-| `Another local Sinoclaw gateway is already using this Feishu app_id` | Only one Hermes instance can use the same app_id at a time. Stop the other gateway first. |
+| `FEISHU_APP_ID or FEISHU_APP_SECRET not set` | Set both env vars or configure via `anan gateway setup` |
+| `Another local anan gateway is already using this Feishu app_id` | Only one Hermes instance can use the same app_id at a time. Stop the other gateway first. |
 | Bot doesn't respond in groups | Ensure the bot is @mentioned, check `FEISHU_GROUP_POLICY`, and verify the sender is in `FEISHU_ALLOWED_USERS` if policy is `allowlist` |
 | `Webhook rejected: invalid verification token` | Ensure `FEISHU_VERIFICATION_TOKEN` matches the token in your Feishu app's Event Subscriptions config |
 | `Webhook rejected: invalid signature` | Ensure `FEISHU_ENCRYPT_KEY` matches the encrypt key in your Feishu app config |
@@ -530,4 +530,4 @@ WebSocket and per-group ACL settings are configured via `config.yaml` under `pla
 
 ## Toolset
 
-Feishu / Lark uses the `sinoclaw-feishu` platform preset, which includes the same core tools as Telegram and other gateway-based messaging platforms.
+Feishu / Lark uses the `anan-feishu` platform preset, which includes the same core tools as Telegram and other gateway-based messaging platforms.

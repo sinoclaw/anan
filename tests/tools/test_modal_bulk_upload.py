@@ -123,13 +123,13 @@ class TestModalBulkUpload:
         buf = io.BytesIO(tar_data)
         with tarfile.open(fileobj=buf, mode="r:gz") as tar:
             names = sorted(tar.getnames())
-            assert "root/.sinoclaw/credentials/a.json" in names
-            assert "root/.sinoclaw/skills/b.py" in names
+            assert "root/.anan/credentials/a.json" in names
+            assert "root/.anan/skills/b.py" in names
 
             # Verify content
-            a_content = tar.extractfile("root/.sinoclaw/credentials/a.json").read()
+            a_content = tar.extractfile("root/.anan/credentials/a.json").read()
             assert a_content == b"cred_content"
-            b_content = tar.extractfile("root/.sinoclaw/skills/b.py").read()
+            b_content = tar.extractfile("root/.anan/skills/b.py").read()
             assert b_content == b"skill_content"
 
         # Verify stdin was closed
@@ -190,7 +190,7 @@ class TestModalBulkUpload:
         # Manually call the part of __init__ that wires FileSyncManager
         from tools.environments.file_sync import iter_sync_files
         env._sync_manager = modal_env.FileSyncManager(
-            get_files_fn=lambda: iter_sync_files("/root/.sinoclaw"),
+            get_files_fn=lambda: iter_sync_files("/root/.anan"),
             upload_fn=env._modal_upload,
             delete_fn=env._modal_delete,
             bulk_upload_fn=env._modal_bulk_upload,
@@ -292,4 +292,4 @@ class TestModalBulkUpload:
         buf = io.BytesIO(tar_data)
         with tarfile.open(fileobj=buf, mode="r:gz") as tar:
             names = tar.getnames()
-            assert "root/.sinoclaw/large.bin" in names
+            assert "root/.anan/large.bin" in names

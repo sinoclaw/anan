@@ -246,7 +246,7 @@ def auth_add_command(args) -> None:
 
     if provider == "nous":
         # Codex-style auto-import: if a shared Nous credential lives at
-        # <sinoclaw-root>/shared/nous_auth.json (written by any previous
+        # <anan-root>/shared/nous_auth.json (written by any previous
         # successful login), offer to import it instead of running the
         # full device-code flow. This makes `anan --profile <name>
         # auth add nous --type oauth` a one-tap operation for users who

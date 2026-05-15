@@ -38,7 +38,7 @@ import pytest
 @pytest.fixture(autouse=True)
 def _isolate_env(tmp_path, monkeypatch):
     """Isolate ANAN_HOME for each test."""
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     yield anan_home
@@ -50,20 +50,20 @@ def _load_lib():
     # Load anan's own L1 sleep plugin (not the OpenClaw legacy version)
     lib_path = Path(__file__).parent / "sleep_plugin.py"
 
-    if "sinoclaw_plugins" not in sys.modules:
-        ns = types.ModuleType("sinoclaw_plugins")
+    if "anan_plugins" not in sys.modules:
+        ns = types.ModuleType("anan_plugins")
         ns.__path__ = []
-        sys.modules["sinoclaw_plugins"] = ns
+        sys.modules["anan_plugins"] = ns
 
     spec = importlib.util.spec_from_file_location(
-        "sinoclaw_plugins.dreaming_under_test",
+        "anan_plugins.dreaming_under_test",
         lib_path,
         submodule_search_locations=[str(lib_path.parent)],
     )
     mod = importlib.util.module_from_spec(spec)
-    mod.__package__ = "sinoclaw_plugins"
+    mod.__package__ = "anan_plugins"
     mod.__path__ = [str(lib_path.parent)]
-    sys.modules["sinoclaw_plugins.dreaming_under_test"] = mod
+    sys.modules["anan_plugins.dreaming_under_test"] = mod
     spec.loader.exec_module(mod)
     return mod
 
@@ -821,7 +821,7 @@ class TestTokenizeSnippet:
         assert "endpoint" in tokens
 
 # ---------------------------------------------------------------------------
-# Sinoclaw SessionDB tests
+# anan SessionDB tests
 # ---------------------------------------------------------------------------
 
 class TestAnanSessionDB:

@@ -354,7 +354,7 @@ class TestXiaomiAuxiliary:
 
 
 class TestXiaomiDoctor:
-    """Verify sinoclaw doctor recognizes Xiaomi env vars."""
+    """Verify anan doctor recognizes Xiaomi env vars."""
 
     def test_provider_env_hints(self):
         from anan_cli.doctor import _PROVIDER_ENV_HINTS

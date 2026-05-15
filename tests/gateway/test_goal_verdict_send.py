@@ -22,7 +22,7 @@ from gateway.session import SessionEntry, SessionSource, build_session_key
 
 @pytest.fixture()
 def anan_home(tmp_path, monkeypatch):
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir()
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("ANAN_HOME", str(home))

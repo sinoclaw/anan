@@ -14,7 +14,7 @@ Optimizes LLM inference with NVIDIA TensorRT for maximum throughput and lowest l
 
 | | |
 |---|---|
-| Source | Optional — install with `sinoclaw skills install official/mlops/tensorrt-llm` |
+| Source | Optional — install with `anan skills install official/mlops/tensorrt-llm` |
 | Path | `optional-skills/mlops/tensorrt-llm` |
 | Version | `1.0.0` |
 | Author | Orchestra Research |
@@ -194,9 +194,9 @@ outputs = llm.generate(
 
 ## References
 
-- **[Optimization Guide](https://github.com/sinoclaw/anan/blob/main/optional-skills/mlops/tensorrt-llm/references/optimization.md)** - Quantization, batching, KV cache tuning
-- **[Multi-GPU Setup](https://github.com/sinoclaw/anan/blob/main/optional-skills/mlops/tensorrt-llm/references/multi-gpu.md)** - Tensor/pipeline parallelism, multi-node
-- **[Serving Guide](https://github.com/sinoclaw/anan/blob/main/optional-skills/mlops/tensorrt-llm/references/serving.md)** - Production deployment, monitoring, autoscaling
+- **[Optimization Guide](https://github.com/anan/anan/blob/main/optional-skills/mlops/tensorrt-llm/references/optimization.md)** - Quantization, batching, KV cache tuning
+- **[Multi-GPU Setup](https://github.com/anan/anan/blob/main/optional-skills/mlops/tensorrt-llm/references/multi-gpu.md)** - Tensor/pipeline parallelism, multi-node
+- **[Serving Guide](https://github.com/anan/anan/blob/main/optional-skills/mlops/tensorrt-llm/references/serving.md)** - Production deployment, monitoring, autoscaling
 
 ## Resources
 

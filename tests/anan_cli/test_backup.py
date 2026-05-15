@@ -1,4 +1,4 @@
-"""Tests for sinoclaw backup and import commands."""
+"""Tests for anan backup and import commands."""
 
 import json
 import os
@@ -16,7 +16,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 def _make_sinoclaw_tree(root: Path) -> None:
-    """Create a realistic ~/.sinoclaw directory structure for testing."""
+    """Create a realistic ~/.anan directory structure for testing."""
     (root / "config.yaml").write_text("model:\n  provider: openrouter\n")
     (root / ".env").write_text("OPENROUTER_API_KEY=sk-test-123\n")
     (root / "memory_store.db").write_bytes(b"fake-sqlite")
@@ -147,7 +147,7 @@ class TestShouldExclude:
 class TestBackup:
     def test_creates_zip(self, tmp_path, monkeypatch):
         """Backup creates a valid zip containing expected files."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         _make_sinoclaw_tree(anan_home)
 
@@ -181,7 +181,7 @@ class TestBackup:
 
     def test_excludes_sinoclaw_agent(self, tmp_path, monkeypatch):
         """Backup does NOT include anan/ directory."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         _make_sinoclaw_tree(anan_home)
 
@@ -201,7 +201,7 @@ class TestBackup:
 
     def test_excludes_pycache(self, tmp_path, monkeypatch):
         """Backup does NOT include __pycache__ dirs."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         _make_sinoclaw_tree(anan_home)
 
@@ -221,7 +221,7 @@ class TestBackup:
 
     def test_excludes_pid_files(self, tmp_path, monkeypatch):
         """Backup does NOT include PID files."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         _make_sinoclaw_tree(anan_home)
 
@@ -240,8 +240,8 @@ class TestBackup:
             assert pid_files == []
 
     def test_default_output_path(self, tmp_path, monkeypatch):
-        """When no output path given, zip goes to ~/sinoclaw-backup-*.zip."""
-        anan_home = tmp_path / ".sinoclaw"
+        """When no output path given, zip goes to ~/anan-backup-*.zip."""
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / "config.yaml").write_text("model: test\n")
 
@@ -269,7 +269,7 @@ class TestValidateBackupZip:
                 zf.writestr(name, "dummy")
 
     def test_state_db_passes(self, tmp_path):
-        """A zip containing state.db is accepted as a valid Sinoclaw backup."""
+        """A zip containing state.db is accepted as a valid anan backup."""
         from anan_cli.backup import _validate_backup_zip
         zip_path = tmp_path / "backup.zip"
         self._make_zip(zip_path, ["state.db", "sessions/abc.json"])
@@ -311,8 +311,8 @@ class TestImport:
                     zf.writestr(name, content)
 
     def test_restores_files(self, tmp_path, monkeypatch):
-        """Import extracts files into sinoclaw home."""
-        anan_home = tmp_path / ".sinoclaw"
+        """Import extracts files into anan home."""
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -337,15 +337,15 @@ class TestImport:
 
     def test_strips_sinoclaw_prefix(self, tmp_path, monkeypatch):
         """Import strips .hermes/ prefix if all entries share it."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
         zip_path = tmp_path / "backup.zip"
         self._make_backup_zip(zip_path, {
-            ".sinoclaw/config.yaml": "model: test\n",
-            ".sinoclaw/skills/a/SKILL.md": "# A\n",
+            ".anan/config.yaml": "model: test\n",
+            ".anan/skills/a/SKILL.md": "# A\n",
         })
 
         args = Namespace(zipfile=str(zip_path), force=True)
@@ -358,7 +358,7 @@ class TestImport:
 
     def test_rejects_empty_zip(self, tmp_path, monkeypatch):
         """Import rejects an empty zip."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -374,8 +374,8 @@ class TestImport:
             run_import(args)
 
     def test_rejects_non_sinoclaw_zip(self, tmp_path, monkeypatch):
-        """Import rejects a zip that doesn't look like a sinoclaw backup."""
-        anan_home = tmp_path / ".sinoclaw"
+        """Import rejects a zip that doesn't look like a anan backup."""
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -394,7 +394,7 @@ class TestImport:
 
     def test_blocks_path_traversal(self, tmp_path, monkeypatch):
         """Import blocks zip entries with path traversal."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -413,12 +413,12 @@ class TestImport:
 
         # config.yaml should be restored
         assert (anan_home / "config.yaml").exists()
-        # traversal file should NOT exist outside sinoclaw home
+        # traversal file should NOT exist outside anan home
         assert not (tmp_path / "etc" / "passwd").exists()
 
     def test_confirmation_prompt_abort(self, tmp_path, monkeypatch):
         """Import aborts when user says no to confirmation."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         # Pre-existing config triggers the confirmation
         (anan_home / "config.yaml").write_text("existing: true\n")
@@ -441,7 +441,7 @@ class TestImport:
 
     def test_force_skips_confirmation(self, tmp_path, monkeypatch):
         """Import with --force skips confirmation and overwrites."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / "config.yaml").write_text("existing: true\n")
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
@@ -461,7 +461,7 @@ class TestImport:
 
     def test_missing_file_exits(self, tmp_path, monkeypatch):
         """Import exits with error for nonexistent file."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
@@ -474,7 +474,7 @@ class TestImport:
     @pytest.mark.skipif(os.name != "posix", reason="POSIX file permissions only")
     def test_restores_secret_files_with_0600_perms(self, tmp_path, monkeypatch):
         """Secret files must end up at 0600 after restore (zipfile drops mode bits)."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -506,7 +506,7 @@ class TestRoundTrip:
     def test_backup_then_import(self, tmp_path, monkeypatch):
         """Full round-trip: backup -> import to a new location -> verify."""
         # Source
-        src_home = tmp_path / "source" / ".sinoclaw"
+        src_home = tmp_path / "source" / ".anan"
         src_home.mkdir(parents=True)
         _make_sinoclaw_tree(src_home)
 
@@ -521,7 +521,7 @@ class TestRoundTrip:
         assert out_zip.exists()
 
         # Import into a different location
-        dst_home = tmp_path / "dest" / ".sinoclaw"
+        dst_home = tmp_path / "dest" / ".anan"
         dst_home.mkdir(parents=True)
         monkeypatch.setenv("ANAN_HOME", str(dst_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "dest")
@@ -598,7 +598,7 @@ class TestValidation:
         assert ok
 
     def test_validate_rejects_random(self):
-        """Zip without sinoclaw markers fails validation."""
+        """Zip without anan markers fails validation."""
         import io
         from anan_cli.backup import _validate_backup_zip
 
@@ -617,11 +617,11 @@ class TestValidation:
 
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, "w") as zf:
-            zf.writestr(".sinoclaw/config.yaml", "test")
-            zf.writestr(".sinoclaw/skills/a/SKILL.md", "skill")
+            zf.writestr(".anan/config.yaml", "test")
+            zf.writestr(".anan/skills/a/SKILL.md", "skill")
         buf.seek(0)
         with zipfile.ZipFile(buf, "r") as zf:
-            assert _detect_prefix(zf) == ".sinoclaw/"
+            assert _detect_prefix(zf) == ".anan/"
 
     def test_detect_prefix_none(self):
         """No prefix when entries are at root."""
@@ -644,8 +644,8 @@ class TestValidation:
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, "w") as zf:
             # Only directory entries (trailing slash)
-            zf.writestr(".sinoclaw/", "")
-            zf.writestr(".sinoclaw/skills/", "")
+            zf.writestr(".anan/", "")
+            zf.writestr(".anan/skills/", "")
         buf.seek(0)
         with zipfile.ZipFile(buf, "r") as zf:
             assert _detect_prefix(zf) == ""
@@ -657,7 +657,7 @@ class TestValidation:
 
 class TestBackupEdgeCases:
     def test_nonexistent_anan_home(self, tmp_path, monkeypatch):
-        """Backup exits when sinoclaw home doesn't exist."""
+        """Backup exits when anan home doesn't exist."""
         fake_home = tmp_path / "nonexistent" / ".hermes"
         monkeypatch.setenv("ANAN_HOME", str(fake_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "nonexistent")
@@ -670,7 +670,7 @@ class TestBackupEdgeCases:
 
     def test_output_is_directory(self, tmp_path, monkeypatch):
         """When output path is a directory, zip is created inside it."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / "config.yaml").write_text("model: test\n")
 
@@ -690,7 +690,7 @@ class TestBackupEdgeCases:
 
     def test_output_without_zip_suffix(self, tmp_path, monkeypatch):
         """Output path without .zip gets suffix appended."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / "config.yaml").write_text("model: test\n")
 
@@ -707,8 +707,8 @@ class TestBackupEdgeCases:
         assert (tmp_path / "mybackup.tar.zip").exists()
 
     def test_empty_anan_home(self, tmp_path, monkeypatch):
-        """Backup handles empty sinoclaw home (no files to back up)."""
-        anan_home = tmp_path / ".sinoclaw"
+        """Backup handles empty anan home (no files to back up)."""
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         # Only excluded dirs, no actual files
         (anan_home / "__pycache__").mkdir()
@@ -727,7 +727,7 @@ class TestBackupEdgeCases:
 
     def test_permission_error_during_backup(self, tmp_path, monkeypatch):
         """Backup handles permission errors gracefully."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / "config.yaml").write_text("model: test\n")
 
@@ -754,7 +754,7 @@ class TestBackupEdgeCases:
 
     def test_pre1980_timestamp_skipped(self, tmp_path, monkeypatch):
         """Backup skips files with pre-1980 timestamps (ZIP limitation)."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / "config.yaml").write_text("model: test\n")
 
@@ -781,15 +781,15 @@ class TestBackupEdgeCases:
             assert "ancient.txt" not in names
 
     def test_skips_output_zip_inside_hermes(self, tmp_path, monkeypatch):
-        """Backup skips its own output zip if it's inside sinoclaw root."""
-        anan_home = tmp_path / ".sinoclaw"
+        """Backup skips its own output zip if it's inside anan root."""
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / "config.yaml").write_text("model: test\n")
 
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
-        # Output inside sinoclaw home
+        # Output inside anan home
         out_zip = anan_home / "backup.zip"
         args = Namespace(output=str(out_zip))
 
@@ -810,7 +810,7 @@ class TestImportEdgeCases:
 
     def test_not_a_zip(self, tmp_path, monkeypatch):
         """Import rejects a non-zip file."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
 
@@ -825,7 +825,7 @@ class TestImportEdgeCases:
 
     def test_eof_during_confirmation(self, tmp_path, monkeypatch):
         """Import handles EOFError during confirmation prompt."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / "config.yaml").write_text("existing\n")
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
@@ -843,7 +843,7 @@ class TestImportEdgeCases:
 
     def test_keyboard_interrupt_during_confirmation(self, tmp_path, monkeypatch):
         """Import handles KeyboardInterrupt during confirmation prompt."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         (anan_home / ".env").write_text("KEY=val\n")
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
@@ -861,7 +861,7 @@ class TestImportEdgeCases:
 
     def test_permission_error_during_import(self, tmp_path, monkeypatch):
         """Import handles permission errors during extraction."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -890,7 +890,7 @@ class TestImportEdgeCases:
 
     def test_progress_with_many_files(self, tmp_path, monkeypatch):
         """Import shows progress with 500+ files."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -923,7 +923,7 @@ class TestProfileRestoration:
 
     def test_import_creates_profile_wrappers(self, tmp_path, monkeypatch):
         """Import auto-creates wrapper scripts for restored profiles."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -955,11 +955,11 @@ class TestProfileRestoration:
 
         # Wrappers should contain the right content
         coder_wrapper = (wrapper_dir / "coder").read_text()
-        assert "sinoclaw -p coder" in coder_wrapper
+        assert "anan -p coder" in coder_wrapper
 
     def test_import_skips_profile_dirs_without_config(self, tmp_path, monkeypatch):
         """Import doesn't create wrappers for profile dirs without config."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -985,7 +985,7 @@ class TestProfileRestoration:
 
     def test_import_without_profiles_module(self, tmp_path, monkeypatch):
         """Import gracefully handles missing profiles module (fresh install)."""
-        anan_home = tmp_path / ".sinoclaw"
+        anan_home = tmp_path / ".anan"
         anan_home.mkdir()
         monkeypatch.setenv("ANAN_HOME", str(anan_home))
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -1068,7 +1068,7 @@ class TestQuickSnapshot:
     @pytest.fixture
     def anan_home(self, tmp_path):
         """Create a fake ANAN_HOME with critical state files."""
-        home = tmp_path / ".sinoclaw"
+        home = tmp_path / ".anan"
         home.mkdir()
         (home / "config.yaml").write_text("model:\n  provider: openrouter\n")
         (home / ".env").write_text("OPENROUTER_API_KEY=test-key-123\n")
@@ -1279,7 +1279,7 @@ class TestPreUpdateBackup:
 
     @pytest.fixture
     def anan_home(self, tmp_path):
-        root = tmp_path / ".sinoclaw"
+        root = tmp_path / ".anan"
         root.mkdir()
         _make_sinoclaw_tree(root)
         return root
@@ -1295,7 +1295,7 @@ class TestPreUpdateBackup:
 
     def test_backup_contents_match_full_backup(self, anan_home):
         """Pre-update backup should include the same user data that
-        ``sinoclaw backup`` would, and should exclude the same directories."""
+        ``anan backup`` would, and should exclude the same directories."""
         from anan_cli.backup import create_pre_update_backup
         out = create_pre_update_backup(anan_home=anan_home)
         assert out is not None
@@ -1428,7 +1428,7 @@ class TestRunPreUpdateBackup:
 
     @pytest.fixture
     def anan_home(self, tmp_path, monkeypatch):
-        root = tmp_path / ".sinoclaw"
+        root = tmp_path / ".anan"
         root.mkdir()
         _make_sinoclaw_tree(root)
         # Point ANAN_HOME at the temp dir so config + backup paths resolve here
@@ -1543,11 +1543,11 @@ class TestRunPreUpdateBackup:
 
 class TestPreMigrationBackup:
     """Tests for create_pre_migration_backup — the auto-backup
-    ``sinoclaw claw migrate`` runs before mutating ~/.anan/."""
+    ``anan claw migrate`` runs before mutating ~/.anan/."""
 
     @pytest.fixture
     def anan_home(self, tmp_path):
-        root = tmp_path / ".sinoclaw"
+        root = tmp_path / ".anan"
         root.mkdir()
         _make_sinoclaw_tree(root)
         return root
@@ -1565,7 +1565,7 @@ class TestPreMigrationBackup:
 
     def test_backup_uses_shared_exclusion_rules(self, anan_home):
         """Pre-migration backup reuses the same exclusion rules as
-        ``sinoclaw backup`` / ``create_pre_update_backup`` — no drift."""
+        ``anan backup`` / ``create_pre_update_backup`` — no drift."""
         from anan_cli.backup import create_pre_migration_backup
         out = create_pre_migration_backup(anan_home=anan_home)
         assert out is not None
@@ -1581,8 +1581,8 @@ class TestPreMigrationBackup:
         assert "gateway.pid" not in names
 
     def test_restorable_with_sinoclaw_import(self, anan_home, tmp_path):
-        """The zip produced by pre-migration backup must be a valid Sinoclaw
-        backup — `sinoclaw import` should accept it."""
+        """The zip produced by pre-migration backup must be a valid anan
+        backup — `anan import` should accept it."""
         from anan_cli.backup import create_pre_migration_backup, _validate_backup_zip
         out = create_pre_migration_backup(anan_home=anan_home)
         assert out is not None
@@ -1615,7 +1615,7 @@ class TestPreMigrationBackup:
         assert len(remaining) <= 3, f"expected <=3 backups retained, got {len(remaining)}"
 
     def test_missing_anan_home_returns_none(self, tmp_path):
-        """Fresh install with no ~/.sinoclaw yet — nothing to back up."""
+        """Fresh install with no ~/.anan yet — nothing to back up."""
         from anan_cli.backup import create_pre_migration_backup
         missing = tmp_path / "does-not-exist"
         out = create_pre_migration_backup(anan_home=missing)

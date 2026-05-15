@@ -38,7 +38,7 @@ If the job fires once and then disappears from the list, it's a one-shot schedul
 
 Cron jobs are fired by the gateway's background ticker thread, which ticks every 60 seconds. A regular CLI chat session does **not** automatically fire cron jobs.
 
-If you're expecting jobs to fire automatically, you need a running gateway (`sinoclaw gateway` or `sinoclaw serve`). For one-off debugging, you can manually trigger a tick with `sinoclaw cron tick`.
+If you're expecting jobs to fire automatically, you need a running gateway (`anan gateway` or `anan serve`). For one-off debugging, you can manually trigger a tick with `anan cron tick`.
 
 ### Check 4: Check the system clock and timezone
 
@@ -72,7 +72,7 @@ Delivery targets are case-sensitive and require the correct platform to be confi
 
 Other supported platforms include `mattermost`, `homeassistant`, `dingtalk`, `feishu`, `wecom`, `weixin`, `bluebubbles`, `qqbot`, and `webhook`. You can also target a specific chat with `platform:chat_id` syntax (e.g., `telegram:-1001234567890`).
 
-If delivery fails, the job still runs — it just won't send anywhere. Check `sinoclaw cron list` for updated `last_error` field (if available).
+If delivery fails, the job still runs — it just won't send anywhere. Check `anan cron list` for updated `last_error` field (if available).
 
 ### Check 2: Check `[SILENT]` usage
 
@@ -104,14 +104,14 @@ cron:
 ### Check 1: Verify skills are installed
 
 ```bash
-sinoclaw skills list
+anan skills list
 ```
 
-Skills must be installed before they can be attached to cron jobs. If a skill is missing, install it first with `sinoclaw skills install <skill-name>` or via `/skills` in the CLI.
+Skills must be installed before they can be attached to cron jobs. If a skill is missing, install it first with `anan skills install <skill-name>` or via `/skills` in the CLI.
 
 ### Check 2: Check skill name vs. skill folder name
 
-Skill names are case-sensitive and must match the installed skill's folder name. If your job specifies `ai-funding-daily-report` but the skill folder is `ai-funding-daily-report`, confirm the exact name from `sinoclaw skills list`.
+Skill names are case-sensitive and must match the installed skill's folder name. If your job specifies `ai-funding-daily-report` but the skill folder is `ai-funding-daily-report`, confirm the exact name from `anan skills list`.
 
 ### Check 3: Skills that require interactive tools
 
@@ -139,7 +139,7 @@ If a job ran and failed, you may see error context in:
 
 1. The chat where the job delivers (if delivery succeeded)
 2. `~/.anan/logs/agent.log` for scheduler messages (or `errors.log` for warnings)
-3. The job's `last_run` metadata via `sinoclaw cron list`
+3. The job's `last_run` metadata via `anan cron list`
 
 ### Check 2: Common error patterns
 
@@ -151,7 +151,7 @@ hermes cron edit <job_id> --script ~/.anan/scripts/your-script.py
 ```
 
 **"Skill not found" at job execution**
-The skill must be installed on the machine running the scheduler. If you move between machines, skills don't automatically sync — reinstall them with `sinoclaw skills install <skill-name>`.
+The skill must be installed on the machine running the scheduler. If you move between machines, skills don't automatically sync — reinstall them with `anan skills install <skill-name>`.
 
 **Job runs but delivers nothing**
 Likely a delivery target issue (see Delivery Failures above) or a silently suppressed response (`[SILENT]`).
@@ -203,7 +203,7 @@ hermes cron list                    # Show all jobs, states, next_run times
 hermes cron run <job_id>            # Schedule for next tick (for testing)
 hermes cron edit <job_id>           # Fix configuration issues
 hermes logs                         # View recent Hermes logs
-sinoclaw skills list                  # Verify installed skills
+anan skills list                  # Verify installed skills
 ```
 
 ---
@@ -212,9 +212,9 @@ sinoclaw skills list                  # Verify installed skills
 
 If you've worked through this guide and the issue persists:
 
-1. Run the job with `sinoclaw cron run <job_id>` (fires on next gateway tick) and watch for errors in the chat output
+1. Run the job with `anan cron run <job_id>` (fires on next gateway tick) and watch for errors in the chat output
 2. Check `~/.anan/logs/agent.log` for scheduler messages and `~/.anan/logs/errors.log` for warnings
-3. Open an issue at [github.com/sinoclaw/anan](https://github.com/sinoclaw/anan) with:
+3. Open an issue at [github.com/anan/anan](https://github.com/anan/anan) with:
    - The job ID and schedule
    - The delivery target
    - What you expected vs. what happened

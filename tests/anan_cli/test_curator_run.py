@@ -1,4 +1,4 @@
-"""Tests for `sinoclaw curator run` CLI behavior."""
+"""Tests for `anan curator run` CLI behavior."""
 
 from __future__ import annotations
 
@@ -84,4 +84,4 @@ def test_dry_run_default_reports_synchronous_wording(monkeypatch, capsys):
 
     out = capsys.readouterr().out
     assert "When the report lands" not in out
-    assert "Read the report with `sinoclaw curator status`" in out
+    assert "Read the report with `anan curator status`" in out

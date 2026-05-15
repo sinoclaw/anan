@@ -6,7 +6,7 @@ description: "Security model, dangerous command approval, user authorization, co
 
 # Security
 
-Sinoclaw Agent is designed with a defense-in-depth security model. This page covers every security boundary — from command approval to container isolation to user authorization on messaging platforms.
+anan Agent is designed with a defense-in-depth security model. This page covers every security boundary — from command approval to container isolation to user authorization on messaging platforms.
 
 ## Overview
 
@@ -48,7 +48,7 @@ Setting `approvals.mode: off` disables all safety prompts. Use only in trusted e
 
 YOLO mode bypasses **all** dangerous command approval prompts for the current session. It can be activated three ways:
 
-1. **CLI flag**: Start a session with `sinoclaw --yolo` or `sinoclaw chat --yolo`
+1. **CLI flag**: Start a session with `anan --yolo` or `anan chat --yolo`
 2. **Slash command**: Type `/yolo` during a session to toggle it on/off
 3. **Environment variable**: Set `SINOCLAW_YOLO_MODE=1`
 
@@ -183,7 +183,7 @@ command_allowlist:
 These patterns are loaded at startup and silently approved in all future sessions.
 
 :::tip
-Use `sinoclaw config edit` to review or remove patterns from your permanent allowlist.
+Use `anan config edit` to review or remove patterns from your permanent allowlist.
 :::
 
 ## User Authorization (Gateway)
@@ -240,7 +240,7 @@ For more flexible authorization, Hermes includes a code-based pairing system. In
 
 1. An unknown user sends a DM to the bot
 2. The bot replies with an 8-character pairing code
-3. The bot owner runs `sinoclaw pairing approve <platform> <code>` on the CLI
+3. The bot owner runs `anan pairing approve <platform> <code>` on the CLI
 4. The user is permanently approved for that platform
 
 Control how unauthorized direct messages are handled in `~/.anan/config.yaml`:

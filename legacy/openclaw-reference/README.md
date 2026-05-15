@@ -26,9 +26,9 @@ Quality issues + architectural mismatch:
 - **`_extract_concept_tags` core bug**: doesn't `lower()` before `split`, so `"Implemented"` becomes `"mplemented"` (capital `I` eaten as separator)
 - **`dedupe_entries` `KeyError: 'start_line'`**: data format mismatch
 - **`tokenize_snippet` returns set but called as list** (`.count` AttributeError)
-- Directly writes `MEMORY.md`, conflicts with sinoclaw's memory provider plugins
+- Directly writes `MEMORY.md`, conflicts with anan's memory provider plugins
 
-→ anan rebuilds this as **L1 Sleep Cycles** in `layers/L1_sleep/`, fixing all bugs and integrating with sinoclaw memory providers.
+→ anan rebuilds this as **L1 Sleep Cycles** in `layers/L1_sleep/`, fixing all bugs and integrating with anan memory providers.
 
 ## Credits
 

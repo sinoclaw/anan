@@ -1,8 +1,8 @@
 ---
 name: openclaw-migration
-description: Migrate a user's OpenClaw customization footprint into Sinoclaw Agent. Imports Sinoclaw-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.anan, then reports exactly what could not be migrated and why.
+description: Migrate a user's OpenClaw customization footprint into anan Agent. Imports anan-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.anan, then reports exactly what could not be migrated and why.
 version: 1.0.0
-author: Sinoclaw Agent (Sinoclaw Team)
+author: anan Agent (anan Team)
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
@@ -13,7 +13,7 @@ metadata:
 
 # OpenClaw -> Hermes Migration
 
-Use this skill when a user wants to move their OpenClaw setup into Sinoclaw Agent with minimal manual cleanup.
+Use this skill when a user wants to move their OpenClaw setup into anan Agent with minimal manual cleanup.
 
 ## CLI Command
 
@@ -29,16 +29,16 @@ hermes claw migrate --source /custom/path/.openclaw  # Custom source
 
 The CLI command runs the same migration script described below. Use this skill (via the agent) when you want an interactive, guided migration with dry-run previews and per-item conflict resolution.
 
-**First-time setup:** The `sinoclaw setup` wizard automatically detects `~/.anan` and offers migration before configuration begins.
+**First-time setup:** The `anan setup` wizard automatically detects `~/.anan` and offers migration before configuration begins.
 
 ## What this skill does
 
 It uses `scripts/openclaw_to_hermes.py` to:
 
-- import `SOUL.md` into the Sinoclaw home directory as `SOUL.md`
+- import `SOUL.md` into the anan home directory as `SOUL.md`
 - transform OpenClaw `MEMORY.md` and `USER.md` into Hermes memory entries
 - merge OpenClaw command approval patterns into Hermes `command_allowlist`
-- migrate Sinoclaw-compatible messaging settings such as `TELEGRAM_ALLOWED_USERS` and `MESSAGING_CWD`
+- migrate anan-compatible messaging settings such as `TELEGRAM_ALLOWED_USERS` and `MESSAGING_CWD`
 - copy OpenClaw skills into `~/.anan/skills/openclaw-imports/`
 - optionally copy the OpenClaw workspace instructions file into a chosen Hermes workspace
 - mirror compatible workspace assets such as `workspace/tts/` into `~/.anan/tts/`
@@ -64,7 +64,7 @@ Before running the helper:
 3. Only use `find` as a fallback if the installed location is missing or the skill was moved manually.
 4. When calling the terminal tool, do not pass `workdir: "~"`. Use an absolute directory such as the user's home directory, or omit `workdir` entirely.
 
-With `--migrate-secrets`, it will also import a small allowlisted set of Sinoclaw-compatible secrets, currently:
+With `--migrate-secrets`, it will also import a small allowlisted set of anan-compatible secrets, currently:
 
 - `TELEGRAM_BOT_TOKEN`
 
@@ -84,7 +84,7 @@ With `--migrate-secrets`, it will also import a small allowlisted set of Sinocla
 
 ## User interaction protocol
 
-Sinoclaw CLI supports the `clarify` tool for interactive prompts, but it is limited to:
+anan CLI supports the `clarify` tool for interactive prompts, but it is limited to:
 
 - one choice at a time
 - up to 4 predefined choices
@@ -235,7 +235,7 @@ python3 ~/.anan/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.p
 When using the terminal tool, prefer an absolute invocation pattern such as:
 
 ```json
-{"command":"python3 /home/USER/.sinoclaw/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py","workdir":"/home/USER"}
+{"command":"python3 /home/USER/.anan/skills/migration/openclaw-migration/scripts/openclaw_to_hermes.py","workdir":"/home/USER"}
 ```
 
 Dry run with the user-data preset:

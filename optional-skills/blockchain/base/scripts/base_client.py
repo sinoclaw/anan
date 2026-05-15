@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Base Blockchain CLI Tool for Sinoclaw Agent
+Base Blockchain CLI Tool for anan Agent
 ------------------------------------------
 Queries the Base (Ethereum L2) JSON-RPC API and CoinGecko for enriched on-chain data.
 Uses only Python standard library — no external packages required.
@@ -956,7 +956,7 @@ def cmd_price(args):
 def main():
     parser = argparse.ArgumentParser(
         prog="base_client.py",
-        description="Base blockchain query tool for Sinoclaw Agent",
+        description="Base blockchain query tool for anan Agent",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

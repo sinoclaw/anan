@@ -1,12 +1,12 @@
 ---
 sidebar_position: 14
 title: "AWS Bedrock"
-description: "Use Sinoclaw Agent with Amazon Bedrock — native Converse API, IAM authentication, Guardrails, and cross-region inference"
+description: "Use anan Agent with Amazon Bedrock — native Converse API, IAM authentication, Guardrails, and cross-region inference"
 ---
 
 # AWS Bedrock
 
-Sinoclaw Agent supports Amazon Bedrock as a native provider using the **Converse API** — not the OpenAI-compatible endpoint. This gives you full access to the Bedrock ecosystem: IAM authentication, Guardrails, cross-region inference profiles, and all foundation models.
+anan Agent supports Amazon Bedrock as a native provider using the **Converse API** — not the OpenAI-compatible endpoint. This gives you full access to the Bedrock ecosystem: IAM authentication, Guardrails, cross-region inference profiles, and all foundation models.
 
 ## Prerequisites
 
@@ -41,7 +41,7 @@ hermes chat
 
 ## Configuration
 
-After running `sinoclaw model`, your `~/.anan/config.yaml` will contain:
+After running `anan model`, your `~/.anan/config.yaml` will contain:
 
 ```yaml
 model:
@@ -90,7 +90,7 @@ bedrock:
 
 ## Available Models
 
-Bedrock models use **inference profile IDs** for on-demand invocation. The `sinoclaw model` picker shows these automatically, with recommended models at the top:
+Bedrock models use **inference profile IDs** for on-demand invocation. The `anan model` picker shows these automatically, with recommended models at the top:
 
 | Model | ID | Notes |
 |-------|-----|-------|
@@ -119,7 +119,7 @@ Use the `/model` command during a conversation:
 ## Diagnostics
 
 ```bash
-sinoclaw doctor
+anan doctor
 ```
 
 The doctor checks:
@@ -130,11 +130,11 @@ The doctor checks:
 
 ## Gateway (Messaging Platforms)
 
-Bedrock works with all Sinoclaw gateway platforms (Telegram, Discord, Slack, Feishu, etc.). Configure Bedrock as your provider, then start the gateway normally:
+Bedrock works with all anan gateway platforms (Telegram, Discord, Slack, Feishu, etc.). Configure Bedrock as your provider, then start the gateway normally:
 
 ```bash
-sinoclaw gateway setup
-sinoclaw gateway start
+anan gateway setup
+anan gateway start
 ```
 
 The gateway reads `config.yaml` and uses the same Bedrock provider configuration.

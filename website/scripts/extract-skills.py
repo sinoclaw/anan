@@ -93,9 +93,9 @@ def extract_local_skills():
             tags = []
             metadata = fm.get("metadata")
             if isinstance(metadata, dict):
-                sinoclaw_meta = metadata.get("hermes", {})
-                if isinstance(sinoclaw_meta, dict):
-                    tags = sinoclaw_meta.get("tags", [])
+                anan_meta = metadata.get("anan", {})
+                if isinstance(anan_meta, dict):
+                    tags = anan_meta.get("tags", [])
             if not tags:
                 tags = fm.get("tags", [])
             if isinstance(tags, str):

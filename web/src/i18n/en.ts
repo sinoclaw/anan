@@ -50,7 +50,7 @@ export const en: Translations = {
   },
 
   app: {
-    brand: "Sinoclaw Agent",
+    brand: "anan Agent",
     brandShort: "HA",
     closeNavigation: "Close navigation",
     closeModelTools: "Close model and tools",
@@ -283,8 +283,8 @@ export const en: Translations = {
     providersHint:
       "Writes memory.provider (empty = built-in) and context.engine to config.yaml. Takes effect next session.",
     refreshDashboard: "Rescan dashboard extensions",
-    removeConfirm: "Remove this plugin from ~/.sinoclaw/plugins/?",
-    removeHint: "Only user-installed plugins under ~/.sinoclaw/plugins can be removed.",
+    removeConfirm: "Remove this plugin from ~/.anan/plugins/?",
+    removeHint: "Only user-installed plugins under ~/.anan/plugins can be removed.",
     rescanHeading: "SPA plugin registry",
     rescanHint: "Rescan after adding files on disk so the dashboard sidebar picks up new manifests.",
     runtimeHeading: "Gateway runtime (YAML plugins)",
@@ -306,7 +306,7 @@ export const en: Translations = {
     all: "All",
     categories: "Categories",
     filters: "Filters",
-    noSkills: "No skills found. Skills are loaded from ~/.sinoclaw/skills/",
+    noSkills: "No skills found. Skills are loaded from ~/.anan/skills/",
     noSkillsMatch: "No skills match your search or filter.",
     skillCount: "{count} skill{s}",
     resultCount: "{count} result{s}",
@@ -320,7 +320,7 @@ export const en: Translations = {
   },
 
   config: {
-    configPath: "~/.sinoclaw/config.yaml",
+    configPath: "~/.anan/config.yaml",
     filters: "Filters",
     sections: "Sections",
     exportConfig: "Export config as JSON",

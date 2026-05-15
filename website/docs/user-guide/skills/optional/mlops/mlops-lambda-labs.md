@@ -14,7 +14,7 @@ Reserved and on-demand GPU cloud instances for ML training and inference. Use wh
 
 | | |
 |---|---|
-| Source | Optional — install with `sinoclaw skills install official/mlops/lambda-labs` |
+| Source | Optional — install with `anan skills install official/mlops/lambda-labs` |
 | Path | `optional-skills/mlops/lambda-labs` |
 | Version | `1.0.0` |
 | Author | Orchestra Research |
@@ -555,8 +555,8 @@ python inference.py \
 
 ## References
 
-- **[Advanced Usage](https://github.com/sinoclaw/anan/blob/main/optional-skills/mlops/lambda-labs/references/advanced-usage.md)** - Multi-node training, API automation
-- **[Troubleshooting](https://github.com/sinoclaw/anan/blob/main/optional-skills/mlops/lambda-labs/references/troubleshooting.md)** - Common issues and solutions
+- **[Advanced Usage](https://github.com/anan/anan/blob/main/optional-skills/mlops/lambda-labs/references/advanced-usage.md)** - Multi-node training, API automation
+- **[Troubleshooting](https://github.com/anan/anan/blob/main/optional-skills/mlops/lambda-labs/references/troubleshooting.md)** - Common issues and solutions
 
 ## Resources
 

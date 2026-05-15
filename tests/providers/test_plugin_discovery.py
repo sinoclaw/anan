@@ -66,7 +66,7 @@ def test_all_33_profiles_register():
 def test_user_plugin_overrides_bundled(tmp_path, monkeypatch):
     """A user plugin with the same name must override the bundled profile."""
     # Point ANAN_HOME at a fresh temp dir
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
     # get_anan_home() may be module-cached depending on codebase; ensure the
@@ -114,7 +114,7 @@ def test_general_plugin_manager_skips_model_provider_kind(tmp_path, monkeypatch)
     (providers/__init__.py handles them). It records the manifest only."""
     from anan_cli import plugins as plugin_mod
 
-    anan_home = tmp_path / ".sinoclaw"
+    anan_home = tmp_path / ".anan"
     anan_home.mkdir()
     monkeypatch.setenv("ANAN_HOME", str(anan_home))
 

@@ -1,12 +1,12 @@
 ---
 sidebar_position: 1
 title: "Architecture"
-description: "Sinoclaw Agent internals — major subsystems, execution paths, data flow, and where to read next"
+description: "anan Agent internals — major subsystems, execution paths, data flow, and where to read next"
 ---
 
 # Architecture
 
-This page is the top-level map of Sinoclaw Agent internals. Use it to orient yourself in the codebase, then dive into subsystem-specific docs for implementation details.
+This page is the top-level map of anan Agent internals. Use it to orient yourself in the codebase, then dive into subsystem-specific docs for implementation details.
 
 ## System Overview
 
@@ -85,12 +85,12 @@ anan/
 │   ├── model_switch.py       # /model command logic (CLI + gateway shared)
 │   ├── setup.py              # Interactive setup wizard (~3,500 lines)
 │   ├── skin_engine.py        # CLI theming engine
-│   ├── skills_config.py      # sinoclaw skills — enable/disable per platform
+│   ├── skills_config.py      # anan skills — enable/disable per platform
 │   ├── skills_hub.py         # /skills slash command
-│   ├── tools_config.py       # sinoclaw tools — enable/disable per platform
+│   ├── tools_config.py       # anan tools — enable/disable per platform
 │   ├── plugins.py            # PluginManager — discovery, loading, hooks
 │   ├── callbacks.py          # Terminal callbacks (clarify, sudo, approval)
-│   └── gateway.py            # sinoclaw gateway start/stop
+│   └── gateway.py            # anan gateway start/stop
 │
 ├── tools/                    # Tool implementations (one file per tool)
 │   ├── registry.py           # Central tool registry
@@ -231,9 +231,9 @@ Long-running process with 20 platform adapters, unified session routing, user au
 
 ### Plugin System
 
-Three discovery sources: `~/.anan/plugins/` (user), `.hermes/plugins/` (project), and pip entry points. Plugins register tools, hooks, and CLI commands through a context API. Two specialized plugin types exist: memory providers (`plugins/memory/`) and context engines (`plugins/context_engine/`). Both are single-select — only one of each can be active at a time, configured via `sinoclaw plugins` or `config.yaml`.
+Three discovery sources: `~/.anan/plugins/` (user), `.hermes/plugins/` (project), and pip entry points. Plugins register tools, hooks, and CLI commands through a context API. Two specialized plugin types exist: memory providers (`plugins/memory/`) and context engines (`plugins/context_engine/`). Both are single-select — only one of each can be active at a time, configured via `anan plugins` or `config.yaml`.
 
-→ [Plugin Guide](/docs/guides/build-a-sinoclaw-plugin), [Memory Provider Plugin](./memory-provider-plugin.md)
+→ [Plugin Guide](/docs/guides/build-a-anan-plugin), [Memory Provider Plugin](./memory-provider-plugin.md)
 
 ### Cron
 
@@ -262,7 +262,7 @@ Full environment framework for evaluation and RL training. Integrates with Atrop
 | **Interruptible** | API calls and tool execution can be cancelled mid-flight by user input or signals. |
 | **Platform-agnostic core** | One AIAgent class serves CLI, gateway, ACP, batch, and API server. Platform differences live in the entry point, not the agent. |
 | **Loose coupling** | Optional subsystems (MCP, plugins, memory providers, RL environments) use registry patterns and check_fn gating, not hard dependencies. |
-| **Profile isolation** | Each profile (`sinoclaw -p <name>`) gets its own ANAN_HOME, config, memory, sessions, and gateway PID. Multiple profiles run concurrently. |
+| **Profile isolation** | Each profile (`anan -p <name>`) gets its own ANAN_HOME, config, memory, sessions, and gateway PID. Multiple profiles run concurrently. |
 
 ## File Dependency Chain
 

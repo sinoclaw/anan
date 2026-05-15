@@ -17,7 +17,7 @@ Debug Node.js via --inspect + Chrome DevTools Protocol CLI.
 | Source | Bundled (installed by default) |
 | Path | `skills/software-development/node-inspect-debugger` |
 | Version | `1.0.0` |
-| Author | Sinoclaw Agent |
+| Author | anan Agent |
 | License | MIT |
 | Tags | `debugging`, `nodejs`, `node-inspect`, `cdp`, `breakpoints`, `ui-tui` |
 | Related skills | [`systematic-debugging`](/docs/user-guide/skills/bundled/software-development/software-development-systematic-debugging), [`python-debugpy`](/docs/user-guide/skills/bundled/software-development/software-development-python-debugpy), [`debugging-anan-tui-commands`](/docs/user-guide/skills/bundled/software-development/software-development-debugging-anan-tui-commands) |
@@ -184,7 +184,7 @@ Run it:
 node /tmp/cdp-debug.js
 ```
 
-Sinoclaw-specific note: `chrome-remote-interface` is NOT in `ui-tui/package.json`. Install it to a throwaway location if you don't want to dirty the project:
+anan-specific note: `chrome-remote-interface` is NOT in `ui-tui/package.json`. Install it to a throwaway location if you don't want to dirty the project:
 
 ```bash
 mkdir -p /tmp/cdp-tools && cd /tmp/cdp-tools && npm i chrome-remote-interface
@@ -216,7 +216,7 @@ cont
 
 When it pauses, `repl` → inspect `props`, state refs, `useInput` handler values, etc.
 
-### Debugging a running `sinoclaw --tui`
+### Debugging a running `anan --tui`
 
 The TUI spawns Node from the Python CLI. Easiest path:
 

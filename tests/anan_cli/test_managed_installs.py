@@ -20,7 +20,7 @@ def test_get_managed_system_homebrew(monkeypatch):
 def test_format_managed_message_homebrew(monkeypatch):
     monkeypatch.setenv("SINOCLAW_MANAGED", "homebrew")
 
-    message = format_managed_message("update Sinoclaw Agent")
+    message = format_managed_message("update anan Agent")
 
     assert "managed by Homebrew" in message
     assert "brew upgrade anan" in message

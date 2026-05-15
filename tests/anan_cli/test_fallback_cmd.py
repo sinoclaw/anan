@@ -1,4 +1,4 @@
-"""Tests for `sinoclaw fallback` — chain reading, add/remove/clear, legacy migration."""
+"""Tests for `anan fallback` — chain reading, add/remove/clear, legacy migration."""
 from __future__ import annotations
 
 import io
@@ -17,19 +17,19 @@ import yaml
 @pytest.fixture()
 def isolated_home(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    home = tmp_path / ".sinoclaw"
+    home = tmp_path / ".anan"
     home.mkdir(exist_ok=True)
     monkeypatch.setenv("ANAN_HOME", str(home))
     return tmp_path
 
 
 def _write_config(home: Path, data: dict) -> None:
-    config_path = home / ".sinoclaw" / "config.yaml"
+    config_path = home / ".anan" / "config.yaml"
     config_path.write_text(yaml.safe_dump(data), encoding="utf-8")
 
 
 def _read_config(home: Path) -> dict:
-    config_path = home / ".sinoclaw" / "config.yaml"
+    config_path = home / ".anan" / "config.yaml"
     return yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
 
 
@@ -133,7 +133,7 @@ class TestListCommand:
         cmd_fallback_list(types.SimpleNamespace())
         out = capsys.readouterr().out
         assert "No fallback providers configured" in out
-        assert "sinoclaw fallback add" in out
+        assert "anan fallback add" in out
 
     def test_list_with_entries(self, isolated_home, capsys):
         _write_config(isolated_home, {
@@ -461,7 +461,7 @@ class TestDispatcher:
 # ---------------------------------------------------------------------------
 
 class TestArgparseWiring:
-    """Verify `sinoclaw fallback` is wired into main.py's argparse tree.
+    """Verify `anan fallback` is wired into main.py's argparse tree.
 
     main() builds the parser inline, so we invoke main([...]) via subprocess
     with --help to introspect registered subcommands without side effects.

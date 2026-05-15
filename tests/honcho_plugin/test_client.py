@@ -352,7 +352,7 @@ class TestResolveConfigPath:
     def test_falls_back_to_global_when_no_local(self, tmp_path):
         anan_home = tmp_path / "anan"
         anan_home.mkdir()
-        # No honcho.json in ANAN_HOME — also isolate ~/.sinoclaw so
+        # No honcho.json in ANAN_HOME — also isolate ~/.anan so
         # the default-profile fallback doesn't hit the real filesystem.
         fake_home = tmp_path / "fakehome"
         fake_home.mkdir()
@@ -407,14 +407,14 @@ class TestResolveActiveHost:
             assert resolve_active_host() == "anan"
 
     def test_explicit_env_var_wins(self):
-        with patch.dict(os.environ, {"SINOCLAW_HONCHO_HOST": "sinoclaw.coder"}):
-            assert resolve_active_host() == "sinoclaw.coder"
+        with patch.dict(os.environ, {"SINOCLAW_HONCHO_HOST": "anan.coder"}):
+            assert resolve_active_host() == "anan.coder"
 
     def test_profile_name_derives_host(self):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("SINOCLAW_HONCHO_HOST", None)
             with patch("anan_cli.profiles.get_active_profile_name", return_value="coder"):
-                assert resolve_active_host() == "sinoclaw.coder"
+                assert resolve_active_host() == "anan.coder"
 
     def test_default_profile_returns_hermes(self):
         with patch.dict(os.environ, {}, clear=False):
@@ -447,10 +447,10 @@ class TestResolveActiveHost:
 class TestProfileScopedConfig:
     def test_from_env_uses_profile_host(self):
         with patch.dict(os.environ, {"HONCHO_API_KEY": "key"}):
-            config = HonchoClientConfig.from_env(host="sinoclaw.coder")
-        assert config.host == "sinoclaw.coder"
+            config = HonchoClientConfig.from_env(host="anan.coder")
+        assert config.host == "anan.coder"
         assert config.workspace_id == "anan"  # shared workspace
-        assert config.ai_peer == "sinoclaw.coder"
+        assert config.ai_peer == "anan.coder"
 
     def test_from_env_default_workspace_preserved_for_default_host(self):
         with patch.dict(os.environ, {"HONCHO_API_KEY": "key"}):
@@ -464,19 +464,19 @@ class TestProfileScopedConfig:
             "apiKey": "***",
             "hosts": {
                 "anan": {"aiPeer": "anan", "peerName": "alice"},
-                "sinoclaw.coder": {
-                    "aiPeer": "sinoclaw.coder",
+                "anan.coder": {
+                    "aiPeer": "anan.coder",
                     "peerName": "alice-coder",
                     "workspace": "coder-ws",
                 },
             },
         }))
         config = HonchoClientConfig.from_global_config(
-            host="sinoclaw.coder", config_path=config_file,
+            host="anan.coder", config_path=config_file,
         )
-        assert config.host == "sinoclaw.coder"
+        assert config.host == "anan.coder"
         assert config.workspace_id == "coder-ws"
-        assert config.ai_peer == "sinoclaw.coder"
+        assert config.ai_peer == "anan.coder"
         assert config.peer_name == "alice-coder"
 
     def test_from_global_config_auto_resolves_host(self, tmp_path):
@@ -484,12 +484,12 @@ class TestProfileScopedConfig:
         config_file.write_text(json.dumps({
             "apiKey": "key",
             "hosts": {
-                "sinoclaw.dreamer": {"peerName": "dreamer-user"},
+                "anan.dreamer": {"peerName": "dreamer-user"},
             },
         }))
-        with patch("plugins.memory.honcho.client.resolve_active_host", return_value="sinoclaw.dreamer"):
+        with patch("plugins.memory.honcho.client.resolve_active_host", return_value="anan.dreamer"):
             config = HonchoClientConfig.from_global_config(config_path=config_file)
-        assert config.host == "sinoclaw.dreamer"
+        assert config.host == "anan.dreamer"
         assert config.peer_name == "dreamer-user"
 
 

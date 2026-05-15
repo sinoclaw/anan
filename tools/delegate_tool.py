@@ -107,7 +107,7 @@ def _get_subagent_approval_callback():
 
 # Build a description fragment listing toolsets available for subagents.
 # Excludes toolsets where ALL tools are blocked, composite/platform toolsets
-# (sinoclaw-* prefixed), and scenario toolsets.
+# (anan-* prefixed), and scenario toolsets.
 #
 # NOTE: "delegation" is in this exclusion set so the subagent-facing
 # capability hint string (_TOOLSET_LIST_STR) doesn't advertise it as a

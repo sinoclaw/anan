@@ -20,7 +20,7 @@ import pytest
 
 
 def _build_parser():
-    """Build the sinoclaw argument parser from the real code.
+    """Build the anan argument parser from the real code.
 
     We import the real main() and extract the parser it builds.
     Since main() is a large function that does much more than parse args,
@@ -98,7 +98,7 @@ class TestAcceptHooksOnAgentSubparsers:
     position (before the subcommand, between group/subcommand, and
     after the leaf subcommand) for gateway/cron/mcp/acp.  Regression
     against prior behaviour where the flag only worked on the root
-    parser and `chat`, so `sinoclaw gateway run --accept-hooks` failed
+    parser and `chat`, so `anan gateway run --accept-hooks` failed
     with `unrecognized arguments`."""
 
     @pytest.mark.parametrize("argv", [
@@ -115,7 +115,7 @@ class TestAcceptHooksOnAgentSubparsers:
         ["acp", "--accept-hooks", "--help"],
     ])
     def test_accepted_at_every_position(self, argv):
-        """Invoking `sinoclaw <argv>` must exit 0 (help) rather than
+        """Invoking `anan <argv>` must exit 0 (help) rather than
         failing with `unrecognized arguments`."""
         import subprocess
         result = subprocess.run(

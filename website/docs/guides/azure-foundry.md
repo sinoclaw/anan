@@ -1,12 +1,12 @@
 ---
 sidebar_position: 15
 title: "Azure AI Foundry"
-description: "Use Sinoclaw Agent with Azure AI Foundry — OpenAI-style and Anthropic-style endpoints, auto-detection of transport and deployed models"
+description: "Use anan Agent with Azure AI Foundry — OpenAI-style and Anthropic-style endpoints, auto-detection of transport and deployed models"
 ---
 
 # Azure AI Foundry
 
-Sinoclaw Agent supports Azure AI Foundry (and Azure OpenAI) as a first-class provider. A single Azure resource can host models with two different wire formats:
+anan Agent supports Azure AI Foundry (and Azure OpenAI) as a first-class provider. A single Azure resource can host models with two different wire formats:
 
 - **OpenAI-style** — `POST /v1/chat/completions` on endpoints like `https://<resource>.openai.azure.com/openai/v1`. Used for GPT-4.x, GPT-5.x, Llama, Mistral, and most open-weight models.
 - **Anthropic-style** — `POST /v1/messages` on endpoints like `https://<resource>.services.ai.azure.com/anthropic`. Used when Azure Foundry serves Claude models via the Anthropic Messages API format.
@@ -73,7 +73,7 @@ model:
 Important behaviour:
 
 - **GPT-5.x, codex, and o-series auto-route to the Responses API.** Azure Foundry deploys GPT-5 / codex / o1 / o3 / o4 models as Responses-API-only — calling `/chat/completions` against them returns `400 "The requested operation is unsupported."`. Hermes detects these model families by name and upgrades `api_mode` to `codex_responses` transparently, even when `config.yaml` still reads `api_mode: chat_completions`. GPT-4, GPT-4o, Llama, Mistral, and other deployments stay on `/chat/completions`.
-- **`max_completion_tokens` is used automatically.** Azure OpenAI (like direct OpenAI) requires `max_completion_tokens` for gpt-4o, o-series, and gpt-5.x models. Sinoclaw sends the right parameter based on the endpoint.
+- **`max_completion_tokens` is used automatically.** Azure OpenAI (like direct OpenAI) requires `max_completion_tokens` for gpt-4o, o-series, and gpt-5.x models. anan sends the right parameter based on the endpoint.
 - **Pre-v1 endpoints that require `api-version`.** If you have a legacy base URL like `https://<resource>.openai.azure.com/openai?api-version=2025-04-01-preview`, Hermes extracts the query string and forwards it via `default_query` on every request (the OpenAI SDK otherwise drops it when joining paths).
 
 ## Anthropic-style endpoints (Claude via Azure Foundry)
@@ -127,7 +127,7 @@ You can always type a deployment name directly — Hermes does not validate agai
 | Variable | Purpose |
 |----------|---------|
 | `AZURE_FOUNDRY_API_KEY` | Primary API key for Azure AI Foundry / Azure OpenAI |
-| `AZURE_FOUNDRY_BASE_URL` | Endpoint URL (set via `sinoclaw model`; env var is used as a fallback) |
+| `AZURE_FOUNDRY_BASE_URL` | Endpoint URL (set via `anan model`; env var is used as a fallback) |
 | `AZURE_ANTHROPIC_KEY` | Used by `provider: anthropic` + Azure base URL (alternative to `ANTHROPIC_API_KEY`) |
 
 ## Troubleshooting
@@ -142,7 +142,7 @@ This is the malformed-URL bug from pre-fix Azure Anthropic setups. Upgrade Herme
 The endpoint rejected both the `/models` probe and the Anthropic Messages probe. This is normal for private endpoints behind a firewall or with an IP allow-list. Fall back to manual API mode selection and type your deployment name — everything still works, Hermes just can't prefill the picker.
 
 **Wrong transport picked.**
-Run `sinoclaw model` again and the wizard will re-probe. If the probe still picks the wrong mode, you can edit `config.yaml` directly:
+Run `anan model` again and the wizard will re-probe. If the probe still picks the wrong mode, you can edit `config.yaml` directly:
 
 ```yaml
 model:

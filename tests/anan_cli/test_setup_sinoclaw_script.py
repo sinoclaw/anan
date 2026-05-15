@@ -3,7 +3,7 @@ import subprocess
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SETUP_SCRIPT = REPO_ROOT / "setup-sinoclaw.sh"
+SETUP_SCRIPT = REPO_ROOT / "setup-anan.sh"
 
 
 def test_setup_sinoclaw_script_is_valid_shell():

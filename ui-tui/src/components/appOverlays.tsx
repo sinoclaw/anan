@@ -1,4 +1,4 @@
-import { Box, Text } from '@sinoclaw/ink'
+import { Box, Text } from '@anan/ink'
 import { useStore } from '@nanostores/react'
 
 import { useGateway } from '../app/gatewayContext.js'

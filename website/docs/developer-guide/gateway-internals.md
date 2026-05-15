@@ -244,11 +244,11 @@ The gateway runs periodic maintenance alongside message handling:
 
 The gateway runs as a long-lived process, managed via:
 
-- `sinoclaw gateway start` / `sinoclaw gateway stop` — manual control
+- `anan gateway start` / `anan gateway stop` — manual control
 - `systemctl` (Linux) or `launchctl` (macOS) — service management
 - PID file at `~/.anan/gateway.pid` — profile-scoped process tracking
 
-**Profile-scoped vs global**: `start_gateway()` uses profile-scoped PID files. `sinoclaw gateway stop` stops only the current profile's gateway. `sinoclaw gateway stop --all` uses global `ps aux` scanning to kill all gateway processes (used during updates).
+**Profile-scoped vs global**: `start_gateway()` uses profile-scoped PID files. `anan gateway stop` stops only the current profile's gateway. `anan gateway stop --all` uses global `ps aux` scanning to kill all gateway processes (used during updates).
 
 ## Related Docs
 

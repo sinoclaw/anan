@@ -1508,7 +1508,7 @@ def _find_legacy_anan_units() -> list[tuple[str, Path, bool]]:
 
     * Explicit allowlist of legacy names (no globbing). Profile units such
       as ``anan-gateway-coder.service`` and unrelated third-party
-      ``sinoclaw-*`` services are never matched.
+      ``anan-*`` services are never matched.
     * ExecStart content check — only flag units that invoke our gateway
       entrypoint. A user-created ``anan.service`` running an unrelated
       binary is left untouched.

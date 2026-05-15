@@ -1,12 +1,12 @@
 ---
 sidebar_position: 10
 title: "Migrate from OpenClaw"
-description: "Complete guide to migrating your OpenClaw / Clawdbot setup to Sinoclaw Agent — what gets migrated, how config maps, and what to check after."
+description: "Complete guide to migrating your OpenClaw / Clawdbot setup to anan Agent — what gets migrated, how config maps, and what to check after."
 ---
 
 # Migrate from OpenClaw
 
-`sinoclaw claw migrate` imports your OpenClaw (or legacy Clawdbot/Moldbot) setup into Hermes. This guide covers exactly what gets migrated, the config key mappings, and what to verify after migration.
+`anan claw migrate` imports your OpenClaw (or legacy Clawdbot/Moldbot) setup into Hermes. This guide covers exactly what gets migrated, the config key mappings, and what to verify after migration.
 
 ## Quick start
 
@@ -33,7 +33,7 @@ Reads from `~/.anan/` by default. Legacy `~/.clawdbot/` or `~/.moltbot/` directo
 | `--preset <name>` | `full` (all compatible settings) or `user-data` (excludes infrastructure config). Neither preset imports secrets by default — pass `--migrate-secrets` explicitly. |
 | `--overwrite` | Overwrite existing Hermes files on conflicts (default: refuse to apply when the plan has conflicts). |
 | `--migrate-secrets` | Include API keys. Required even under `--preset full` — no preset imports secrets silently. |
-| `--no-backup` | Skip the pre-migration zip snapshot of `~/.anan/` (by default a single restore-point archive is written before apply, under `~/.anan/backups/pre-migration-*.zip`; restorable with `sinoclaw import`). |
+| `--no-backup` | Skip the pre-migration zip snapshot of `~/.anan/` (by default a single restore-point archive is written before apply, under `~/.anan/backups/pre-migration-*.zip`; restorable with `anan import`). |
 | `--source <path>` | Custom OpenClaw directory. |
 | `--workspace-target <path>` | Where to place `AGENTS.md`. |
 | `--skill-conflict <mode>` | `skip` (default), `overwrite`, or `rename`. |
@@ -168,11 +168,11 @@ These are saved to `~/.anan/migration/openclaw/<timestamp>/archive/` for manual 
 | `TOOLS.md` | `archive/workspace/TOOLS.md` | Hermes has built-in tool instructions |
 | `HEARTBEAT.md` | `archive/workspace/HEARTBEAT.md` | Use cron jobs for periodic tasks |
 | `BOOTSTRAP.md` | `archive/workspace/BOOTSTRAP.md` | Use context files or skills |
-| Cron jobs | `archive/cron-config.json` | Recreate with `sinoclaw cron create` |
+| Cron jobs | `archive/cron-config.json` | Recreate with `anan cron create` |
 | Plugins | `archive/plugins-config.json` | See [plugins guide](/docs/user-guide/features/hooks) |
-| Hooks/webhooks | `archive/hooks-config.json` | Use `sinoclaw webhook` or gateway hooks |
+| Hooks/webhooks | `archive/hooks-config.json` | Use `anan webhook` or gateway hooks |
 | Memory backend | `archive/memory-backend-config.json` | Configure via `anan honcho` |
-| Skills registry | `archive/skills-registry-config.json` | Use `sinoclaw skills config` |
+| Skills registry | `archive/skills-registry-config.json` | Use `anan skills config` |
 | UI/identity | `archive/ui-identity-config.json` | Use `/skin` command |
 | Logging | `archive/logging-diagnostics-config.json` | Set in `config.yaml` logging section |
 | Multi-agent list | `archive/agents-list.json` | Use Hermes profiles |
@@ -221,15 +221,15 @@ The migration resolves all three formats. For env templates and SecretRef object
 
 3. **Start a new session** — imported skills and memory entries take effect in new sessions, not the current one.
 
-4. **Verify API keys** — run `sinoclaw status` to check provider authentication.
+4. **Verify API keys** — run `anan status` to check provider authentication.
 
 5. **Test messaging** — if you migrated platform tokens, restart the gateway: `systemctl --user restart anan-gateway`
 
-6. **Check session policies** — verify `sinoclaw config get session_reset` matches your expectations.
+6. **Check session policies** — verify `anan config get session_reset` matches your expectations.
 
-7. **Re-pair WhatsApp** — WhatsApp uses QR code pairing (Baileys), not token migration. Run `sinoclaw whatsapp` to pair.
+7. **Re-pair WhatsApp** — WhatsApp uses QR code pairing (Baileys), not token migration. Run `anan whatsapp` to pair.
 
-8. **Archive cleanup** — after confirming everything works, run `sinoclaw claw cleanup` to rename leftover OpenClaw directories to `.pre-migration/` (prevents state confusion).
+8. **Archive cleanup** — after confirming everything works, run `anan claw cleanup` to rename leftover OpenClaw directories to `.pre-migration/` (prevents state confusion).
 
 ## Troubleshooting
 

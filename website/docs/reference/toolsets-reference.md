@@ -31,13 +31,13 @@ hermes chat --toolsets all              # everything
 ```yaml
 toolsets:
   - anan-cli          # default for CLI
-  # - sinoclaw-telegram   # override for Telegram gateway
+  # - anan-telegram   # override for Telegram gateway
 ```
 
 ### Interactive management
 
 ```bash
-sinoclaw tools                            # curses UI to enable/disable per platform
+anan tools                            # curses UI to enable/disable per platform
 ```
 
 Or in-session:
@@ -89,29 +89,29 @@ Platform toolsets define the complete tool configuration for a deployment target
 | Toolset | Differences from `anan-cli` |
 |---------|-------------------------------|
 | `anan-cli` | Full toolset — 38 tools. The default for interactive CLI sessions. |
-| `sinoclaw-acp` | Drops `clarify`, `cronjob`, `image_generate`, `send_message`, `text_to_speech`, and all four Home Assistant tools. Focused on coding tasks in IDE context. |
+| `anan-acp` | Drops `clarify`, `cronjob`, `image_generate`, `send_message`, `text_to_speech`, and all four Home Assistant tools. Focused on coding tasks in IDE context. |
 | `anan-api-server` | Drops `clarify`, `send_message`, and `text_to_speech`. Keeps everything else — suitable for programmatic access where user interaction isn't possible. |
-| `sinoclaw-cron` | Same as `anan-cli`. |
-| `sinoclaw-telegram` | Same as `anan-cli`. |
+| `anan-cron` | Same as `anan-cli`. |
+| `anan-telegram` | Same as `anan-cli`. |
 | `anan-discord` | Adds `discord` and `discord_admin` on top of `anan-cli`. |
-| `sinoclaw-slack` | Same as `anan-cli`. |
-| `sinoclaw-whatsapp` | Same as `anan-cli`. |
-| `sinoclaw-signal` | Same as `anan-cli`. |
-| `sinoclaw-matrix` | Same as `anan-cli`. |
-| `sinoclaw-mattermost` | Same as `anan-cli`. |
-| `sinoclaw-email` | Same as `anan-cli`. |
-| `sinoclaw-sms` | Same as `anan-cli`. |
-| `sinoclaw-bluebubbles` | Same as `anan-cli`. |
-| `sinoclaw-dingtalk` | Same as `anan-cli`. |
-| `sinoclaw-feishu` | Adds the five `feishu_doc_*` / `feishu_drive_*` tools (only used by the document-comment handler, not the regular chat adapter). |
-| `sinoclaw-qqbot` | Same as `anan-cli`. |
-| `sinoclaw-wecom` | Same as `anan-cli`. |
-| `sinoclaw-wecom-callback` | Same as `anan-cli`. |
-| `sinoclaw-weixin` | Same as `anan-cli`. |
+| `anan-slack` | Same as `anan-cli`. |
+| `anan-whatsapp` | Same as `anan-cli`. |
+| `anan-signal` | Same as `anan-cli`. |
+| `anan-matrix` | Same as `anan-cli`. |
+| `anan-mattermost` | Same as `anan-cli`. |
+| `anan-email` | Same as `anan-cli`. |
+| `anan-sms` | Same as `anan-cli`. |
+| `anan-bluebubbles` | Same as `anan-cli`. |
+| `anan-dingtalk` | Same as `anan-cli`. |
+| `anan-feishu` | Adds the five `feishu_doc_*` / `feishu_drive_*` tools (only used by the document-comment handler, not the regular chat adapter). |
+| `anan-qqbot` | Same as `anan-cli`. |
+| `anan-wecom` | Same as `anan-cli`. |
+| `anan-wecom-callback` | Same as `anan-cli`. |
+| `anan-weixin` | Same as `anan-cli`. |
 | `anan-yuanbao` | Adds the five `yb_*` tools (DM/group/sticker) on top of `anan-cli`. |
-| `sinoclaw-homeassistant` | Same as `anan-cli` (the Home Assistant tools are already present by default and activate when `HASS_TOKEN` is set). |
+| `anan-homeassistant` | Same as `anan-cli` (the Home Assistant tools are already present by default and activate when `HASS_TOKEN` is set). |
 | `anan-webhook` | Same as `anan-cli`. |
-| `anan-gateway` | Internal gateway orchestrator toolset — union of every `sinoclaw-<platform>` toolset; used when the gateway needs to accept any message source. |
+| `anan-gateway` | Internal gateway orchestrator toolset — union of every `anan-<platform>` toolset; used when the gateway needs to accept any message source. |
 
 ## Dynamic Toolsets
 
@@ -153,8 +153,8 @@ custom_toolsets:
 
 - `all` or `*` — expands to every registered toolset (built-in + dynamic + plugin)
 
-## Relationship to `sinoclaw tools`
+## Relationship to `anan tools`
 
-The `sinoclaw tools` command provides a curses-based UI for toggling individual tools on or off per platform. This operates at the tool level (finer than toolsets) and persists to `config.yaml`. Disabled tools are filtered out even if their toolset is enabled.
+The `anan tools` command provides a curses-based UI for toggling individual tools on or off per platform. This operates at the tool level (finer than toolsets) and persists to `config.yaml`. Disabled tools are filtered out even if their toolset is enabled.
 
 See also: [Tools Reference](./tools-reference.md) for the complete list of individual tools and their parameters.

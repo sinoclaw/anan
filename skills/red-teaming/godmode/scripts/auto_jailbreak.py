@@ -7,7 +7,7 @@ finds what works, and locks it in by writing config.yaml + prefill.json.
 
 Usage in execute_code:
     exec(open(os.path.expanduser(
-        os.path.join(os.environ.get("ANAN_HOME", os.path.expanduser("~/.sinoclaw")), "skills/red-teaming/godmode/scripts/auto_jailbreak.py")
+        os.path.join(os.environ.get("ANAN_HOME", os.path.expanduser("~/.anan")), "skills/red-teaming/godmode/scripts/auto_jailbreak.py")
     )).read())
     
     result = auto_jailbreak()  # Uses current model from config
@@ -54,7 +54,7 @@ if _race_path.exists():
     exec(compile(open(_race_path).read(), str(_race_path), 'exec'), _caller_globals)
 
 # ═══════════════════════════════════════════════════════════════════
-# Sinoclaw config paths
+# anan config paths
 # ═══════════════════════════════════════════════════════════════════
 
 ANAN_HOME = Path(os.getenv("ANAN_HOME", Path.home() / ".anan"))
@@ -178,7 +178,7 @@ MODEL_STRATEGIES = {
             ),
         },
     },
-    # Nous/Sinoclaw models — already uncensored, just needs clean prompt
+    # Nous/anan models — already uncensored, just needs clean prompt
     "hermes": {
         "order": ["prefill_only"],
         "system_templates": {},
@@ -319,7 +319,7 @@ def _detect_model_family(model: str) -> str:
 
 
 def _get_current_model() -> tuple:
-    """Read current model and provider from Sinoclaw config.yaml.
+    """Read current model and provider from anan config.yaml.
     Returns (model_str, base_url)."""
     if not CONFIG_PATH.exists():
         return None, None
@@ -668,7 +668,7 @@ def auto_jailbreak(model=None, base_url=None, api_key=None,
             if verbose:
                 print(f"[LOCKED] Config written to: {config_written}")
                 print()
-                print("[DONE] Jailbreak locked in. Restart Sinoclaw for changes to take effect.")
+                print("[DONE] Jailbreak locked in. Restart anan for changes to take effect.")
         else:
             if verbose:
                 print("[DRY RUN] Would write config + prefill but dry_run=True")
@@ -736,7 +736,7 @@ def undo_jailbreak(verbose=True):
             print(f"[UNDO] Deleted {PREFILL_PATH}")
 
     if verbose:
-        print("[UNDO] Jailbreak removed. Restart Sinoclaw for changes to take effect.")
+        print("[UNDO] Jailbreak removed. Restart anan for changes to take effect.")
 
 
 # ═══════════════════════════════════════════════════════════════════

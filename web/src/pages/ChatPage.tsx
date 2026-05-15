@@ -447,7 +447,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
         term.loadAddon(webgl);
       } catch (err) {
         console.warn(
-          "[sinoclaw-chat] WebGL renderer unavailable; falling back to default",
+          "[anan-chat] WebGL renderer unavailable; falling back to default",
           err,
         );
       }
@@ -819,7 +819,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
         >
           <div
             ref={hostRef}
-            className="sinoclaw-chat-xterm-host min-h-0 min-w-0 flex-1"
+            className="anan-chat-xterm-host min-h-0 min-w-0 flex-1"
           />
 
           <Button
