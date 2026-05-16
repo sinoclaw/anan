@@ -855,15 +855,45 @@ class GoalGenerator:
         self.decompose(goal.id)
 
     async def _on_circadian_tick(self, event: Event) -> None:
+        # 已有太多活跃目标，跳过
         if len(self._active_order) >= 2:
             return
-        goal = self.propose(
-            description="保持对世界的好奇，持续探索新知",
-            scope=GoalScope.SHORT,
-            tags=["好奇", "探索", "周期"],
-            source_event="L0.circadian.tick",
+
+        # 构建真实 context（不用虚假叙事）
+        context_parts = []
+        active = self.active_goals()
+        if active:
+            goal_list = "; ".join(f"{g.description[:40]}({g.scope.value})" for g in active[:3])
+            context_parts.append(f"当前活跃目标：{goal_list}")
+
+        if self._pending:
+            pending_list = "; ".join(f"{a.target}={a.new_value:.2f}" for a in self._pending[:3])
+            context_parts.append(f"待审批调参：{pending_list}")
+
+        if self._self_model is not None:
+            wisdom = getattr(self._self_model, "wisdom_facts", []) or []
+            if wisdom:
+                context_parts.append(f"近期规律：{'; '.join(wisdom[-3:])}")
+
+        context = "\n".join(context_parts) if context_parts else "系统正常运行，无特殊状态"
+
+        # 用 LLM 生成有依据的目标（避免虚假自我叙事）
+        goals = await self.generate_goals_from_context(
+            prompt=f"AI agent 状态报告：\n{context}\n\n基于以上真实状态，生成 1-2 个具体、可执行的目标。不要编造不存在的信息。"
         )
-        self.decompose(goal.id)
+
+        if goals:
+            for g in goals:
+                self.decompose(g.id)
+        else:
+            # fallback：只有没有任何目标时才提一个通用探索目标
+            goal = self.propose(
+                description="保持对世界的好奇，持续探索新知",
+                scope=GoalScope.SHORT,
+                tags=["好奇", "探索", "周期"],
+                source_event="L0.circadian.tick",
+            )
+            self.decompose(goal.id)
 
 
 # ---------------------------------------------------------------------------
