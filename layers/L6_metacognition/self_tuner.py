@@ -151,13 +151,16 @@ class SelfTuner:
             self._bus.subscribe("L6.metacognition.report", on_report)
         )
 
+        print(f"[L6 DIAG] SelfTuner.attach() called, bus={id(self._bus)}", flush=True)
         async def on_pattern(event: Event):
+            print(f"[L6 DIAG] SelfTuner on_pattern received event!", flush=True)
             logger.warning(f"[L6 SelfTuner] _on_pattern_discovered received: topic={event.topic}, payload={event.payload}")
             await self._on_pattern_discovered(event)
 
         self._unsub.append(
             self._bus.subscribe("L5.pattern.discovered", on_pattern)
         )
+        print("[L6 DIAG] SelfTuner attach() done", flush=True)
         logger.warning("[L6 SelfTuner] attach() done, subscribed to L5.pattern.discovered")
 
     async def detach(self) -> None:

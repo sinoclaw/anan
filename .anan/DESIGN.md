@@ -121,14 +121,14 @@ class AttentionQueue:
 
 **已实现**：`layers/L5_reasoning/pattern_miner.py`
 
-### L6 — Metacognition（元认知） ⚠️ 预测闭环未完成
+### L6 — Metacognition（元认知） ✅ L5→L6 闭环已完成
 
 "思考自己在思考什么"——AGI 的关键标志。
 
+- **因果链路**：L5 PatternMiner 发现 `lift>8` 的强规律 → SelfTuner 订阅 `L5.pattern.discovered` → 提升链路 `probability_boost` / 放宽 `min_lift`
 - **决策日志**：每个重要决策都记录"为什么这么选"
 - **自我反省 cron**：每天问自己"今天哪些决策事后看是错的？"
-- **偏见检测**：识别自己的判断模式偏差
-- **预测验证闭环**：用 L5 规律预测 → 验证 → 修正（**当前缺失**）
+- **预测验证闭环**：L5 规律 → L6 调参 → 验证 → 修正（**进行中**：调参已闭环，预测验证待实现）
 
 ### L7 — Goal Generator（目标生成）
 
@@ -216,9 +216,10 @@ class AttentionQueue:
 **Stage 2 通过标准**：
 - L3+L4 启用后，agent 在 24 小时无外部输入下能产生至少 3 条主动思考产物
 
-**Stage 3 通过标准** ⚠️（当前瓶颈）：
-- L5+L6 启用后，agent 能用 L5 规律预测→验证→修正自己的判断
-- **关键缺失**：L5 因果链路已完成，但 L6 未连接 L5 形成闭环
+**Stage 3 通过标准** ✅（L5→L6 闭环已于 2026-05-17 完成）：
+- L5 因果规律发现 ✅
+- L6 订阅 L5.pattern.discovered，根据 lift 强度自动调参（boost 链路 / 放宽 min_lift）✅
+- 剩余：L6 预测验证闭环（L6 根据预测结果修正自身判断）— 待实现
 
 **Stage 4 通过标准**：
 - L7+L8+L9 启用后，agent 能在跟用户对话中主动提出未被要求的、有价值的建议
@@ -234,8 +235,8 @@ class AttentionQueue:
 | L3 Attention | 🔴 未实现 | 待开始 |
 | L4 Consciousness | 🟡 部分实现 | Idle detection 在 kernel/，意识流待完成 |
 | L5 Prediction | 🟢 **已完成** | PatternMiner 因果链路 + wisdom_facts |
-| L6 Metacognition | 🔴 **未完成** | 决策日志在，但预测验证闭环未连 L5 |
-| L7 Goals | 🔴 未实现 | 待开始 |
+| L6 Metacognition | 🟢 **已完成** | L5→L6 闭环：规律发现后自动调参（lift>8 boost链路，lift>12 放宽挖掘） |
+| L7 Goals | 🟢 **部分实现** | LLM-driven goal gen + _pending 初始化完成；完整自主目标分解待验证 |
 | L8 Drives | 🟡 部分实现 | 框架在，完整 drive system 待完成 |
 | L9 Self | 🟢 **已完成** | self_model.py + wisdom_facts 集成 |
 
