@@ -127,6 +127,7 @@ class SelfTuner:
         self._auto_approve_age = auto_approve_age_s
 
         self._unsub: list[Callable[[], None]] = []
+        print(f"[L6 DIAG] SelfTuner.__init__ called, bus={id(self._bus)}", flush=True)
 
         # Tuning state
         self._pending: list[TuningAction] = []
