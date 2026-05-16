@@ -129,26 +129,16 @@ class PredictiveReasoner:
 
     async def attach(self) -> None:
         """Subscribe to events needed for prediction tracking."""
-        import sys
-        print(f"[PRED-DIAG] attach() called — self._bus id={id(self._bus)}", flush=True)
-        from kernel import event_bus as eb_module
-        singleton_id = id(eb_module._global_bus) if hasattr(eb_module, '_global_bus') and eb_module._global_bus else 'not_created'
-        print(f"[PRED-DIAG] singleton id={singleton_id} match={id(self._bus) == singleton_id if isinstance(singleton_id, int) else '?'}", flush=True)
-
         async def on_any(event: Event):
             await self._on_event(event)
 
         async def on_link_discovered(event: Event):
-            import sys
-            print(f"[PRED-LINK-DIAG] invoked! topic={event.topic}", flush=True)
             try:
                 payload = event.payload or {}
-                print(f"[PRED-LINK-DIAG] payload keys={list(payload.keys())}", flush=True)
                 cause = payload.get("cause") or payload.get("antecedent", "")
                 effect = payload.get("effect") or payload.get("consequent", "")
                 lift = payload.get("lift", 0.0)
                 confidence = payload.get("confidence", 0.0)
-                print(f"[PRED-LINK-DIAG] parsed: cause={cause!r} effect={effect!r} lift={lift}", flush=True)
                 if cause and effect:
                     key = (cause, effect)
                     if lift < self._min_lift:
@@ -164,13 +154,11 @@ class PredictiveReasoner:
                             issued_at=time.time(),
                             horizon_s=self._horizon_s,
                         )
-                        print(f"[PRED-LINK-DIAG] CACHED: {cause} → {effect}", flush=True)
                         logger.info("[PRED-DEBUG] Cached link: %s → %s (lift=%.2f, conf=%.2f)", cause, effect, lift, confidence)
                         logger.info("🔍 PredictiveReasoner on_link_discovered: %s → %s (lift=%.2f, conf=%.2f)", cause, effect, lift, confidence)
                     except Exception as pred_exc:
-                        print(f"[PRED-LINK-PRED-ERROR] {pred_exc}", flush=True)
+                        logger.warning("PRED-LINK Prediction() failed: %s", pred_exc)
             except Exception as e:
-                print(f"[PRED-LINK-ERROR] {e} payload={event.payload}", flush=True)
                 logger.warning("PRED-LINK exception: %s payload=%s", e, event.payload)
 
         # 只订阅外部/跨层事件，避免 "event storm" 和 feedback loop。
@@ -224,7 +212,6 @@ class PredictiveReasoner:
     async def _on_event(self, event: Event) -> None:
         topic = event.topic
         now = time.time()
-        print(f"[PRED-EVENT] topic={topic}", flush=True)
 
         # Skip ALL L5 events — they are internal reasoning signals,
         # not external causes we should predict from. Links from PatternMiner
@@ -263,12 +250,10 @@ class PredictiveReasoner:
 
     async def _emit_predictions_for(self, cause: str, now: float) -> None:
         """Given a cause event, emit predictions for downstream effects."""
-        print(f"[PRED-EMIT] cause={cause!r} now={now}", flush=True)
         # Collect links from both sources: initial causal_links_fn AND
         # cached links from L5.causal.link_discovered events
         links_from_fn = self._get_links()
         links_from_cache = list(self._links.values())
-        print(f"[PRED-EMIT] links_from_fn={len(links_from_fn)} links_from_cache={len(links_from_cache)}", flush=True)
 
         seen: set[str] = set()  # deduplicate by effect string
 
