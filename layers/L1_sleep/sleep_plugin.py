@@ -1157,6 +1157,10 @@ async def _ingest_session_signals_from_db(
 
     results = []
     for msg in messages:
+        # Skip tool/assistant internal outputs — only keep user and agent dialogue
+        role = msg.get("role", "")
+        if role in ("tool", "assistant"):
+            continue
         content = msg.get("content") or ""
         if isinstance(content, list):
             content = " ".join(str(c) for c in content if isinstance(c, (str, dict)) and c)
@@ -1561,6 +1565,10 @@ class DreamingPlugin:
                 total_limit=20,
             )
             for msg in messages:
+                # Skip tool/assistant internal outputs — only keep user and agent dialogue
+                role = msg.get("role", "")
+                if role in ("tool", "assistant"):
+                    continue
                 content = msg.get("content") or ""
                 if isinstance(content, list):
                     content = " ".join(
@@ -1688,6 +1696,10 @@ Write a short stream-of-consciousness monologue in first person.
                 total_limit=15,
             )
             for msg in messages:
+                # Skip tool/assistant internal outputs — only keep user and agent dialogue
+                role = msg.get("role", "")
+                if role in ("tool", "assistant"):
+                    continue
                 content = msg.get("content") or ""
                 if isinstance(content, list):
                     content = " ".join(
