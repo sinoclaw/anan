@@ -1,8 +1,12 @@
 # anan 九层进度报告
 
-> 更新时间：2026-05-15 16:45
+> 更新时间：2026-05-17 02:33
 > 调研范围：`layers/` 全部源文件 + `kernel/mind_stack_runner.py`
-> 最新提交：L5→L6→L7→L8 预测验证闭环 + Daydreaming/Lucid Dream 触发链全接通
+> 最新提交：b4f1082 — L5 insights=3 修复（layer.discovered property + 删除重复 mine_now）
+>
+> 2026-05-17 关键修复：
+> - ✅ L5 PatternMiner insights=3（之前 0）：layer.discovered 是 @property 但调用时没加括号 → TypeError 被吞
+> - ✅ 删 _collect_and_publish_sync 里重复的 pm.mine_now() 调用（cooldown 未过返回空列表覆盖 _last_patterns）
 
 ---
 
@@ -125,6 +129,11 @@
 **2026-05-15 修复**：
 - ✅ `PatternMiner.set_min_lift()` 方法 + `import asyncio` 补全
 - ✅ `SelfTuner._apply()` 同时写回 PatternMiner + PredictiveReasoner
+
+**2026-05-17 修复**（commit b4f1082）：
+- ✅ `insights=3` 验证通过：`layer.discovered` 是 `@property` 但调用时没加括号 → TypeError 被吞 → insights 始终 0
+- ✅ `_collect_and_publish_sync` 删重复 `pm.mine_now()`：cooldown 未过返回空列表，会覆盖 `_last_patterns`（tick 时写入的有效 patterns）
+- ✅ `PatternMiner._last_patterns` 类变量跨实例持久化，始终从类变量读
 
 **问题**：依赖 session 历史数据，刚启动时为空
 
