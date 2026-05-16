@@ -331,6 +331,7 @@ class DriveSystem:
         issues = p.get("issues", [])
         suggestions = p.get("suggestions", [])
 
+        logger.warning("DriveSystem received L6 metacognition report: score=%.2f, issues=%d", score, len(issues))
         if score < 0.5:
             # 系统不健康 → 驱动完成任务恢复状态
             self.trigger(DriveType.COMPLETION, f"健康分 {score:.2f} 过低，优先完成任务恢复状态")

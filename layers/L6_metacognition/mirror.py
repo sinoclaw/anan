@@ -114,9 +114,9 @@ class Mirror:
             # Only reflect on every 5th tick to keep overhead low
             payload = event.payload or {}
             ticks = payload.get("ticks", 0)
-            import sys; sys.stderr.write(f"MIRROR_PROBE ticks={ticks}\n")
-            logger.warning("Mirror.on_tick received: ticks=%d (will check %% 5 == 0)", ticks)
+            logger.warning("MIRROR_PROBE ticks=%d", ticks)
             if ticks % 5 == 0:
+                logger.warning("MIRROR_TRIGGER: calling reflect_and_emit() for ticks=%d", ticks)
                 await self.reflect_and_emit()
 
         self._unsub_asleep = self._bus.subscribe("L0.circadian.asleep", on_asleep)
@@ -136,13 +136,12 @@ class Mirror:
 
     # ------------------------------------------------------------------
     async def reflect_and_emit(self) -> HealthReport:
-        import sys
-        sys.stderr.write(f"MIRROR_ENTER reflect_and_emit\n")
+        logger.warning("MIRROR_ENTER reflect_and_emit called")
         try:
             report = self.reflect()
-            sys.stderr.write(f"MIRROR reflect done: score={getattr(report, 'score', '?')}\n")
+            logger.warning("MIRROR reflect done: score=%s", getattr(report, 'score', '?'))
         except Exception as exc:
-            sys.stderr.write(f"MIRROR reflect ERROR: {exc}\n")
+            logger.warning("MIRROR reflect ERROR: %s", exc)
             raise
         await self._emit(report)
         return report
@@ -265,8 +264,7 @@ class Mirror:
 
     # ------------------------------------------------------------------
     async def _emit(self, report: HealthReport) -> None:
-        import sys
-        sys.stderr.write(f"MIRROR_EMIT bus={type(self._bus).__name__} id={id(self._bus)}\n")
+        logger.warning("MIRROR_EMIT bus=%s id=%d", type(self._bus).__name__, id(self._bus))
         try:
             await self._bus.publish(Event(
                 topic="L6.metacognition.report",
@@ -283,10 +281,9 @@ class Mirror:
                         "suggestions": report.suggestions,
                     },
                 ))
+            logger.warning("MIRROR_EMIT done")
         except Exception as exc:  # noqa: BLE001
-            import sys
-            sys.stderr.write(f"MIRROR_EMIT_ERROR: {exc}\n")
-            logger.warning("L6 emit failed: %s", exc)
+            logger.warning("MIRROR_EMIT_ERROR: %s", exc)
 
     # ------------------------------------------------------------------
     def history(self) -> list[HealthReport]:
