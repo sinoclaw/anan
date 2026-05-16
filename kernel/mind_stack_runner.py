@@ -87,28 +87,9 @@ def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.
             source="agent_end_hook",
             payload={"reason": "message"},
         ))
-        # 3. 等待 PatternMiner 挖掘完成（给最多 timeout 秒），直接用返回值收集 insights
-        pattern_results = []
-        try:
-            from layers.L5_reasoning.pattern_miner import PatternMiner
-            layers = getattr(MindStackRunner, '_layers_ref', [])
-            pm = None
-            for layer in layers:
-                if isinstance(layer, PatternMiner):
-                    pm = layer
-                    break
-            if pm is None:
-                logger.debug("PatternMiner not found in _layers_ref (count=%d)", len(layers))
-            else:
-                try:
-                    pattern_results = await asyncio.wait_for(pm.mine_now(), timeout=2.0)
-                    logger.info("PatternMiner mine_now() returned %d patterns", len(pattern_results))
-                except asyncio.TimeoutError:
-                    logger.debug("PatternMiner.mine_now() timed out")
-                except Exception as exc:
-                    logger.debug("PatternMiner.mine_now() failed: %s", exc)
-        except Exception as exc:
-            logger.debug("_do_impl PatternMiner step failed: %s", exc)
+        # 3. 不在这里挖：tick 时 PatternMiner 已经写好了 _last_patterns
+        #    在这里挖会覆盖（cooldown 未过返回空列表，冲掉 tick 的结果）
+        # 4. 收集九层产出
         # 4. 收集九层产出
         try:
             outputs = {
@@ -128,14 +109,12 @@ def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.
             for layer in layers:
                 if isinstance(layer, PatternMiner):
                     try:
-                        # Priority 1: class-level shared storage written by mine_now() —
-                        # survives MindStackRunner instance overwrites.
-                        # Priority 2: property (returns list, not bound method).
-                        if PatternMiner._last_patterns:
-                            outputs["insights"] = [str(p)[:100] for p in PatternMiner._last_patterns[-3:]]
-                        else:
-                            discovered = layer.discovered[-3:]
-                            outputs["insights"] = [str(p)[:100] for p in discovered]
+                        # 始终从类变量读：跨 MindStackRunner 实例持久化
+                        insights = list(PatternMiner._last_patterns)
+                        if not insights:
+                            # 兜底：从当前实例的 discovered property 读（property 要加括号）
+                            insights = list(layer.discovered)
+                        outputs["insights"] = [str(p)[:100] for p in insights[-3:]]
                     except Exception:
                         pass
                 elif isinstance(layer, SelfModelLive):
