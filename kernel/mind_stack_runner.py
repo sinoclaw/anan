@@ -90,17 +90,21 @@ def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.
         try:
             from layers.L5_reasoning.pattern_miner import PatternMiner
             layers = getattr(MindStackRunner, '_layers_ref', [])
+            pm = None
             for layer in layers:
                 if isinstance(layer, PatternMiner):
-                    try:
-                        pattern_results = await asyncio.wait_for(layer.mine_now(), timeout=2.0)
-                    except asyncio.TimeoutError:
-                        logger.debug("PatternMiner.mine_now() timed out")
-                    except Exception as exc:
-                        logger.debug("PatternMiner.mine_now() failed: %s", exc)
+                    pm = layer
                     break
-        except Exception as exc:
-            logger.debug("_do PatternMiner step failed: %s", exc)
+            if pm is None:
+                logger.debug("PatternMiner not found in _layers_ref (count=%d)", len(layers))
+            else:
+                try:
+                    pattern_results = await asyncio.wait_for(pm.mine_now(), timeout=2.0)
+                    logger.info("PatternMiner mine_now() returned %d patterns", len(pattern_results))
+                except asyncio.TimeoutError:
+                    logger.debug("PatternMiner.mine_now() timed out")
+                except Exception as exc:
+                    logger.debug("PatternMiner.mine_now() failed: %s", exc)
         # 4. 收集九层产出
         try:
             outputs = {
