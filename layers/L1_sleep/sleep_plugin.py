@@ -1959,6 +1959,7 @@ Write a short first-person monologue about what you want to do in the coming day
 
     def _on_idle_started(self, event) -> None:
         """Trigger Daydreaming when idle starts."""
+        logger.warning(f"[L1] _on_idle_started received: {event}")
         import asyncio
         asyncio.create_task(self._trigger_daydream())
 
