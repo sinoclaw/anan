@@ -712,8 +712,10 @@ class ConsciousnessEngine:
         check_interval_s = 10.0
         cleanup_interval_s = 300.0  # 每 5 分钟清理一次
         last_cleanup = time.time()
+        print(f"[L4 LOOP] started at {last_cleanup}, shutdown={self._shutdown}", flush=True)
 
         while not self._shutdown.is_set():
+            print("[L4 LOOP] waking from sleep", flush=True)
             await asyncio.sleep(check_interval_s)
 
             if not self._active:
