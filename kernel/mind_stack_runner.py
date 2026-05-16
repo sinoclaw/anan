@@ -64,6 +64,8 @@ def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.
     """
     import threading
 
+    print(f"[DIAG] _collect_and_publish_sync called: response_len={len(response)}, user_text_len={len(user_text)}", flush=True)
+
     def _run_in_thread():
         asyncio.run(_do_impl())
 
