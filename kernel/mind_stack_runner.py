@@ -517,6 +517,10 @@ class MindStackRunner:
         self._bus.subscribe("L1.daydream.ended", self._on_sleep_ended)
         logger.info("  ✓ WorkingMemory → L2 promotion 已连接")
 
+        # 4.7 订阅 PatternMiner 发现的因果规律 → 写入 MemoryTier 持久化
+        self._bus.subscribe("L5.pattern.discovered", self._on_pattern_discovered)
+        logger.info("  ✓ PatternMiner → MemoryTier 沉淀链路已连接")
+
         # 4.7 启动九层产出收集器
         self._cognition = MindStackCognition(self)
         logger.info("  ✓ MindStackCognition 就绪（九层产出 → LLM 注入）")
@@ -617,6 +621,34 @@ class MindStackRunner:
                 ))
         except Exception as exc:
             logger.warning("_on_sleep_ended promotion failed: %s", exc)
+
+    async def _on_pattern_discovered(self, event: Event) -> None:
+        """PatternMiner 发现因果规律时，将其写入 MemoryTier 持久化。"""
+        if self._memory_tier is None:
+            return
+        try:
+            payload = event.payload or {}
+            antecedent = payload.get("antecedent", "?")
+            consequent = payload.get("consequent", "?")
+            lift = payload.get("lift", 0.0)
+            confidence = payload.get("confidence", 0.0)
+            support = payload.get("support", 0)
+
+            content = (
+                f"L5 Pattern: {antecedent} → {consequent} "
+                f"(lift={lift:.1f}x, conf={confidence:.0%}, support={support})"
+            )
+            key = f"pattern:{antecedent}:{consequent}"
+            self._memory_tier.memorize(
+                key=key,
+                content=content,
+                importance=min(1.0, lift / 50.0),  # lift 越高越重要
+                tags=["pattern_mining", "causal_rule", "L5_insight"],
+                source="pattern_miner",
+            )
+            logger.info("PatternMiner → MemoryTier: %s → %s (lift=%.1f)", antecedent, consequent, lift)
+        except Exception as exc:
+            logger.warning("_on_pattern_discovered failed: %s", exc)
 
     # ------------------------------------------------------------------
     # StateDB 历史 Bridge
