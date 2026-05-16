@@ -873,8 +873,17 @@ class GoalGenerator:
 
         if self._self_model is not None:
             wisdom = getattr(self._self_model, "wisdom_facts", []) or []
+            history = getattr(self._self_model, "history_facts", []) or []
+            vision = getattr(self._self_model, "vision_facts", []) or []
+            identity = getattr(self._self_model, "identity_facts", []) or []
             if wisdom:
-                context_parts.append(f"近期规律：{'; '.join(wisdom[-3:])}")
+                context_parts.append(f"已验证规律（wisdom）：{' | '.join(wisdom[-5:])}")
+            if history:
+                context_parts.append(f"最近学到（history）：{' | '.join(history[-3:])}")
+            if vision:
+                context_parts.append(f"未来方向（vision）：{' | '.join(vision[-2:])}")
+            if identity:
+                context_parts.append(f"自我认知（identity）：{identity[0][:100] if identity else '（未知）'}")
 
         context = "\n".join(context_parts) if context_parts else "系统正常运行，无特殊状态"
 
