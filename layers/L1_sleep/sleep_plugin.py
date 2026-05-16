@@ -157,6 +157,9 @@ class DreamingConfig:
     timezone: Optional[str] = None
     verbose_logging: bool = False
 
+    # Idle daydreaming — L1 stream-of-consciousness when user goes idle
+    min_daydream_interval_hours: float = 6.0  # 0 to disable cooldown
+
     # Storage
     storage_mode: str = "separate"   # "inline" | "separate" | "both"
     separate_reports: bool = False
@@ -1400,6 +1403,7 @@ class DreamingPlugin:
         self._bus = None  # set by attach(bus), enables shared EventBus with MindStackRunner
 
         self._last_runtime_reconcile_at_ms = 0
+        self._last_daydream_time: Optional[float] = None  # epoch seconds, for idle daydreaming cooldown
         self._startup_cron_retry_attempts = 0
         self._startup_cron_retry_timer: Optional[asyncio.TimerHandle] = None
 
@@ -1965,11 +1969,26 @@ Write a short first-person monologue about what you want to do in the coming day
 
     async def _trigger_daydream(self) -> None:
         """Called when idle is detected — trigger a daydreaming sweep."""
+        # Cooldown check: skip if triggered too recently
+        interval_hours = getattr(self.config, 'min_daydream_interval_hours', 0)
+        if interval_hours > 0 and self._last_daydream_time is not None:
+            import time
+            elapsed_hours = (time.time() - self._last_daydream_time) / 3600
+            if elapsed_hours < interval_hours:
+                logger.debug(
+                    "daydream: skipped (cooldown %.1fh < %.1fh)",
+                    elapsed_hours, interval_hours,
+                )
+                return
+
         try:
             import os
             workspace = os.path.expanduser("~/.anan")
             os.makedirs(workspace, exist_ok=True)
             await self.run_daydreaming_sweep(workspace_dir=workspace)
+            # Mark successful execution
+            import time
+            self._last_daydream_time = time.time()
         except Exception as exc:
             logger.debug("daydream trigger failed: %s", exc)
 
