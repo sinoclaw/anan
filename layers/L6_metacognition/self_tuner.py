@@ -151,6 +151,13 @@ class SelfTuner:
             self._bus.subscribe("L6.metacognition.report", on_report)
         )
 
+        async def on_pattern(event: Event):
+            await self._on_pattern_discovered(event)
+
+        self._unsub.append(
+            self._bus.subscribe("L5.pattern.discovered", on_pattern)
+        )
+
     async def detach(self) -> None:
         for u in self._unsub:
             u()
@@ -190,6 +197,82 @@ class SelfTuner:
                 await self._review_stale_links()
 
         # 自动清理：超时的 pending actions 直接 approve
+        await self._housekeeping()
+
+    async def _on_pattern_discovered(self, event: Event) -> None:
+        """L5 发现了因果规律 → 据此调整预测链路参数。
+
+        策略：
+        - lift > 8：高置信度规律，boost 对应链路 probability_boost
+        - lift > 12：极强规律，降低 min_lift 让 L5 更激进挖掘
+        """
+        p = event.payload or {}
+        antecedent = p.get("antecedent", "")
+        consequent = p.get("consequent", "")
+        lift = p.get("lift", 0.0)
+        summary = p.get("summary", "")
+
+        if not antecedent or not consequent:
+            return
+
+        logger.info(
+            "SelfTuner received pattern: %s → %s (lift=%.2f): %s",
+            antecedent, consequent, lift, summary,
+        )
+
+        # 高 lift 规律 → boost 该链路的 probability_boost
+        if lift > 8.0:
+            link_key = f"link_lift:{antecedent[:20]}→{consequent[:20]}"
+            # 查当前该链路的 probability_boost（默认 1.0）
+            current_boost = 1.0
+            if self._pred is not None:
+                for (cause, effect), link in getattr(self._pred, "_links", {}).items():
+                    if antecedent[:20] in cause and consequent[:20] in effect:
+                        current_boost = getattr(link, "probability_boost", 1.0)
+                        break
+
+            boost = min(current_boost + 0.3, 3.0)  # 最多加到 3.0
+            action = self._make_action(
+                layer="L5",
+                target=link_key,
+                old_value=current_boost,
+                new_value=boost,
+                reason=f"L5 发现强规律: {summary}",
+            )
+            self._pending.append(action)
+            await self._bus.publish(Event(
+                topic="L6.tuning.pending",
+                source="L6.self_tuner",
+                payload={"action_id": action.id, "reason": summary},
+            ))
+            logger.info(
+                "SelfTuner: queued tuning action [%s] boost link %s→%s by %.2f (lift=%.1f)",
+                action.id, antecedent[:20], consequent[:20], boost - current_boost, lift,
+            )
+
+        # 极高 lift 规律 → 建议降低 min_lift 更激进挖掘
+        if lift > 12.0 and self._pred is not None:
+            current_min_lift = getattr(self._pred, "_min_lift", 1.5)
+            if current_min_lift > 1.3:
+                new_min_lift = max(1.3, current_min_lift - 0.2)
+                action = self._make_action(
+                    layer="L5",
+                    target="min_lift",
+                    old_value=current_min_lift,
+                    new_value=new_min_lift,
+                    reason=f"L5 发现极强规律 (lift={lift:.1f})，适当放宽置信度门槛以捕获更多相关预测",
+                )
+                self._pending.append(action)
+                await self._bus.publish(Event(
+                    topic="L6.tuning.pending",
+                    source="L6.self_tuner",
+                    payload={"action_id": action.id, "reason": f"极强规律放宽 min_lift: {lift:.1f}x"},
+                ))
+                logger.info(
+                    "SelfTuner: queued [%s] reduce min_lift %.2f → %.2f (lift=%.1f)",
+                    action.id, current_min_lift, new_min_lift, lift,
+                )
+
         await self._housekeeping()
 
     async def _housekeeping(self) -> None:
