@@ -27,7 +27,7 @@ import time
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 from kernel.event_bus import Event, EventBus
 
@@ -190,10 +190,102 @@ class MemoryTier:
         longterm_path: Optional[Path] = None,
     ):
         self._bus = bus
+        self._unsubs: list[Callable] = []
         self.short = MemoryStore(recall_path or RECALL_PATH)
         self.midterm_dir = (midterm_dir or MIDTERM_DIR)
         self.midterm_dir.mkdir(parents=True, exist_ok=True)
         self._long_path = longterm_path or LONGTERM_PATH
+
+    async def attach(self, bus: Optional[EventBus] = None) -> None:
+        """Subscribe to cognitive events from L5/L9 to drive memory recall."""
+        b = bus or self._bus
+        if b is None:
+            logger.warning("MemoryTier.attach() called with no bus")
+            return
+        self._bus = b
+
+        self._unsubs.append(b.subscribe("L5.prediction.confirmed", self._on_prediction_confirmed))
+        self._unsubs.append(b.subscribe("L5.prediction.failed", self._on_prediction_failed))
+        self._unsubs.append(b.subscribe("L5.causal.link_discovered", self._on_causal_link))
+        self._unsubs.append(b.subscribe("L5.pattern.discovered", self._on_pattern_discovered))
+        self._unsubs.append(b.subscribe("L9.self.updated", self._on_self_updated))
+
+    async def detach(self) -> None:
+        for r in self._unsubs:
+            r()
+        self._unsubs.clear()
+
+    # ---- Cognitive event handlers ----
+
+    async def _on_prediction_confirmed(self, event: Event) -> None:
+        """When a causal prediction is confirmed, memorize the rule as insight."""
+        p = event.payload or {}
+        cause = p.get("cause", "?")
+        effect = p.get("effect", "?")
+        lift = p.get("lift", 0.0)
+        key = f"causal_rule:{cause}:{effect}"
+        content = f"因果确认：{cause} → {effect}（lift={lift}）"
+        importance = min(1.0, 0.5 + lift * 0.1)
+        self.memorize(key, content, importance=importance,
+                      tags=["causal", "confirmed"], source="insight")
+        logger.debug("Memorized confirmed causal rule: %s", key)
+
+    async def _on_prediction_failed(self, event: Event) -> None:
+        """When a prediction fails, store as a negative lesson."""
+        p = event.payload or {}
+        cause = p.get("cause", "?")
+        effect = p.get("effect", "?")
+        key = f"failed_prediction:{cause}:{effect}"
+        content = f"预测失败：{cause} → {effect}（未发生）"
+        self.memorize(key, content, importance=0.6,
+                      tags=["causal", "failed"], source="insight")
+        logger.debug("Memorized failed prediction: %s", key)
+
+    async def _on_causal_link(self, event: Event) -> None:
+        """When a new causal link is discovered, store as high-importance rule."""
+        p = event.payload or {}
+        cause = p.get("cause", "?")
+        effect = p.get("effect", "?")
+        lift = p.get("lift", 1.0)
+        confidence = p.get("confidence", 0.0)
+        key = f"causal_link:{cause}:{effect}"
+        content = f"因果链路：{cause} → {effect}（lift={lift}, conf={confidence}）"
+        importance = min(1.0, 0.4 + confidence * 0.4 + (lift - 1.0) * 0.1)
+        self.memorize(key, content, importance=importance,
+                      tags=["causal", "rule"], source="causal_discovery")
+        logger.debug("Memorized causal link: %s", key)
+
+    async def _on_pattern_discovered(self, event: Event) -> None:
+        """When a pattern is mined from memory logs, store as a reflection."""
+        p = event.payload or {}
+        pattern = p.get("pattern", str(p))
+        key = f"pattern:{pattern[:40]}"
+        content = f"模式发现：{pattern}"
+        self.memorize(key, content, importance=0.5,
+                      tags=["pattern", "reflection"], source="insight")
+        logger.debug("Memorized pattern: %s", key)
+
+    async def _on_self_updated(self, event: Event) -> None:
+        """When self-model updates, memorize identity/history changes."""
+        p = event.payload or {}
+        identity = p.get("identity_facts", [])
+        history = p.get("history_facts", [])
+        vision = p.get("vision_facts", [])
+
+        for fact in identity:
+            key = f"identity:{fact[:60]}"
+            self.memorize(key, fact, importance=0.8,
+                          tags=["identity"], source="self_model")
+        for fact in history:
+            key = f"history:{fact[:60]}"
+            self.memorize(key, fact, importance=0.7,
+                          tags=["history"], source="self_model")
+        for fact in vision:
+            key = f"vision:{fact[:60]}"
+            self.memorize(key, fact, importance=0.7,
+                          tags=["vision"], source="self_model")
+        if identity or history or vision:
+            logger.debug("Memorized %d self-model facts", len(identity) + len(history) + len(vision))
 
     # ---- Short-term ----
 
