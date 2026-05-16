@@ -1,6 +1,6 @@
 # anan 项目进度
 
-> 最后更新：2026-05-17 05:20 (commit fd254ff)
+> 最后更新：2026-05-17 05:25 (commit 963d453)
 
 ## 阶段一：Bug 修复
 
@@ -68,16 +68,21 @@
 - **commit**：`b4f1082`
 - **验证**：insights=3 ✅ drives=3 ✅ sm_keys=['who','learned'] ✅
 
-### L6 — SelfTuner 闭环 ✅
-- **SelfTuner**：有 `auto_approve_age_s=60.0`，pending actions 60s 后自动执行（line 196-212）
-- **GoalEngine**：订阅 `L6.metacognition.report`（line 520）
-- **状态**：链路完整，SelfTuner 需要 PredictionMonitor 积累预测数据后才能触发调参（当前日志无 APPLIED 是正常状态）
+### L6 — SelfTuner L5→L6 闭环 ✅ 2026-05-17
+- **修复前**：L5 发现因果规律后没有任何后续动作，规律发现 = 终点
+- **修复**：`SelfTuner` 新增订阅 `L5.pattern.discovered`（commit `963d453`）
+  - lift > 8：提升对应链路的 `probability_boost`（+0.3，封顶 3.0）
+  - lift > 12：降低 `min_lift`（从当前值 -0.2，下限 1.3），让 L5 更激进挖掘
+  - actions 进入 `pending` 队列 → 60s auto_approve → `_apply()` 执行
+- **commit**：`963d453`
+- **意义**：L5 因果规律终于有了消费方——L6 根据规律强度主动调参，形成 **发现→行动→验证** 闭环
 
 ### L7 — LLM-driven 目标生成 ✅
 - **旧问题**：`_on_circadian_tick` 用硬编码 goal（"保持好奇"），从未调用 LLM 生成
 - **修复**：改为真实 context 驱动（active goals + pending actions + wisdom facts）→ LLM 生成有依据的目标（commit `479e4c1`）
+- **Bug 修复**：`GoalGenerator.__init__` 中 `_pending` 未定义就被引用，修复为初始化空列表（commit `e76e3ce`）
 - **context 素材**：活跃目标列表、待审批调参动作、PatternMiner wisdom_facts
-- **commit**：`479e4c1`（真实系统状态 + LLM）+ `65a2bf7`（L3 抢占）
+- **commit**：`479e4c1`（真实系统状态 + LLM）+ `65a2bf7`（L3 抢占）+ `e76e3ce`（_pending 初始化）
 - **验证**：待下次 L0 tick 触发 L7 goal generation
 
 ### L8 — 暂无问题
@@ -109,24 +114,22 @@
 
 ## Git Commits
 
-| commit | 内容 |
+|| commit | 内容 |
 |--------|------|
+| 963d453 | fix L6: subscribe L5.pattern.discovered to close L5→L6 metacognition loop |
+| e76e3ce | fix L7: initialize _pending in GoalGenerator.__init__ |
+| b38ec43 | fix: increase tick_interval to 600s (10min) |
+| 3e01d4f | fix: increase CircadianLoop tick_interval from 10s to 300s (save token costs) |
 | 65a2bf7 | fix L7: real system-state goal gen; fix L3: real preemption on boost |
 | 479e4c1 | fix L7: use real system state + LLM for goal generation on circadian tick |
 | fd254ff | fix test: Anan Insights brand fixture |
-| d039069 | fix P1: PatternMiner → MemoryTier persistence |
-| a85f790 | fix P0: pm.discovered() + WorkingMemory lock |
-| 1946607 | fix L4: fallback question → reflective narrative |
+| d039069 | feat P1: PatternMiner discovered patterns → MemoryTier persistence |
+| a85f790 | fix P0: pm.discovered() call with parens + keep WorkingMemory lock |
+| 1946607 | fix L4: replace question fallback with reflective narrative |
 | 2383685 | fix L2: publish L1.daydream.ended for promote |
 | 4d10aab | fix L1: skip tool role in session ingestion |
 | 8470827 | fix L4: print → logger.warning() |
 | b4f1082 | fix L5: layer.discovered() + remove duplicate mine_now() |
-| b08f3ba | fix L4: diag print in consciousness loop |
-| f603fa0 | fix L4: attach diag print |
-| a347ad5 | fix L4: print → logger.warning() |
-| b9d4298 | fix L4: diag print in consciousness loop |
-| 3c11a33 | fix L4/L1: idle detection diag |
-| 79d7d82 | fix: PatternMiner class var + SyntaxError |
 
 ---
 

@@ -152,11 +152,13 @@ class SelfTuner:
         )
 
         async def on_pattern(event: Event):
+            logger.warning(f"[L6 SelfTuner] _on_pattern_discovered received: topic={event.topic}, payload={event.payload}")
             await self._on_pattern_discovered(event)
 
         self._unsub.append(
             self._bus.subscribe("L5.pattern.discovered", on_pattern)
         )
+        logger.warning("[L6 SelfTuner] attach() done, subscribed to L5.pattern.discovered")
 
     async def detach(self) -> None:
         for u in self._unsub:
