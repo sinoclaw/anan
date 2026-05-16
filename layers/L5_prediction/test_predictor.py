@@ -59,7 +59,7 @@ class TestPredictiveReasonerInit:
     def test_defaults(self):
         pr = PredictiveReasoner()
         assert pr._horizon_s == 3.0
-        assert pr._min_lift == 1.5
+        assert pr._min_lift == 1.0
         assert pr._max_pending == 50
         assert pr._get_links() == []
 

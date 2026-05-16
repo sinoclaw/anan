@@ -25,7 +25,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
 
@@ -75,6 +75,7 @@ class SelfRegulator:
         min_sleep_threshold: float = 1.0,     # don't shorten below this
         threshold_step: float = 0.5,          # how much to shorten per intervention
         max_actions_per_warn: int = 3,        # don't go nuts on a single warn
+        llm: Optional[Callable[..., Awaitable[str]]] = None,
     ):
         self._bus = bus or get_bus()
         self._wm = working_memory
@@ -89,6 +90,7 @@ class SelfRegulator:
         # Per-layer salience attenuation factor (1.0 = unchanged, <1 = damped)
         self._layer_atten: dict[str, float] = {}
         self._original_salience_fn = None
+        self._llm = llm  # LLM for reasoning about unknown issues
 
     # ------------------------------------------------------------------
     async def attach(self) -> None:
@@ -220,7 +222,11 @@ class SelfRegulator:
             elif "我是谁" in issue:
                 await self._stir_identity(issue)
                 actions_taken += 1
-            # other issues: not yet actionable — silently skip
+            else:
+                # LLM 推理未知 issue 的应对策略
+                handled = await self._react_unknown(issue)
+                if handled:
+                    actions_taken += 1
 
     async def _heal_bus(self, trigger: str) -> None:
         """High bus error rate — flag intent, can't fix without knowing the offender."""
@@ -233,6 +239,78 @@ class SelfRegulator:
             source="L7.regulator",
             payload={"trigger": trigger, "detail": detail},
         ))
+
+    async def _react_unknown(self, issue: str) -> bool:
+        """Use LLM to decide how to handle an unrecognized issue.
+
+        Returns True if LLM suggested an action that was taken.
+        Falls back to False (no action) if no LLM is configured.
+        """
+        if not self._llm:
+            return False
+
+        # Build context: recent adaptations + current layer attenuation state
+        recent = [
+            f"  {a.trigger}: {a.action}"
+            for a in self._history[-5:]
+        ]
+        atten_state = ", ".join(
+            f"{lyr}={fact:.2f}" for lyr, fact in self._layer_atten.items()
+        ) if self._layer_atten else "（无）"
+
+        prompt = f"""你是 anan 的 L7 意志调节器。给定一个未知的系统问题，
+判断 anan 应该采取什么行动来应对。
+
+已知的调节手段：
+- heal_bus: 发布 heal_bus 事件请求上层清理错误
+- rebalance_attention: 降低某一层的注意力权重（如果该层过载）
+- stir_identity: 缩短睡眠阈值加快反思频率（如果身份停滞）
+- apply_layer_attenuation: 手动调节某层衰减因子
+
+当前系统状态：
+- 未知问题：{issue}
+- 最近动作：{chr(10).join(recent) if recent else "（无）"}
+- 各层衰减状态：{atten_state}
+
+请直接输出要采取的行动（只选一个），格式："action: <行动名>, reason: <原因>"。
+不要输出其他内容。"""
+
+        try:
+            result = (await self._llm([{"role": "user", "content": prompt}])).strip()
+            if not result:
+                return False
+
+            # Parse "action: X, reason: Y"
+            action_name, reason = result, ""
+            if ":" in result:
+                parts = result.split(":", 1)
+                action_name = parts[0].strip().lower()
+                reason = parts[1].strip() if len(parts) > 1 else ""
+
+            # Map LLM response to actual action
+            if action_name == "heal_bus":
+                await self._heal_bus(f"[LLM] {issue}: {reason}")
+                return True
+            elif action_name == "stir_identity":
+                await self._stir_identity(f"[LLM] {issue}: {reason}")
+                return True
+            elif "rebalance" in action_name or "attenuation" in action_name:
+                layer = self._extract_layer(issue) or self._extract_layer(reason) or "L5"
+                await self._apply_layer_attenuation(layer, 0.5, f"[LLM] {issue}: {reason}")
+                return True
+            else:
+                # Fallback: emit as a new intent for higher layers to handle
+                await self._bus.publish(Event(
+                    topic="L7.intent.llm_unknown_issue",
+                    source="L7.regulator",
+                    payload={"issue": issue, "llm_response": result},
+                ))
+                await self._record_and_emit(f"[LLM] {issue}", "llm_delegated", {"response": result})
+                return True
+
+        except Exception as exc:
+            logger.warning("LLM unknown-issue reasoning failed: %s", exc)
+            return False
 
     async def _rebalance_attention(self, trigger: str) -> None:
         """Skewed attention — attenuate the dominant layer's salience."""

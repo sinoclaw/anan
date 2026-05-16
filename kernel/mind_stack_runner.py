@@ -516,6 +516,11 @@ class MindStackRunner:
         # L5 PredictiveReasoner — 基于 PatternMiner 发现的链路做预测
         try:
             from layers.L5_prediction.predictor import PredictiveReasoner
+
+            async def _predictor_llm(messages: list, temperature: float = 0.3) -> str:
+                result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
+                return result.choices[0].message.content
+
             causal_fn = None
             if hasattr(self, '_pattern_miner') and self._pattern_miner is not None:
                 pm = self._pattern_miner
@@ -525,9 +530,10 @@ class MindStackRunner:
                 bus=self._bus,
                 causal_links_fn=causal_fn or (lambda: []),
                 self_model=self_model,
+                llm=_predictor_llm,
             )
             self._layers.append(self._predictor)
-            logger.info("  ✓ L5 PredictiveReasoner 就绪")
+            logger.info("  ✓ L5 PredictiveReasoner 就绪 (LLM=yes)")
         except Exception as exc:
             logger.warning("  ✗ L5 PredictiveReasoner 启动失败: %s", exc)
 
@@ -662,11 +668,17 @@ class MindStackRunner:
         # 同时监听 L7.goal.achieved / .abandoned（GoalGenerator 发出的）
         try:
             from layers.L7_will.regulator import SelfRegulator
+
+            async def _will_llm(messages: list, temperature: float = 0.3) -> str:
+                result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
+                return result.choices[0].message.content
+
             self._layers.append(SelfRegulator(
                 bus=self._bus,
                 intent_stack=self._intent_stack if hasattr(self, '_intent_stack') else None,
+                llm=_will_llm,
             ))
-            logger.info("  ✓ L7 Will 就绪")
+            logger.info("  ✓ L7 Will 就绪 (LLM=yes)")
         except Exception as exc:
             logger.warning("  ✗ L7 Will 启动失败: %s", exc)
 

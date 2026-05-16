@@ -29,7 +29,7 @@ import logging
 import time
 from collections import deque
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Awaitable, Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
 
@@ -84,6 +84,7 @@ class PredictiveReasoner:
         horizon_s: float = 3.0,
         min_lift: float = 1.0,
         max_pending: int = 50,
+        llm: Optional[Callable[..., Awaitable[str]]] = None,
     ):
         self._bus = bus or get_bus()
         self._get_links = causal_links_fn or (lambda: [])
@@ -91,6 +92,7 @@ class PredictiveReasoner:
         self._horizon_s = horizon_s
         self._min_lift = min_lift
         self._max_pending = max_pending
+        self._llm = llm  # optional LLM for causal explanation & counterfactuals
 
         # 活跃 cause 窗口：最近出现的 cause 事件
         self._active_causes: deque[tuple[float, str]] = deque(maxlen=200)
@@ -138,6 +140,10 @@ class PredictiveReasoner:
             logger.info("PRED-LINK parsed: cause=%r effect=%r", cause, effect)
             if cause and effect:
                 key = (cause, effect)
+                if lift < self._min_lift:
+                    logger.info("[PRED-DEBUG] Skipping cache: %s → %s lift=%.2f < min_lift=%.2f",
+                                cause, effect, lift, self._min_lift)
+                    return
                 self._links[key] = Prediction(
                     cause=cause,
                     effect=effect,
@@ -298,6 +304,10 @@ class PredictiveReasoner:
                 "horizon_s": self._horizon_s,
             })
 
+            # LLM 因果解释（异步，不阻塞预测主流程）
+            if self._llm:
+                asyncio.create_task(self._explain_prediction(cause, link_effect, link_lift))
+
             if self._sm is not None:
                 try:
                     self._sm.history_facts.append(
@@ -426,4 +436,73 @@ class PredictiveReasoner:
                 f"  → {p.cause} 后会出现 {p.effect} "
                 f"(置信度 {p.confidence:.0%}, 剩余 {p.horizon_s - (time.time() - p.issued_at):.1f}s)"
             )
+
         return "\n".join(lines)
+
+    # -------------------------------------------------------------------------
+    # LLM-driven causal reasoning
+    # -------------------------------------------------------------------------
+
+    async def _explain_prediction(
+        self, cause: str, effect: str, lift: float
+    ) -> None:
+        """Use LLM to explain why this causal link makes sense, post to L5."""
+        if not self._llm:
+            return
+        prompt = f"""anan 的 L5 预测引擎发现了一条因果链路：
+
+原因事件: {cause}
+预测结果: {effect}
+提升度(lift): {lift:.2f}x
+
+请用一句话解释：为什么 "{cause}" 之后常出现 "{effect}"？
+保持简洁（20字以内），像 anan 在自言自语。"""
+
+        try:
+            explanation = await self._llm([{"role": "user", "content": prompt}])
+            await self._async_publish("L5.prediction.explained", {
+                "cause": cause,
+                "effect": effect,
+                "lift": round(lift, 2),
+                "explanation": explanation.strip(),
+            })
+        except Exception as exc:
+            logger.warning("LLM causal explanation failed: %s", exc)
+
+    async def suggest_counterfactuals(self) -> list[str]:
+        """Use LLM to suggest counterfactual interventions based on recent patterns.
+
+        Returns a list of "what if" suggestions like:
+        ["如果我主动发送问候消息，会发生什么？",
+         "如果我减少等待时间，响应质量会提升吗？"]
+        """
+        if not self._llm:
+            return []
+
+        # Collect recent confirmed/failed predictions as context
+        recent = []
+        for p in list(self._pending)[-5:]:
+            age = time.time() - p.issued_at
+            status = "已确认" if p.is_confirmed() else ("已失败" if p.is_failed() else "待确认")
+            recent.append(f"  - [{status}] {p.cause} → {p.effect}")
+
+        if not recent:
+            return []
+
+        prompt = f"""你是 anan 的 L5 预测引擎。基于以下最近的预测记录，
+提出2-3个"反事实干预"建议（如果 anan 主动做 X，结果会怎样不同？）。
+
+格式：每个建议一行，以"如果"开头。
+
+最近的预测：
+{chr(10).join(recent)}
+
+建议："""
+
+        try:
+            result = await self._llm([{"role": "user", "content": prompt}])
+            suggestions = [line.strip() for line in result.strip().split("\n") if line.strip()]
+            return suggestions[:3]
+        except Exception as exc:
+            logger.warning("LLM counterfactual suggestion failed: %s", exc)
+            return []
