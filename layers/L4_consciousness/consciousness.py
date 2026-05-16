@@ -722,7 +722,9 @@ class ConsciousnessEngine:
                 last_cleanup = now
 
             # Idle 检测：进入 idle 则生成深度思考
-            if self._idle_detector.is_idle():
+            idle = self._idle_detector.is_idle()
+            print(f"[L4 consciousness loop] active={self._active} idle={idle} elapsed={now - self._idle_detector._last_input_at:.1f}s", flush=True)
+            if idle:
                 await self._generate_thought_cycle()
                 continue
 
