@@ -568,6 +568,19 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ L4 Consciousness 启动失败: %s", exc)
 
+        # L4 ProactiveObserver — 主动验证 L8 意图（Probe 机制）
+        try:
+            from layers.L4_proactive.observer import ProactiveObserver
+            self._layers.append(ProactiveObserver(
+                bus=self._bus,
+                intent_stack=self._intent_stack if hasattr(self, '_intent_stack') else None,
+                working_memory=self._working_memory,
+                self_model=self_model if hasattr(self, 'self_model') else None,
+            ))
+            logger.info("  ✓ L4 ProactiveObserver 就绪")
+        except Exception as exc:
+            logger.warning("  ✗ L4 ProactiveObserver 启动失败: %s", exc)
+
         # L6 Metacognition：PredictionMonitor + SelfTuner + Mirror
         # PredictionMonitor 监控 L5 预测准确率并触发链路衰减
         try:
@@ -608,10 +621,17 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ L6 Mirror 启动失败: %s", exc)
 
-        # L7 Goals
+        # L7 Goals — 接 LLM provider（使用 agent auxiliary 层的 centralized 调用）
         try:
             from layers.L7_goals.goal_engine import GoalGenerator
-            goal_generator = GoalGenerator(bus=self._bus, self_model=self_model)
+            from agent.auxiliary_client import async_call_llm
+
+            async def _goal_llm(messages: list, temperature: float = 0.3) -> str:
+                """Bridge: async_call_llm(task='agent') → GoalGenerator._llm 签名."""
+                result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
+                return result.choices[0].message.content
+
+            goal_generator = GoalGenerator(bus=self._bus, self_model=self_model, llm=_goal_llm)
             self._layers.append(goal_generator)
             logger.info("  ✓ L7 Goals 就绪")
         except Exception as exc:
