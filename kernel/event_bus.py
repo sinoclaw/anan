@@ -125,6 +125,9 @@ class EventBus:
         self._history.append(event)
         self._stats["published"] += 1
 
+        # Persist to StateDB for continuity across restarts (non-blocking)
+        self._persist_event(event)
+
         matching = [h for pat, h in self._subscribers if event.matches(pat)]
         if not matching:
             return 0
@@ -136,6 +139,24 @@ class EventBus:
         delivered = sum(1 for ok in results if ok)
         self._stats["delivered"] += delivered
         return delivered
+
+    def _persist_event(self, event: Event) -> None:
+        """Persist event to StateDB in a thread pool — never blocks the event loop."""
+        try:
+            from kernel.state_db_bridge import _persist_event_sync
+            import asyncio
+            loop = asyncio.get_running_loop()
+            loop.run_in_executor(
+                None,
+                _persist_event_sync,
+                event.topic,
+                event.payload,
+                event.source,
+                event.ts,
+                event.event_id,
+            )
+        except Exception:
+            pass  # non-fatal
 
     def publish_sync(self, event: Event) -> int:
         """Synchronous publish — for use outside async contexts (e.g. inside

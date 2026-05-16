@@ -19,7 +19,7 @@ import os
 logger = logging.getLogger("gateway.builtin.mind_stack")
 
 # 声明本 hook 处理的 events（builtin_hooks 系统会读取这个）
-EVENTS = ["gateway:startup", "gateway:shutdown", "agent:start"]
+EVENTS = ["gateway:startup", "gateway:shutdown", "agent:start", "agent:end"]
 
 # 全局 runner 引用，避免被 GC
 _mind_stack_runner = None
@@ -27,6 +27,9 @@ _mind_stack_runner = None
 
 # 全局格式化后的心智上下文（被 agent:start 填充，run.py 读取）
 _mind_stack_context: str = ""
+
+# agent:end 时需要配对的 context（上一轮 agent:start 的 message）
+_last_agent_message: str = ""
 
 
 def handle(event_type: str, context: dict) -> None:
@@ -46,6 +49,8 @@ def handle(event_type: str, context: dict) -> None:
         _stop_mind_stack()
     elif event_type == "agent:start":
         _inject_cognition_to_agent(context)
+    elif event_type == "agent:end":
+        _on_agent_end_for_cognition(context)
 
 
 def _start_mind_stack(context: dict) -> None:
@@ -101,9 +106,11 @@ def _stop_mind_stack() -> None:
 def _inject_cognition_to_agent(context: dict) -> None:
     """
     agent:start 钩子：读取九层产出，格式化成 prompt 片段，写入 _mind_stack_context。
-    run.py 在构建 context_prompt 时会追加这段内容。
+    run.py 在构建 context_prompt 时把这段内容放到 system prompt 最前面（而非末尾）。
     """
-    global _mind_stack_context
+    global _mind_stack_context, _last_agent_message
+    # 保存用户消息，供 agent:end 时配对使用
+    _last_agent_message = context.get("message", "") or ""
 
     try:
         from kernel.mind_stack_runner import get_last_cognition
@@ -116,13 +123,13 @@ def _inject_cognition_to_agent(context: dict) -> None:
         _mind_stack_context = ""
         return
 
-    # 格式化九层产出为 prompt 片段
-    parts = ["[九层认知产出]"]
+    # 格式化九层产出为结构化文本
+    parts = []
 
     # 洞察
     insights = cognition.get("insights", [])
     if insights:
-        parts.append(f"最近发现的规律：{'; '.join(insights[:3])}")
+        parts.append(f"最近规律：{'；'.join(insights[:3])}")
 
     # 驱动
     drives = cognition.get("drives", [])
@@ -150,11 +157,39 @@ def _inject_cognition_to_agent(context: dict) -> None:
     if recent:
         parts.append(f"最近记忆：{' | '.join(str(m) for m in recent[-2:])}")
 
-    if len(parts) == 1:
+    if not parts:
         _mind_stack_context = ""
         return
 
-    _mind_stack_context = "\n".join(parts)
+    # 格式化为易读的分块，放在 system prompt 最前面
+    header = "「九层认知状态」（以下内容来自anan内部认知系统，请作为重要背景参考）"
+    _mind_stack_context = header + "\n" + "\n".join(f"• {p}" for p in parts)
+
+
+def _on_agent_end_for_cognition(context: dict) -> None:
+    """
+    agent:end 钩子（同步阻塞）：收到 AI 回复后，立即触发 PatternMiner 挖掘，
+    然后立刻收集九层产出写入 _last_cognition。
+
+    这样下次 agent:start 时，九层内容已经是本轮新鲜的，而非上一轮的事后总结。
+    """
+    global _last_agent_message
+    response = context.get("response", "") or ""
+    if not response:
+        return
+    # 从全局变量取本轮用户消息（agent:start 时保存的）
+    user_text = _last_agent_message
+    if not user_text:
+        return
+
+    try:
+        from kernel.mind_stack_runner import _collect_and_publish_sync
+        # 同步阻塞式触发：等挖掘完成+收集完成后再返回
+        # 最多等5秒，防止 gateway 响应被拖慢
+        _collect_and_publish_sync(response=response, user_text=user_text)
+        logger.debug("agent:end cognition collection done")
+    except Exception as exc:
+        logger.debug("agent:end cognition collection failed: %s", exc)
 
 
 # 供 run.py 读取已格式化的心智上下文

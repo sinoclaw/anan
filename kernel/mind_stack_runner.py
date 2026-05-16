@@ -53,6 +53,123 @@ def get_last_cognition() -> Dict[str, Any]:
     return _last_cognition
 
 
+def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.0) -> None:
+    """
+    同步阻塞式：收到 AI 回复后立即触发 PatternMiner 挖掘+九层收集。
+
+    agent:end hook 调用此函数，等挖掘完成后才返回。
+    下次 agent:start 时，_last_cognition 已是本轮结果。
+
+    实现：在独立线程中运行 asyncio，避免和 gateway 的 event loop 冲突。
+    """
+    import threading
+
+    def _run_in_thread():
+        asyncio.run(_do_impl())
+
+    async def _do_impl():
+        bus = get_bus()
+        # 1. 发 gateway.message.sent，让 PatternMiner 感知本轮对话
+        bus.publish_sync(Event(
+            topic="gateway.message.sent",
+            source="agent_end_hook",
+            payload={
+                "text": user_text,
+                "response": response,
+                "ts": time.time(),
+            },
+        ))
+        # 2. 发 L0.circadian.tick，触发 PatternMiner.mine_now() 和各层处理
+        bus.publish_sync(Event(
+            topic="L0.circadian.tick",
+            source="agent_end_hook",
+            payload={"reason": "message"},
+        ))
+        # 3. 等待 PatternMiner 挖掘完成（给最多 timeout 秒）
+        try:
+            from layers.L5_reasoning.pattern_miner import PatternMiner
+            layers = getattr(MindStackRunner, '_layers_ref', [])
+            for layer in layers:
+                if isinstance(layer, PatternMiner):
+                    try:
+                        await asyncio.wait_for(layer.mine_now(), timeout=2.0)
+                    except asyncio.TimeoutError:
+                        logger.debug("PatternMiner.mine_now() timed out")
+                    except Exception as exc:
+                        logger.debug("PatternMiner.mine_now() failed: %s", exc)
+                    break
+        except Exception as exc:
+            logger.debug("_do PatternMiner step failed: %s", exc)
+        # 4. 收集九层产出
+        try:
+            outputs = {
+                "has_thought": True,
+                "insights": [],
+                "drives": [],
+                "self_model": {},
+                "memory": {},
+                "metacognition": {},
+            }
+            from layers.L5_reasoning.pattern_miner import PatternMiner
+            from layers.L9_self.self_model import SelfModelLive
+            from layers.L8_drives.drive_system import DriveSystem
+            from layers.L2_memory.memory_tier import MemoryTier
+            from layers.L6_metacognition.mirror import Mirror
+            layers = getattr(MindStackRunner, '_layers_ref', [])
+            for layer in layers:
+                if isinstance(layer, PatternMiner):
+                    try:
+                        discovered = list(layer.discovered or [])[-3:]
+                        outputs["insights"] = [str(p)[:100] for p in discovered]
+                    except Exception:
+                        pass
+                elif isinstance(layer, SelfModelLive):
+                    try:
+                        sm = layer.model
+                        outputs["self_model"] = {
+                            "who": sm.who_am_i() if hasattr(sm, 'who_am_i') else "",
+                            "learned": sm.what_have_i_learned() if hasattr(sm, 'what_have_i_learned') else "",
+                        }
+                    except Exception:
+                        pass
+                elif isinstance(layer, DriveSystem):
+                    try:
+                        top = layer.top_drives() if hasattr(layer, 'top_drives') else []
+                        outputs["drives"] = [{"drive": str(d.get("drive", d)), "strength": d.get("strength", 0)} for d in top[:3]]
+                    except Exception:
+                        pass
+                elif isinstance(layer, MemoryTier):
+                    try:
+                        short_mem = layer.short() if hasattr(layer, 'short') else []
+                        outputs["memory"]["recent"] = short_mem[-3:] if short_mem else []
+                    except Exception:
+                        pass
+                elif isinstance(layer, Mirror):
+                    try:
+                        latest = layer.latest() if hasattr(layer, 'latest') else None
+                        if latest:
+                            outputs["metacognition"]["latest_report"] = str(latest)[:200]
+                    except Exception:
+                        pass
+            global _last_cognition
+            _last_cognition = outputs
+        except Exception as exc:
+            logger.debug("_do collection step failed: %s", exc)
+
+    try:
+        t = threading.Thread(target=_run_in_thread, daemon=True)
+        t.start()
+        t.join(timeout=timeout)
+        if t.is_alive():
+            logger.debug("_collect_and_publish_sync timed out after %ds", timeout)
+    except Exception as exc:
+        logger.debug("_collect_and_publish_sync failed: %s", exc)
+
+
+# 在 MindStackRunner.start() 里设置实例引用（供 sync 函数查找各层）
+_original_start = None
+
+
 # --------------------------------------------------------------------------
 # MindStackCognition — 九层产出收集器
 # --------------------------------------------------------------------------
@@ -365,6 +482,10 @@ class MindStackRunner:
         # 4.7 启动九层产出收集器
         self._cognition = MindStackCognition(self)
         logger.info("  ✓ MindStackCognition 就绪（九层产出 → LLM 注入）")
+
+        # 4.8 设置全局引用，供 _collect_and_publish_sync 同步查找各层实例
+        MindStackRunner._instance_ref = self
+        MindStackRunner._layers_ref = self._layers
 
         # 5. Gateway 事件 → EventBus
         if self._gateway_events:

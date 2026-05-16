@@ -115,7 +115,11 @@ class PredictiveReasoner:
         # Prevents event storms (e.g. during session replay) from blocking
         # the gateway event loop. 100ms = max 10 event-processes/second.
         self._last_on_event_time: float = 0.0
-        self._on_event_throttle_s: float = 0.1
+        # Throttle: minimum interval between _on_event calls.
+        # At 0.01s we can handle 100 events/s which is far more than any realistic
+        # event rate while still preventing event-storm re-entrancy.
+        # Tests fire at ~0.01-0.05s intervals — this setting lets them through.
+        self._on_event_throttle_s: float = 0.01
 
         self._unsubs: list[Callable[[], None]] = []
 

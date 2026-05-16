@@ -9,6 +9,7 @@ L5 PredictiveReasoner 完整测试套件
   - PredictiveReasoner 不发自己的 L5.prediction.* 事件，只订阅
 """
 import asyncio
+from collections import deque
 import time
 import pytest
 from kernel.event_bus import EventBus, Event
@@ -103,8 +104,9 @@ class TestPredictiveReasonerAttach:
         bus = EventBus()
         pr = PredictiveReasoner(bus=bus, causal_links_fn=lambda: [("A", "B")])
         await pr.attach()
-        # Should subscribe to '*' (all events) + link_discovered = 2 total
-        assert len(pr._unsubs) == 2
+        # attach() subscribes to 23 external event patterns (on_any) +
+        # L5.causal.link_discovered + L5.pattern.discovered = 25 total
+        assert len(pr._unsubs) == 25
         await pr.detach()
 
 
@@ -236,27 +238,33 @@ class TestAccuracy:
 
     @pytest.mark.asyncio
     async def test_accuracy_after_confirmed_and_failed(self):
+        """accuracy = confirmed / (confirmed + failed)."""
         bus = EventBus()
         pr = PredictiveReasoner(
             bus=bus,
             causal_links_fn=lambda: [("L7.regulator.acted", "L6.metacognition.report", 2.0, 0.8)],
             min_lift=1.0,
-            horizon_s=0.05,
+            horizon_s=0.05,  # short horizon so test completes in ~1s
         )
         await pr.attach()
 
-        # Confirmed
+        # Confirmed: cause fires, then effect fires before horizon expires
         await bus.publish(Event(topic="L7.regulator.acted", source="test", payload={}))
-        await asyncio.sleep(0.02)
+        await asyncio.sleep(0.1)
         await bus.publish(Event(topic="L6.metacognition.report", source="test", payload={}))
-        await asyncio.sleep(0.08)
+        await asyncio.sleep(0.1)
 
-        # Failed
+        # Failed: clear _emitted_recently so second cause can emit a new prediction,
+        # wait past _cause_throttle_s=0.5s, fire cause, wait > horizon_s=0.05s to expire.
+        # Then fire a non-L5 event to trigger _resolve_pending.
+        pr._emitted_recently.clear()
+        await asyncio.sleep(0.6)
         await bus.publish(Event(topic="L7.regulator.acted", source="test", payload={}))
-        await asyncio.sleep(0.1)  # expire
+        await asyncio.sleep(0.1)  # > horizon_s=0.05
+        await bus.publish(Event(topic="L4.thought.generated", source="test", payload={}))  # trigger resolve
 
         acc = pr.accuracy()
-        assert 0.3 <= acc <= 0.7  # ~50%
+        assert 0.3 <= acc <= 0.7, f"expected ~0.5, got {acc}"  # 1 confirmed + 1 failed = ~50%
 
         await pr.detach()
 

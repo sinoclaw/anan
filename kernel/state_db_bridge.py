@@ -1,17 +1,21 @@
 """
-StateDB Event Bridge — 将 state.db 历史对话注入 EventBus
-=========================================================
+StateDB Event Bridge — 将 state.db 历史对话和事件注入 EventBus
+=============================================================
 
 在 MindStackRunner 启动后调用一次，把历史消息回填到 EventBus history，
 这样 PatternMiner 才能从真实对话流中挖掘因果规律。
 
 只填充最近 7 天的数据，避免历史过长。
 每个消息转换为 gateway.message.sent 事件，模拟当时的对话流。
+
+同时提供事件持久化能力：EventBus.publish() 时自动写入 event_history 表，
+gateway 重启后可从 state.db 恢复事件历史，保证九层连续存在。
 """
 
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import sqlite3
 import time
@@ -113,6 +117,98 @@ def _load_state_db_bridge(bus, max_history_days: int = 7, limit_per_session: int
         conn.close()
 
 
+_EVENT_PERSIST_CALLBACK: Optional[callable] = None
+
+
+def register_event_persister(callback: callable) -> None:
+    """Register a function to be called on every EventBus.publish().
+    
+    The callback receives (topic, payload, source, ts, event_id).
+    Used to persist events to StateDB for continuity across restarts.
+    """
+    global _EVENT_PERSIST_CALLBACK
+    _EVENT_PERSIST_CALLBACK = callback
+
+
+def _persist_event_sync(topic: str, payload: dict, source: str, ts: float, event_id: str) -> None:
+    """Synchronous event persistence — runs in thread pool to avoid blocking event loop."""
+    try:
+        conn = sqlite3.connect("/root/.anan/state.db", timeout=5)
+        cur = conn.cursor()
+        cur.execute(
+            """INSERT OR IGNORE INTO event_history (event_id, topic, payload, source, ts)
+               VALUES (?, ?, ?, ?, ?)""",
+            (event_id, topic, json.dumps(payload, default=str), source, ts),
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass  # non-fatal
+
+
+def ensure_event_history_table() -> None:
+    """Create the event_history table if it doesn't exist."""
+    try:
+        conn = sqlite3.connect("/root/.anan/state.db", timeout=5)
+        cur = conn.cursor()
+        cur.execute(
+            """CREATE TABLE IF NOT EXISTS event_history (
+                event_id TEXT PRIMARY KEY,
+                topic TEXT NOT NULL,
+                payload TEXT NOT NULL,
+                source TEXT,
+                ts REAL NOT NULL
+            )"""
+        )
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_event_history_ts ON event_history(ts)")
+        conn.commit()
+        conn.close()
+    except Exception as exc:
+        logger.warning("ensure_event_history_table failed: %s", exc)
+
+
+def load_event_history(bus, max_events: int = 500) -> int:
+    """Load persisted events from state.db into the EventBus on startup."""
+    try:
+        conn = sqlite3.connect("/root/.anan/state.db", timeout=5)
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT event_id, topic, payload, source, ts FROM event_history "
+            "ORDER BY ts DESC LIMIT ?",
+            (max_events,),
+        )
+        rows = cur.fetchall()
+        conn.close()
+
+        if not rows:
+            return 0
+
+        from kernel.event_bus import Event
+
+        loaded = 0
+        for row in reversed(rows):  # oldest first
+            event_id, topic, payload_json, source, ts = row
+            try:
+                payload = json.loads(payload_json)
+            except Exception:
+                payload = {}
+            event = Event(
+                topic=topic,
+                payload=payload,
+                source=source or "recovery",
+                ts=ts,
+                event_id=event_id,
+            )
+            bus.publish_sync(event)
+            loaded += 1
+
+        logger.info("EventBus recovery: loaded %d events from state.db", loaded)
+        return loaded
+    except Exception as exc:
+        logger.warning("load_event_history failed: %s", exc)
+        return 0
+
+
 async def bridge_state_db_to_event_bus(
     bus,
     max_history_days: int = 7,
@@ -122,9 +218,17 @@ async def bridge_state_db_to_event_bus(
     异步入口 — 在 MindStackRunner 启动后调用。
     返回注入的事件数量。
     """
+    # 确保 event_history 表存在
+    ensure_event_history_table()
+
+    # 恢复历史事件（gateway 重启后九层能接上）
+    recovered = load_event_history(bus)
+    logger.info("Recovered %d events from previous session", recovered)
+
     loop = asyncio.get_running_loop()
 
     def _sync_load() -> int:
         return _load_state_db_bridge(bus, max_history_days, limit_per_session)
 
-    return await loop.run_in_executor(None, _sync_load)
+    injected = await loop.run_in_executor(None, _sync_load)
+    return injected

@@ -6926,7 +6926,8 @@ class GatewayRunner:
                 from gateway.builtin_hooks.mind_stack import get_mind_stack_context
                 _mind_ctx = get_mind_stack_context()
                 if _mind_ctx:
-                    context_prompt = context_prompt + "\n\n" + _mind_ctx if context_prompt else _mind_ctx
+                    # 放到 system prompt 最前面（而非末尾），让 LLM 优先参考
+                    context_prompt = _mind_ctx + "\n\n" + context_prompt if context_prompt else _mind_ctx
             except Exception:
                 pass  # non-fatal, mind stack may not be running
 
