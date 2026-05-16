@@ -219,6 +219,7 @@ class GoalGenerator:
         self._active_order: deque[str] = deque(maxlen=self.MAX_ACTIVE_GOALS)
         self._id_counter: int = 0
         self._unsubs: list = []
+        self._pending: list = []  # placeholder — pending actions live in SelfTuner, not GoalGenerator
         # Rate-limit LLM calls: minimum seconds between calls
         self._last_llm_call: float = 0.0
         self._llm_cooldown: float = 5.0  # seconds
