@@ -152,6 +152,14 @@ class PatternMiner:
         topics = [self._abstract(e.topic) for e in history]
         # Skip self-emitted L5 events to avoid feedback loop
         topics = [t for t in topics if not t.startswith("L5.")]
+        # Skip infrastructure-level wildcard topics — these carry no cognitive signal
+        topics = [t for t in topics if t not in (
+            "session.*",
+            "conversation.*",
+            "gateway.message.*",
+            "gateway.presence.*",
+            "gateway.typing.*",
+        )]
 
         # Count baselines
         topic_counts = Counter(topics)
