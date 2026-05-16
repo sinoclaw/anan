@@ -78,7 +78,18 @@ class TuningAction:
     new_value: float
     reason: str
     status: TuningStatus = TuningStatus.PENDING
-    created_at: str = ""
+    created_at: str = ""   # ISO format, auto-filled by _make_action
+
+
+def _parse_age_seconds(iso_timestamp: str) -> float:
+    """Parse an ISO timestamp to age in seconds. Returns 0 if unparseable."""
+    if not iso_timestamp:
+        return float('inf')
+    try:
+        created = datetime.fromisoformat(iso_timestamp)
+        return (datetime.now() - created).total_seconds()
+    except Exception:
+        return float('inf')
 
 
 class SelfTuner:
@@ -102,6 +113,8 @@ class SelfTuner:
         accuracy_high_threshold: float = 0.90,
         min_lift_adjust_step: float = 0.2,
         horizon_adjust_step: float = 0.5,
+        # 超过这个秒数的 pending actions 自动 approve（0 = 禁用）
+        auto_approve_age_s: float = 60.0,
     ):
         self._bus = bus or get_bus()
         self._pred = predictor
@@ -111,6 +124,7 @@ class SelfTuner:
         self._acc_high = accuracy_high_threshold
         self._lift_step = min_lift_adjust_step
         self._horizon_step = horizon_adjust_step
+        self._auto_approve_age = auto_approve_age_s
 
         self._unsub: list[Callable[[], None]] = []
 
@@ -161,6 +175,8 @@ class SelfTuner:
         elif score < 0.6 and issues:
             logger.info("SelfTuner: unhealthy report (score=%.2f), reviewing tuning", score)
             await self._tune_l5_for_accuracy()
+        # 自动清理陈旧的 pending actions
+        await self._housekeeping()
 
     async def _on_meta_warning(self, event: Event) -> None:
         """收到 L6 告警时，分析是否需要调参。"""
@@ -172,6 +188,29 @@ class SelfTuner:
                 await self._tune_l5_for_accuracy()
             if "链路" in issue or "link" in issue.lower():
                 await self._review_stale_links()
+
+        # 自动清理：超时的 pending actions 直接 approve
+        await self._housekeeping()
+
+    async def _housekeeping(self) -> None:
+        """清理超时的 pending actions，防止队列膨胀。"""
+        if self._auto_approve_age <= 0:
+            return
+        if not self._pending:
+            return
+        expired = [
+            a for a in self._pending
+            if _parse_age_seconds(a.created_at) > self._auto_approve_age
+        ]
+        if not expired:
+            return
+        logger.info(
+            "SelfTuner: auto-approving %d stale pending actions (age > %.0fs)",
+            len(expired), self._auto_approve_age,
+        )
+        for action in expired:
+            self._pending.remove(action)
+            await self._apply(action)
 
     # ------------------------------------------------------------------
     # Tuning logic

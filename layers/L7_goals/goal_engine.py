@@ -210,9 +210,11 @@ class GoalGenerator:
         # LLM provider: async fn(messages, temperature=0.3) -> str response
         # If None, falls back to rule-based behaviour
         llm: Optional[Callable[[list[dict[str, str]], float], Awaitable[str]]] = None,
+        self_model: Optional[object] = None,
     ):
         self._bus = bus or get_bus()
         self._llm = llm
+        self._self_model = self_model
         self._goals: dict[str, Goal] = {}
         self._active_order: deque[str] = deque(maxlen=self.MAX_ACTIVE_GOALS)
         self._id_counter: int = 0

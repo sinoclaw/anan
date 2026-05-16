@@ -231,6 +231,31 @@ class TestPendingReport:
         st.clear_pending()
         assert len(st._pending) == 0
 
+    @pytest.mark.asyncio
+    async def test_auto_approve_stale(self):
+        """pending 超过 auto_approve_age_s 秒则自动 approve。"""
+        bus = EventBus()
+        pred = MockPredictor()
+        pred._min_lift = 1.5
+        st = SelfTuner(bus=bus, predictor=pred, auto_approve_age_s=0.0)  # 禁用
+        await st.attach()
+
+        await st._tune_l5_for_accuracy()
+        initial_pending = len(st._pending)
+        assert initial_pending >= 1
+        assert st.stats()["applied"] == 0  # 还没 approve
+
+        # 手动改 created_at 为 100 小时前，触发 auto-approve
+        for a in st._pending:
+            a.created_at = "2020-01-01T00:00:00"
+
+        st._auto_approve_age = 60.0  # 重新启用
+        await st._housekeeping()
+
+        assert st.stats()["applied"] == initial_pending
+        assert st.stats()["pending"] == 0
+        await st.detach()
+
 
 class TestStats:
     def test_stats(self):
