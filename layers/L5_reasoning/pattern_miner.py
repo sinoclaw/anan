@@ -232,7 +232,7 @@ class PatternMiner:
                 source="L5.miner",
                 payload=payload,
             ))
-            logger.info("L5.pattern.discovered published: %s → %s (lift=%.2f, conf=%.2f)", payload["antecedent"], payload["consequent"], payload["lift"], payload["confidence"])
+            logger.info("L5.pattern.discovered published: %s → %s (lift=%.2f, conf=%.2f, bus_id=%s)", payload["antecedent"], payload["consequent"], payload["lift"], payload["confidence"], id(self._bus))
         except Exception as exc:  # noqa: BLE001
             logger.debug("L5 publish failed (non-fatal): %s", exc)
 

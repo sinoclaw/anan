@@ -106,7 +106,7 @@ class EventBus:
         """
         entry = (pattern, handler)
         self._subscribers.append(entry)
-        logger.debug(f"subscribe: {pattern} → {handler.__name__}")
+        logger.info(f"subscribe: {pattern} → {handler.__name__} (total_subs={len(self._subscribers)})")
 
         def _unsubscribe() -> None:
             try:

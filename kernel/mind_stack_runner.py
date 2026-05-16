@@ -505,10 +505,16 @@ class MindStackRunner:
         logger.info("  ✓ StateDB 历史 Bridge 完成")
 
         # 4. 统一调用所有层的 attach()（订阅事件总线）
+        # 使用 inspect 智能传参：只传 bus 参数的层，其他层无参调用
+        import inspect
         for layer in self._layers:
             if hasattr(layer, 'attach') and callable(getattr(layer, 'attach')):
                 try:
-                    await layer.attach()
+                    sig = inspect.signature(layer.attach)
+                    if 'bus' in sig.parameters:
+                        await layer.attach(self._bus)
+                    else:
+                        await layer.attach()
                 except Exception as exc:
                     logger.warning("  层 %s.attach() 失败: %s", type(layer).__name__, exc)
 
