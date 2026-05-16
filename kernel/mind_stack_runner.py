@@ -85,14 +85,15 @@ def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.
             source="agent_end_hook",
             payload={"reason": "message"},
         ))
-        # 3. 等待 PatternMiner 挖掘完成（给最多 timeout 秒）
+        # 3. 等待 PatternMiner 挖掘完成（给最多 timeout 秒），直接用返回值收集 insights
+        pattern_results = []
         try:
             from layers.L5_reasoning.pattern_miner import PatternMiner
             layers = getattr(MindStackRunner, '_layers_ref', [])
             for layer in layers:
                 if isinstance(layer, PatternMiner):
                     try:
-                        await asyncio.wait_for(layer.mine_now(), timeout=2.0)
+                        pattern_results = await asyncio.wait_for(layer.mine_now(), timeout=2.0)
                     except asyncio.TimeoutError:
                         logger.debug("PatternMiner.mine_now() timed out")
                     except Exception as exc:
@@ -119,8 +120,12 @@ def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.
             for layer in layers:
                 if isinstance(layer, PatternMiner):
                     try:
-                        discovered = list(layer.discovered or [])[-3:]
-                        outputs["insights"] = [str(p)[:100] for p in discovered]
+                        # 优先用 mine_now() 的返回值（刚挖掘的新 pattern），fallback 到缓存
+                        if pattern_results:
+                            outputs["insights"] = [str(p)[:100] for p in pattern_results[-3:]]
+                        else:
+                            discovered = list(layer.discovered or [])[-3:]
+                            outputs["insights"] = [str(p)[:100] for p in discovered]
                     except Exception:
                         pass
                 elif isinstance(layer, SelfModelLive):
@@ -135,7 +140,7 @@ def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.
                 elif isinstance(layer, DriveSystem):
                     try:
                         top = layer.top_drives() if hasattr(layer, 'top_drives') else []
-                        outputs["drives"] = [{"drive": str(d.get("drive", d)), "strength": d.get("strength", 0)} for d in top[:3]]
+                        outputs["drives"] = [{"drive": d.type.value, "strength": d.strength} for d in top[:3]]
                     except Exception:
                         pass
                 elif isinstance(layer, MemoryTier):
