@@ -150,6 +150,9 @@ class AttentionQueue:
         self._unsubs.append(
             self._bus.subscribe("L9.self.question", self._on_self_question)
         )
+        self._unsubs.append(
+            self._bus.subscribe("L3.attention.boosted", self._on_attention_boosted)
+        )
         logger.info("AttentionQueue attached (threshold=%.2f)", self._focus_threshold)
 
     async def detach(self) -> None:
@@ -415,6 +418,22 @@ class AttentionQueue:
     async def _on_self_question(self, event: Event) -> None:
         """L9 自我追问 → 强制聚焦模式直到回答"""
         self.set_mode(PreemptiveMode.FOCUSED)
+
+    async def _on_attention_boosted(self, event: Event) -> None:
+        """L8.drive.updated → boost() → L3.attention.boosted → 触发抢占"""
+        p = event.payload or {}
+        item_id = p.get("id")
+        if not item_id or not self._focused:
+            return
+        # 如果 boost 的项比当前 focus 分数高很多，强制切换
+        boosted_item = next((i for i in self._items if i.id == item_id), None)
+        if boosted_item and boosted_item.total_score() > self._focused.total_score() + 0.15:
+            asyncio.create_task(self._preempt_to(boosted_item))
+            logger.warning(
+                "[L3] boosted item '%s' (score=%.2f) preempts '%s' (score=%.2f)",
+                boosted_item.label, boosted_item.total_score(),
+                self._focused.label, self._focused.total_score(),
+            )
 
 
 # ---------------------------------------------------------------------------
