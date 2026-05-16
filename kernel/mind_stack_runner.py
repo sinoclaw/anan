@@ -400,7 +400,7 @@ class MindStackRunner:
 
         runner = MindStackRunner(
             circadian_config=CircadianConfig(
-                tick_interval_s=300.0,     # 每5分钟一次心跳（避免频繁LLM调用）
+                tick_interval_s=600.0,     # 每5分钟一次心跳（避免频繁LLM调用）
                 fatigue_per_tick=0.5,
                 sleep_threshold=10.0,        # 20个tick后进入睡眠
             ),
@@ -419,7 +419,7 @@ class MindStackRunner:
         idle_threshold_s: float = 30.0,
     ):
         self._circadian_cfg = circadian_config or CircadianConfig(
-            tick_interval_s=300.0,    # 每5分钟一次心跳
+            tick_interval_s=600.0,    # 每5分钟一次心跳
             fatigue_per_tick=0.5,
             sleep_threshold=10.0,
         )
