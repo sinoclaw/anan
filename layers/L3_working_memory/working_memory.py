@@ -109,11 +109,12 @@ class WorkingMemory:
         self._entries: list[WorkingMemoryEntry] = []
         self._bus: Optional[EventBus] = None
         self._unsub: Optional[Callable[[], None]] = None
-        self._lock = asyncio.Lock()
+        self._lock: asyncio.Lock = None  # lazy; created in attach() inside async context
         self.captured_total = 0
         self.evicted_total = 0
 
     async def attach(self, bus: Optional[EventBus] = None) -> None:
+        self._lock = asyncio.Lock()  # create inside async context to bind to correct loop
         self._bus = bus or get_bus()
         # Subscribe to everything; we filter out our own L3.* events in _on_event
         # to avoid a feedback loop. Bare "*" in this bus matches all topics.
@@ -123,11 +124,14 @@ class WorkingMemory:
         if self._unsub:
             self._unsub()
             self._unsub = None
+        self._lock = None
 
     async def _on_event(self, event: Event) -> None:
         # Don't capture our own events — would create a feedback loop
         if event.topic.startswith("L3.working_memory."):
             return
+        if self._lock is None:
+            return  # not attached yet
         salience = self.salience_fn(event)
         if salience < self.min_salience:
             return

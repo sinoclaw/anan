@@ -205,13 +205,16 @@ def _on_agent_end_for_cognition(context: dict) -> None:
         return
 
     try:
-        from kernel.mind_stack_runner import _collect_and_publish_sync
+        from kernel.mind_stack_runner import _collect_and_publish_sync, get_last_cognition
         # 同步阻塞式触发：等挖掘完成+收集完成后再返回
         # 最多等5秒，防止 gateway 响应被拖慢
         _collect_and_publish_sync(response=response, user_text=user_text)
-        logger.debug("agent:end cognition collection done")
+        cog = get_last_cognition()
+        logger.info("agent:end cognition collected: has_thought=%s insights=%d drives=%d sm_keys=%s",
+                    cog.get("has_thought"), len(cog.get("insights", [])),
+                    len(cog.get("drives", [])), list(cog.get("self_model", {}).keys()))
     except Exception as exc:
-        logger.debug("agent:end cognition collection failed: %s", exc)
+        logger.info("agent:end cognition collection failed: %s", exc)
 
 
 # 供 run.py 读取已格式化的心智上下文
