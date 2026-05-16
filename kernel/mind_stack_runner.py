@@ -105,6 +105,8 @@ def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.
                     logger.debug("PatternMiner.mine_now() timed out")
                 except Exception as exc:
                     logger.debug("PatternMiner.mine_now() failed: %s", exc)
+        except Exception as exc:
+            logger.debug("_do_impl PatternMiner step failed: %s", exc)
         # 4. 收集九层产出
         try:
             outputs = {
@@ -124,11 +126,13 @@ def _collect_and_publish_sync(response: str, user_text: str, timeout: float = 5.
             for layer in layers:
                 if isinstance(layer, PatternMiner):
                     try:
-                        # 优先用 mine_now() 的返回值（刚挖掘的新 pattern），fallback 到缓存
-                        if pattern_results:
-                            outputs["insights"] = [str(p)[:100] for p in pattern_results[-3:]]
+                        # Priority 1: class-level shared storage written by mine_now() —
+                        # survives MindStackRunner instance overwrites.
+                        # Priority 2: property (returns list, not bound method).
+                        if PatternMiner._last_patterns:
+                            outputs["insights"] = [str(p)[:100] for p in PatternMiner._last_patterns[-3:]]
                         else:
-                            discovered = list(layer.discovered or [])[-3:]
+                            discovered = layer.discovered[-3:]
                             outputs["insights"] = [str(p)[:100] for p in discovered]
                     except Exception:
                         pass

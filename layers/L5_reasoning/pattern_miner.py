@@ -96,6 +96,11 @@ class PatternMiner:
         self._mine_count = 0
         self._active: bool = False
 
+    # Class-level shared storage — all instances write here, agent:end reads here.
+    # Solves the _layers_ref overwrite problem: multiple MindStackRunner instances
+    # can exist across restarts, but the latest挖掘结果 survive instance death.
+    _last_patterns: list["Pattern"] = []
+
     @property
     def is_attached(self) -> bool:
         return self._active
@@ -131,7 +136,11 @@ class PatternMiner:
         """Scan bus history, return newly-discovered patterns (after cooldown)."""
         self._mine_count += 1
         try:
-            return await self._mine_now_impl()
+            patterns = await self._mine_now_impl()
+            # Write to class-level shared storage so agent:end (potentially a
+            # different MindStackRunner instance) can read the latest results.
+            PatternMiner._last_patterns = patterns
+            return patterns
         except Exception as exc:  # noqa: BLE001
             # Catch everything so exceptions cannot propagate to asyncio.gather
             # in event_bus.publish() — an unhandled exception in one handler
