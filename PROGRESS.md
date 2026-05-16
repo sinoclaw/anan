@@ -42,10 +42,12 @@
 - **commit**：`2383685`
 - **验证**：重启后 `WorkingMemory → L2 promotion: 20 items promoted` ✅
 
-### L3 — AttentionQueue boost() 链路 ✅
-- **链路**：L8.drive.updated → AttentionBridge._on_drive_updated → AttentionQueue.boost()
-- **状态**：架构完整，被动依赖 L0 tick 触发，无实际主动验证方式（logger.info 被 gateway 过滤）
-- **结论**：无需修改，架构已通
+### L3 — AttentionQueue boost() + 抢占机制 ✅
+- **链路**：L8.drive.updated → AttentionBridge._on_drive_updated → AttentionQueue.boost() → 发布 L3.attention.boosted
+- **旧问题**：boost() 只提升分数，无实际抢占动作
+- **修复**：添加 `_on_attention_boosted` handler（commit `65a2bf7`）——当 boosted 项分数比当前 focus 高 0.15 以上时，调用 `_preempt_to()` 强制切换
+- **commit**：`65a2bf7`
+- **验证**：待下次 L0 tick 触发 drive.updated 验证
 
 ### L4 — Consciousness Loop 日志可见性 ✅
 - **修复前**：`[L4 consciousness loop]` 日志从不出现
@@ -71,8 +73,12 @@
 - **GoalEngine**：订阅 `L6.metacognition.report`（line 520）
 - **状态**：链路完整，SelfTuner 需要 PredictionMonitor 积累预测数据后才能触发调参（当前日志无 APPLIED 是正常状态）
 
-### L7 — L7 GoalEngine → L6 SelfTuner 闭环 ✅
-- 见 L6，链路已通
+### L7 — LLM-driven 目标生成 ✅
+- **旧问题**：`_on_circadian_tick` 用硬编码 goal（"保持好奇"），从未调用 LLM 生成
+- **修复**：改为真实 context 驱动（active goals + pending actions + wisdom facts）→ LLM 生成有依据的目标（commit `479e4c1`）
+- **context 素材**：活跃目标列表、待审批调参动作、PatternMiner wisdom_facts
+- **commit**：`479e4c1`（真实系统状态 + LLM）+ `65a2bf7`（L3 抢占）
+- **验证**：待下次 L0 tick 触发 L7 goal generation
 
 ### L8 — 暂无问题
 
@@ -105,6 +111,8 @@
 
 | commit | 内容 |
 |--------|------|
+| 65a2bf7 | fix L7: real system-state goal gen; fix L3: real preemption on boost |
+| 479e4c1 | fix L7: use real system state + LLM for goal generation on circadian tick |
 | fd254ff | fix test: Anan Insights brand fixture |
 | d039069 | fix P1: PatternMiner → MemoryTier persistence |
 | a85f790 | fix P0: pm.discovered() + WorkingMemory lock |
@@ -115,7 +123,7 @@
 | b4f1082 | fix L5: layer.discovered() + remove duplicate mine_now() |
 | b08f3ba | fix L4: diag print in consciousness loop |
 | f603fa0 | fix L4: attach diag print |
-| a347ad5 | fix L4: print → logger.info() |
+| a347ad5 | fix L4: print → logger.warning() |
 | b9d4298 | fix L4: diag print in consciousness loop |
 | 3c11a33 | fix L4/L1: idle detection diag |
 | 79d7d82 | fix: PatternMiner class var + SyntaxError |
@@ -124,9 +132,10 @@
 
 ## anan 运行时状态
 
-- **PID**：459935
-- **启动时间**：04:12
-- **当前状态**：idle=True（无聊天输入超过 280s+）
+- **PID**：497713
+- **启动时间**：04:49
+- **当前状态**：idle=True（无聊天输入超过 120s）
 - **L4 loop**：每 10s 正常执行
 - **DREAMS.md**：最后更新 03:20，内容干净
 - **recall-store**：77 条 entries
+- **MindStack**：18 个层启动完成
