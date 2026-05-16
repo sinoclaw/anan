@@ -119,6 +119,10 @@ class DriveSystem:
         self._unsubs.append(
             self._bus.subscribe("L0.circadian.tick", self._on_circadian_tick)
         )
+        # L6 元认知报告 → 根据健康分动态调整驱动力
+        self._unsubs.append(
+            self._bus.subscribe("L6.metacognition.report", self._on_metacognition_report)
+        )
         logger.info("DriveSystem attached")
 
     async def detach(self) -> None:
@@ -314,6 +318,32 @@ class DriveSystem:
         cause = p.get("cause", "")
         if cause:
             self.trigger(DriveType.CURIOSITY, f"预测到 {cause} 之后会发生某事")
+
+    async def _on_metacognition_report(self, event: Event) -> None:
+        """L6 元认知报告 → 根据健康分调整驱动力。
+
+        健康分低（系统亚健康）→ boost COMPLETION（完成任务恢复状态）
+        健康分高（系统健康）→ boost CURIOSITY（探索新可能性）
+        有 issues → boost AESTHETICS（解决问题，优化状态）
+        """
+        p = event.payload or {}
+        score = p.get("score", 0.6)
+        issues = p.get("issues", [])
+        suggestions = p.get("suggestions", [])
+
+        if score < 0.5:
+            # 系统不健康 → 驱动完成任务恢复状态
+            self.trigger(DriveType.COMPLETION, f"健康分 {score:.2f} 过低，优先完成任务恢复状态")
+            self.trigger(DriveType.CARE, "身体/系统状态不好，需要关心处理")
+        elif score >= 0.8 and not issues:
+            # 系统非常健康 → 驱动探索新可能性
+            self.trigger(DriveType.CURIOSITY, f"健康分 {score:.2f} 很高，系统状态好，适合探索新方向")
+        elif issues:
+            # 有问题 → 驱动解决问题
+            self.trigger(DriveType.AESTHETICS, f"发现 {len(issues)} 个问题，需要优化修复")
+        elif suggestions and score >= 0.6:
+            # 有改进空间 → 驱动采纳建议
+            self.trigger(DriveType.CURIOSITY, f"有 {len(suggestions)} 条改进建议，好奇能否采纳")
 
     async def _on_circadian_tick(self, event: Event) -> None:
         """L0 tick → 周期性激活 Curiosity，让 anan 持续思考"""
