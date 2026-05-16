@@ -601,7 +601,7 @@ class MindStackRunner:
             mirror = Mirror(
                 bus=self._bus,
                 self_model=self_model if hasattr(self, 'self_model') else None,
-                # working_memory 暂不传，Mirror 会跳过该项指标
+                working_memory=self._working_memory,
             )
             self._layers.append(mirror)
             logger.info("  ✓ L6 Mirror 就绪")
