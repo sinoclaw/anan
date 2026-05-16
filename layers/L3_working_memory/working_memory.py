@@ -109,7 +109,7 @@ class WorkingMemory:
         self._entries: list[WorkingMemoryEntry] = []
         self._bus: Optional[EventBus] = None
         self._unsub: Optional[Callable[[], None]] = None
-        self._lock: asyncio.Lock = None  # lazy; created in attach() inside async context
+        self._lock: asyncio.Lock = asyncio.Lock()  # created here (not lazy) so it's bound to the event loop that constructs this object
         self.captured_total = 0
         self.evicted_total = 0
 
