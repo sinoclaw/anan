@@ -114,7 +114,9 @@ class WorkingMemory:
         self.evicted_total = 0
 
     async def attach(self, bus: Optional[EventBus] = None) -> None:
-        self._lock = asyncio.Lock()  # create inside async context to bind to correct loop
+        # Lock is created once in __init__ (sync context, bound to gateway main event loop).
+        # Do NOT recreate it here — creating it in async context would bind it to whatever
+        # loop is current at attach() time, which may differ from the loop that will use it.
         self._bus = bus or get_bus()
         # Subscribe to everything; we filter out our own L3.* events in _on_event
         # to avoid a feedback loop. Bare "*" in this bus matches all topics.
