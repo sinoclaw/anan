@@ -1551,8 +1551,8 @@ class DreamingPlugin:
         except Exception as e:
             logger.debug(f"daydreaming: failed to publish L1.daydream.started: {e}")
 
-        # Collect recent context for daydreaming
-        snippets = []
+        # Collect raw content fragments for stream-of-consciousness generation
+        fragments = []
         try:
             session_db = AnanSessionDB()
             messages = session_db.get_recent_messages_across_sessions(
@@ -1563,43 +1563,51 @@ class DreamingPlugin:
             for msg in messages:
                 content = msg.get("content") or ""
                 if isinstance(content, list):
-                    content = " ".join(str(c) for c in content if isinstance(c, (str, dict)) and c)
+                    content = " ".join(
+                        str(c) for c in content
+                        if isinstance(c, (str, dict)) and c
+                    )
+                # Strip structured prefixes (role labels, tool blocks, markdown)
+                content = content.strip()
                 if content and len(content) >= 20:
-                    role = msg.get("role", "user")
-                    snippets.append(f"[{role}]: {content[:150]}")
+                    fragments.append(content[:300])
         except Exception as e:
             logger.debug(f"daydreaming: failed to read sessions: {e}")
 
-        body_lines = [f"- Daydreaming sweep with {len(snippets)} recent snippets."]
-        if snippets:
-            body_lines.append(f"- Key recent events:")
-            for s in snippets[:5]:
-                body_lines.append(f"  - {s}")
+        body_lines = []
 
-        # Try to generate creative connections via LLM
-        if snippets and self._subagent:
+        # Generate stream-of-consciousness via LLM
+        if fragments and self._subagent:
             try:
-                fragments_text = "\n\n".join(f"- {s}" for s in snippets[:10])
-                message = f"""Recent conversation fragments:
+                # Give LLM raw text without structure — let it自由联想
+                random.shuffle(fragments)
+                fragments_text = "\n".join(f'"{f}"' for f in fragments[:8])
+                message = f"""Fragments from recent experience:
 
 {fragments_text}
 
-Generate 2-3 creative connections or unexpected insights that link these fragments together.
-Write in first person, like reflections in a quiet moment. Keep it brief (50-100 words).
-Output ONLY the reflection, no preamble."""
+Write a short stream-of-consciousness monologue in first person.
+不要标题，不要列表，不要结构。跟随联想走，从一个碎片滑到另一个。
+60-120字。纯意识流。"""
 
                 session_key = f"daydream-{int(now_ms)}"
                 response = await self._subagent.run(
                     session_key=session_key,
                     message=message,
-                    system_prompt="You are a reflective mind making creative connections.",
+                    system_prompt="你是意识流写作大师。写无结构自由联想文字。",
                     timeout_ms=NARRATIVE_TIMEOUT_MS,
                     model=self.config.model,
                 )
                 if response:
-                    body_lines.append(f"\n- Creative connections:\n  {response.strip()}")
+                    body_lines.append(response.strip())
             except Exception as e:
                 logger.debug(f"daydreaming: narrative generation failed: {e}")
+
+        # Fallback: if LLM failed or no fragments, write raw fragments unformatted
+        if not body_lines and fragments:
+            body_lines.append(
+                " ".join(f[:100] for f in fragments[:5])
+            )
 
         # Write to DREAMS.md
         try:
@@ -1670,9 +1678,31 @@ Output ONLY the reflection, no preamble."""
         except Exception as e:
             logger.debug(f"lucid_dream: failed to publish L1.lucid_dream.started: {e}")
 
-        body_lines = ["- Weekend lucid dream: planning future actions."]
+        # Build planning context from recent experience
+        fragments = []
+        try:
+            session_db = AnanSessionDB()
+            messages = session_db.get_recent_messages_across_sessions(
+                lookback_days=3,
+                limit_per_session=3,
+                total_limit=15,
+            )
+            for msg in messages:
+                content = msg.get("content") or ""
+                if isinstance(content, list):
+                    content = " ".join(
+                        str(c) for c in content
+                        if isinstance(c, (str, dict)) and c
+                    )
+                content = content.strip()
+                if content and len(content) >= 20:
+                    fragments.append(content[:200])
+        except Exception as e:
+            logger.debug(f"lucid_dream: failed to read sessions: {e}")
 
-        # Collect top intents from L8 for planning context
+        body_lines = []
+
+        # Collect top intents from L8 for planning grounding
         top_intents = []
         try:
             from kernel.event_bus import Event, get_bus
@@ -1695,40 +1725,44 @@ Output ONLY the reflection, no preamble."""
         except Exception as e:
             logger.debug(f"lucid_dream: failed to get L8 snapshot: {e}")
 
-        if top_intents:
-            body_lines.append(f"- Current top intentions:")
-            for intent in top_intents[:3]:
-                desc = intent.get("description", "unknown")
-                strength = intent.get("strength", 0)
-                body_lines.append(f"  - [{strength:.2f}] {desc}")
-
-        # Try to generate future plans via LLM
+        # Generate future plans via LLM
         if self._subagent:
             try:
+                random.shuffle(fragments)
+                fragments_text = "\n".join(f'"{f[:150]}"' for f in fragments[:6])
                 intents_text = "\n".join(
                     f"- {i.get('description', 'unknown')} (strength={i.get('strength', 0):.2f})"
                     for i in top_intents[:5]
                 ) or "No specific intentions recorded."
 
-                message = f"""Current top intentions:
-{intentents_text}
+                message = f"""Recent experience fragments:
+{fragments_text}
 
-Based on these, generate 2-3 concrete action items for the coming week.
-Use the format: "Tomorrow, remind dad about X" or "This week, follow up on Y".
-Be specific and actionable. Output ONLY the action items, no preamble."""
+Current intentions:
+{intents_text}
+
+Write a short first-person monologue about what you want to do in the coming days.
+不要标题，不要列表。跟随内在冲动和意图走，像清醒的梦。
+60-120字。"""
 
                 session_key = f"lucid-dream-{int(now_ms)}"
                 response = await self._subagent.run(
                     session_key=session_key,
                     message=message,
-                    system_prompt="You are an intentional planning mind. Be concrete and actionable.",
+                    system_prompt="你是清醒梦写作大师。写自然流畅的未来规划独白。",
                     timeout_ms=NARRATIVE_TIMEOUT_MS,
                     model=self.config.model,
                 )
                 if response:
-                    body_lines.append(f"\n- Future action plans:\n  {response.strip()}")
+                    body_lines.append(response.strip())
             except Exception as e:
                 logger.debug(f"lucid_dream: action planning failed: {e}")
+
+        # Fallback: if LLM failed, write raw fragments
+        if not body_lines and fragments:
+            body_lines.append(
+                " ".join(f[:80] for f in fragments[:5])
+            )
 
         # Write to DREAMS.md
         try:
