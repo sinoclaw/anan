@@ -1502,6 +1502,17 @@ class DreamingPlugin:
 
         logger.info(f"dreaming: {phase} phase complete, {len(body_lines)} lines")
 
+        # 发 L1.sleep.consolidated 通知各层（特别是 L2 Memory 和 L9 SelfModel）睡眠整合完成
+        if self._bus:
+            try:
+                await self._bus.publish(Event(
+                    topic="L1.sleep.consolidated",
+                    source="DreamingPlugin",
+                    payload={"phase": phase, "n_lines": len(body_lines)},
+                ))
+            except Exception as e:
+                logger.debug(f"failed to publish L1.sleep.consolidated: {e}")
+
         return {
             "phase": phase,
             "body_lines": body_lines,
@@ -1609,6 +1620,13 @@ Output ONLY the reflection, no preamble."""
                 payload={"workspace_dir": workspace_dir, "now_ms": now_ms, "lines": len(body_lines)},
                 source="DreamingPlugin",
             ))
+            # Also notify L2+L9 that consolidation happened
+            if self._bus:
+                await self._bus.publish(Event(
+                    topic="L1.sleep.consolidated",
+                    source="DreamingPlugin",
+                    payload={"phase": "daydream", "n_lines": len(body_lines)},
+                ))
         except Exception as e:
             logger.debug(f"daydreaming: failed to publish L1.daydream.ended: {e}")
 
@@ -1731,6 +1749,13 @@ Be specific and actionable. Output ONLY the action items, no preamble."""
                 payload={"workspace_dir": workspace_dir, "now_ms": now_ms, "lines": len(body_lines)},
                 source="DreamingPlugin",
             ))
+            # Also notify L2+L9 that consolidation happened
+            if self._bus:
+                await self._bus.publish(Event(
+                    topic="L1.sleep.consolidated",
+                    source="DreamingPlugin",
+                    payload={"phase": "lucid_dream", "n_lines": len(body_lines)},
+                ))
         except Exception as e:
             logger.debug(f"lucid_dream: failed to publish L1.lucid_dream.ended: {e}")
 

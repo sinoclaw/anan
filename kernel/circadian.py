@@ -167,6 +167,18 @@ class CircadianLoop:
             },
         ))
 
+        # Also publish L1.sleep.consolidated so L2 Memory and L9 SelfModel
+        # know that the sleep cycle has completed and can do their promotion.
+        await self.bus.publish(Event(
+            topic="L1.sleep.consolidated",
+            source="CircadianLoop",
+            payload={
+                "phase": "sleep_cycle",
+                "cycle": self.cycle,
+                "dream_facts_count": dream_facts_count,
+            },
+        ))
+
         self._cycle_log.append({
             "cycle": self.cycle,
             "day": day,

@@ -329,6 +329,9 @@ class SelfModelLive:
         self._unsub_causal = self._bus.subscribe(
             "L5.causal.link_discovered", self._on_causal_link
         )
+        self._unsub_sleep = self._bus.subscribe(
+            "L1.sleep.consolidated", self._on_sleep_consolidated
+        )
         await self._bus.publish(Event(
             topic="L9.self.loaded",
             source="L9.self_model",
@@ -436,6 +439,26 @@ class SelfModelLive:
                     "total_facts": self.model.n_facts,
                 },
             ))
+
+    async def _on_sleep_consolidated(self, event: Event) -> None:
+        """When L1 sleep consolidation completes, do a live self-reflection."""
+        payload = event.payload or {}
+        phase = payload.get("phase", "?")
+        logger.info("L9: received L1.sleep.consolidated (phase=%s), running self-reflection", phase)
+        # Trigger LLM self-reflection: who am I now, what did I learn
+        if self._llm and self._llm_who_am_i:
+            age = time.time() - self._last_reflect
+            if age > self._reflect_cooldown:
+                try:
+                    identity = await self._llm_who_am_i()
+                    if identity:
+                        is_new = self.model.add_identity(identity)
+                        self.update_count += 1
+                        logger.info("L9: self-reflection complete (phase=%s): %s", phase, identity[:80])
+                    self._last_reflect = time.time()
+                except Exception as exc:
+                    logger.warning("L9: self-reflection failed: %s", exc)
+
 
     # -------------------------------------------------------------------------
     # LLM-driven self-reflection

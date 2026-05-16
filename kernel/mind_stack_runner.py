@@ -155,12 +155,13 @@ class MindStackCognition:
             except Exception:
                 pass
 
-        # L9 SelfModel
+        # L9 SelfModel — SelfModelLive is what gets appended to layers,
+        # and it has a .model field holding the actual SelfModel data class
         sm = None
         for layer in self._runner._layers:
-            from layers.L9_self.self_model import SelfModel
-            if isinstance(layer, SelfModel):
-                sm = layer
+            from layers.L9_self.self_model import SelfModelLive
+            if isinstance(layer, SelfModelLive):
+                sm = layer.model  # get the data class from the live wrapper
                 break
         if sm is not None:
             try:
