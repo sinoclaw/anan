@@ -479,14 +479,25 @@ class MindStackRunner:
         """启动所有认知层。优先真实实现，fallback 到 stub。"""
 
         # L9 SelfModel — 先启动（其他层会引用）
+        # SelfModel = 数据类；SelfModelLive = 事件总线订阅者（live updater）
+        # 两者都建：数据类给 PatternMiner/Mirror 用，Live 版订阅总线
         try:
-            from layers.L9_self.self_model import SelfModel
+            from layers.L9_self.self_model import SelfModel, SelfModelLive
+            from agent.auxiliary_client import async_call_llm
+
+            async def _self_llm(messages: list, temperature: float = 0.3) -> str:
+                """Bridge: async_call_llm(task='agent') → SelfModelLive._llm 签名."""
+                result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
+                return result.choices[0].message.content
+
             self_model = SelfModel()
-            self._layers.append(self_model)
-            logger.info("  ✓ L9 SelfModel 就绪")
+            self_model_live = SelfModelLive(model=self_model, llm=_self_llm)
+            self._layers.append(self_model_live)
+            logger.info("  ✓ L9 SelfModel 就绪 (LLM=yes, facts=%d)", self_model.n_facts)
         except Exception as exc:
             logger.warning("  ✗ L9 SelfModel 启动失败: %s (使用 stub)", exc)
             self_model = None
+            self_model_live = None
 
         # L5 PatternMiner + PredictiveReasoner（依赖 L9 SelfModel）
         # PatternMiner 负责挖掘因果规则，PredictiveReasoner 负责执行预测

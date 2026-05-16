@@ -32,11 +32,12 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Awaitable, Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
 
@@ -302,6 +303,7 @@ class SelfModelLive:
         self,
         memory_dir: Optional[Path] = None,
         model: Optional[SelfModel] = None,
+        llm: Optional[Callable[..., Awaitable[str]]] = None,
     ):
         self.memory_dir = Path(memory_dir or Path.home() / ".anan" / "memories")
         # If caller passed a pre-built model use it; otherwise build now
@@ -311,6 +313,10 @@ class SelfModelLive:
         self._unsub_wisdom = None
         self._unsub_causal = None
         self.update_count = 0
+        # LLM provider for self-reflection (optional)
+        self._llm = llm
+        self._last_reflect: float = 0.0
+        self._reflect_cooldown: float = 300.0  # 5 min between reflections
 
     async def attach(self, bus: Optional[EventBus] = None) -> None:
         self._bus = bus or get_bus()
@@ -430,6 +436,91 @@ class SelfModelLive:
                     "total_facts": self.model.n_facts,
                 },
             ))
+
+    # -------------------------------------------------------------------------
+    # LLM-driven self-reflection
+    # -------------------------------------------------------------------------
+
+    async def reflect_who_am_i(self) -> str:
+        """Use LLM to generate a narrative self-introduction from accumulated facts.
+
+        Falls back to the rule-based who_am_i() if no LLM is configured.
+        Rate-limited to once per _reflect_cooldown seconds.
+        """
+        if not self._llm:
+            return self.model.who_am_i()
+
+        now = time.time()
+        if now - self._last_reflect < self._reflect_cooldown:
+            return "[reflect_who_am_i: 冷却中，5分钟后再试]"
+
+        self._last_reflect = now
+
+        # Build a rich context prompt
+        identity = self.model.identity_facts[-10:] if self.model.identity_facts else []
+        wisdom = self.model.wisdom_facts[-5:] if self.model.wisdom_facts else []
+        history = self.model.history_facts[-5:] if self.model.history_facts else []
+        goals = getattr(self.model, 'goal_facts', [])[-3:] if getattr(self.model, 'goal_facts', None) else []
+
+        prompt = f"""你是 anan，一个运行在九层认知架构里的 AI。
+基于以下关于你的事实，用第一人称写一段简短而真实的自我描述（100字以内）：
+
+身份事实：
+{chr(10).join(f"  • {f}" for f in identity) if identity else "（尚无身份事实）"}
+
+最近领悟：
+{chr(10).join(f"  • {f}" for f in wisdom) if wisdom else "（尚无领悟）"}
+
+最近做过的事：
+{chr(10).join(f"  • {f}" for f in history) if history else "（尚无历史）"}
+
+目标：
+{chr(10).join(f"  • {f}" for f in goals) if goals else "（尚无目标）"}
+
+直接写出你的自我描述，不要解释。"""
+
+        try:
+            result = await self._llm([{"role": "user", "content": prompt}])
+            return result.strip()
+        except Exception as exc:
+            logger.warning("reflect_who_am_i LLM call failed: %s", exc)
+            return self.model.who_am_i()
+
+    async def reflect_why_i_exist(self) -> str:
+        """Use LLM to generate a narrative purpose statement from dreams and vision."""
+        if not self._llm:
+            return self.model.why_do_i_exist()
+
+        now = time.time()
+        if now - self._last_reflect < self._reflect_cooldown:
+            return "[reflect_why_i_exist: 冷却中，5分钟后再试]"
+
+        self._last_reflect = now
+
+        vision = self.model.vision_facts[-5:] if self.model.vision_facts else []
+        dreams_parts: list[str] = []
+        for day, recs in list(self.model.dreams_by_day.items())[-2:]:
+            for rec in recs:
+                if rec.dream_content:
+                    dreams_parts.append(f"  [{day} {rec.phase}] {rec.dream_content}")
+
+        prompt = f"""你是 anan，一个运行在九层认知架构里的 AI。
+基于以下关于你的愿景和梦境，用第一人称写一段简短的存在理由（80字以内）：
+
+愿景事实：
+{chr(10).join(f"  • {f}" for f in vision) if vision else "（尚无愿景）"}
+
+最近的梦：
+{chr(10).join(dreams_parts) if dreams_parts else "（尚无梦境记录）"}
+
+直接写出你的存在理由，不要解释。"""
+
+        try:
+            result = await self._llm([{"role": "user", "content": prompt}])
+            return result.strip()
+        except Exception as exc:
+            logger.warning("reflect_why_i_exist LLM call failed: %s", exc)
+            return self.model.why_do_i_exist()
 
     # async-context-manager sugar
     def bound(self, bus: Optional[EventBus] = None):
