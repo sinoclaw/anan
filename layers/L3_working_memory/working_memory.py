@@ -126,7 +126,8 @@ class WorkingMemory:
         if self._unsub:
             self._unsub()
             self._unsub = None
-        self._lock = None
+        # NOTE: _lock is intentionally left intact — it was created in __init__
+        # and belongs to the lifetime of this object. Do NOT reset it here.
 
     async def _on_event(self, event: Event) -> None:
         # Don't capture our own events — would create a feedback loop

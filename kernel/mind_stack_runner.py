@@ -258,7 +258,7 @@ class MindStackCognition:
         pm = getattr(self._runner, '_pattern_miner', None)
         if pm is not None:
             try:
-                discovered = list(pm.discovered or [])[-3:]
+                discovered = list(pm.discovered())[-3:]
                 outputs["insights"] = [
                     p.get("abstract", str(p)) if isinstance(p, dict) else str(p)
                     for p in discovered
