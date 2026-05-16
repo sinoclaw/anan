@@ -674,7 +674,7 @@ class MindStackRunner:
         # SelfModel = 数据类；SelfModelLive = 事件总线订阅者（live updater）
         # 两者都建：数据类给 PatternMiner/Mirror 用，Live 版订阅总线
         try:
-            from layers.L9_self.self_model import SelfModel, SelfModelLive
+            from layers.L9_self.self_model import SelfModel, SelfBuilder, SelfModelLive
             from agent.auxiliary_client import async_call_llm
 
             async def _self_llm(messages: list, temperature: float = 0.3) -> str:
@@ -682,7 +682,7 @@ class MindStackRunner:
                 result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
                 return result.choices[0].message.content
 
-            self_model = SelfModel()
+            self_model = SelfBuilder().build()  # loads facts from ~/.anan/memories/
             self_model_live = SelfModelLive(model=self_model, llm=_self_llm)
             self._layers.append(self_model_live)
             logger.info("  ✓ L9 SelfModel 就绪 (LLM=yes, facts=%d)", self_model.n_facts)
