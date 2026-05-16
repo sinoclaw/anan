@@ -816,7 +816,7 @@ class ConsciousnessEngine:
         if random.random() < 0.3:
             return Thought(
                 thought_id=uuid4().hex[:8],
-                content="最近有没有什么事情跟以前处理过的某个问题很像？联想一下。",
+                content="回顾我之前处理过的一个情况：当时通过某种方式解决了，现在的情况虽然表面不同，但本质上有相似之处——我可以用同样的思路来应对这次的新挑战。",
                 thought_type=ThoughtType.SITUATION_ASSOCIATION,
                 importance=ThoughtImportance.LOW,
                 source_context=f"idle_s={silent_s:.0f}s, no specific context",
