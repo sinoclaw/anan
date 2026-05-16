@@ -1000,6 +1000,12 @@ class MindStackRunner:
                     source="circadian",
                     payload={"day": day, "cycle": cycle},
                 ))
+                # 发 daydream.ended 事件，触发 _on_sleep_ended → WorkingMemory → L2 promotion
+                await bus.publish(Event(
+                    topic="L1.daydream.ended",
+                    source="MindStackRunner",
+                    payload={"day": day, "cycle": cycle},
+                ))
                 logger.info("🌙 [Cycle %d] 睡眠阶段完成", cycle)
                 return 0
             except Exception as exc:
