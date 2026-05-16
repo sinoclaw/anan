@@ -6989,6 +6989,7 @@ class GatewayRunner:
                 _platform_name, source.chat_id or "unknown",
                 _response_time, _api_calls, _resp_len,
             )
+            print(f"[RUN] response ready done, about to process hooks/cleanup", flush=True)
 
             # Successful turn — clear any stuck-loop counter for this session.
             # This ensures the counter only accumulates across CONSECUTIVE
@@ -7064,10 +7065,12 @@ class GatewayRunner:
                 response = f"{response}\n\n{_footer_line}"
 
             # Emit agent:end hook
+            print(f"[RUN] about to emit agent:end hook", flush=True)
             await self.hooks.emit("agent:end", {
                 **hook_ctx,
                 "response": (response or "")[:500],
             })
+            print(f"[RUN] agent:end hook done", flush=True)
             
             # Check for pending process watchers (check_interval on background processes)
             try:
@@ -7251,8 +7254,11 @@ class GatewayRunner:
 
             # Auto voice reply: send TTS audio before the text response
             _already_sent = bool(agent_result.get("already_sent"))
+            print(f"[RUN] about to check _should_send_voice_reply response_len={len(response) if response else 0} already_sent={_already_sent}", flush=True)
             if self._should_send_voice_reply(event, response, agent_messages, already_sent=_already_sent):
+                print(f"[RUN] calling _send_voice_reply", flush=True)
                 await self._send_voice_reply(event, response)
+                print(f"[RUN] _send_voice_reply done", flush=True)
 
             # If streaming already delivered the response, extract and
             # deliver any MEDIA: files before returning None.  Streaming
@@ -7265,6 +7271,7 @@ class GatewayRunner:
             # content the user hasn't seen (streaming only sent earlier
             # partial output before the failure).  Without this guard,
             # users see the agent "stop responding without explanation."
+            print(f"[RUN] about to check already_sent block already_sent={agent_result.get('already_sent')} failed={agent_result.get('failed')}", flush=True)
             if agent_result.get("already_sent") and not agent_result.get("failed"):
                 if response:
                     _media_adapter = self.adapters.get(source.platform)
@@ -7289,6 +7296,7 @@ class GatewayRunner:
                         logger.debug("trailing footer send failed: %s", _e)
                 return None
 
+            print(f"[RUN] about to return response: len={len(response) if response else 0}", flush=True)
             return response
             
         except Exception as e:

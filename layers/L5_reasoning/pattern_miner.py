@@ -131,6 +131,17 @@ class PatternMiner:
         """Scan bus history, return newly-discovered patterns (after cooldown)."""
         self._mine_count += 1
         try:
+            return await self._mine_now_impl()
+        except Exception as exc:  # noqa: BLE001
+            # Catch everything so exceptions cannot propagate to asyncio.gather
+            # in event_bus.publish() — an unhandled exception in one handler
+            # cancels all siblings via gather(return_exceptions=False).
+            logger.debug("L5 mine_now failed (non-fatal): %s", exc)
+            return []
+
+    async def _mine_now_impl(self) -> list[Pattern]:
+        """Internal implementation — all exceptions are contained in mine_now()."""
+        try:
             history = self._bus.history(limit=self._history_limit)
         except Exception as exc:  # noqa: BLE001
             logger.debug("L5 history fetch failed: %s", exc)
@@ -160,8 +171,10 @@ class PatternMiner:
                     continue
                 seen_in_window.add(y)
                 co_counts[(x, y)] += 1
-            # Yield event loop every N iterations to prevent blocking
-            if i % 100 == 0:
+            # Yield event loop every 10 iterations to prevent blocking.
+            # During heavy history (500+ events), this keeps the loop responsive
+            # so inbound gateway messages are not stalled.
+            if i % 10 == 0:
                 await asyncio.sleep(0)
 
         new_patterns: list[Pattern] = []
@@ -209,6 +222,9 @@ class PatternMiner:
             ),
         }
         # Also emit a gateway-visible log for diagnostics
+        import sys
+        sys.stdout.write(f"MINER-DIAG about to publish L5.pattern.discovered: {payload['antecedent']} -> {payload['consequent']}\n")
+        sys.stdout.flush()
         _gateway_logger.info("MINER → publishing L5.pattern.discovered: %s → %s (lift=%.2f)", payload["antecedent"], payload["consequent"], payload["lift"])
         try:
             await self._bus.publish(Event(
@@ -241,7 +257,12 @@ class PatternMiner:
         self._min_lift = max(1.0, value)
         logger.info("PatternMiner min_lift updated to %.2f, triggering re-mine", self._min_lift)
         # 异步重新挖掘（用 bus 作为协程调度，不阻塞）
-        asyncio.create_task(self.mine_now())
+        # 用 create_task + add_done_callback 避免未等待的警告，
+        # 同时防止异常传播到 event_bus.publish 的 gather 链。
+        task = asyncio.create_task(self.mine_now())
+        task.add_done_callback(
+            lambda t: logger.debug("re-mine task done: %s", t.result() if t.done() and not t.cancelled() else t.cancelled() and "cancelled" or "failed")
+        )
 
     def stats(self) -> dict:
         return {

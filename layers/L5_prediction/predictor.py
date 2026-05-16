@@ -109,6 +109,12 @@ class PredictiveReasoner:
         self._last_emit_by_cause: dict[str, float] = {}
         self._cause_throttle_s: float = 0.5
 
+        # Global throttle: limit how often _on_event can be processed
+        # Prevents event storms (e.g. during session replay) from blocking
+        # the gateway event loop. 100ms = max 10 event-processes/second.
+        self._last_on_event_time: float = 0.0
+        self._on_event_throttle_s: float = 0.1
+
         self._unsubs: list[Callable[[], None]] = []
 
     # ------------------------------------------------------------------
@@ -122,15 +128,14 @@ class PredictiveReasoner:
             await self._on_event(event)
 
         async def on_link_discovered(event: Event):
-            # 实时接收 CausalReasoner / PatternMiner 发现的新链路
-            # CausalReasoner 发 cause/effect，PatternMiner 发 antecedent/consequent
-            # 注意：这里不过滤 lift，PatternMiner 发来的 pattern lift 常 < 1.5，
-            # 但仍可能是有效因果链。缓存所有 link，预测时再过滤。
+            import sys
+            logger.info("PRED-LINK-INVOKED topic=%s source=%s payload=%s", event.topic, event.source, event.payload)
             payload = event.payload or {}
             cause = payload.get("cause") or payload.get("antecedent", "")
             effect = payload.get("effect") or payload.get("consequent", "")
             lift = payload.get("lift", 0.0)
             confidence = payload.get("confidence", 0.0)
+            logger.info("PRED-LINK parsed: cause=%r effect=%r", cause, effect)
             if cause and effect:
                 key = (cause, effect)
                 self._links[key] = Prediction(
@@ -144,9 +149,36 @@ class PredictiveReasoner:
                 logger.info("[PRED-DEBUG] Cached link: %s → %s (lift=%.2f, conf=%.2f)", cause, effect, lift, confidence)
                 logger.info("🔍 PredictiveReasoner on_link_discovered: %s → %s (lift=%.2f, conf=%.2f)", cause, effect, lift, confidence)
 
-        # Subscribe to ALL events so we can detect when predicted effects occur.
-        # _on_event filters out L5.* and L0.circadian.tick internally.
-        self._unsubs.append(self._bus.subscribe("*", on_any))
+        # 只订阅外部/跨层事件，避免 "event storm" 和 feedback loop。
+        # 之前订阅 "*" 会捕走所有事件（包括 L5.prediction.upcoming 自身），
+        # 导致 _emit_predictions_for 发出的事件被立刻消费，形成反馈循环堵死事件循环。
+        external_events = [
+            "agent:start",
+            "agent:end",
+            "session:start",
+            "session:end",
+            "L1.sleep.started",
+            "L1.sleep.ended",
+            "L1.dreaming.started",
+            "L1.dreaming.ended",
+            "L2.memory.promoted",
+            "L3.working_memory.updated",
+            "L4.observation.falsified",
+            "L4.thought.generated",
+            "L4.idle.started",
+            "L4.idle.ended",
+            "L6.metacognition.warn",
+            "L6.metacognition.report",
+            "L7.goal.achieved",
+            "L7.goal.abandoned",
+            "L7.regulator.acted",
+            "L8.intent.proposed",
+            "L8.intent.weakened",
+            "L8.intent.abandoned",
+            "L9.self.updated",
+        ]
+        for ev in external_events:
+            self._unsubs.append(self._bus.subscribe(ev, on_any))
         # 同时订阅 L5.causal.link_discovered 和 L5.pattern.discovered
         # PatternMiner 发 pattern，CausalReasoner 发 causal link，两者都可能是因果来源
         self._unsubs.append(self._bus.subscribe("L5.causal.link_discovered", on_link_discovered))
@@ -174,16 +206,32 @@ class PredictiveReasoner:
         if topic.startswith("L0.circadian.tick"):
             return
 
-        # Record cause for future predictions
-        self._active_causes.append((now, topic))
+        # Global throttle: skip if processed too recently.
+        # This prevents event storms (e.g. session replay injecting thousands
+        # of events in seconds) from blocking the gateway event loop.
+        if now - self._last_on_event_time < self._on_event_throttle_s:
+            return
+        self._last_on_event_time = now
 
-        # Check if this event resolves any pending predictions
-        await self._resolve_pending(event)
+        # Guard: prevent re-entrancy from _async_publish → on_any → _on_event
+        # during the synchronous publish path (publish_sync). Without this,
+        # a nested call can corrupt _pending deque iteration.
+        if getattr(self, "_in_on_event", False):
+            return
+        self._in_on_event = True
+        try:
+            # Record cause for future predictions
+            self._active_causes.append((now, topic))
 
-        # Emit any predictions triggered by this event
-        await self._emit_predictions_for(topic)
+            # Check if this event resolves any pending predictions
+            await self._resolve_pending(event)
 
-    async def _emit_predictions_for(self, cause: str) -> None:
+            # Emit any predictions triggered by this event
+            await self._emit_predictions_for(topic, now)
+        finally:
+            self._in_on_event = False
+
+    async def _emit_predictions_for(self, cause: str, now: float) -> None:
         """Given a cause event, emit predictions for downstream effects."""
         # Collect links from both sources: initial causal_links_fn AND
         # cached links from L5.causal.link_discovered events

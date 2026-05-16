@@ -2321,15 +2321,7 @@ class BasePlatformAdapter(ABC):
         max_retries: int = 2,
         base_delay: float = 2.0,
     ) -> "SendResult":
-        """
-        Send a message with automatic retry for transient network errors.
-
-        On permanent failures (e.g. formatting / permission errors) falls back
-        to a plain-text version before giving up. If all attempts fail due to
-        network errors, sends the user a brief delivery-failure notice so they
-        know to retry rather than waiting indefinitely.
-        """
-
+        print(f"[BASE] _send_with_retry ENTER chat_id={chat_id} content_len={len(content)}", flush=True)
         result = await self.send(
             chat_id=chat_id,
             content=content,
@@ -2666,15 +2658,17 @@ class BasePlatformAdapter(ABC):
         enabling interruption support.
         """
         if not self._message_handler:
+            print(f"[{self.name}] BASE handle_message: _message_handler is None, returning", flush=True)
             return
 
         coerce_plaintext_gateway_command(event)
-        
+
         session_key = build_session_key(
             event.source,
             group_sessions_per_user=self.config.extra.get("group_sessions_per_user", True),
             thread_sessions_per_user=self.config.extra.get("thread_sessions_per_user", False),
         )
+        print(f"[{self.name}] BASE_HANDLE_MESSAGE_ENTER event_id={getattr(event,'id','?')} session_key={session_key}", flush=True)
 
         # On-entry self-heal: if the adapter still has an _active_sessions
         # entry for this key but the owner task has already exited (done or
@@ -2802,6 +2796,9 @@ class BasePlatformAdapter(ABC):
 
     async def _process_message_background(self, event: MessageEvent, session_key: str) -> None:
         """Background task that actually processes the message."""
+        # DIAGNOSTIC
+        import time
+        logger.info("[%s] >>> BG_TASK_START session=%s at %.0f", self.name, session_key, time.time())
         # Track delivery outcomes for the processing-complete hook
         delivery_attempted = False
         delivery_succeeded = False
@@ -2850,7 +2847,10 @@ class BasePlatformAdapter(ABC):
             await self._run_processing_hook("on_processing_start", event)
 
             # Call the handler (this can take a while with tool calls)
+            import time as _t
+            print(f"[{self.name}] calling _message_handler at {_t.time():.0f}", flush=True)
             response = await self._message_handler(event)
+            print(f"[{self.name}] _message_handler returned type={type(response).__name__} len={len(response) if response else 0} at {_t.time():.0f}", flush=True)
 
             # Slash-command handlers may return an EphemeralReply sentinel to
             # request that their reply message auto-delete after a TTL (used
@@ -2947,6 +2947,7 @@ class BasePlatformAdapter(ABC):
                             pass
 
                 # Send the text portion
+                print(f"[{self.name}] about to send response: text_content={repr(text_content[:50]) if text_content else None}", flush=True)
                 if text_content:
                     logger.info("[%s] Sending response (%d chars) to %s", self.name, len(text_content), event.source.chat_id)
                     _reply_anchor = _reply_anchor_for_event(event)

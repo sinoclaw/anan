@@ -835,9 +835,12 @@ class QQAdapter(BasePlatformAdapter):
 
     async def handle_message(self, event: MessageEvent) -> None:
         """Cache the last message ID per chat, then delegate to base."""
+        import sys; print(f"[QQBot] handle_message ENTER id={getattr(event,'message_id','?')}", flush=True)
         if event.message_id and event.source.chat_id:
             self._last_msg_id[event.source.chat_id] = event.message_id
+        print(f"[QQBot] handle_message about to call super().handle_message", flush=True)
         await super().handle_message(event)
+        print(f"[QQBot] handle_message BACK from super().handle_message", flush=True)
 
     async def _on_message(self, event_type: str, d: Any) -> None:
         """Process an inbound QQ Bot message event."""
@@ -1094,6 +1097,8 @@ class QQAdapter(BasePlatformAdapter):
                 else "None"
             ),
         )
+        # DIAGNOSTIC: log right before handle_message to detect if the call itself hangs
+        logger.info("[%s] >>> HANDLE_MESSAGE_ENTER msg_id=%s", self._log_tag, msg_id)
         if attachments_raw and isinstance(attachments_raw, list):
             for _i, _att in enumerate(attachments_raw):
                 if isinstance(_att, dict):
