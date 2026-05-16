@@ -157,6 +157,28 @@ def _inject_cognition_to_agent(context: dict) -> None:
     if recent:
         parts.append(f"最近记忆：{' | '.join(str(m) for m in recent[-2:])}")
 
+    # L5 预测状态
+    pred = cognition.get("prediction", {})
+    if pred:
+        acc = pred.get("accuracy", 0.0)
+        links = pred.get("links", 0)
+        pending = pred.get("pending", 0)
+        confirmed = pred.get("confirmed", 0)
+        top_pending = pred.get("top_pending", [])
+        parts.append(
+            f"预测链路：共{links}条，命中{confirmed}次，失败{pred.get('failed', 0)}次"
+            f"，准确率{acc:.0%}，待预测{pending}个"
+            + (f"，最新：{'、'.join(top_pending)}" if top_pending else "")
+        )
+
+    # L6 调参状态
+    tuning = cognition.get("tuning", {})
+    if tuning:
+        pending = tuning.get("pending", 0)
+        applied = tuning.get("applied", 0)
+        if pending > 0:
+            parts.append(f"调参中：{pending}个待审批参数调整（已应用{applied}次）")
+
     if not parts:
         _mind_stack_context = ""
         return

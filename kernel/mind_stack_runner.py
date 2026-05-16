@@ -315,6 +315,44 @@ class MindStackCognition:
             except Exception:
                 pass
 
+        # L5 PredictiveReasoner — 预测链路状态
+        for layer in self._runner._layers:
+            from layers.L5_prediction.predictor import PredictiveReasoner
+            if isinstance(layer, PredictiveReasoner):
+                try:
+                    stats = layer.stats()
+                    outputs["prediction"] = {
+                        "links": stats.get("links_cached", 0),
+                        "pending": stats.get("pending", 0),
+                        "confirmed": stats.get("confirmed", 0),
+                        "failed": stats.get("failed", 0),
+                        "accuracy": stats.get("accuracy", 0.0),
+                    }
+                    # 最近的预测
+                    pending = layer.pending_predictions()
+                    if pending:
+                        outputs["prediction"]["top_pending"] = [
+                            f"{p.cause}→{p.effect}" for p in pending[:2]
+                        ]
+                except Exception:
+                    pass
+                break
+
+        # L6 SelfTuner — 调参状态
+        for layer in self._runner._layers:
+            from layers.L6_metacognition.self_tuner import SelfTuner
+            if isinstance(layer, SelfTuner):
+                try:
+                    st_stats = layer.stats()
+                    outputs["tuning"] = {
+                        "pending": st_stats.get("pending", 0),
+                        "applied": st_stats.get("applied", 0),
+                        "rejected": st_stats.get("rejected", 0),
+                    }
+                except Exception:
+                    pass
+                break
+
         # L6 Mirror
         for layer in self._runner._layers:
             from layers.L6_metacognition.mirror import Mirror
