@@ -26,6 +26,7 @@ L4 — Stream of Consciousness（意识流）
 from layers.L4_consciousness.consciousness import (
     ConsciousnessEngine,
     IdleDetector,
+    IdleThoughtEngine,
     OutputGate,
     Thought,
     ThoughtImportance,
@@ -36,6 +37,7 @@ from layers.L4_consciousness.consciousness import (
 __all__ = [
     "ConsciousnessEngine",
     "IdleDetector",
+    "IdleThoughtEngine",
     "OutputGate",
     "Thought",
     "ThoughtImportance",

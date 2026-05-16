@@ -114,6 +114,8 @@ class Mirror:
             # Only reflect on every 5th tick to keep overhead low
             payload = event.payload or {}
             ticks = payload.get("ticks", 0)
+            import sys; sys.stderr.write(f"MIRROR_PROBE ticks={ticks}\n")
+            logger.warning("Mirror.on_tick received: ticks=%d (will check %% 5 == 0)", ticks)
             if ticks % 5 == 0:
                 await self.reflect_and_emit()
 
@@ -134,7 +136,14 @@ class Mirror:
 
     # ------------------------------------------------------------------
     async def reflect_and_emit(self) -> HealthReport:
-        report = self.reflect()
+        import sys
+        sys.stderr.write(f"MIRROR_ENTER reflect_and_emit\n")
+        try:
+            report = self.reflect()
+            sys.stderr.write(f"MIRROR reflect done: score={getattr(report, 'score', '?')}\n")
+        except Exception as exc:
+            sys.stderr.write(f"MIRROR reflect ERROR: {exc}\n")
+            raise
         await self._emit(report)
         return report
 
@@ -256,6 +265,8 @@ class Mirror:
 
     # ------------------------------------------------------------------
     async def _emit(self, report: HealthReport) -> None:
+        import sys
+        sys.stderr.write(f"MIRROR_EMIT bus={type(self._bus).__name__} id={id(self._bus)}\n")
         try:
             await self._bus.publish(Event(
                 topic="L6.metacognition.report",
@@ -273,7 +284,9 @@ class Mirror:
                     },
                 ))
         except Exception as exc:  # noqa: BLE001
-            logger.debug("L6 emit failed (non-fatal): %s", exc)
+            import sys
+            sys.stderr.write(f"MIRROR_EMIT_ERROR: {exc}\n")
+            logger.warning("L6 emit failed: %s", exc)
 
     # ------------------------------------------------------------------
     def history(self) -> list[HealthReport]:

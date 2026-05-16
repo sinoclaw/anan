@@ -42,6 +42,104 @@ from kernel.event_bus import Event, EventBus, get_bus
 
 logger = logging.getLogger("anan.L4.consciousness")
 
+# 默认 L0.circadian.tick 触发间隔（每 N 个 tick 触发一次轻量思考）
+_DEFAULT_TICK_THINK_INTERVAL = 12   # tick % 12 == 0 → ~每 12 个 tick 一次（约 12 * 0.05s = 0.6s at default circadian）
+
+
+# ---------------------------------------------------------------------------
+# IdleThoughtEngine — 订阅 L0.circadian.tick，触发轻量思考
+# ---------------------------------------------------------------------------
+
+class IdleThoughtEngine:
+    """订阅 L0.circadian.tick，在 idle 期间定期生成轻量思考。
+
+    当 tick % interval == 0 时，从 working_memory 取样进行主动反思。
+    与 ConsciousnessEngine 的 idle_loop 互补：idle_loop 检测用户沉默触发深度思考，
+    IdleThoughtEngine 在活跃期间也保持轻量思考节奏。
+
+    事件发布：
+      L4.thought.created   — 思考创建（所有新思考）
+      L4.thought.archived  — 思考被归档/清理
+
+    事件订阅：
+      L0.circadian.tick    — 来自 kernel/circadian.py 的心跳
+    """
+
+    def __init__(
+        self,
+        bus: EventBus,
+        tick_think_interval: int = _DEFAULT_TICK_THINK_INTERVAL,
+    ):
+        self._bus = bus
+        self._tick_think_interval = tick_think_interval
+        self._active: bool = False
+        self._unsub_tick: Optional[Callable[[], None]] = None
+
+        # WorkingMemory 引用（可选，注入）
+        self._working_memory = None   # type: Optional["WorkingMemory"]
+        self._tick_count: int = 0
+
+    async def attach(self, working_memory=None) -> None:
+        """启动 IdleThoughtEngine，订阅 L0.circadian.tick。"""
+        if self._active:
+            return
+        self._active = True
+        self._working_memory = working_memory
+        self._unsub_tick = self._bus.subscribe(
+            "L0.circadian.tick", self._on_tick
+        )
+        logger.info("[L4 IdleThoughtEngine] 已启动 (tick interval=%d)", self._tick_think_interval)
+
+    async def detach(self) -> None:
+        """停止 IdleThoughtEngine。"""
+        self._active = False
+        if self._unsub_tick:
+            self._unsub_tick()
+            self._unsub_tick = None
+        logger.info("[L4 IdleThoughtEngine] 已关闭")
+
+    async def _on_tick(self, event: Event) -> None:
+        """收到 L0.circadian.tick，按 tick % interval 触发思考。"""
+        if not self._active:
+            return
+        payload = event.payload or {}
+        self._tick_count = payload.get("ticks", self._tick_count + 1)
+        if self._tick_count % self._tick_think_interval != 0:
+            return
+
+        thought = self._generate_tick_thought()
+        if thought is None:
+            return
+
+        self._bus.publish_sync(Event(
+            topic="L4.thought.created",
+            payload=thought.to_dict(),
+            source="IdleThoughtEngine",
+        ))
+
+    def _generate_tick_thought(self) -> Optional[Thought]:
+        """从 working_memory 取样生成轻量思考。"""
+        if self._working_memory is None:
+            return None
+
+        # 从 working_memory 取 top entries
+        samples = self._working_memory.recall_recent(3)
+        if not samples:
+            return None
+
+        # 取最高权重的 entry 作为反思上下文
+        top = samples[0]
+        topic = top.event.topic
+        payload_summary = str(top.event.payload)[:100]
+
+        return Thought(
+            thought_id=uuid4().hex[:8],
+            content=f"反思：最近收到了 {topic} 事件 — {payload_summary}",
+            thought_type=ThoughtType.SPONTANEOUS,
+            importance=ThoughtImportance.LOW,
+            source_context=f"tick_reflection: {topic}",
+        )
+
 
 # ---------------------------------------------------------------------------
 # 数据结构
@@ -196,6 +294,31 @@ class ThoughtStream:
 
     def __repr__(self) -> str:
         return f"<ThoughtStream {len(self._buffer)} thoughts>"
+
+    def cleanup_expired(self, max_age_s: float = 3600.0) -> list[Thought]:
+        """清理超过 max_age_s 的旧思考，返回被清理的列表。
+
+        事件发布：
+          L4.thought.archived — 每条被清理的思考
+        """
+        from kernel.event_bus import Event, get_bus
+        bus = get_bus()
+        now = time.time()
+        kept = []
+        archived = []
+        for t in self._buffer:
+            if now - t.created_at > max_age_s:
+                archived.append(t)
+            else:
+                kept.append(t)
+        self._buffer = kept
+        for t in archived:
+            bus.publish_sync(Event(
+                topic="L4.thought.archived",
+                payload=t.to_dict(),
+                source="ThoughtStream",
+            ))
+        return archived
 
 
 # ---------------------------------------------------------------------------
@@ -372,13 +495,14 @@ class ConsciousnessEngine:
         self._active: bool = False
         self._thinking_task: Optional[asyncio.Task] = None
         self._shutdown: asyncio.Event = asyncio.Event()
+        self._working_memory = None  # type: Optional["WorkingMemory"]
+        self._idle_thought_engine: Optional[IdleThoughtEngine] = None
 
         # 外部上下文注入（由其他层或外部组件填充）
         self._recent_dialogue_context: str = ""
         self._recent_question_context: str = ""
         self._todo_context: str = "（暂无待办）"
 
-        # 取消订阅函数
         # 取消订阅函数
         self._unsubs: list[Callable[[], None]] = []
 
@@ -413,6 +537,15 @@ class ConsciousnessEngine:
     def is_idle(self) -> bool:
         return self._idle_detector.is_idle()
 
+    def set_todo_context(self, context: str) -> None:
+        self._todo_context = context
+
+    def set_working_memory(self, wm) -> None:
+        """注入 WorkingMemory 实例，供 IdleThoughtEngine 取样用。"""
+        self._working_memory = wm
+        if self._idle_thought_engine is not None:
+            self._idle_thought_engine._working_memory = wm
+
     # --- 生命周期 ---
 
     async def attach(self) -> None:
@@ -438,8 +571,12 @@ class ConsciousnessEngine:
             self._bus.subscribe("gateway.message.sent", self._on_gateway_message)
         )
 
-        # 启动 idle 检测循环
-        self._thinking_task = asyncio.create_task(self._idle_loop())
+        # 启动 IdleThoughtEngine（订阅 L0.circadian.tick）
+        self._idle_thought_engine = IdleThoughtEngine(self._bus)
+        await self._idle_thought_engine.attach(working_memory=self._working_memory)
+
+        # 启动 idle 检测循环 + 持续思考循环
+        self._thinking_task = asyncio.create_task(self._consciousness_loop())
         logger.info("[L4 ConsciousnessEngine] 已启动")
 
     async def stop(self) -> None:
@@ -456,6 +593,8 @@ class ConsciousnessEngine:
                 await self._thinking_task
             except asyncio.CancelledError:
                 pass
+        if self._idle_thought_engine:
+            await self._idle_thought_engine.detach()
         for unsub in self._unsubs:
             unsub()
         self._unsubs.clear()
@@ -502,20 +641,41 @@ class ConsciousnessEngine:
         self._stream.add(thought)
         self._output_gate.evaluate(thought)
 
-    # --- Idle 检测循环 ---
+    # --- 持续思考循环（idle loop + continuous thinking） ---
 
-    async def _idle_loop(self) -> None:
-        """后台循环：定期检查是否进入 idle，每次 idle cycle 生成思考。"""
-        check_interval = 10.0  # 每 10s 检查一次
+    async def _consciousness_loop(self) -> None:
+        """后台循环：结合 idle 检测、持续思考、清理。
+
+        - 每 check_interval_s 检查一次 idle 状态
+        - idle 时生成深度思考（_generate_thought_cycle）
+        - 非 idle 时定期采样 working_memory 生成轻量反思
+        - 每 cleanup_interval_s 执行一次 thought 清理
+        """
+        check_interval_s = 10.0
+        cleanup_interval_s = 300.0  # 每 5 分钟清理一次
+        last_cleanup = time.time()
 
         while not self._shutdown.is_set():
-            await asyncio.sleep(check_interval)
+            await asyncio.sleep(check_interval_s)
 
             if not self._active:
                 continue
 
+            now = time.time()
+
+            # 定期清理过期 thoughts
+            if now - last_cleanup >= cleanup_interval_s:
+                self._stream.cleanup_expired(max_age_s=3600.0)
+                last_cleanup = now
+
+            # Idle 检测：进入 idle 则生成深度思考
             if self._idle_detector.is_idle():
                 await self._generate_thought_cycle()
+                continue
+
+            # 非 idle：持续思考——从 working_memory 取样轻量反思
+            if self._working_memory is not None:
+                await self._continuous_think()
 
     async def _generate_thought_cycle(self) -> None:
         """一次 idle thought cycle：生成 N 条思考并评估。"""
@@ -527,6 +687,36 @@ class ConsciousnessEngine:
             if thought:
                 self._stream.add(thought)
                 self._output_gate.evaluate(thought)
+
+    async def _continuous_think(self) -> None:
+        """非 idle 期间：从 working_memory 取样生成轻量反思。
+
+        发布 L4.thought.created 事件。
+        """
+        if self._working_memory is None:
+            return
+        samples = self._working_memory.recall_recent(3)
+        if not samples:
+            return
+
+        top = samples[0]
+        topic = top.event.topic
+        payload_summary = str(top.event.payload)[:100]
+
+        thought = Thought(
+            thought_id=uuid4().hex[:8],
+            content=f"持续反思：最近收到了 {topic} 事件 — {payload_summary}",
+            thought_type=ThoughtType.SPONTANEOUS,
+            importance=ThoughtImportance.LOW,
+            source_context=f"continuous_reflection: {topic}",
+        )
+        self._stream.add(thought)
+        self._bus.publish_sync(Event(
+            topic="L4.thought.created",
+            payload=thought.to_dict(),
+            source="ConsciousnessEngine",
+        ))
+        self._output_gate.evaluate(thought)
 
     def _generate_one_thought(self, silent_s: float) -> Optional[Thought]:
         """从上下文和模板生成一条思考。优先级如下：

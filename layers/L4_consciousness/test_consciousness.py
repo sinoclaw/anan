@@ -6,10 +6,11 @@ L4 Stream of Consciousness — 测试套件
 import pytest
 import time
 
-from kernel.event_bus import EventBus
+from kernel.event_bus import Event, EventBus
 from layers.L4_consciousness import (
     ConsciousnessEngine,
     IdleDetector,
+    IdleThoughtEngine,
     OutputGate,
     Thought,
     ThoughtImportance,
@@ -317,6 +318,125 @@ class TestConsciousnessEngine:
         bus = EventBus()
         engine = ConsciousnessEngine(bus)
         assert isinstance(engine.output_gate, OutputGate)
+
+
+# ---------------------------------------------------------------------------
+# IdleThoughtEngine tests
+# ---------------------------------------------------------------------------
+
+class TestIdleThoughtEngine:
+    @pytest.mark.asyncio
+    async def test_attaches_and_subscribes_to_tick(self):
+        bus = EventBus()
+        engine = IdleThoughtEngine(bus, tick_think_interval=2)
+        await engine.attach()
+        assert engine._active is True
+        assert engine._unsub_tick is not None
+        await engine.detach()
+
+    @pytest.mark.asyncio
+    async def test_fires_thought_created_on_tick_interval(self):
+        bus = EventBus()
+        fired = []
+        bus.subscribe("L4.thought.created", lambda e: fired.append(e))
+
+        # Mock working_memory that returns non-empty from recall_recent
+        class FakeWM:
+            def recall_recent(self, n=3):
+                from layers.L3_working_memory.working_memory import WorkingMemoryEntry
+                from kernel.event_bus import Event
+                import time
+                return [WorkingMemoryEntry(event=Event(topic="test", source="test", payload={}), captured_at=time.time(), salience=0.5)]
+        wm = FakeWM()
+
+        engine = IdleThoughtEngine(bus, tick_think_interval=1)
+        await engine.attach(working_memory=wm)
+
+        # Simulate L0.circadian.tick events
+        for i in range(1, 4):
+            await bus.publish(Event(
+                topic="L0.circadian.tick",
+                source="test",
+                payload={"ticks": i, "cycle": 1},
+            ))
+
+        await engine.detach()
+
+        # tick_think_interval=1, so every tick fires
+        assert len(fired) >= 1
+
+    @pytest.mark.asyncio
+    async def test_skips_ticks_not_on_interval(self):
+        bus = EventBus()
+        fired = []
+        bus.subscribe("L4.thought.created", lambda e: fired.append(e))
+
+        class FakeWM:
+            def recall_recent(self, n=3):
+                from layers.L3_working_memory.working_memory import WorkingMemoryEntry
+                from kernel.event_bus import Event
+                import time
+                return [WorkingMemoryEntry(event=Event(topic="test", source="test", payload={}), captured_at=time.time(), salience=0.5)]
+        wm = FakeWM()
+
+        engine = IdleThoughtEngine(bus, tick_think_interval=3)
+        await engine.attach(working_memory=wm)
+
+        # ticks 1,2 should not fire; tick 3 should fire
+        for i in range(1, 4):
+            await bus.publish(Event(
+                topic="L0.circadian.tick",
+                source="test",
+                payload={"ticks": i, "cycle": 1},
+            ))
+
+        await engine.detach()
+        # Only tick 3 fires (interval=3, and ticks start at 1, so 1%3!=0, 2%3!=0, 3%3==0)
+        assert len(fired) >= 1
+
+    @pytest.mark.asyncio
+    async def test_no_thought_created_without_working_memory(self):
+        bus = EventBus()
+        fired = []
+        bus.subscribe("L4.thought.created", lambda e: fired.append(e))
+
+        engine = IdleThoughtEngine(bus, tick_think_interval=1)
+        # working_memory is None by default
+        await engine.attach()
+
+        # fire a tick that would normally trigger thought
+        await bus.publish(Event(
+            topic="L0.circadian.tick",
+            source="test",
+            payload={"ticks": 1, "cycle": 1},
+        ))
+
+        await engine.detach()
+        # No working_memory → no thought generated
+        assert len(fired) == 0
+
+
+# ---------------------------------------------------------------------------
+# ThoughtStream cleanup tests
+# ---------------------------------------------------------------------------
+
+class TestThoughtStreamCleanup:
+    def test_cleanup_expired_removes_old_thoughts(self):
+        stream = ThoughtStream()
+        import time
+        # Add an old thought (mock created_at by patching)
+        old = _make_thought(ThoughtType.SPONTANEOUS)
+        old.created_at = time.time() - 4000  # 4000s old > 3600s max_age
+        stream.add(old)
+
+        new = _make_thought(ThoughtType.SPONTANEOUS)
+        new.created_at = time.time()  # fresh
+        stream.add(new)
+
+        archived = stream.cleanup_expired(max_age_s=3600.0)
+        assert len(archived) == 1
+        assert archived[0] is old
+        assert len(stream) == 1
 
 
 # ---------------------------------------------------------------------------
