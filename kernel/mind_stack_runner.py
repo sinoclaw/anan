@@ -574,8 +574,17 @@ class MindStackRunner:
         # L4 Consciousness — 用 ConsciousnessEngine（完整引擎），不是 ThoughtStream（数据容器）
         try:
             from layers.L4_consciousness.consciousness import ConsciousnessEngine
-            self._layers.append(ConsciousnessEngine(bus=self._bus, idle_threshold_s=120.0))
-            logger.info("  ✓ L4 Consciousness 就绪")
+            from agent.auxiliary_client import async_call_llm
+
+            async def _conscious_llm(messages: list, temperature: float = 0.3) -> str:
+                result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
+                return result.choices[0].message.content
+
+            self._layers.append(ConsciousnessEngine(
+                bus=self._bus,
+                llm=_conscious_llm,
+            ))
+            logger.info("  ✓ L4 Consciousness 就绪 (LLM=yes)")
         except Exception as exc:
             logger.warning("  ✗ L4 Consciousness 启动失败: %s", exc)
 

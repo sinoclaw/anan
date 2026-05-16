@@ -69,6 +69,7 @@ class IdleThoughtEngine:
         self,
         bus: EventBus,
         tick_think_interval: int = _DEFAULT_TICK_THINK_INTERVAL,
+        llm: Optional[Callable[..., Awaitable[str]]] = None,
     ):
         self._bus = bus
         self._tick_think_interval = tick_think_interval
@@ -78,6 +79,7 @@ class IdleThoughtEngine:
         # WorkingMemory 引用（可选，注入）
         self._working_memory = None   # type: Optional["WorkingMemory"]
         self._tick_count: int = 0
+        self._llm = llm  # optional LLM for richer reflection
 
     async def attach(self, working_memory=None) -> None:
         """启动 IdleThoughtEngine，订阅 L0.circadian.tick。"""
@@ -86,7 +88,7 @@ class IdleThoughtEngine:
         self._active = True
         self._working_memory = working_memory
         self._unsub_tick = self._bus.subscribe(
-            "L0.circadian.tick", self._on_tick
+            "L0.circadian.tick", lambda e: asyncio.create_task(self._on_tick(e))
         )
         logger.info("[L4 IdleThoughtEngine] 已启动 (tick interval=%d)", self._tick_think_interval)
 
@@ -99,7 +101,10 @@ class IdleThoughtEngine:
         logger.info("[L4 IdleThoughtEngine] 已关闭")
 
     async def _on_tick(self, event: Event) -> None:
-        """收到 L0.circadian.tick，按 tick % interval 触发思考。"""
+        """收到 L0.circadian.tick，按 tick % interval 触发思考。
+
+        优先用 LLM 生成有意义的反思，无 LLM 时 fallback 到规则生成。
+        """
         if not self._active:
             return
         payload = event.payload or {}
@@ -107,7 +112,9 @@ class IdleThoughtEngine:
         if self._tick_count % self._tick_think_interval != 0:
             return
 
-        thought = self._generate_tick_thought()
+        thought = await self._generate_llm_thought()
+        if thought is None:
+            thought = self._generate_tick_thought()
         if thought is None:
             return
 
@@ -116,6 +123,46 @@ class IdleThoughtEngine:
             payload=thought.to_dict(),
             source="IdleThoughtEngine",
         ))
+
+    async def _generate_llm_thought(self) -> Optional[Thought]:
+        """Use LLM to generate a meaningful reflection from recent events and memory.
+
+        Returns None if no LLM is configured or working_memory is unavailable.
+        """
+        if not self._llm or self._working_memory is None:
+            return None
+
+        samples = self._working_memory.recall_recent(5)
+        if not samples:
+            return None
+
+        # Build context from recent events
+        events_text = "\n".join(
+            f"- {s.event.topic}: {str(s.event.payload)[:80]}"
+            for s in samples[:3]
+        )
+
+        prompt = f"""你是 anan 的 L4 意识层。给定以下最近的感知事件，用一段话反思 anan 当前的状态或值得注意的 pattern（30字以内，中文）：
+
+{events_text}
+
+直接输出反思内容，不要前缀。"""
+
+        try:
+            content = await self._llm([{"role": "user", "content": prompt}])
+            content = content.strip()
+            if not content:
+                return None
+            return Thought(
+                thought_id=uuid4().hex[:8],
+                content=content,
+                thought_type=ThoughtType.SPONTANEOUS,
+                importance=ThoughtImportance.LOW,
+                source_context="llm_reflection",
+            )
+        except Exception as exc:
+            logger.warning("LLM thought generation failed: %s", exc)
+            return None
 
     def _generate_tick_thought(self) -> Optional[Thought]:
         """从 working_memory 取样生成轻量思考。"""
@@ -484,6 +531,7 @@ class ConsciousnessEngine:
         idle_threshold_s: float = _IDEAL_IDLE_THRESHOLD_S,
         cycle_interval_s: float = 45.0,
         max_thoughts_per_cycle: int = 2,
+        llm: Optional[Callable[..., Awaitable[str]]] = None,
     ):
         self._bus = bus
         self._idle_detector = IdleDetector(bus, threshold_s=idle_threshold_s)
@@ -497,6 +545,7 @@ class ConsciousnessEngine:
         self._shutdown: asyncio.Event = asyncio.Event()
         self._working_memory = None  # type: Optional["WorkingMemory"]
         self._idle_thought_engine: Optional[IdleThoughtEngine] = None
+        self._llm = llm  # passed to inner IdleThoughtEngine for LLM reflection
 
         # 外部上下文注入（由其他层或外部组件填充）
         self._recent_dialogue_context: str = ""
@@ -572,7 +621,11 @@ class ConsciousnessEngine:
         )
 
         # 启动 IdleThoughtEngine（订阅 L0.circadian.tick）
-        self._idle_thought_engine = IdleThoughtEngine(self._bus)
+        self._idle_thought_engine = IdleThoughtEngine(
+            self._bus,
+            tick_think_interval=5,
+            llm=self._llm,
+        )
         await self._idle_thought_engine.attach(working_memory=self._working_memory)
 
         # 启动 idle 检测循环 + 持续思考循环
