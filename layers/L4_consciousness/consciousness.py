@@ -599,9 +599,7 @@ class ConsciousnessEngine:
 
     async def attach(self) -> None:
         """启动 consciousness engine：订阅 bus 事件 + 开始 idle 检测循环。"""
-        import sys; print(f"[L4 ATTACH] called, _active={getattr(self, '_active', 'MISSING')}", flush=True)
         if self._active:
-            print("[L4 ATTACH] early return because _active=True", flush=True)
             return
         self._active = True
         self._shutdown.clear()
@@ -631,11 +629,9 @@ class ConsciousnessEngine:
         await self._idle_thought_engine.attach(working_memory=self._working_memory)
 
         # 启动 idle 检测循环 + 持续思考循环
-        print("[L4 ATTACH] about to create _consciousness_loop task", flush=True)
-        self._thinking_task = asyncio.create_task(self._consciousness_loop())
-        print("[L4 ATTACH] task created, about to log", flush=True)
-        logger.info("[L4 ConsciousnessEngine] 已启动")
-        print("[L4 ATTACH] done, _active=True", flush=True)
+        logger.warning("[L4 ATTACH] task created")
+        self._task = asyncio.create_task(self._consciousness_loop())
+        logger.warning("[L4 ATTACH] done, _active=True")
 
     async def stop(self) -> None:
         """供 MindStackRunner 调用，等价于 detach()。"""
@@ -712,10 +708,9 @@ class ConsciousnessEngine:
         check_interval_s = 10.0
         cleanup_interval_s = 300.0  # 每 5 分钟清理一次
         last_cleanup = time.time()
-        print(f"[L4 LOOP] started at {last_cleanup}, shutdown={self._shutdown}", flush=True)
+        logger.warning(f"[L4 LOOP] started, shutdown={self._shutdown}")
 
         while not self._shutdown.is_set():
-            print("[L4 LOOP] waking from sleep", flush=True)
             await asyncio.sleep(check_interval_s)
 
             if not self._active:
@@ -729,9 +724,7 @@ class ConsciousnessEngine:
                 last_cleanup = now
 
             # Idle 检测：进入 idle 则生成深度思考
-            print(f"[L4 LOOP] reached idle check, _active={self._active}", flush=True)
             idle = self._idle_detector.is_idle()
-            print(f"[L4 LOOP] is_idle={idle}", flush=True)
             logger.warning(f"[L4 consciousness loop] active={self._active} idle={idle} elapsed={now - self._idle_detector._last_input_at:.1f}s")
             if idle:
                 await self._generate_thought_cycle()
