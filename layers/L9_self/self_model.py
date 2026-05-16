@@ -315,6 +315,7 @@ class SelfModelLive:
         self.update_count = 0
         # LLM provider for self-reflection (optional)
         self._llm = llm
+        self._llm_who_am_i = self.reflect_who_am_i  # bound async method, handles cooldown/prompt internally
         self._last_reflect: float = 0.0
         self._reflect_cooldown: float = 300.0  # 5 min between reflections
 
@@ -448,6 +449,8 @@ class SelfModelLive:
         # Trigger LLM self-reflection: who am I now, what did I learn
         if self._llm and self._llm_who_am_i:
             age = time.time() - self._last_reflect
+            logger.info("L9: _llm=%s _llm_who_am_i=%s age=%.0fs cooldown=%.0f",
+                        bool(self._llm), bool(self._llm_who_am_i), age, self._reflect_cooldown)
             if age > self._reflect_cooldown:
                 try:
                     identity = await self._llm_who_am_i()
@@ -458,6 +461,9 @@ class SelfModelLive:
                     self._last_reflect = time.time()
                 except Exception as exc:
                     logger.warning("L9: self-reflection failed: %s", exc)
+        else:
+            logger.info("L9: _on_sleep_consolidated skipped — _llm=%s _llm_who_am_i=%s",
+                        bool(self._llm), bool(self._llm_who_am_i))
 
 
     # -------------------------------------------------------------------------
