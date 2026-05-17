@@ -821,7 +821,10 @@ class ConsciousnessEngine:
                 await self._continuous_think()
 
     async def _generate_thought_cycle(self) -> None:
-        """一次 idle thought cycle：生成 N 条思考并评估。"""
+        """一次 idle thought cycle：生成 N 条思考并评估。
+
+        发布 L4.thought.created 事件（与非 idle 路径对称）。
+        """
         silent_s = self._idle_detector.seconds_since_input()
         logger.debug(f"[L4] idle cycle, silent={silent_s:.0f}s")
 
@@ -829,6 +832,11 @@ class ConsciousnessEngine:
             thought = self._generate_one_thought(silent_s)
             if thought:
                 self._stream.add(thought)
+                self._bus.publish_sync(Event(
+                    topic="L4.thought.created",
+                    payload=thought.to_dict(),
+                    source="ConsciousnessEngine",
+                ))
                 await self._output_gate.evaluate(thought)
 
     async def _continuous_think(self) -> None:
