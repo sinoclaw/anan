@@ -32,6 +32,11 @@ from datetime import datetime
 from typing import Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L6_metacognition.mirror_health_advisor import (
+    MirrorHealthAdvisor,
+    MirrorHealthContext,
+    MirrorHealthDecision,
+)
 
 logger = logging.getLogger("anan.L6.mirror")
 
@@ -99,6 +104,15 @@ class Mirror:
         self._reports: list[HealthReport] = []
         self._last_identity_count: Optional[int] = None
         self._stagnation_streak = 0
+        self._advisor = MirrorHealthAdvisor()
+
+    # ------------------------------------------------------------------
+    # delegate injection (for MindStackRunner)
+    # ------------------------------------------------------------------
+
+    def set_delegate(self, fn) -> None:
+        """MindStackRunner calls this to inject the async delegate."""
+        self._advisor.set_delegate(fn)
 
     # ------------------------------------------------------------------
     async def attach(self) -> None:
@@ -136,15 +150,77 @@ class Mirror:
 
     # ------------------------------------------------------------------
     async def reflect_and_emit(self) -> HealthReport:
+        """Collect raw metrics, ask advisor for health decision, emit."""
         logger.warning("MIRROR_ENTER reflect_and_emit called")
         try:
-            report = self.reflect()
-            logger.warning("MIRROR reflect done: score=%s", getattr(report, 'score', '?'))
+            raw = self.reflect()
+            logger.warning("MIRROR reflect done: score=%s", getattr(raw, 'score', '?'))
         except Exception as exc:
             logger.warning("MIRROR reflect ERROR: %s", exc)
             raise
-        await self._emit(report)
+
+        # Build advisor context from raw report
+        ctx = self._build_advisor_context(raw)
+        decision = await self._advisor.evaluate(ctx)
+
+        # Apply advisor decision to raw report
+        score = decision.score_override if decision.score_override is not None else raw.score
+        healthy = decision.healthy_override if decision.healthy_override is not None else raw.healthy
+        issues = list(raw.issues)
+        suggestions = list(raw.suggestions)
+
+        # Advisor can add new issues/suggestions
+        for issue in decision.new_issues:
+            if issue not in issues:
+                issues.append(issue)
+        for suggestion in decision.new_suggestions:
+            if suggestion not in suggestions:
+                suggestions.append(suggestion)
+
+        report = HealthReport(
+            timestamp=raw.timestamp,
+            score=score,
+            healthy=healthy,
+            metrics=raw.metrics,
+            issues=issues,
+            suggestions=suggestions,
+        )
+        self._reports.append(report)
+
+        emit_warn = decision.emit_warn or (not healthy) or any("严重" in i for i in issues)
+        await self._emit(report, force_warn=emit_warn)
         return report
+
+    def _build_advisor_context(self, raw: HealthReport) -> MirrorHealthContext:
+        """Convert a raw HealthReport into MirrorHealthContext for the advisor."""
+        bus = raw.metrics.get("bus") or {}
+        self_m = raw.metrics.get("self")
+        wm = raw.metrics.get("working_memory") or {}
+
+        wm_dist = wm.get("layer_distribution", {})
+        top_layer = max(wm_dist, key=wm_dist.get) if wm_dist else ""
+        top_share = wm.get("top_layer_share", 0.0)
+
+        stagnation = self_m.get("stagnation_streak", 0) if self_m else 0
+
+        return MirrorHealthContext(
+            bus_published=bus.get("published", 0),
+            bus_delivered=bus.get("delivered", 0),
+            bus_errors=bus.get("errors", 0),
+            bus_error_rate=bus.get("error_rate", 0.0),
+            self_identity_count=self_m.get("identity", 0) if self_m else 0,
+            self_vision_count=self_m.get("vision", 0) if self_m else 0,
+            self_history_count=self_m.get("history", 0) if self_m else 0,
+            self_wisdom_count=len(self._self.wisdom_facts) if self._self else 0,
+            self_stagnation_streak=stagnation,
+            wm_total_entries=wm.get("total_entries", 0),
+            wm_top_layer=top_layer,
+            wm_top_share=top_share,
+            rule_issues=list(raw.issues),
+            rule_suggestions=list(raw.suggestions),
+            rule_score=raw.score,
+            n_reports=len(self._reports),
+        )
 
     def reflect(self) -> HealthReport:
         """Compute a HealthReport from currently attached sources."""
@@ -263,7 +339,7 @@ class Mirror:
         return report
 
     # ------------------------------------------------------------------
-    async def _emit(self, report: HealthReport) -> None:
+    async def _emit(self, report: HealthReport, force_warn: bool = False) -> None:
         logger.warning("MIRROR_EMIT bus=%s id=%d", type(self._bus).__name__, id(self._bus))
         try:
             await self._bus.publish(Event(
@@ -271,7 +347,7 @@ class Mirror:
                 source="L6.mirror",
                 payload=report.to_dict(),
             ))
-            if not report.healthy or any("严重" in i for i in report.issues):
+            if force_warn or not report.healthy or any("严重" in i for i in report.issues):
                 await self._bus.publish(Event(
                     topic="L6.metacognition.warn",
                     source="L6.mirror",

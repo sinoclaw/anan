@@ -693,6 +693,7 @@ class MindStackRunner:
 
             self_model = SelfBuilder().build()  # loads facts from ~/.anan/memories/
             self_model_live = SelfModelLive(model=self_model, llm=_self_llm)
+            self_model_live.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(self_model_live)
             logger.info("  ✓ L9 SelfModel 就绪 (LLM=yes, facts=%d)", self_model.n_facts)
 
@@ -877,8 +878,9 @@ class MindStackRunner:
                 self_model=self_model if hasattr(self, 'self_model') else None,
                 working_memory=self._working_memory,
             )
+            mirror.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(mirror)
-            logger.info("  ✓ L6 Mirror 就绪")
+            logger.info("  ✓ L6 Mirror 就绪（subagent mode）")
         except Exception as exc:
             logger.warning("  ✗ L6 Mirror 启动失败: %s", exc)
 

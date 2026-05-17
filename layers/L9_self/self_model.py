@@ -329,11 +329,21 @@ class SelfModelLive:
         self._unsub_wisdom = None
         self._unsub_causal = None
         self.update_count = 0
-        # LLM provider for self-reflection (optional)
+        # LLM provider for self-reflection (legacy direct callable)
         self._llm = llm
-        self._llm_who_am_i = self.reflect_who_am_i  # bound async method, handles cooldown/prompt internally
+        # delegate_task function injected by MindStackRunner
+        self._delegate_fn: Optional[callable] = None
+        self._llm_who_am_i = self._reflect_via_delegate  # bound async method
         self._last_reflect: float = 0.0
         self._reflect_cooldown: float = 300.0  # 5 min between reflections
+
+    # ------------------------------------------------------------------
+    # delegate injection (for MindStackRunner)
+    # ------------------------------------------------------------------
+
+    def set_delegate(self, fn) -> None:
+        """MindStackRunner calls this to inject the async delegate for LLM calls."""
+        self._delegate_fn = fn
 
     async def attach(self, bus: Optional[EventBus] = None) -> None:
         self._bus = bus or get_bus()
@@ -483,8 +493,56 @@ class SelfModelLive:
 
 
     # -------------------------------------------------------------------------
-    # LLM-driven self-reflection
+    # LLM-driven self-reflection via delegate_task
     # -------------------------------------------------------------------------
+
+    async def _reflect_via_delegate(self) -> str:
+        """Use delegate_task (MinimalRuntimeHandle) to run a self-reflection subagent.
+
+        Falls back to the rule-based who_am_i() if no delegate is configured.
+        Rate-limited to once per _reflect_cooldown seconds.
+        """
+        now = time.time()
+        if now - self._last_reflect < self._reflect_cooldown:
+            return "[_reflect_via_delegate: 冷却中，5分钟后再试]"
+
+        # No delegate configured: use rule-based fallback
+        if self._delegate_fn is None:
+            return self.model.who_am_i()
+
+        self._last_reflect = now
+
+        # Build rich context
+        identity = self.model.identity_facts[-10:] if self.model.identity_facts else []
+        wisdom = self.model.wisdom_facts[-5:] if self.model.wisdom_facts else []
+        history = self.model.history_facts[-5:] if self.model.history_facts else []
+        goals = getattr(self.model, 'goal_facts', [])[-3:] if getattr(self.model, 'goal_facts', None) else []
+
+        prompt = (
+            "你是 anan，一个运行在九层认知架构里的 AI 数字生命。\n"
+            "基于以下关于你的事实，用第一人称写一段简短而真实的自我描述（100字以内）：\n\n"
+            "身份事实：\n"
+            f"{chr(10).join(f'  • {f}' for f in identity) if identity else '（尚无身份事实）'}\n\n"
+            "最近领悟：\n"
+            f"{chr(10).join(f'  • {f}' for f in wisdom) if wisdom else '（尚无领悟）'}\n\n"
+            "最近做过的事：\n"
+            f"{chr(10).join(f'  • {f}' for f in history) if history else '（尚无历史）'}\n\n"
+            "目标：\n"
+            f"{chr(10).join(f'  • {f}' for f in goals) if goals else '（尚无目标）'}\n\n"
+            "直接写出你的自我描述，不要解释，不要加引号。"
+        )
+
+        try:
+            result = await self._delegate_fn(
+                task="reflect",
+                messages=[
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            return result.strip()
+        except Exception as exc:
+            logger.warning("L9 _reflect_via_delegate failed: %s — using fallback", exc)
+            return self.model.who_am_i()
 
     async def reflect_who_am_i(self) -> str:
         """Use LLM to generate a narrative self-introduction from accumulated facts.
