@@ -1413,6 +1413,7 @@ class DreamingPlugin:
         }
 
         self._subagent = None
+        self._async_llm = None  # direct LLM bridge, used when subagent unavailable
         self._cron_service = None
 
     def register_hook(self, hook_name: str, handler) -> None:
@@ -1435,6 +1436,14 @@ class DreamingPlugin:
     def set_subagent(self, subagent) -> None:
         """Set the subagent for dream narrative generation."""
         self._subagent = subagent
+
+    def set_async_llm(self, fn) -> None:
+        """Set async LLM bridge function (async_call_llm) for narrative generation.
+
+        This is preferred over subagent when running inside MindStackRunner
+        which does not have a subagent context.
+        """
+        self._async_llm = fn
 
     def set_cron_service(self, cron_service) -> None:
         """Set the cron service for managing dreaming cron jobs."""
@@ -1564,14 +1573,14 @@ class DreamingPlugin:
         try:
             session_db = AnanSessionDB()
             messages = session_db.get_recent_messages_across_sessions(
-                lookback_days=1,
-                limit_per_session=5,
-                total_limit=20,
+                lookback_days=7,
+                limit_per_session=10,
+                total_limit=50,
             )
             for msg in messages:
-                # Skip tool/assistant internal outputs — only keep user and agent dialogue
+                # Skip tool internal outputs — keep user and assistant dialogue
                 role = msg.get("role", "")
-                if role in ("tool", "assistant"):
+                if role == "tool":
                     continue
                 content = msg.get("content") or ""
                 if isinstance(content, list):
@@ -1614,6 +1623,39 @@ Write a short stream-of-consciousness monologue in first person.
                     body_lines.append(response.strip())
             except Exception as e:
                 logger.debug(f"daydreaming: narrative generation failed: {e}")
+
+        # Fallback / primary: generate via async_call_llm bridge (no subagent needed)
+        if not body_lines and fragments and self._async_llm:
+            try:
+                random.shuffle(fragments)
+                fragments_text = "\n".join(f'"{f}"' for f in fragments[:8])
+                messages = [
+                    {"role": "user", "content": f"""Fragments from recent experience:
+
+{fragments_text}
+
+Write a short stream-of-consciousness monologue in first person.
+不要标题，不要列表，不要结构。跟随联想走，从一个碎片滑到另一个。
+60-120字。纯意识流。"""},
+                ]
+                result = await self._async_llm(
+                    task="agent",
+                    messages=messages,
+                    temperature=0.9,
+                    model=self.config.model,
+                )
+                response = None
+                if isinstance(result, dict):
+                    response = result.get("content") or result.get("text") or result.get("response")
+                elif isinstance(result, str):
+                    response = result
+                if response:
+                    body_lines.append(response.strip())
+                    logger.info(f"daydreaming: LLM narrative generated ({len(response)} chars)")
+                else:
+                    logger.debug(f"daydreaming: async_llm returned empty: {result!r}")
+            except Exception as e:
+                logger.debug(f"daydreaming: async_llm generation failed: {e}")
 
         # Fallback: if LLM failed or no fragments, write raw fragments unformatted
         if not body_lines and fragments:
@@ -1700,9 +1742,9 @@ Write a short stream-of-consciousness monologue in first person.
                 total_limit=15,
             )
             for msg in messages:
-                # Skip tool/assistant internal outputs — only keep user and agent dialogue
+                # Skip tool internal outputs — keep user and assistant dialogue
                 role = msg.get("role", "")
-                if role in ("tool", "assistant"):
+                if role == "tool":
                     continue
                 content = msg.get("content") or ""
                 if isinstance(content, list):

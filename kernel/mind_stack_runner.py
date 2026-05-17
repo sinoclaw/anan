@@ -732,7 +732,19 @@ class MindStackRunner:
         # L1 Sleep
         try:
             from layers.L1_sleep.sleep_plugin import DreamingPlugin
+            from agent.auxiliary_client import async_call_llm
+
+            async def _dreaming_llm(messages: list, temperature: float = 0.3, model: str = None, task: str = None):
+                """Bridge: async_call_llm(task='agent') → DreamingPlugin._async_llm compatible return."""
+                result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
+                # Return a dict so the DreamingPlugin caller can extract .get("content")
+                if hasattr(result, "choices"):
+                    # AgentResult / ChatCompletion object
+                    return {"content": result.choices[0].message.content}
+                return result
+
             self._dreaming_plugin = DreamingPlugin(config={"enabled": True})
+            self._dreaming_plugin.set_async_llm(_dreaming_llm)
             self._layers.append(self._dreaming_plugin)
             logger.info("  ✓ L1 Sleep 就绪")
         except Exception as exc:
