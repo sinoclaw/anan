@@ -28,11 +28,24 @@ from __future__ import annotations
 
 import logging
 from collections import Counter
-from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Awaitable, Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L4_proactive.protocols import ProbeContext, ProbeResult
+
+# Re-export for public API (imported by __init__.py and tests)
+__all__ = [
+    "DEFAULT_PROBES",
+    "ProactiveObserver",
+    "Probe",
+    "ProbeContext",
+    "ProbeResult",
+    "probe_grow_identity",
+    "probe_heal_bus",
+    "probe_keep_attention_balanced",
+]
+from layers.L4_proactive.observability_advisor import ObservabilityAdvisor
 
 logger = logging.getLogger("anan.L4.observer")
 
@@ -41,30 +54,14 @@ logger = logging.getLogger("anan.L4.observer")
 # Probe protocol
 # ---------------------------------------------------------------------------
 
-@dataclass
-class ProbeResult:
-    """What a probe found out about an intent."""
-    verdict: str    # "verified" | "falsified" | "inconclusive"
-    evidence: str   # human-readable explanation
-    detail: dict = field(default_factory=dict)
-
-
 # A probe takes (intent, ctx) and returns a ProbeResult.
 # ctx exposes: bus, working_memory, self_model, intent_stack
-Probe = Callable[["Intent", "ProbeContext"], ProbeResult]
-
-
-@dataclass
-class ProbeContext:
-    bus: EventBus
-    working_memory: Any = None
-    self_model: Any = None
-    intent_stack: Any = None
+Probe = Callable[..., ProbeResult]
 
 
 # ---------------------------------------------------------------------------
 # Built-in probes
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 def probe_keep_attention_balanced(intent, ctx: ProbeContext) -> ProbeResult:
     """L8 wants attention balanced. Look at WM — is the top layer still hogging?"""
@@ -171,21 +168,21 @@ def probe_catchall(intent, ctx: ProbeContext) -> ProbeResult:
 
     if key.startswith("keep_triggering_"):
         target = key.replace("keep_triggering_", "").replace("_", ".")
-        found = any(target in e.event.topic or target in str(e.event.payload) for e in history)
+        found = any(target in e.topic or target in str(e.payload) for e in history)
         if found:
             return ProbeResult("verified", f"最近 30 事件中出现过 {target}", {"target": target})
         return ProbeResult("inconclusive", f"最近 30 事件中未出现 {target}，需更多信息", {"target": target})
 
     if key.startswith("avoid_"):
-        action = key.replace("avoid_", "")
-        found = any(action in e.event.topic or action in str(e.event.payload) for e in history)
+        action = key.replace("avoid_", "").replace("_", ".")
+        found = any(action in e.topic or action in str(e.payload) for e in history)
         if not found:
             return ProbeResult("verified", f"{action} 未出现，避开了", {"action": action})
         return ProbeResult("falsified", f"{action} 仍在发生", {"action": action})
 
     if key.startswith("keep_doing_"):
-        action = key.replace("keep_doing_", "")
-        found = any(action in e.event.topic or action in str(e.event.payload) for e in history)
+        action = key.replace("keep_doing_", "").replace("_", ".")
+        found = any(action in e.topic or action in str(e.payload) for e in history)
         if found:
             return ProbeResult("verified", f"{action} 仍在做", {"action": action})
         return ProbeResult("inconclusive", f"{action} 最近未观察到", {"action": action})
@@ -237,6 +234,11 @@ class ProactiveObserver:
         self._delegate_fn: Optional[callable] = None  # delegate_task injected by MindStackRunner
         self._unsubs: list[Callable[[], None]] = []
         self._observations: list[dict] = []
+        # OBS-1: ObservabilityAdvisor for generic intent verification (subagent mode)
+        self._obs_advisor = ObservabilityAdvisor()
+        # If no custom llm_probe_fn was provided, use the advisor as the LLM probe
+        if self._llm_probe_fn is None:
+            self._llm_probe_fn = self._obs_advisor.evaluate
 
     # ------------------------------------------------------------------
     # delegate injection (for MindStackRunner)
@@ -245,6 +247,7 @@ class ProactiveObserver:
     def set_delegate(self, fn) -> None:
         """MindStackRunner calls this to inject the async delegate."""
         self._delegate_fn = fn
+        self._obs_advisor.set_delegate(fn)
 
     # ------------------------------------------------------------------
     async def attach(self) -> None:
