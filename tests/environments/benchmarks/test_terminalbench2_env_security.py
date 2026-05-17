@@ -32,10 +32,10 @@ def _load_terminalbench_module(monkeypatch):
     class _AnanAgentLoop:
         pass
 
-    class _SinoclawAgentBaseEnv:
+    class _AnanAgentBaseEnv:
         pass
 
-    class _SinoclawAgentEnvConfig:
+    class _AnanAgentEnvConfig:
         pass
 
     class _ToolContext:
@@ -60,8 +60,8 @@ def _load_terminalbench_module(monkeypatch):
         ),
         "environments.anan_base_env": _stub_module(
             "environments.anan_base_env",
-            SinoclawAgentBaseEnv=_SinoclawAgentBaseEnv,
-            SinoclawAgentEnvConfig=_SinoclawAgentEnvConfig,
+            AnanAgentBaseEnv=_AnanAgentBaseEnv,
+            AnanAgentEnvConfig=_AnanAgentEnvConfig,
         ),
         "environments.tool_context": _stub_module(
             "environments.tool_context",

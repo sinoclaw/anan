@@ -376,7 +376,7 @@ from anan_cli import __version__ as _SINOCLAW_VERSION
 _AI_GATEWAY_HEADERS = {
     "HTTP-Referer": "https://anan.nousresearch.com",
     "X-Title": "anan Agent",
-    "User-Agent": f"anan-agent/{_SINOCLAW_VERSION}",
+    "User-Agent": f"AnanAgent/{_SINOCLAW_VERSION}",
 }
 
 # Nous Portal extra_body for product attribution.
