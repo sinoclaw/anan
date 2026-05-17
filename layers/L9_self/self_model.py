@@ -40,6 +40,7 @@ from pathlib import Path
 from typing import Any, Awaitable, Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L9_self.self_evaluation_advisor import SelfEvaluationAdvisor, SelfEvaluation
 
 logger = logging.getLogger("anan.layers.L9_self")
 

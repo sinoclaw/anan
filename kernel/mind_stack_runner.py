@@ -686,6 +686,20 @@ class MindStackRunner:
             self_model_live = SelfModelLive(model=self_model, llm=_self_llm)
             self._layers.append(self_model_live)
             logger.info("  ✓ L9 SelfModel 就绪 (LLM=yes, facts=%d)", self_model.n_facts)
+
+            # L9 SelfEvaluator — subagent-driven overall health evaluation
+            try:
+                from layers.L9_self.self_evaluator import SelfEvaluator
+                self._self_evaluator = SelfEvaluator(
+                    bus=self._bus,
+                    self_model=self_model,
+                    tick_interval=6,
+                )
+                self._self_evaluator.set_delegate(delegate_task)
+                self._layers.append(self._self_evaluator)
+                logger.info("  ✓ L9 SelfEvaluator 就绪（subagent mode）")
+            except Exception as exc:
+                logger.warning("  ✗ L9 SelfEvaluator 启动失败: %s", exc)
         except Exception as exc:
             logger.warning("  ✗ L9 SelfModel 启动失败: %s (使用 stub)", exc)
             self_model = None
