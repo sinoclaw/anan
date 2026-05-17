@@ -258,8 +258,8 @@ class AnanSessionDB:
                 (cutoff_ts, limit),
             )
             return [dict(row) for row in cursor.fetchall()]
-        except sqlite3.OperationalError:
-            # Table doesn't exist yet (fresh DB) — return empty gracefully
+        except (sqlite3.OperationalError, sqlite3.DatabaseError):
+            # Table doesn't exist or DB file is corrupted — return empty gracefully
             return []
         finally:
             conn.close()
@@ -308,8 +308,8 @@ class AnanSessionDB:
                             pass
                 messages.append(msg)
             return messages
-        except sqlite3.OperationalError:
-            # Table doesn't exist yet (fresh DB) — return empty gracefully
+        except (sqlite3.OperationalError, sqlite3.DatabaseError):
+            # Table doesn't exist or DB file is corrupted — return empty gracefully
             return []
         finally:
             conn.close()
@@ -389,11 +389,14 @@ class AnanSessionDB:
                     break
             
             return all_messages
+        except (sqlite3.OperationalError, sqlite3.DatabaseError):
+            # Table doesn't exist or DB file is corrupted — return empty gracefully
+            return []
         finally:
             conn.close()
 
 
-# ---------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Markdown helpers
 # ---------------------------------------------------------------------------
 

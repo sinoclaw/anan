@@ -878,6 +878,8 @@ class MindStackRunner:
                 working_memory=self._working_memory,
             )
             mirror.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
+            await mirror.attach()  # 订阅 tick 事件，启动主动自省循环
+            await mirror.reflect_and_emit()  # 首次立即自省，不要等下一个 tick
             self._layers.append(mirror)
             logger.info("  ✓ L6 Mirror 就绪（subagent mode）")
         except Exception as exc:
