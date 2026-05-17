@@ -851,19 +851,14 @@ class MindStackRunner:
         except Exception as exc:
             logger.warning("  ✗ L6 Mirror 启动失败: %s", exc)
 
-        # L7 Goals — 接 LLM provider（使用 agent auxiliary 层的 centralized 调用）
+        # L7 Goals — 接 delegate_task 子代理评估 progress
         try:
             from layers.L7_goals.goal_engine import GoalGenerator
-            from agent.auxiliary_client import async_call_llm
 
-            async def _goal_llm(messages: list, temperature: float = 0.3) -> str:
-                """Bridge: async_call_llm(task='agent') → GoalGenerator._llm 签名."""
-                result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
-                return result.choices[0].message.content
-
-            goal_generator = GoalGenerator(bus=self._bus, self_model=self_model, llm=_goal_llm)
+            goal_generator = GoalGenerator(bus=self._bus, self_model=self_model, llm=None)
+            goal_generator.set_delegate(delegate_task)
             self._layers.append(goal_generator)
-            logger.info("  ✓ L7 Goals 就绪")
+            logger.info("  ✓ L7 Goals 就绪（subagent mode）")
         except Exception as exc:
             logger.warning("  ✗ L7 Goals 启动失败: %s", exc)
             goal_generator = None

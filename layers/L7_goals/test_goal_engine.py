@@ -119,6 +119,7 @@ class TestGoalGenerator:
     @pytest.mark.asyncio
     async def test_achieve(self, gen):
         g = gen.propose("可完成的任务", scope=GoalScope.IMMEDIATE)
+        g.progress = 100  # progress must be 100 to achieve
         assert gen.achieve(g.id) is True
         assert g.status == GoalStatus.ACHIEVED
         assert g.achieved_at is not None

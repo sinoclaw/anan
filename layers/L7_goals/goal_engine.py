@@ -18,6 +18,7 @@ from enum import Enum
 from typing import Any, Awaitable, Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L7_goals.progress_assessor import ProgressAssessor
 
 logger = logging.getLogger("anan.L7.goals")
 
@@ -41,6 +42,22 @@ class GoalScope(Enum):
 
 
 @dataclass
+class Milestone:
+    id: str
+    description: str
+    completed: bool = False
+    completed_at: Optional[str] = None
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "description": self.description,
+            "completed": self.completed,
+            "completed_at": self.completed_at,
+        }
+
+
+@dataclass
 class Goal:
     id: str
     description: str
@@ -57,6 +74,10 @@ class Goal:
     this_month_actions: list[str] = field(default_factory=list)
     priority_boost: float = 0.0
     source_event: Optional[str] = None
+    # Milestones (sub-goal checkpoints)
+    milestones: list[Milestone] = field(default_factory=list)
+    # Progress: 0-100, assessed by ProgressAssessor (subagent) or fallback handler
+    progress: int = 0
     # LLM-driven fields
     llm_score: float = 0.0       # 0.0-1.0, populated by choose_next_goal
     rationale: Optional[str] = None  # 为什么选这个目标
@@ -81,6 +102,8 @@ class Goal:
             "this_month_actions": list(self.this_month_actions),
             "priority_boost": round(self.priority_boost, 3),
             "source_event": self.source_event,
+            "milestones": [m.to_dict() for m in self.milestones],
+            "progress": self.progress,
             "llm_score": round(self.llm_score, 3),
             "rationale": self.rationale,
         }
@@ -224,6 +247,16 @@ class GoalGenerator:
         # Rate-limit LLM calls: minimum seconds between calls
         self._last_llm_call: float = 0.0
         self._llm_cooldown: float = 5.0  # seconds
+        # Progress assessor subagent (handles goal progress 0-100 evaluation)
+        self._progress_assessor: ProgressAssessor = ProgressAssessor(delegate_fn=None)
+
+    def set_delegate(self, fn: callable) -> None:
+        """Inject delegate_task for ProgressAssessor subagent calls."""
+        self._progress_assessor.set_delegate(fn)
+
+    def set_async_llm(self, fn: callable) -> None:
+        """Inject the LLM bridge for other LLM calls (goal generation, etc.)."""
+        self._llm = fn
 
     # -------------------------------------------------------------------------
     # LLM-driven public API
@@ -514,6 +547,52 @@ class GoalGenerator:
         return None
 
     # -------------------------------------------------------------------------
+    # Progress Assessment (subagent-driven)
+    # -------------------------------------------------------------------------
+
+    async def _assess_all_progress(self, recent_events: Optional[list[str]] = None) -> None:
+        """Assess progress for all active goals using the ProgressAssessor subagent.
+
+        On each goal:
+        1. Call ProgressAssessor (LLM or fallback)
+        2. Update goal.progress
+        3. If progress==100, auto-achieve
+        4. Publish L7.goal.progress_updated event
+        """
+        active = [g for g in self._goals.values() if g.status == GoalStatus.ACTIVE]
+        if not active:
+            return
+
+        events = recent_events or []
+        for goal in active:
+            prev = goal.progress
+            result = await self._progress_assessor.assess(goal)
+            goal.progress = result.progress
+            goal.touch()
+
+            # Auto-achieve if 100%
+            if result.progress == 100 and prev < 100:
+                self.achieve(goal.id)
+
+            # Publish progress update event
+            self._bus.publish_sync(Event(
+                topic="L7.goal.progress_updated",
+                source="L7.goals",
+                payload={
+                    "goal_id": goal.id,
+                    "progress_old": prev,
+                    "progress_new": result.progress,
+                    "reasoning": result.reasoning,
+                    "next_milestone": result.next_milestone,
+                },
+            ))
+
+            logger.debug(
+                "Progress assessed: goal=%s progress=%d→%d (%s)",
+                goal.id, prev, result.progress, result.reasoning,
+            )
+
+    # -------------------------------------------------------------------------
     # Goal lifecycle (unchanged from original)
     # -------------------------------------------------------------------------
 
@@ -652,6 +731,13 @@ class GoalGenerator:
         goal = self._goals.get(goal_id)
         if not goal:
             return False
+        # Enforce progress==100 before allowing achieve
+        if goal.progress < 100:
+            logger.warning(
+                "Goal achieve blocked: %s progress=%d (need 100)",
+                goal.description, goal.progress,
+            )
+            return False
         goal.status = GoalStatus.ACHIEVED
         goal.achieved_at = datetime.now().isoformat()
         goal.touch()
@@ -695,6 +781,31 @@ class GoalGenerator:
         goal.priority_boost = max(0.0, min(1.0, goal.priority_boost + delta))
         goal.touch()
         return True
+
+    def add_milestone(self, goal_id: str, description: str) -> Optional[str]:
+        """Add a milestone to a goal. Returns milestone id or None if goal not found."""
+        goal = self._goals.get(goal_id)
+        if not goal:
+            return None
+        mid = f"{goal_id}-ms-{len(goal.milestones)}"
+        goal.milestones.append(Milestone(id=mid, description=description))
+        goal.touch()
+        logger.info("Milestone added: goal=%s milestone=%s", goal_id, description)
+        return mid
+
+    def complete_milestone(self, goal_id: str, milestone_id: str) -> bool:
+        """Mark a milestone as completed. Auto-triggers progress reassessment."""
+        goal = self._goals.get(goal_id)
+        if not goal:
+            return False
+        for m in goal.milestones:
+            if m.id == milestone_id:
+                m.completed = True
+                m.completed_at = datetime.now().isoformat()
+                goal.touch()
+                logger.info("Milestone completed: goal=%s milestone=%s", goal_id, m.description)
+                return True
+        return False
 
     def detect_conflicts(self, goal_id: str) -> list[tuple[str, str]]:
         goal = self._goals.get(goal_id)
@@ -859,7 +970,10 @@ class GoalGenerator:
         self.decompose(goal.id)
 
     async def _on_circadian_tick(self, event: Event) -> None:
-        # 已有太多活跃目标，跳过
+        # 先评估所有活跃目标的进度（subagent-driven）
+        await self._assess_all_progress()
+
+        # 已有太多活跃目标，跳过新目标生成
         if len(self._active_order) >= 2:
             return
 
