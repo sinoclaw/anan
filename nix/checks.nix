@@ -165,25 +165,25 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
           echo "ok" > $out/result
         '';
 
-        # Verify SINOCLAW_NODE is set in wrapper and points to Node 20+
+        # Verify ANAN_NODE is set in wrapper and points to Node 20+
         # (string-width uses the /v regex flag which requires Node 20+)
         anan-node = pkgs.runCommand "anan-node-version" { } ''
           set -e
-          echo "=== Checking SINOCLAW_NODE in wrapper ==="
-          grep -q "SINOCLAW_NODE" ${anan-agent}/bin/anan-agent || \
-            (echo "FAIL: SINOCLAW_NODE not set in wrapper"; exit 1)
-          echo "PASS: SINOCLAW_NODE present in wrapper"
+          echo "=== Checking ANAN_NODE in wrapper ==="
+          grep -q "ANAN_NODE" ${anan-agent}/bin/anan-agent || \
+            (echo "FAIL: ANAN_NODE not set in wrapper"; exit 1)
+          echo "PASS: ANAN_NODE present in wrapper"
 
-          SINOCLAW_NODE=$(sed -n "s/^export SINOCLAW_NODE='\(.*\)'/\1/p" ${anan-agent}/bin/anan-agent)
-          test -x "$SINOCLAW_NODE" || (echo "FAIL: SINOCLAW_NODE=$SINOCLAW_NODE not executable"; exit 1)
-          echo "PASS: SINOCLAW_NODE executable at $SINOCLAW_NODE"
+          ANAN_NODE=$(sed -n "s/^export ANAN_NODE='\(.*\)'/\1/p" ${anan-agent}/bin/anan-agent)
+          test -x "$ANAN_NODE" || (echo "FAIL: ANAN_NODE=$ANAN_NODE not executable"; exit 1)
+          echo "PASS: ANAN_NODE executable at $ANAN_NODE"
 
-          NODE_MAJOR=$("$SINOCLAW_NODE" --version | sed 's/^v//' | cut -d. -f1)
+          NODE_MAJOR=$("$ANAN_NODE" --version | sed 's/^v//' | cut -d. -f1)
           test "$NODE_MAJOR" -ge 20 || \
             (echo "FAIL: Node v$NODE_MAJOR < 20, TUI needs /v regex flag support"; exit 1)
           echo "PASS: Node v$NODE_MAJOR >= 20"
 
-          echo "=== All SINOCLAW_NODE checks passed ==="
+          echo "=== All ANAN_NODE checks passed ==="
           mkdir -p $out
           echo "ok" > $out/result
         '';
