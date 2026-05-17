@@ -84,7 +84,7 @@ class MemoryStore:
         if not self.path.exists():
             return
         try:
-            with open(self.path) as f:
+            with open(self.path, encoding="utf-8") as f:
                 raw = json.load(f)
             for k, v in raw.items():
                 self._items[k] = MemoryItem(**v)
@@ -94,7 +94,7 @@ class MemoryStore:
     def _save(self):
         try:
             tmp = self.path.with_suffix(".tmp")
-            with open(tmp, "w") as f:
+            with open(tmp, "w", encoding="utf-8") as f:
                 json.dump({k: asdict(v) for k, v in self._items.items()}, f, indent=2, ensure_ascii=False)
             tmp.rename(self.path)
         except Exception as exc:
@@ -404,7 +404,7 @@ class MemoryTier:
         tag_str = " #" + " #".join(tags) if tags else ""
         entry = f"\n## {timestamp}{tag_str}\n{insight}\n"
         try:
-            with open(self._long_path, "a") as f:
+            with open(self._long_path, "a", encoding="utf-8") as f:
                 f.write(entry)
             if self._bus is not None:
                 await self._bus.publish(Event(

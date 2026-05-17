@@ -628,7 +628,7 @@ class TestAppendDreamNarrative:
         assert result is not None
         dreams_path = Path(result)
         assert dreams_path.exists()
-        assert "A dream about memory and code." in dreams_path.read_text()
+        assert "A dream about memory and code." in dreams_path.read_text(encoding="utf-8")
 
     def test_replaces_existing_day_entry(self, tmp_path):
         lib = self._lib()
@@ -640,7 +640,7 @@ class TestAppendDreamNarrative:
         # Second entry same day
         result = lib.append_dream_narrative(str(tmp_path), "Second dream", day_ms, None)
 
-        text = Path(result).read_text()
+        text = Path(result).read_text(encoding="utf-8")
         assert "First dream" not in text
         assert "Second dream" in text
 
