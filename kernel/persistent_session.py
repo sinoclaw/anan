@@ -221,7 +221,7 @@ class PersistentSession:
             return
 
         entries = []
-        with open(session_file) as f:
+        with open(session_file, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line:
@@ -258,7 +258,7 @@ class PersistentSession:
         # Append the last two entries (user + assistant)
         entries = self._short_term_memory[-2:]
         role_map = {"user: ": "user", "assistant: ": "assistant"}
-        with open(session_file, "a") as f:
+        with open(session_file, "a", encoding="utf-8") as f:
             for entry in entries:
                 for prefix, role in role_map.items():
                     if entry.startswith(prefix):

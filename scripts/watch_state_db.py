@@ -17,7 +17,7 @@ def log(msg):
     ts = time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
     line = f"[{ts}] {msg}"
     print(line)
-    with open(log_path, "a") as f:
+    with open(log_path, "a", encoding="utf-8") as f:
         f.write(line + "\n")
 
 def get_fd_info(pid, path_fragment):

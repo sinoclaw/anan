@@ -45,7 +45,7 @@ class TestPersistentSessionLoad:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Pre-write a JSONL conversation file
             conv_file = os.path.join(tmpdir, "conversation.jsonl")
-            with open(conv_file, "w") as f:
+            with open(conv_file, "w", encoding="utf-8") as f:
                 f.write(json.dumps({"role": "user", "content": "爸爸在吗？"}) + "\n")
                 f.write(json.dumps({"role": "assistant", "content": "在的！"}) + "\n")
                 f.write(json.dumps({"role": "user", "content": "今天做什么？"}) + "\n")
@@ -62,7 +62,7 @@ class TestPersistentSessionLoad:
     def test_load_malformed_jsonl_skips_bad_lines(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             conv_file = os.path.join(tmpdir, "conversation.jsonl")
-            with open(conv_file, "w") as f:
+            with open(conv_file, "w", encoding="utf-8") as f:
                 f.write(json.dumps({"role": "user", "content": "Hello"}) + "\n")
                 f.write("not valid json\n")
                 f.write(json.dumps({"role": "assistant", "content": "Hi"}) + "\n")
@@ -92,7 +92,7 @@ class TestPersistentSessionSave:
             conv_file = os.path.join(tmpdir, "conversation.jsonl")
             assert os.path.exists(conv_file)
 
-            with open(conv_file) as f:
+            with open(conv_file, encoding="utf-8") as f:
                 lines = [json.loads(l) for l in f if l.strip()]
             assert len(lines) == 2
             assert lines[0] == {"role": "user", "content": "你好"}

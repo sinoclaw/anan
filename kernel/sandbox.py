@@ -299,7 +299,8 @@ class Sandbox:
         if self.config.test_command and "kernel/" in file or "layers/" in file:
             import tempfile
             with tempfile.NamedTemporaryFile(
-                mode="w", suffix=Path(file).suffix, delete=False
+                mode="w", suffix=Path(file).suffix, delete=False,
+                encoding="utf-8",
             ) as f:
                 f.write(new_content)
                 tmp = f.name
