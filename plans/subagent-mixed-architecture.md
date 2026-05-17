@@ -154,7 +154,8 @@ Milestone 由用户在创建 goal 时指定，或由 subagent 推理建议。
 
 | 层 | Handler（已知逻辑） | Subagent（未知推理） |
 |---|---|---|
-| L1 Sleep | circadian 调度、sleep_stage 状态机 | Daydream/Lucid narrative 生成（已有 LLM bridge） |
+| **L1 Sleep** | circadian 调度、sleep_stage 状态机、phase 执行、narrative 写入 | **L1SleepAdvisor: phase 决策（expand/normal/reduce/skip）+ 数据源权重 + narrative 风格建议 ✓ 已完成** |
+| L1 Sleep（续） | PhaseRunResult 结构化报告 + `L1.sleep.phase_completed` 事件 + JSON 日志持久化 ✓ 已完成 | Daydream/Lucid narrative 生成（已有 LLM bridge） |
 | L5 Pattern | 窗口滑动、co-occurrence 计数、periodic 过滤 | **MiningQualityAdvisor: 阈值动态调整 ✓ 已完成** |
 | L6 Meta | Mirror: issue 积累、warn 条件判断（硬编码） | MirrorHealthAdvisor: LLM 健康评估 + attach 启动循环 ✓ 已完成；MetacognitionAdvisor: tuning 效果评估 + auto rollback ✓ 已完成 |
 | L7 Goals | achieve/abandon/milestone 状态变更 ✓ 已有 | **GoalAdvisor: generation/decompose/conflict/score ✓ 已完成** + ProgressAssessor: progress 量化 ✓ 已有 |

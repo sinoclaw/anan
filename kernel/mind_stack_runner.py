@@ -754,21 +754,36 @@ class MindStackRunner:
         # L1 Sleep
         try:
             from layers.L1_sleep.sleep_plugin import DreamingPlugin
+            from layers.L1_sleep.sleep_advisor import L1SleepAdvisor
             from agent.auxiliary_client import async_call_llm
 
+            # Bridge for narrative generation (existing subagent flow)
             async def _dreaming_llm(messages: list, temperature: float = 0.3, model: str = None, task: str = None):
                 """Bridge: async_call_llm(task='agent') → DreamingPlugin._async_llm compatible return."""
                 result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
-                # Return a dict so the DreamingPlugin caller can extract .get("content")
                 if hasattr(result, "choices"):
-                    # AgentResult / ChatCompletion object
+                    return {"content": result.choices[0].message.content}
+                return result
+
+            # Bridge for L1SleepAdvisor phase planning decisions
+            async def _sleep_subagent_delegate(goal: str, context: str, parent_agent: str = None):
+                """Bridge: async_call_llm(task='agent') → L1SleepAdvisor delegate compatible return."""
+                messages = [{"role": "user", "content": f"{goal}\n\n{context}"}]
+                result = await async_call_llm(task="agent", messages=messages, temperature=0.3)
+                if hasattr(result, "choices"):
                     return {"content": result.choices[0].message.content}
                 return result
 
             self._dreaming_plugin = DreamingPlugin(config={"enabled": True})
             self._dreaming_plugin.set_async_llm(_dreaming_llm)
+
+            # L1SleepAdvisor — subagent for phase planning decisions
+            self._l1_advisor = L1SleepAdvisor()
+            self._dreaming_plugin.set_advisor(self._l1_advisor)
+            self._dreaming_plugin.set_delegate(_sleep_subagent_delegate)
+
             self._layers.append(self._dreaming_plugin)
-            logger.info("  ✓ L1 Sleep 就绪")
+            logger.info("  ✓ L1 Sleep 就绪 (L1SleepAdvisor subagent)")
         except Exception as exc:
             logger.warning("  ✗ L1 Sleep 启动失败: %s", exc)
 

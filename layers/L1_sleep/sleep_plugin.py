@@ -496,6 +496,67 @@ class DreamingState:
 
 
 # ---------------------------------------------------------------------------
+# Phase run result — structured metrics for observability
+# ---------------------------------------------------------------------------
+
+@dataclass
+class PhaseRunResult:
+    """Structured result from a single sleep phase run."""
+    phase: str
+    decision: str = "unknown"          # expand/normal/reduce/skip
+    started_at: Optional[float] = None  # time.time() when phase started
+    ended_at: Optional[float] = None    # time.time() when phase ended
+    duration_s: float = 0.0
+    n_lines: int = 0
+    n_narrative_chars: int = 0
+    n_sources_ingested: int = 0
+    narrative_generated: bool = False
+    narrative_style: str = ""
+    error: str = ""
+    detail: dict = field(default_factory=dict)
+
+    def to_dict(self) -> dict:
+        return {
+            "phase": self.phase,
+            "decision": self.decision,
+            "started_at": self.started_at,
+            "ended_at": self.ended_at,
+            "duration_s": round(self.duration_s, 3),
+            "n_lines": self.n_lines,
+            "n_narrative_chars": self.n_narrative_chars,
+            "n_sources_ingested": self.n_sources_ingested,
+            "narrative_generated": self.narrative_generated,
+            "narrative_style": self.narrative_style,
+            "error": self.error,
+            **{k: v for k, v in self.detail.items() if k not in (
+                "phase", "decision", "started_at", "ended_at", "duration_s",
+                "n_lines", "n_narrative_chars", "n_sources_ingested",
+                "narrative_generated", "narrative_style", "error",
+            )},
+        }
+
+
+def write_phase_report(
+    workspace_dir: str,
+    result: PhaseRunResult,
+) -> str:
+    """Write a JSON structured report for a phase run.
+
+    File: <workspace_dir>/memory/dreaming/phases/<YYYY-MM-DD>_<phase>.json
+    """
+    import json as _json
+    report_dir = Path(workspace_dir) / "memory" / "dreaming" / "phases"
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    from datetime import datetime
+    day = datetime.fromtimestamp(result.started_at or time.time()).strftime("%Y-%m-%d")
+    report_path = report_dir / f"{day}_{result.phase}.json"
+
+    report_path.write_text(_json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return str(report_path)
+
+
+# ---------------------------------------------------------------------------
 # Recall signal system (short-term memory)
 # ---------------------------------------------------------------------------
 
@@ -1418,6 +1479,16 @@ class DreamingPlugin:
         self._subagent = None
         self._async_llm = None  # direct LLM bridge, used when subagent unavailable
         self._cron_service = None
+        self._advisor = None    # L1SleepAdvisor for phase planning
+
+    def set_advisor(self, advisor) -> None:
+        """MindStackRunner injects the L1SleepAdvisor."""
+        self._advisor = advisor
+
+    def set_delegate(self, fn: Callable) -> None:
+        """MindStackRunner calls this to inject the async delegate."""
+        if self._advisor is not None:
+            self._advisor.set_delegate(fn)
 
     def register_hook(self, hook_name: str, handler) -> None:
         """Register a hook handler."""
@@ -1467,7 +1538,13 @@ class DreamingPlugin:
         phase: str,
         now_ms: Optional[float] = None,
     ) -> Dict[str, Any]:
-        """Run a complete dreaming sweep for a phase."""
+        """Run a complete dreaming sweep for a phase.
+
+        Evaluates L1SleepAdvisor before running, then:
+          - Executes phase with advisory adjustments
+          - Writes a JSON phase report to memory/dreaming/phases/<date>_<phase>.json
+          - Publishes L1.sleep.phase_completed with full metrics
+        """
         if not self.config.enabled:
             return {"skipped": True, "reason": "dreaming disabled"}
 
@@ -1476,10 +1553,87 @@ class DreamingPlugin:
 
         now_ms = now_ms or time.time() * 1000
         timezone = self.config.timezone
+        started_at = time.time()
 
+        # ── Advisor evaluation ───────────────────────────────────────────
+        advice = None
+        if self._advisor is not None:
+            try:
+                # Build context for the advisor
+                from layers.L1_sleep.sleep_advisor import SleepPhaseContext, SleepPhaseAdvice
+                from layers.L1_sleep.sleep_plugin import DreamingState, read_short_term_recall_entries
+
+                state = DreamingState(workspace_dir)
+                state.load()
+                recall_entries = read_short_term_recall_entries(workspace_dir)
+                total_recalls = len(recall_entries)
+                promoted_recalls = sum(1 for e in recall_entries if e.promoted_at)
+
+                last_light = state.get("last_light_run", 999.0)
+                last_rem = state.get("last_rem_run", 999.0)
+                last_deep = state.get("last_deep_run", 999.0)
+
+                # Gather recent narrative snippets for style guidance
+                dreams_path = Path(workspace_dir) / "memory" / "DREAMS.md"
+                narrative_history = []
+                if dreams_path.exists():
+                    import re
+                    diary_entries = re.findall(
+                        r"openclaw:dreaming:diary:start:([\d-]+)\n(.*?)\nopenclaw:dreaming:diary:end:",
+                        dreams_path.read_text(),
+                        re.DOTALL,
+                    )
+                    narrative_history = [e.strip()[:200] for _, e in diary_entries[-3:]]
+
+                ctx = SleepPhaseContext(
+                    phase=phase,
+                    workspace_dir=workspace_dir,
+                    recent_session_count=0,        # Filled by DB query below if available
+                    recent_memory_lines=0,
+                    recall_entries_total=total_recalls,
+                    recall_entries_promoted=promoted_recalls,
+                    last_light_run_days_ago=last_light,
+                    last_rem_run_days_ago=last_rem,
+                    last_deep_run_days_ago=last_deep,
+                    narrative_history=narrative_history,
+                )
+                advice = await self._advisor.evaluate(ctx)
+                logger.info(
+                    "L1SleepAdvisor: phase=%s decision=%s evidence=%s",
+                    phase, advice.decision.value if advice else "N/A",
+                    (advice.evidence[:80] if advice and advice.evidence else "N/A"),
+                )
+            except Exception as e:
+                logger.debug("L1SleepAdvisor evaluation failed: %s", e)
+
+        # Handle SKIP decision
+        if advice is not None and advice.decision.value == "skip":
+            logger.info("dreaming: %s phase skipped by advisor — %s", phase, advice.skip_reason)
+            report = PhaseRunResult(
+                phase=phase,
+                decision="skip",
+                started_at=started_at,
+                ended_at=time.time(),
+                duration_s=time.time() - started_at,
+                error=advice.skip_reason,
+            )
+            report_path = write_phase_report(workspace_dir, report)
+            await self._publish_phase_completed(phase, report, report_path, workspace_dir)
+            return {
+                "phase": phase, "skipped": True,
+                "reason": advice.skip_reason, "decision": "skip",
+            }
+
+        # ── Run phase ───────────────────────────────────────────────────
         logger.info(f"dreaming: starting {phase} phase in {workspace_dir}")
 
         body_lines: List[str] = []
+        narrative_generated = False
+        narrative_chars = 0
+        narrative_style_str = ""
+
+        if advice is not None and advice.decision.value in ("expand", "reduce"):
+            logger.info("dreaming: %s — advisor adjusted decision: %s", phase, advice.decision.value)
 
         if phase == "light":
             body_lines = await run_light_sleep_phase(
@@ -1508,6 +1662,9 @@ class DreamingPlugin:
         snippets = [l for l in body_lines if l.startswith("- ") and not l.startswith("- No")]
         if snippets:
             narrative_generated = False
+            narrative_style_str = (
+                advice.narrative_style.value if advice else "reflective"
+            )
             # Try subagent first
             if self._subagent:
                 try:
@@ -1524,6 +1681,7 @@ class DreamingPlugin:
                         append_dream_narrative(workspace_dir, narrative, now_ms, timezone)
                         await self._emit_hook("on_dream_narrative", phase, narrative)
                         narrative_generated = True
+                        narrative_chars = len(narrative)
                 except Exception as e:
                     logger.debug(f"dreaming: subagent narrative failed: {e}")
             # Fallback: async_call_llm bridge
@@ -1548,27 +1706,88 @@ Write a short dream summary paragraph (40-80 chars) in first person, capturing t
                     if response:
                         append_dream_narrative(workspace_dir, response.strip(), now_ms, timezone)
                         logger.info(f"dreaming: {phase} narrative generated via LLM ({len(response)} chars)")
+                        narrative_generated = True
+                        narrative_chars = len(response)
                 except Exception as e:
                     logger.debug(f"dreaming: async_llm narrative failed: {e}")
 
+        ended_at = time.time()
         logger.info(f"dreaming: {phase} phase complete, {len(body_lines)} lines")
 
-        # 发 L1.sleep.consolidated 通知各层（特别是 L2 Memory 和 L9 SelfModel）睡眠整合完成
-        if self._bus:
-            try:
-                await self._bus.publish(Event(
-                    topic="L1.sleep.consolidated",
-                    source="DreamingPlugin",
-                    payload={"phase": phase, "n_lines": len(body_lines)},
-                ))
-            except Exception as e:
-                logger.debug(f"failed to publish L1.sleep.consolidated: {e}")
+        # ── Update last-run timestamps in state ───────────────────────────
+        try:
+            state = DreamingState(workspace_dir)
+            state.load()
+            state.set(f"last_{phase}_run", 0.0)  # 0 = today
+            state.save()
+        except Exception:
+            pass
+
+        # ── Build report + publish ───────────────────────────────────────
+        report = PhaseRunResult(
+            phase=phase,
+            decision=advice.decision.value if advice else "normal",
+            started_at=started_at,
+            ended_at=ended_at,
+            duration_s=ended_at - started_at,
+            n_lines=len(body_lines),
+            n_narrative_chars=narrative_chars,
+            n_sources_ingested=sum(1 for s in ("daily", "sessions", "recall") if s in self.config.light_sources),
+            narrative_generated=narrative_generated,
+            narrative_style=narrative_style_str,
+            detail={
+                "advisor_evidence": advice.evidence if advice else "",
+                "source_weights": advice.source_weights if advice else {},
+                "deep_limit_override": advice.deep_limit_override if advice else None,
+            },
+        )
+        report_path = write_phase_report(workspace_dir, report)
+        logger.info(f"dreaming: phase report → {report_path}")
+
+        await self._publish_phase_completed(phase, report, report_path, workspace_dir)
 
         return {
             "phase": phase,
             "body_lines": body_lines,
             "workspace_dir": workspace_dir,
+            "report_path": report_path,
         }
+
+    async def _publish_phase_completed(
+        self,
+        phase: str,
+        report: "PhaseRunResult",
+        report_path: str,
+        workspace_dir: str,
+    ) -> None:
+        """Publish detailed L1.sleep.phase_completed event."""
+        if not self._bus:
+            return
+        try:
+            await self._bus.publish(Event(
+                topic="L1.sleep.phase_completed",
+                source="DreamingPlugin",
+                payload={
+                    "phase": phase,
+                    "decision": report.decision,
+                    "duration_s": round(report.duration_s, 3),
+                    "n_lines": report.n_lines,
+                    "n_narrative_chars": report.n_narrative_chars,
+                    "narrative_generated": report.narrative_generated,
+                    "narrative_style": report.narrative_style,
+                    "report_path": report_path,
+                    "workspace_dir": workspace_dir,
+                    "error": report.error,
+                },
+            ))
+            # Also publish the legacy consolidated event for backward compat
+            await self._bus.publish(Event(
+                topic="L1.sleep.consolidated",
+                source="DreamingPlugin",
+                payload={"phase": phase, "n_lines": report.n_lines},
+            ))
+        except Exception as e:
+            logger.debug(f"failed to publish L1.sleep.phase_completed: {e}")
 
     async def run_daydreaming_sweep(
         self,
