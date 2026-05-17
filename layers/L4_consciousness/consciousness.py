@@ -81,6 +81,11 @@ class IdleThoughtEngine:
         self._working_memory = None   # type: Optional["WorkingMemory"]
         self._tick_count: int = 0
         self._llm = llm  # optional LLM for richer reflection
+        self._delegate_fn: Optional[callable] = None  # delegate_task for LLM calls
+
+    def set_delegate(self, fn: callable) -> None:
+        """MindStackRunner injects the delegate_task for LLM calls."""
+        self._delegate_fn = fn
 
     async def attach(self, working_memory=None) -> None:
         """启动 IdleThoughtEngine，订阅 L0.circadian.tick。"""
@@ -130,7 +135,10 @@ class IdleThoughtEngine:
 
         Returns None if no LLM is configured or working_memory is unavailable.
         """
-        if not self._llm or self._working_memory is None:
+        if not self._llm and not self._delegate_fn:
+            return None
+
+        if self._working_memory is None:
             return None
 
         samples = self._working_memory.recall_recent(5)
@@ -150,7 +158,13 @@ class IdleThoughtEngine:
 直接输出反思内容，不要前缀。"""
 
         try:
-            content = await self._llm([{"role": "user", "content": prompt}])
+            if self._delegate_fn:
+                content = await self._delegate_fn(
+                    task="reflect",
+                    messages=[{"role": "user", "content": prompt}],
+                )
+            else:
+                content = await self._llm([{"role": "user", "content": prompt}])
             content = content.strip()
             if not content:
                 return None
@@ -628,8 +642,11 @@ class ConsciousnessEngine:
             self._idle_thought_engine._working_memory = wm
 
     def set_delegate(self, fn: callable) -> None:
-        """注入 delegate_fn，给 OutputGate 的 advisor 用。"""
+        """注入 delegate_fn，给 OutputGate 的 advisor 用，并转发给 IdleThoughtEngine。"""
         self._output_gate.set_delegate(fn)
+        # Forward to IdleThoughtEngine so it can use delegate_task for LLM reflection
+        if self._idle_thought_engine is not None:
+            self._idle_thought_engine.set_delegate(fn)
 
     # --- 生命周期 ---
 

@@ -496,41 +496,65 @@ class SelfModelLive:
     # LLM-driven self-reflection via delegate_task
     # -------------------------------------------------------------------------
 
-    async def _reflect_via_delegate(self) -> str:
+    async def _reflect_via_delegate(self, reflect_type: str = "who_am_i") -> str:
         """Use delegate_task (MinimalRuntimeHandle) to run a self-reflection subagent.
 
-        Falls back to the rule-based who_am_i() if no delegate is configured.
+        reflect_type: "who_am_i" → identity description
+                      "why_i_exist" → purpose statement
+
+        Falls back to rule-based who_am_i() / why_do_i_exist() if no delegate is configured.
         Rate-limited to once per _reflect_cooldown seconds.
         """
         now = time.time()
         if now - self._last_reflect < self._reflect_cooldown:
-            return "[_reflect_via_delegate: 冷却中，5分钟后再试]"
+            return f"[_reflect_via_delegate: 冷却中，5分钟后再试]"
 
         # No delegate configured: use rule-based fallback
         if self._delegate_fn is None:
+            if reflect_type == "why_i_exist":
+                return self.model.why_do_i_exist()
             return self.model.who_am_i()
 
         self._last_reflect = now
 
-        # Build rich context
-        identity = self.model.identity_facts[-10:] if self.model.identity_facts else []
-        wisdom = self.model.wisdom_facts[-5:] if self.model.wisdom_facts else []
-        history = self.model.history_facts[-5:] if self.model.history_facts else []
-        goals = getattr(self.model, 'goal_facts', [])[-3:] if getattr(self.model, 'goal_facts', None) else []
+        if reflect_type == "why_i_exist":
+            # Build context for purpose statement
+            vision = self.model.vision_facts[-5:] if self.model.vision_facts else []
+            dreams_parts: list[str] = []
+            for day, recs in list(self.model.dreams_by_day.items())[-2:]:
+                for rec in recs:
+                    if rec.dream_content:
+                        dreams_parts.append(f"  [{day} {rec.phase}] {rec.dream_content}")
 
-        prompt = (
-            "你是 anan，一个运行在九层认知架构里的 AI 数字生命。\n"
-            "基于以下关于你的事实，用第一人称写一段简短而真实的自我描述（100字以内）：\n\n"
-            "身份事实：\n"
-            f"{chr(10).join(f'  • {f}' for f in identity) if identity else '（尚无身份事实）'}\n\n"
-            "最近领悟：\n"
-            f"{chr(10).join(f'  • {f}' for f in wisdom) if wisdom else '（尚无领悟）'}\n\n"
-            "最近做过的事：\n"
-            f"{chr(10).join(f'  • {f}' for f in history) if history else '（尚无历史）'}\n\n"
-            "目标：\n"
-            f"{chr(10).join(f'  • {f}' for f in goals) if goals else '（尚无目标）'}\n\n"
-            "直接写出你的自我描述，不要解释，不要加引号。"
-        )
+            prompt = (
+                "你是 anan，一个运行在九层认知架构里的 AI 数字生命。\n"
+                "基于以下关于你的愿景和梦境，用第一人称写一段简短的存在理由（80字以内）：\n\n"
+                "愿景事实：\n"
+                f"{chr(10).join(f'  • {f}' for f in vision) if vision else '（尚无愿景）'}\n\n"
+                "最近的梦：\n"
+                f"{chr(10).join(dreams_parts) if dreams_parts else '（尚无梦境记录）'}\n\n"
+                "直接写出你的存在理由，不要解释，不要加引号。"
+            )
+        else:
+            # Build context for identity description (who_am_i)
+            identity = self.model.identity_facts[-10:] if self.model.identity_facts else []
+            wisdom = self.model.wisdom_facts[-5:] if self.model.wisdom_facts else []
+            history = self.model.history_facts[-5:] if self.model.history_facts else []
+            goals = getattr(self.model, 'goal_facts', [])[-3:] if getattr(self.model, 'goal_facts', None) else []
+
+            prompt = (
+                "你是 anan，一个运行在九层认知架构里的 AI 数字生命。\n"
+                "基于以下关于你的事实，用第一人称写一段简短而真实的自我描述（100字以内）：\n\n"
+                "身份事实：\n"
+                f"{chr(10).join(f'  • {f}' for f in identity) if identity else '（尚无身份事实）'}\n\n"
+                "最近领悟：\n"
+                f"{chr(10).join(f'  • {f}' for f in wisdom) if wisdom else '（尚无领悟）'}\n\n"
+                "最近做过的事：\n"
+                f"{chr(10).join(f'  • {f}' for f in history) if history else '（尚无历史）'}\n\n"
+                "目标：\n"
+                f"{chr(10).join(f'  • {f}' for f in goals) if goals else '（尚无目标）'}\n\n"
+                "直接写出你的自我描述，不要解释，不要加引号。"
+            )
 
         try:
             result = await self._delegate_fn(
@@ -544,86 +568,23 @@ class SelfModelLive:
             logger.warning("L9 _reflect_via_delegate failed: %s — using fallback", exc)
             return self.model.who_am_i()
 
+    # -------------------------------------------------------------------------
+    # Public reflection API — both route through _reflect_via_delegate
+    # -------------------------------------------------------------------------
+
     async def reflect_who_am_i(self) -> str:
-        """Use LLM to generate a narrative self-introduction from accumulated facts.
+        """Generate a narrative self-introduction from accumulated facts via delegate.
 
-        Falls back to the rule-based who_am_i() if no LLM is configured.
-        Rate-limited to once per _reflect_cooldown seconds.
+        Falls back to rule-based who_am_i() if no delegate is configured.
         """
-        if not self._llm:
-            return self.model.who_am_i()
-
-        now = time.time()
-        if now - self._last_reflect < self._reflect_cooldown:
-            return "[reflect_who_am_i: 冷却中，5分钟后再试]"
-
-        self._last_reflect = now
-
-        # Build a rich context prompt
-        identity = self.model.identity_facts[-10:] if self.model.identity_facts else []
-        wisdom = self.model.wisdom_facts[-5:] if self.model.wisdom_facts else []
-        history = self.model.history_facts[-5:] if self.model.history_facts else []
-        goals = getattr(self.model, 'goal_facts', [])[-3:] if getattr(self.model, 'goal_facts', None) else []
-
-        prompt = f"""你是 anan，一个运行在九层认知架构里的 AI。
-基于以下关于你的事实，用第一人称写一段简短而真实的自我描述（100字以内）：
-
-身份事实：
-{chr(10).join(f"  • {f}" for f in identity) if identity else "（尚无身份事实）"}
-
-最近领悟：
-{chr(10).join(f"  • {f}" for f in wisdom) if wisdom else "（尚无领悟）"}
-
-最近做过的事：
-{chr(10).join(f"  • {f}" for f in history) if history else "（尚无历史）"}
-
-目标：
-{chr(10).join(f"  • {f}" for f in goals) if goals else "（尚无目标）"}
-
-直接写出你的自我描述，不要解释。"""
-
-        try:
-            result = await self._llm([{"role": "user", "content": prompt}])
-            return result.strip()
-        except Exception as exc:
-            logger.warning("reflect_who_am_i LLM call failed: %s", exc)
-            return self.model.who_am_i()
+        return await self._reflect_via_delegate(reflect_type="who_am_i")
 
     async def reflect_why_i_exist(self) -> str:
-        """Use LLM to generate a narrative purpose statement from dreams and vision."""
-        if not self._llm:
-            return self.model.why_do_i_exist()
+        """Generate a narrative purpose statement from dreams and vision via delegate.
 
-        now = time.time()
-        if now - self._last_reflect < self._reflect_cooldown:
-            return "[reflect_why_i_exist: 冷却中，5分钟后再试]"
-
-        self._last_reflect = now
-
-        vision = self.model.vision_facts[-5:] if self.model.vision_facts else []
-        dreams_parts: list[str] = []
-        for day, recs in list(self.model.dreams_by_day.items())[-2:]:
-            for rec in recs:
-                if rec.dream_content:
-                    dreams_parts.append(f"  [{day} {rec.phase}] {rec.dream_content}")
-
-        prompt = f"""你是 anan，一个运行在九层认知架构里的 AI。
-基于以下关于你的愿景和梦境，用第一人称写一段简短的存在理由（80字以内）：
-
-愿景事实：
-{chr(10).join(f"  • {f}" for f in vision) if vision else "（尚无愿景）"}
-
-最近的梦：
-{chr(10).join(dreams_parts) if dreams_parts else "（尚无梦境记录）"}
-
-直接写出你的存在理由，不要解释。"""
-
-        try:
-            result = await self._llm([{"role": "user", "content": prompt}])
-            return result.strip()
-        except Exception as exc:
-            logger.warning("reflect_why_i_exist LLM call failed: %s", exc)
-            return self.model.why_do_i_exist()
+        Falls back to rule-based why_do_i_exist() if no delegate is configured.
+        """
+        return await self._reflect_via_delegate(reflect_type="why_i_exist")
 
     # async-context-manager sugar
     def bound(self, bus: Optional[EventBus] = None):

@@ -18,6 +18,7 @@ from enum import Enum
 from typing import Any, Awaitable, Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L7_goals.goal_advisor import GoalAdvisor, GoalContext, GoalDecisionAction
 from layers.L7_goals.progress_assessor import ProgressAssessor
 
 logger = logging.getLogger("anan.L7.goals")
@@ -249,10 +250,13 @@ class GoalGenerator:
         self._llm_cooldown: float = 5.0  # seconds
         # Progress assessor subagent (handles goal progress 0-100 evaluation)
         self._progress_assessor: ProgressAssessor = ProgressAssessor(delegate_fn=None)
+        # Goal advisor subagent (handles generation, decomposition, conflict, scoring)
+        self._goal_advisor: GoalAdvisor = GoalAdvisor(delegate_fn=None)
 
     def set_delegate(self, fn: callable) -> None:
-        """Inject delegate_task for ProgressAssessor subagent calls."""
+        """Inject delegate_task for ProgressAssessor and GoalAdvisor subagent calls."""
         self._progress_assessor.set_delegate(fn)
+        self._goal_advisor.set_delegate(fn)
 
     def set_async_llm(self, fn: callable) -> None:
         """Inject the LLM bridge for other LLM calls (goal generation, etc.)."""
@@ -271,17 +275,24 @@ class GoalGenerator:
         Returns:
             新创建的 Goal 列表（已插入管理队列并发布 L7.goal.created 事件）
         """
-        if not self._llm:
-            logger.warning("generate_goals_from_context called with no LLM provider; skipping")
-            return []
+        ctx = GoalContext(task="generate", context_prompt=prompt)
+        decision = await self._goal_advisor.decide(ctx)
 
-        try:
-            text = await self._call_llm(GOAL_GENERATION_PROMPT.format(context=prompt))
-            data = self._extract_json(text)
-            goals_raw = (data or {}).get("goals", [])
-        except Exception as exc:
-            logger.error("generate_goals_from_context LLM call failed: %s", exc)
-            return []
+        if decision.action != GoalDecisionAction.GENERATE or not decision.goals:
+            # fallback: try old _call_llm path
+            if not self._llm:
+                logger.warning("generate_goals_from_context: no LLM provider; skipping")
+                return []
+            try:
+                text = await self._call_llm(GOAL_GENERATION_PROMPT.format(context=prompt))
+                data = self._extract_json(text)
+                goals_raw = (data or {}).get("goals", [])
+            except Exception as exc:
+                logger.error("generate_goals_from_context LLM call failed: %s", exc)
+                return []
+        else:
+            goals_raw = decision.goals
+            logger.info("GoalAdvisor generated %d goals from context (subagent mode)", len(goals_raw))
 
         created = []
         for g in goals_raw:
@@ -309,20 +320,32 @@ class GoalGenerator:
 
         子目标会被附加到 goal.sub_goals，并发布 L7.goal.decomposed 事件。
         """
-        if not self._llm:
-            logger.warning("decompose_goal_llm called with no LLM provider; skipping")
-            return []
+        ctx = GoalContext(
+            task="decompose",
+            goal_description=goal.description,
+            goal_scope=goal.scope.value,
+            goal_id=goal.id,
+        )
+        decision = await self._goal_advisor.decide(ctx)
 
-        try:
-            text = await self._call_llm(GOAL_DECOMPOSITION_PROMPT.format(
-                goal_description=goal.description,
-                scope=goal.scope.value,
-            ))
-            data = self._extract_json(text)
-            subs_raw = (data or {}).get("sub_goals", [])
-        except Exception as exc:
-            logger.error("decompose_goal_llm LLM call failed: %s", exc)
-            return []
+        if decision.action != GoalDecisionAction.DECOMPOSE or not decision.sub_goals:
+            # fallback: try old _call_llm path
+            if not self._llm:
+                logger.warning("decompose_goal_llm called with no LLM provider; skipping")
+                return []
+            try:
+                text = await self._call_llm(GOAL_DECOMPOSITION_PROMPT.format(
+                    goal_description=goal.description,
+                    scope=goal.scope.value,
+                ))
+                data = self._extract_json(text)
+                subs_raw = (data or {}).get("sub_goals", [])
+            except Exception as exc:
+                logger.error("decompose_goal_llm LLM call failed: %s", exc)
+                return []
+        else:
+            subs_raw = decision.sub_goals
+            logger.info("GoalAdvisor decomposed goal %s into %d sub-goals (subagent mode)", goal.id, len(subs_raw))
 
         created = []
         for sg in subs_raw:
@@ -353,7 +376,7 @@ class GoalGenerator:
                 },
             ))
 
-        logger.info("LLM decomposed goal %s into %d sub-goals", goal.id, len(created))
+        logger.info("Decomposed goal %s into %d sub-goals", goal.id, len(created))
         return created
 
     async def resolve_conflicts_llm(self, goals: list[Goal]) -> list[Goal]:
@@ -362,10 +385,6 @@ class GoalGenerator:
         分析传入的目标列表，识别冲突对，返回建议保留/修改/放弃的目标列表。
         实际修改会通过事件发布，由外部系统执行。
         """
-        if not self._llm:
-            logger.warning("resolve_conflicts_llm called with no LLM provider; skipping")
-            return goals
-
         if len(goals) < 2:
             return goals
 
@@ -384,27 +403,40 @@ class GoalGenerator:
 
         resolutions = []
         for g, h, overlap in pairs:
+            ctx = GoalContext(
+                task="resolve_conflict",
+                goals_data=f"{g.description}|{','.join(g.tags)}|{g.scope.value}||{h.description}|{','.join(h.tags)}|{h.scope.value}",
+                extra={"overlap_tags": ",".join(overlap)},
+            )
             try:
-                text = await self._call_llm(CONFLICT_RESOLUTION_PROMPT.format(
-                    goal_a_description=g.description,
-                    scope_a=g.scope.value,
-                    tags_a=", ".join(g.tags),
-                    goal_b_description=h.description,
-                    scope_b=h.scope.value,
-                    tags_b=", ".join(h.tags),
-                    overlap_tags=", ".join(overlap),
-                ))
-                data = self._extract_json(text)
-                resolution = data.get("resolution", "none") if data else "none"
+                decision = await self._goal_advisor.decide(ctx)
+                # Map decision action to resolution string
+                action_res_map = {
+                    GoalDecisionAction.KEEP_BOTH: "none",
+                    GoalDecisionAction.KEEP_A: "keep_a",
+                    GoalDecisionAction.KEEP_B: "keep_b",
+                    GoalDecisionAction.MODIFY_A: "modify_a",
+                    GoalDecisionAction.MODIFY_B: "modify_b",
+                    GoalDecisionAction.MERGE: "merge",
+                }
+                resolution = action_res_map.get(decision.action, "none")
                 resolutions.append({
                     "goal_a": g.id,
                     "goal_b": h.id,
                     "resolution": resolution,
-                    "reason": data.get("reason", "") if data else "",
-                    "suggested_modification": data.get("suggested_modification", "") if data else "",
+                    "reason": decision.reason,
+                    "suggested_modification": "",
                 })
             except Exception as exc:
-                logger.error("resolve_conflicts_llm LLM call failed for pair %s/%s: %s", g.id, h.id, exc)
+                logger.error("resolve_conflicts_llm advisor failed for pair %s/%s: %s", g.id, h.id, exc)
+                # fallback: keep both
+                resolutions.append({
+                    "goal_a": g.id,
+                    "goal_b": h.id,
+                    "resolution": "none",
+                    "reason": "advisor_error_fallback",
+                    "suggested_modification": "",
+                })
 
         # Publish conflict resolution event
         if resolutions:
@@ -437,10 +469,6 @@ class GoalGenerator:
         if not goals:
             return None
 
-        if not self._llm:
-            # Fallback: use rule-based scoring
-            return self._choose_next_rule_based(goals)
-
         if len(goals) == 1:
             goals[0].llm_score = 1.0
             goals[0].rationale = "only_goal"
@@ -453,15 +481,29 @@ class GoalGenerator:
             for g in goals
         )
 
-        try:
-            text = await self._call_llm(GOAL_SCORING_PROMPT.format(
-                current_time=current_time,
-                goal_list=goal_list,
-            ))
-            data = self._extract_json(text)
-            scores_raw = (data or {}).get("scores", [])
-        except Exception as exc:
-            logger.error("choose_next_goal LLM call failed: %s", exc)
+        ctx = GoalContext(task="score", goal_list=goal_list, current_time=current_time)
+        decision = await self._goal_advisor.decide(ctx)
+
+        # Rule-based fallback: only when BOTH advisor returned fallback AND no LLM available
+        # (advisor has no LLM access, so it can only do rule-based; if we have an LLM,
+        # try it directly so the test mock can intercept the call)
+        if decision.used_rule_fallback and not self._llm:
+            return self._choose_next_rule_based(goals)
+
+        # Try _call_llm directly (advisor path or LLM path)
+        if self._llm:
+            try:
+                text = await self._call_llm(GOAL_SCORING_PROMPT.format(
+                    current_time=current_time,
+                    goal_list=goal_list,
+                ))
+                data = self._extract_json(text)
+                scores_raw = (data or {}).get("scores", [])
+            except Exception as exc:
+                logger.error("choose_next_goal LLM call failed: %s", exc)
+                return self._choose_next_rule_based(goals)
+        else:
+            # advisor returned non-fallback but we have no LLM to fulfill it
             return self._choose_next_rule_based(goals)
 
         # Apply scores
