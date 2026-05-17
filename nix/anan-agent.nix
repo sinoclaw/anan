@@ -146,8 +146,8 @@ stdenv.mkDerivation {
       (name: ''
         makeWrapper ${hermesVenv}/bin/${name} $out/bin/${name} \
           --suffix PATH : "${runtimePath}" \
-          --set ANAN_BUNDLED_SKILLS $out/share/anan-agent/skills \
-          --set ANAN_BUNDLED_PLUGINS $out/share/anan-agent/plugins \
+          --set SINOCLAW_BUNDLED_SKILLS $out/share/anan-agent/skills \
+          --set SINOCLAW_BUNDLED_PLUGINS $out/share/anan-agent/plugins \
           --set ANAN_WEB_DIST $out/share/anan-agent/web_dist \
           --set ANAN_TUI_DIR $out/ui-tui \
           --set ANAN_PYTHON ${hermesVenv}/bin/python3 \
