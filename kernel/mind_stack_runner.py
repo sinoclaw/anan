@@ -734,10 +734,6 @@ class MindStackRunner:
         try:
             from layers.L5_prediction.predictor import PredictiveReasoner
 
-            async def _predictor_llm(messages: list, temperature: float = 0.3) -> str:
-                result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
-                return result.choices[0].message.content
-
             causal_fn = None
             if hasattr(self, '_pattern_miner') and self._pattern_miner is not None:
                 pm = self._pattern_miner
@@ -747,10 +743,11 @@ class MindStackRunner:
                 bus=self._bus,
                 causal_links_fn=causal_fn or (lambda: []),
                 self_model=self_model,
-                llm=_predictor_llm,
+                llm=None,  # use delegate_task via set_delegate below
             )
+            self._predictor.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(self._predictor)
-            logger.info("  ✓ L5 PredictiveReasoner 就绪 (LLM=yes)")
+            logger.info("  ✓ L5 PredictiveReasoner 就绪（subagent mode）")
         except Exception as exc:
             logger.warning("  ✗ L5 PredictiveReasoner 启动失败: %s", exc)
 
@@ -836,8 +833,10 @@ class MindStackRunner:
                 intent_stack=self._intent_stack if hasattr(self, '_intent_stack') else None,
                 working_memory=self._working_memory,
                 self_model=self_model if hasattr(self, 'self_model') else None,
+                proactive_interval_s=90.0,  # enable proactive loop: verify intents every ~90s
             ))
-            logger.info("  ✓ L4 ProactiveObserver 就绪")
+            self._layers[-1].set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
+            logger.info("  ✓ L4 ProactiveObserver 就绪（subagent mode, proactive=90s)")
         except Exception as exc:
             logger.warning("  ✗ L4 ProactiveObserver 启动失败: %s", exc)
 

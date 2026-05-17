@@ -220,6 +220,8 @@ class ProactiveObserver:
         # Optional LLM probe — async fn(intent_key, intent_description, context) -> ProbeResult
         # Called when no built-in probe matches. If None, unmatched intents are skipped.
         llm_probe_fn: Optional[Callable[..., Awaitable[ProbeResult]]] = None,
+        # Proactive loop: how often to proactively verify top intents (seconds)
+        proactive_interval_s: float = 0.0,  # 0 = disabled (snapshot-driven only)
     ):
         self._bus = bus or get_bus()
         self._intent_stack = intent_stack
@@ -231,15 +233,42 @@ class ProactiveObserver:
         self._auto_satisfy = auto_satisfy
         self._reinforce_on_falsify = reinforce_on_falsify
         self._llm_probe_fn = llm_probe_fn
+        self._proactive_interval = proactive_interval_s
+        self._delegate_fn: Optional[callable] = None  # delegate_task injected by MindStackRunner
         self._unsubs: list[Callable[[], None]] = []
         self._observations: list[dict] = []
+
+    # ------------------------------------------------------------------
+    # delegate injection (for MindStackRunner)
+    # ------------------------------------------------------------------
+
+    def set_delegate(self, fn) -> None:
+        """MindStackRunner calls this to inject the async delegate."""
+        self._delegate_fn = fn
 
     # ------------------------------------------------------------------
     async def attach(self) -> None:
         async def on_snapshot(event: Event):
             await self._on_snapshot(event)
+
+        async def on_tick(event: Event):
+            # Proactive loop: verify top intents every N ticks
+            if self._proactive_interval <= 0:
+                return
+            payload = event.payload or {}
+            ticks = payload.get("ticks", 0)
+            if ticks % 3 == 0:  # every 3rd tick (~90s) to keep overhead low
+                logger.debug("L4 ProactiveObserver: proactive probe tick=%d", ticks)
+                try:
+                    await self.observe_now()
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("L4 proactive observe_now failed: %s", exc)
+
         self._unsubs.append(
             self._bus.subscribe("L8.intent.snapshot", on_snapshot)
+        )
+        self._unsubs.append(
+            self._bus.subscribe("L0.circadian.tick", on_tick)
         )
 
     async def detach(self) -> None:

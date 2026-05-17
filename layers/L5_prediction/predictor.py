@@ -92,7 +92,8 @@ class PredictiveReasoner:
         self._horizon_s = horizon_s
         self._min_lift = min_lift
         self._max_pending = max_pending
-        self._llm = llm  # optional LLM for causal explanation & counterfactuals
+        self._llm = llm  # legacy direct callable (kept for backward compat)
+        self._delegate_fn: Optional[callable] = None  # delegate_task injected by MindStackRunner
 
         # 活跃 cause 窗口：最近出现的 cause 事件
         self._active_causes: deque[tuple[float, str]] = deque(maxlen=200)
@@ -133,6 +134,15 @@ class PredictiveReasoner:
         self._on_event_throttle_s: float = 0.01
 
         self._unsubs: list[Callable[[], None]] = []
+        self._delegate_fn: Optional[callable] = None  # delegate_task injected by MindStackRunner
+
+    # ------------------------------------------------------------------
+    # delegate injection (for MindStackRunner)
+    # ------------------------------------------------------------------
+
+    def set_delegate(self, fn) -> None:
+        """MindStackRunner calls this to inject the async delegate for LLM calls."""
+        self._delegate_fn = fn
 
     # ------------------------------------------------------------------
     # Wiring
@@ -490,7 +500,7 @@ class PredictiveReasoner:
         self, cause: str, effect: str, lift: float
     ) -> None:
         """Use LLM to explain why this causal link makes sense, post to L5."""
-        if not self._llm:
+        if not self._delegate_fn and not self._llm:
             return
         prompt = f"""anan 的 L5 预测引擎发现了一条因果链路：
 
@@ -502,13 +512,19 @@ class PredictiveReasoner:
 保持简洁（20字以内），像 anan 在自言自语。"""
 
         try:
-            explanation = await self._llm([{"role": "user", "content": prompt}])
-            if explanation and explanation.strip():
+            if self._delegate_fn:
+                result = await self._delegate_fn(
+                    task="explain",
+                    messages=[{"role": "user", "content": prompt}],
+                )
+            else:
+                result = await self._llm([{"role": "user", "content": prompt}])
+            if result and result.strip():
                 await self._async_publish("L5.prediction.explained", {
                     "cause": cause,
                     "effect": effect,
                     "lift": round(lift, 2),
-                    "explanation": explanation.strip(),
+                    "explanation": result.strip(),
                 })
         except Exception as exc:
             logger.warning("LLM causal explanation failed: %s", exc)
@@ -520,7 +536,7 @@ class PredictiveReasoner:
         ["如果我主动发送问候消息，会发生什么？",
          "如果我减少等待时间，响应质量会提升吗？"]
         """
-        if not self._llm:
+        if not self._delegate_fn and not self._llm:
             return []
 
         # Collect recent confirmed/failed predictions as context
@@ -544,7 +560,13 @@ class PredictiveReasoner:
 建议："""
 
         try:
-            result = await self._llm([{"role": "user", "content": prompt}])
+            if self._delegate_fn:
+                result = await self._delegate_fn(
+                    task="counterfactual",
+                    messages=[{"role": "user", "content": prompt}],
+                )
+            else:
+                result = await self._llm([{"role": "user", "content": prompt}])
             suggestions = [line.strip() for line in result.strip().split("\n") if line.strip()]
             return suggestions[:3]
         except Exception as exc:
