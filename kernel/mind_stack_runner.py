@@ -859,6 +859,7 @@ class MindStackRunner:
             self._layers[-1].set_delegate(
                 self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate
             )
+            self._layers[-1].set_working_memory(self._working_memory)
             logger.info("  ✓ L4 Consciousness 就绪 (subagent mode)")
         except Exception as exc:
             logger.warning("  ✗ L4 Consciousness 启动失败: %s", exc)

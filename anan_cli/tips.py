@@ -443,7 +443,7 @@ TIPS = [
     "SINOCLAW_DISABLE_FILE_STATE_GUARD=1 turns off the 'file changed since you read it' guard on patch and write_file.",
     'SINOCLAW_ALLOW_PRIVATE_URLS=true lets web tools hit localhost and private networks — off by default in gateway mode.',
     'SINOCLAW_OPTIONAL_SKILLS=name1,name2 auto-installs extra optional-catalog skills on first run per profile.',
-    'SINOCLAW_BUNDLED_SKILLS points at a custom bundled-skill tree — used by Homebrew and Nix packaging.',
+    'ANAN_BUNDLED_SKILLS points at a custom bundled-skill tree — used by Homebrew and Nix packaging.',
     'SINOCLAW_DUMP_REQUEST_STDOUT=1 dumps every API request payload to stdout instead of log files.',
     'SINOCLAW_OAUTH_TRACE=1 logs redacted OAuth token exchange and refresh attempts for debugging provider auth.',
     'SINOCLAW_STREAM_RETRIES (default 3) controls mid-stream reconnect attempts on transient network errors.',

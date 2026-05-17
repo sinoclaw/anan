@@ -55,11 +55,11 @@ from anan_cli.config import cfg_get
 def get_bundled_plugins_dir() -> Path:
     """Locate the bundled ``plugins/`` directory.
 
-    Honours ``SINOCLAW_BUNDLED_PLUGINS`` (set by the Nix wrapper / packaged
+    Honours ``ANAN_BUNDLED_PLUGINS`` (set by the Nix wrapper / packaged
     installs) so read-only store paths are consulted first.  Falls back to
     the in-repo path used during development.
     """
-    env_override = os.getenv("SINOCLAW_BUNDLED_PLUGINS")
+    env_override = os.getenv("ANAN_BUNDLED_PLUGINS")
     if env_override:
         return Path(env_override)
     return Path(__file__).resolve().parent.parent / "plugins"

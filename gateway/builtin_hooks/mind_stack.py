@@ -57,7 +57,7 @@ class MinimalRuntimeHandle:
         loop = asyncio.get_event_loop()
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             result = await loop.run_in_executor(
-                pool, lambda: delegate_task(**kwargs)
+                pool, lambda: delegate_task(parent_agent=self, **kwargs)
             )
         return result
 

@@ -559,10 +559,7 @@ class SelfModelLive:
 
         try:
             result = await self._delegate_fn(
-                task="reflect",
-                messages=[
-                    {"role": "user", "content": prompt},
-                ],
+                goal=f"reflect\n\n{prompt}",
             )
             return result.strip()
         except Exception as exc:

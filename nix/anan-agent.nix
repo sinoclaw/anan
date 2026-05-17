@@ -146,13 +146,13 @@ stdenv.mkDerivation {
       (name: ''
         makeWrapper ${hermesVenv}/bin/${name} $out/bin/${name} \
           --suffix PATH : "${runtimePath}" \
-          --set SINOCLAW_BUNDLED_SKILLS $out/share/anan-agent/skills \
-          --set SINOCLAW_BUNDLED_PLUGINS $out/share/anan-agent/plugins \
-          --set SINOCLAW_WEB_DIST $out/share/anan-agent/web_dist \
-          --set SINOCLAW_TUI_DIR $out/ui-tui \
+          --set ANAN_BUNDLED_SKILLS $out/share/anan-agent/skills \
+          --set ANAN_BUNDLED_PLUGINS $out/share/anan-agent/plugins \
+          --set ANAN_WEB_DIST $out/share/anan-agent/web_dist \
+          --set ANAN_TUI_DIR $out/ui-tui \
           --set ANAN_PYTHON ${hermesVenv}/bin/python3 \
-          --set SINOCLAW_NODE ${lib.getExe nodejs} \
-          ${lib.optionalString (rev != null) ''--set SINOCLAW_REVISION ${rev} \''}
+          --set ANAN_NODE ${lib.getExe nodejs} \
+          ${lib.optionalString (rev != null) ''--set ANAN_REVISION ${rev} \''}
           ${lib.optionalString (extraPythonPackages != [ ]) ''--suffix PYTHONPATH : "${pythonPath}"''}
       '')
       [

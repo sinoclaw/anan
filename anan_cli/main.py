@@ -951,8 +951,8 @@ def _tui_need_npm_install(root: Path) -> bool:
 
 
 def _find_bundled_tui(tui_dir: Path) -> Optional[Path]:
-    """Directory whose dist/entry.js we should run: SINOCLAW_TUI_DIR first, else repo ui-tui."""
-    env = os.environ.get("SINOCLAW_TUI_DIR")
+    """Directory whose dist/entry.js we should run: ANAN_TUI_DIR first, else repo ui-tui."""
+    env = os.environ.get("ANAN_TUI_DIR")
     if env:
         p = Path(env)
         if (p / "dist" / "entry.js").exists() and not _tui_need_npm_install(p):
@@ -1065,12 +1065,12 @@ def _ensure_tui_node() -> None:
 
 
 def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
-    """TUI: --dev → tsx src; else node dist (SINOCLAW_TUI_DIR or ui-tui, build when stale)."""
+    """TUI: --dev → tsx src; else node dist (ANAN_TUI_DIR or ui-tui, build when stale)."""
     _ensure_tui_node()
 
     def _node_bin(bin: str) -> str:
         if bin == "node":
-            env_node = os.environ.get("SINOCLAW_NODE")
+            env_node = os.environ.get("ANAN_NODE")
             if env_node and os.path.isfile(env_node) and os.access(env_node, os.X_OK):
                 return env_node
         path = shutil.which(bin)
@@ -1079,9 +1079,9 @@ def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
             sys.exit(1)
         return path
 
-    # pre-built dist + node_modules (nix / full SINOCLAW_TUI_DIR) skips npm.
+    # pre-built dist + node_modules (nix / full ANAN_TUI_DIR) skips npm.
     if not tui_dev:
-        ext_dir = os.environ.get("SINOCLAW_TUI_DIR")
+        ext_dir = os.environ.get("ANAN_TUI_DIR")
         if ext_dir:
             p = Path(ext_dir)
             if (p / "dist" / "entry.js").exists() and not _tui_need_npm_install(p):
@@ -8800,7 +8800,7 @@ def cmd_dashboard(args):
         print(f"Import error: {e}")
         sys.exit(1)
 
-    if "SINOCLAW_WEB_DIST" not in os.environ:
+    if "ANAN_WEB_DIST" not in os.environ:
         if not _build_web_ui(PROJECT_ROOT / "web", fatal=True):
             sys.exit(1)
 

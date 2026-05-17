@@ -178,7 +178,7 @@ def _check_via_local_git(repo_dir: Path) -> Optional[int]:
 def check_for_updates() -> Optional[int]:
     """Check whether a Anan update is available.
 
-    Two paths: if ``SINOCLAW_REVISION`` is set (nix builds embed it), compare
+    Two paths: if ``ANAN_REVISION`` is set (nix builds embed it), compare
     it to upstream main via ``git ls-remote``. Otherwise look for a local
     git checkout and count commits behind ``origin/main``.
 
@@ -188,7 +188,7 @@ def check_for_updates() -> Optional[int]:
     """
     anan_home = get_anan_home()
     cache_file = anan_home / ".update_check"
-    embedded_rev = os.environ.get("SINOCLAW_REVISION") or None
+    embedded_rev = os.environ.get("ANAN_REVISION") or None
 
     # Read cache — invalidate if the embedded rev has changed since last check
     now = time.time()

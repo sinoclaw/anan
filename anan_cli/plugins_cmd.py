@@ -654,7 +654,7 @@ def _plugin_exists(name: str) -> bool:
             manifest = _read_manifest(child)
             if manifest.get("name") == name:
                 return True
-    # Bundled: <repo>/plugins/<name>/ (or SINOCLAW_BUNDLED_PLUGINS on Nix).
+    # Bundled: <repo>/plugins/<name>/ (or ANAN_BUNDLED_PLUGINS on Nix).
     from anan_cli.plugins import get_bundled_plugins_dir
     repo_plugins = get_bundled_plugins_dir()
     if repo_plugins.is_dir():

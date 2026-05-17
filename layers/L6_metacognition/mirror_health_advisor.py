@@ -149,40 +149,32 @@ class MirrorHealthAdvisor:
         # ---- Try LLM delegate ----
         if self._delegate_fn is not None and (now - self._last_decision_time) > self._decision_cooldown:
             try:
+                system_prompt = (
+                    "你是一个九层认知架构的 L6 元认知顾问（MirrorHealthAdvisor）。"
+                    "你的职责是评估 anan 的整体健康状态，并决定是否需要发出警告。\n\n"
+                    "你收到的 MirrorHealthContext 包含：\n"
+                    "  - bus_error_rate: 事件总线错误率（0.05=5%）\n"
+                    "  - self_identity_count: 身份事实数量\n"
+                    "  - self_stagnation_streak: 身份事实连续无增长的周期数\n"
+                    "  - wm_top_share: 工作记忆中最活跃层占比（>0.7=注意力倾斜）\n"
+                    "  - rule_score / rule_issues: 规则系统已有的评分和问题\n\n"
+                    "你的决策（返回 JSON）：\n"
+                    "  score_override: float 0.0~1.0（覆盖规则评分，null=保持规则）\n"
+                    "  healthy_override: bool（覆盖健康标志，null=自动计算）\n"
+                    "  new_issues: list[str]（在规则问题基础上追加的问题，描述要具体）\n"
+                    "  new_suggestions: list[str]（建议列表，越重要越靠前）\n"
+                    "  emit_warn: bool（是否强制发 warn 事件）\n"
+                    "  urgency: \"low\" | \"medium\" | \"high\"\n"
+                    "  reflection_note: str（简短 LLM 评注，20字以内）\n\n"
+                    "注意：\n"
+                    "  - 只有在 LLM 发现规则系统遗漏的重要问题时才设置 score_override\n"
+                    "  - urgency=high 仅用于：score<0.4 或 严重度很高的系统性风险\n"
+                    "  - new_suggestions 必须具体可操作，不是泛泛而谈\n"
+                    "  - 始终保持 fallback 规则的问题不动，只追加新的"
+                )
+                user_prompt = self._build_user_message(ctx)
                 decision = await self._delegate_fn(
-                    task="reflect",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                "你是一个九层认知架构的 L6 元认知顾问（MirrorHealthAdvisor）。"
-                                "你的职责是评估 anan 的整体健康状态，并决定是否需要发出警告。\n\n"
-                                "你收到的 MirrorHealthContext 包含：\n"
-                                "  - bus_error_rate: 事件总线错误率（0.05=5%）\n"
-                                "  - self_identity_count: 身份事实数量\n"
-                                "  - self_stagnation_streak: 身份事实连续无增长的周期数\n"
-                                "  - wm_top_share: 工作记忆中最活跃层占比（>0.7=注意力倾斜）\n"
-                                "  - rule_score / rule_issues: 规则系统已有的评分和问题\n\n"
-                                "你的决策（返回 JSON）：\n"
-                                "  score_override: float 0.0~1.0（覆盖规则评分，null=保持规则）\n"
-                                "  healthy_override: bool（覆盖健康标志，null=自动计算）\n"
-                                "  new_issues: list[str]（在规则问题基础上追加的问题，描述要具体）\n"
-                                "  new_suggestions: list[str]（建议列表，越重要越靠前）\n"
-                                "  emit_warn: bool（是否强制发 warn 事件）\n"
-                                "  urgency: \"low\" | \"medium\" | \"high\"\n"
-                                "  reflection_note: str（简短 LLM 评注，20字以内）\n\n"
-                                "注意：\n"
-                                "  - 只有在 LLM 发现规则系统遗漏的重要问题时才设置 score_override\n"
-                                "  - urgency=high 仅用于：score<0.4 或 严重度很高的系统性风险\n"
-                                "  - new_suggestions 必须具体可操作，不是泛泛而谈\n"
-                                "  - 始终保持 fallback 规则的问题不动，只追加新的"
-                            ),
-                        },
-                        {
-                            "role": "user",
-                            "content": self._build_user_message(ctx),
-                        },
-                    ],
+                    goal=f"reflect\n\nSystem: {system_prompt}\n\nUser: {user_prompt}",
                 )
                 parsed = self._parse_decision(decision, fallback)
                 self._last_decision = parsed

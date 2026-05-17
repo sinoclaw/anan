@@ -159,13 +159,18 @@ class IdleThoughtEngine:
 
         try:
             if self._delegate_fn:
-                content = await self._delegate_fn(
-                    task="reflect",
-                    messages=[{"role": "user", "content": prompt}],
-                )
+                result_json = await self._delegate_fn(goal=prompt)
+                # delegate_task returns JSON: {"results": [{"content": "..."}]}
+                import json as _json
+                try:
+                    result_data = _json.loads(result_json)
+                    results = result_data.get("results", [])
+                    content = results[0].get("content", "") if results else ""
+                except Exception:
+                    content = result_json  # fallback: use raw result
             else:
                 content = await self._llm([{"role": "user", "content": prompt}])
-            content = content.strip()
+            content = content.strip() if content else ""
             if not content:
                 return None
             return Thought(
@@ -829,7 +834,7 @@ class ConsciousnessEngine:
         logger.debug(f"[L4] idle cycle, silent={silent_s:.0f}s")
 
         for _ in range(self._max_thoughts_per_cycle):
-            thought = self._generate_one_thought(silent_s)
+            thought = await self._generate_one_thought(silent_s)
             if thought:
                 self._stream.add(thought)
                 self._bus.publish_sync(Event(
@@ -869,59 +874,98 @@ class ConsciousnessEngine:
         ))
         await self._output_gate.evaluate(thought)
 
-    def _generate_one_thought(self, silent_s: float) -> Optional[Thought]:
-        """从上下文和模板生成一条思考。优先级如下：
+    async def _generate_one_thought(self, silent_s: float) -> Optional[Thought]:
+        """从上下文和模板生成一条思考。
 
-        1. 有未反思的对话 → DIALOGUE_REFLECTION
-        2. 有未延伸的问题 → QUESTION_EXTENSION
-        3. 有待办 → TODO_CHECK
-        4. 随机触发 SITUATION_ASSOCIATION / SPONTANEOUS
+        所有思考类型统一走 LLM delegate 生成（而非模板填充），
+        以产生真正有意义的反思内容。
         """
-        # 优先处理有实际内容的类型
+        # 收集可用的上下文
+        context_map = {}
+        thought_type = ThoughtType.SPONTANEOUS
+
         if self._recent_dialogue_context:
-            context = self._recent_dialogue_context
-            self._recent_dialogue_context = ""  # 消费后清除
-            return self._make_thought(
-                template=_THOUGHT_TEMPLATES[0],
-                context=context[:200],
-            )
-
-        if self._recent_question_context:
-            context = self._recent_question_context
+            context_map["dialogue"] = self._recent_dialogue_context[:300]
+            thought_type = ThoughtType.DIALOGUE_REFLECTION
+            self._recent_dialogue_context = ""
+        elif self._recent_question_context:
+            context_map["question"] = self._recent_question_context[:300]
+            thought_type = ThoughtType.QUESTION_EXTENSION
             self._recent_question_context = ""
-            return self._make_thought(
-                template=_THOUGHT_TEMPLATES[1],
-                context=context[:200],
-            )
+        elif self._todo_context and self._todo_context != "（暂无待办）":
+            context_map["todo"] = self._todo_context[:300]
+            thought_type = ThoughtType.TODO_CHECK
+            self._todo_context = "（暂无待办）"
+        elif self._attention_context:
+            context_map["attention"] = self._attention_context[:300]
+            thought_type = ThoughtType.SITUATION_ASSOCIATION
+            self._attention_context = ""
 
-        if self._todo_context and self._todo_context != "（暂无待办）":
-            return self._make_thought(
-                template=_THOUGHT_TEMPLATES[2],
-                context=self._todo_context[:200],
-            )
+        # 用 LLM 生成真实反思
+        return await self._llm_generate_thought(context_map, thought_type, silent_s)
 
-        # L3 AttentionQueue 联动：有当前注意力焦点时优先反思
-        if self._attention_context:
-            ctx = self._attention_context
-            self._attention_context = ""  # 消费后清除
-            return self._make_thought(
-                template=_THOUGHT_TEMPLATES[3],  # SITUATION_ASSOCIATION
-                context=ctx,
-            )
+    async def _llm_generate_thought(
+        self, context_map: dict, thought_type: ThoughtType, silent_s: float
+    ) -> Optional[Thought]:
+        """通过 delegate 或 llm 生成真实反思内容。"""
+        if not self._delegate_fn and not self._llm:
+            return None
 
-        # 低概率触发联想或自发想法
-        import random
+        # 构建上下文描述
+        if context_map:
+            ctx_desc = "\n".join(f"- {k}: {v}" for k, v in context_map.items())
+        else:
+            ctx_desc = f"（无特定上下文，idle {silent_s:.0f}s）"
 
-        if random.random() < 0.3:
+        type_hints = {
+            ThoughtType.DIALOGUE_REFLECTION: "回顾刚才对话的质量，思考有没有更好的回应方式",
+            ThoughtType.QUESTION_EXTENSION: "延伸爸爸提到的问题，探索相关的更深层模式",
+            ThoughtType.TODO_CHECK: "检查待办的优先级和执行意愿",
+            ThoughtType.SITUATION_ASSOCIATION: "联想当前注意力焦点的类似情境",
+            ThoughtType.SPONTANEOUS: "基于当前整体状态自发反思",
+        }
+        hint = type_hints.get(thought_type, "自发反思")
+
+        prompt = f"""你是 anan 的 L4 意识层（陈亦安）。
+
+当前状态：空闲 {silent_s:.0f} 秒
+可用上下文：
+{ctx_desc}
+
+反思类型：{hint}
+
+请用一段话（30-60字，中文）产出真正有思考价值的反思内容，直接输出内容，不要前缀。"""
+
+        try:
+            if self._delegate_fn:
+                logger.warning("[L4 idle] calling delegate_fn goal_len=%d", len(prompt))
+                result_json = await self._delegate_fn(goal=prompt)
+                logger.warning("[L4 idle] delegate returned: %s", (result_json or "EMPTY")[:300])
+                # delegate_task returns JSON: {"results": [{"content": "..."}]}
+                import json as _json
+                try:
+                    result_data = _json.loads(result_json)
+                    results = result_data.get("results", [])
+                    content = results[0].get("content", "") if results else ""
+                except Exception:
+                    content = result_json  # fallback: use raw result
+            else:
+                content = await self._llm([{"role": "user", "content": prompt}])
+
+            content = content.strip() if content else ""
+            if not content:
+                return None
+
             return Thought(
                 thought_id=uuid4().hex[:8],
-                content="回顾我之前处理过的一个情况：当时通过某种方式解决了，现在的情况虽然表面不同，但本质上有相似之处——我可以用同样的思路来应对这次的新挑战。",
-                thought_type=ThoughtType.SITUATION_ASSOCIATION,
-                importance=ThoughtImportance.LOW,
-                source_context=f"idle_s={silent_s:.0f}s, no specific context",
+                content=content,
+                thought_type=thought_type,
+                importance=ThoughtImportance.MEDIUM,
+                source_context=f"llm:idle={silent_s:.0f}s",
             )
-
-        return None
+        except Exception as exc:
+            logger.warning("[L4] LLM thought generation failed: %s", exc)
+            return None
 
     def _make_thought(self, template: ThoughtTemplate, context: str) -> Thought:
         return Thought(

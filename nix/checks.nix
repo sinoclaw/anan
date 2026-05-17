@@ -114,9 +114,9 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
           test "$SKILL_COUNT" -gt 0 || (echo "FAIL: no SKILL.md files found in skills directory"; exit 1)
           echo "PASS: $SKILL_COUNT bundled skills found"
 
-          grep -q "SINOCLAW_BUNDLED_SKILLS" ${anan-agent}/bin/anan-agent || \
-            (echo "FAIL: SINOCLAW_BUNDLED_SKILLS not in wrapper"; exit 1)
-          echo "PASS: SINOCLAW_BUNDLED_SKILLS set in wrapper"
+          grep -q "ANAN_BUNDLED_SKILLS" ${anan-agent}/bin/anan-agent || \
+            (echo "FAIL: ANAN_BUNDLED_SKILLS not in wrapper"; exit 1)
+          echo "PASS: ANAN_BUNDLED_SKILLS set in wrapper"
 
           echo "=== All bundled skills checks passed ==="
           mkdir -p $out
@@ -134,9 +134,9 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
             (echo "FAIL: irc plugin manifest missing"; exit 1)
           echo "PASS: irc plugin manifest present"
 
-          grep -q "SINOCLAW_BUNDLED_PLUGINS" ${anan-agent}/bin/anan-agent || \
-            (echo "FAIL: SINOCLAW_BUNDLED_PLUGINS not in wrapper"; exit 1)
-          echo "PASS: SINOCLAW_BUNDLED_PLUGINS set in wrapper"
+          grep -q "ANAN_BUNDLED_PLUGINS" ${anan-agent}/bin/anan-agent || \
+            (echo "FAIL: ANAN_BUNDLED_PLUGINS not in wrapper"; exit 1)
+          echo "PASS: ANAN_BUNDLED_PLUGINS set in wrapper"
 
           echo "=== All bundled plugins checks passed ==="
           mkdir -p $out
@@ -156,9 +156,9 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
           test -d ${anan-agent}/ui-tui/node_modules || (echo "FAIL: node_modules missing"; exit 1)
           echo "PASS: node_modules present"
 
-          grep -q "SINOCLAW_TUI_DIR" ${anan-agent}/bin/anan-agent || \
-            (echo "FAIL: SINOCLAW_TUI_DIR not in wrapper"; exit 1)
-          echo "PASS: SINOCLAW_TUI_DIR set in wrapper"
+          grep -q "ANAN_TUI_DIR" ${anan-agent}/bin/anan-agent || \
+            (echo "FAIL: ANAN_TUI_DIR not in wrapper"; exit 1)
+          echo "PASS: ANAN_TUI_DIR set in wrapper"
 
           echo "=== All bundled TUI checks passed ==="
           mkdir -p $out
