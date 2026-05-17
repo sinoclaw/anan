@@ -311,7 +311,7 @@ json.dump(sorted(leaf_paths(DEFAULT_CONFIG)), sys.stdout, indent=2)
           # Helper: run merge then load with Python, output merged JSON
           merge_and_load() {
             local anan_home="$1"
-            export SINOCLAW_HOME="$anan_home"
+            export ANAN_HOME="$anan_home"
             ${configMergeScript} ${nixSettings} "$anan_home/config.yaml"
             ${hermesVenv}/bin/python3 -c '
 import json, sys
