@@ -20,10 +20,15 @@ from __future__ import annotations
 
 import logging
 import time
+from pathlib import Path
 from typing import Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
 from layers.L9_self.self_evaluation_advisor import SelfEvaluationAdvisor, SelfEvaluation
+from layers.L9_self.evaluation_report import (
+    SelfEvaluationReport,
+    write_evaluation_report,
+)
 
 logger = logging.getLogger("anan.L9.evaluator")
 
@@ -45,6 +50,7 @@ class SelfEvaluator:
         bus: Optional[EventBus] = None,
         self_model=None,
         tick_interval: int = 6,  # evaluate every N circadian ticks
+        workspace_dir: str = "~/.anan",
     ):
         self._bus = bus or get_bus()
         self._model = self_model  # SelfModel data class (for fact counts)
@@ -65,6 +71,11 @@ class SelfEvaluator:
         self._avg_progress = 0.0
         self._completed_milestones = 0
         self._patterns_recent = 0
+
+        # JSON report persistence
+        self._workspace_dir = Path(workspace_dir).expanduser()
+        self._delegate_fn: Optional[Callable] = None
+        self._latest_eval: Optional["SelfEvaluation"] = None
 
     def set_delegate(self, fn: Callable) -> None:
         """Inject delegate_task for SelfEvaluationAdvisor subagent calls."""
@@ -106,6 +117,10 @@ class SelfEvaluator:
         self._unsub.append(
             self._bus.subscribe("L0.circadian.tick", self._on_tick)
         )
+        # Track latest evaluation (for SelfReflector)
+        self._unsub.append(
+            self._bus.subscribe("L9.self.evaluation", self._on_evaluation)
+        )
         logger.info("SelfEvaluator attached (tick_interval=%d)", self._tick_interval)
 
     async def detach(self) -> None:
@@ -144,6 +159,23 @@ class SelfEvaluator:
 
     async def _on_pattern(self, event: Event) -> None:
         self._patterns_recent += 1
+
+    async def _on_evaluation(self, event: Event) -> None:
+        """Capture latest evaluation for SelfReflector."""
+        p = event.payload or {}
+        if p.get("overall_score") is not None:
+            self._latest_eval = SelfEvaluation(
+                overall_score=p.get("overall_score", 0),
+                health_dimension=p.get("health_dimension", 0),
+                goal_dimension=p.get("goal_dimension", 0),
+                pattern_dimension=p.get("pattern_dimension", 0),
+                identity_dimension=p.get("identity_dimension", 0),
+                status_label=p.get("status_label", "unknown"),
+                top_strengths=p.get("top_strengths", []),
+                top_concerns=p.get("top_concerns", []),
+                recommendations=p.get("recommendations", []),
+                reasoning=p.get("reasoning", ""),
+            )
 
     async def _on_tick(self, event: Event) -> None:
         self._tick_count += 1
@@ -195,6 +227,29 @@ class SelfEvaluator:
                     "tick_count": self._tick_count,
                 },
             ))
+
+            # Write JSON report to disk
+            try:
+                report = SelfEvaluationReport(
+                    evaluation_id=f"eval_{self._tick_count}_{int(self._last_eval_time)}",
+                    evaluated_at=self._last_eval_time,
+                    tick_count=self._tick_count,
+                    overall_score=evaluation.overall_score,
+                    health_dimension=evaluation.health_dimension,
+                    goal_dimension=evaluation.goal_dimension,
+                    pattern_dimension=evaluation.pattern_dimension,
+                    identity_dimension=evaluation.identity_dimension,
+                    status_label=evaluation.status_label,
+                    top_strengths=evaluation.top_strengths,
+                    top_concerns=evaluation.top_concerns,
+                    recommendations=evaluation.recommendations,
+                    reasoning=evaluation.reasoning,
+                    identity_count=identity_count,
+                    wisdom_count=wisdom_count,
+                )
+                write_evaluation_report(str(self._workspace_dir), report)
+            except Exception as exc:
+                logger.debug("L9 evaluation report write failed (non-fatal): %s", exc)
 
             logger.info(
                 "L9.self.evaluation: overall=%.1f (%s) | health=%.1f goal=%.1f "

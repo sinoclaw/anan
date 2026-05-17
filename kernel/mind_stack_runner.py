@@ -31,6 +31,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from pathlib import Path
 from typing import Optional, Dict, Any
 
 from kernel.event_bus import Event, EventBus, get_bus
@@ -698,18 +699,40 @@ class MindStackRunner:
             logger.info("  ✓ L9 SelfModel 就绪 (LLM=yes, facts=%d)", self_model.n_facts)
 
             # L9 SelfEvaluator — subagent-driven overall health evaluation
+            # Use ~/.anan as workspace for L9 reports
+            _l9_workspace = Path.home() / ".anan"
             try:
                 from layers.L9_self.self_evaluator import SelfEvaluator
                 self._self_evaluator = SelfEvaluator(
                     bus=self._bus,
                     self_model=self_model,
                     tick_interval=6,
+                    workspace_dir=str(_l9_workspace),
                 )
                 self._self_evaluator.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
                 self._layers.append(self._self_evaluator)
                 logger.info("  ✓ L9 SelfEvaluator 就绪（subagent mode）")
             except Exception as exc:
                 logger.warning("  ✗ L9 SelfEvaluator 启动失败: %s", exc)
+
+            # L9 SelfReflector — active periodic self-reflection loop
+            if self_model_live is not None:
+                try:
+                    from layers.L9_self.evaluation_report import SelfReflector, SelfUnderstandingEngine
+                    engine = SelfUnderstandingEngine(memory_dir=str(_l9_workspace))
+                    self._self_reflector = SelfReflector(
+                        self_model=self_model_live,
+                        understanding_engine=engine,
+                        tick_interval=10,
+                        workspace_dir=str(_l9_workspace),
+                    )
+                    self._self_reflector.set_delegate(
+                        self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate
+                    )
+                    self._layers.append(self._self_reflector)
+                    logger.info("  ✓ L9 SelfReflector 就绪（active reflection loop）")
+                except Exception as exc:
+                    logger.warning("  ✗ L9 SelfReflector 启动失败: %s", exc)
         except Exception as exc:
             logger.warning("  ✗ L9 SelfModel 启动失败: %s (使用 stub)", exc)
             self_model = None
