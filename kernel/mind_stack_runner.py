@@ -769,8 +769,9 @@ class MindStackRunner:
         try:
             from layers.L2_memory.memory_tier import MemoryTier
             self._memory_tier = MemoryTier(bus=self._bus)
+            self._memory_tier.set_delegate(delegate_task)
             self._layers.append(self._memory_tier)
-            logger.info("  ✓ L2 Memory 就绪")
+            logger.info("  ✓ L2 Memory 就绪（subagent mode）")
         except Exception as exc:
             logger.warning("  ✗ L2 Memory 启动失败: %s", exc)
 
@@ -899,8 +900,9 @@ class MindStackRunner:
         try:
             from layers.L8_drives.drive_system import DriveSystem
             self._drive_system = DriveSystem(bus=self._bus)
+            self._drive_system.set_delegate(delegate_task)
             self._layers.append(self._drive_system)
-            logger.info("  ✓ L8 Drives 就绪")
+            logger.info("  ✓ L8 Drives 就绪（subagent mode）")
         except Exception as exc:
             logger.warning("  ✗ L8 Drives 启动失败: %s", exc)
             self._drive_system = None

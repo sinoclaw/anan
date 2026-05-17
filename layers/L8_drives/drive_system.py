@@ -15,6 +15,7 @@ from enum import Enum
 from typing import Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L8_drives.priority_advisor import DrivePriorityAdvisor, DrivePriority
 
 logger = logging.getLogger("anan.L8.drives")
 
@@ -92,8 +93,30 @@ class DriveSystem:
             dt: Drive(type=dt) for dt in DriveType
         }
         self._recent_satisfactions: deque[float] = deque(maxlen=50)
-
+        self._priority_advisor = DrivePriorityAdvisor()
         self._unsubs: list = []
+
+    def set_delegate(self, fn: callable) -> None:
+        """Inject delegate_task for DrivePriorityAdvisor subagent calls."""
+        self._priority_advisor.set_delegate(fn)
+
+    async def score_goal(
+        self,
+        goal_tags: list[str],
+        goal_description: str = "",
+    ) -> DrivePriority:
+        """Score a goal's priority using the drive priority advisor.
+
+        Falls back to rule-based scoring if no delegate is configured.
+        """
+        active = [d.to_dict() for d in self.active_drives()]
+        top = [d.to_dict() for d in self.top_drives()]
+        return await self._priority_advisor.score_goal(
+            goal_tags=goal_tags,
+            goal_description=goal_description,
+            active_drives=active,
+            top_drives=top,
+        )
 
     # ------------------------------------------------------------------
     # Wiring

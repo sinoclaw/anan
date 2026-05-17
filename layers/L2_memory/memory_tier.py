@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from kernel.event_bus import Event, EventBus
+from layers.L2_memory.recall_signal_advisor import RecallSignalAdvisor, RecallSignal
 
 logger = logging.getLogger("anan.L2")
 
@@ -191,10 +192,35 @@ class MemoryTier:
     ):
         self._bus = bus
         self._unsubs: list[Callable] = []
+        self._recall_advisor = RecallSignalAdvisor()
         self.short = MemoryStore(recall_path or RECALL_PATH)
         self.midterm_dir = (midterm_dir or MIDTERM_DIR)
         self.midterm_dir.mkdir(parents=True, exist_ok=True)
         self._long_path = longterm_path or LONGTERM_PATH
+
+    def set_delegate(self, fn: callable) -> None:
+        """Inject delegate_task for RecallSignalAdvisor subagent calls."""
+        self._recall_advisor.set_delegate(fn)
+
+    async def evaluate_memorization(
+        self,
+        content: str,
+        current_importance: float = 0.5,
+        access_count: int = 0,
+        age_hours: float = 0.0,
+        context_tags: Optional[list[str]] = None,
+    ) -> RecallSignal:
+        """Evaluate whether content should be memorized and promoted.
+
+        Falls back to rule-based evaluation if no delegate is configured.
+        """
+        return await self._recall_advisor.evaluate(
+            content=content,
+            current_importance=current_importance,
+            access_count=access_count,
+            age_hours=age_hours,
+            context_tags=context_tags,
+        )
 
     async def attach(self, bus: Optional[EventBus] = None) -> None:
         """Subscribe to cognitive events from L5/L9 to drive memory recall."""
