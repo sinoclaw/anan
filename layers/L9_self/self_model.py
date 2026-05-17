@@ -472,11 +472,12 @@ class SelfModelLive:
         payload = event.payload or {}
         phase = payload.get("phase", "?")
         logger.info("L9: received L1.sleep.consolidated (phase=%s), running self-reflection", phase)
-        # Trigger LLM self-reflection: who am I now, what did I learn
-        if self._llm and self._llm_who_am_i:
+        # Trigger self-reflection via delegate_task (preferred) or fallback to rule-based
+        # _delegate_fn is set by MindStackRunner; _llm_who_am_i is always bound
+        if self._llm_who_am_i:
             age = time.time() - self._last_reflect
-            logger.info("L9: _llm=%s _llm_who_am_i=%s age=%.0fs cooldown=%.0f",
-                        bool(self._llm), bool(self._llm_who_am_i), age, self._reflect_cooldown)
+            logger.info("L9: _delegate_fn=%s _llm_who_am_i=%s age=%.0fs cooldown=%.0f",
+                        bool(self._delegate_fn), bool(self._llm_who_am_i), age, self._reflect_cooldown)
             if age > self._reflect_cooldown:
                 try:
                     identity = await self._llm_who_am_i()
@@ -488,8 +489,8 @@ class SelfModelLive:
                 except Exception as exc:
                     logger.warning("L9: self-reflection failed: %s", exc)
         else:
-            logger.info("L9: _on_sleep_consolidated skipped — _llm=%s _llm_who_am_i=%s",
-                        bool(self._llm), bool(self._llm_who_am_i))
+            logger.info("L9: _on_sleep_consolidated skipped — _delegate_fn=%s _llm_who_am_i=%s",
+                        bool(self._delegate_fn), bool(self._llm_who_am_i))
 
 
     # -------------------------------------------------------------------------
