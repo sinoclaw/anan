@@ -6,7 +6,7 @@ description: "Your first conversation with anan Agent — from install to chatti
 
 # Quickstart
 
-This guide gets you from zero to a working Hermes setup that survives real use. Install, choose a provider, verify a working chat, and know exactly what to do when something breaks.
+This guide gets you from zero to a working anan Agent setup that survives real use. Install, choose a provider, verify a working chat, and know exactly what to do when something breaks.
 
 ## Prefer to watch?
 
@@ -27,7 +27,7 @@ This guide gets you from zero to a working Hermes setup that survives real use. 
 
 - Brand new and want the shortest path to a working setup
 - Switching providers and don't want to lose time to config mistakes
-- Setting up Hermes for a team, bot, or always-on workflow
+- Setting up anan Agent for a team, bot, or always-on workflow
 - Tired of "it installed, but it still does nothing"
 
 ## The fastest path
@@ -36,13 +36,13 @@ Pick the row that matches your goal:
 
 | Goal | Do this first | Then do this |
 |---|---|---|
-| I just want Hermes working on my machine | `anan setup` | Run a real chat and verify it responds |
+| I just want anan Agent working on my machine | `anan setup` | Run a real chat and verify it responds |
 | I already know my provider | `anan model` | Save the config, then start chatting |
 | I want a bot or always-on setup | `anan gateway setup` after CLI works | Connect Telegram, Discord, Slack, or another platform |
 | I want a local or self-hosted model | `anan model` → custom endpoint | Verify the endpoint, model name, and context length |
 | I want multi-provider fallback | `anan model` first | Add routing and fallback only after the base chat works |
 
-**Rule of thumb:** if Hermes cannot complete a normal chat, do not add more features yet. Get one clean conversation working first, then layer on gateway, cron, skills, voice, or routing.
+**Rule of thumb:** if anan Agent cannot complete a normal chat, do not add more features yet. Get one clean conversation working first, then layer on gateway, cron, skills, voice, or routing.
 
 ---
 
@@ -76,7 +76,7 @@ For detailed installation options, prerequisites, and troubleshooting, see the [
 The single most important setup step. Use `anan model` to walk through the choice interactively:
 
 ```bash
-hermes model
+anan model
 ```
 
 Good defaults:
@@ -120,7 +120,7 @@ You can switch providers at any time with `anan model` — no lock-in. For a ful
 
 ### How settings are stored
 
-Hermes separates secrets from normal config:
+anan Agent separates secrets from normal config:
 
 - **Secrets and tokens** → `~/.anan/.env`
 - **Non-secret settings** → `~/.anan/config.yaml`
@@ -138,14 +138,14 @@ The right value goes to the right file automatically.
 ## 3. Run Your First Chat
 
 ```bash
-hermes            # classic CLI
-hermes --tui      # modern TUI (recommended)
+anan            # classic CLI
+anan --tui      # modern TUI (recommended)
 ```
 
 You'll see a welcome banner with your model, available tools, and skills. Use a prompt that's specific and easy to verify:
 
 :::tip Pick your interface
-Hermes ships with two terminal interfaces: the classic `prompt_toolkit` CLI and a newer [TUI](../user-guide/tui.md) with modal overlays, mouse selection, and non-blocking input. Both share the same sessions, slash commands, and config — try each with `hermes` vs `anan --tui`.
+anan Agent ships with two terminal interfaces: the classic `prompt_toolkit` CLI and a newer [TUI](../user-guide/tui.md) with modal overlays, mouse selection, and non-blocking input. Both share the same sessions, slash commands, and config — try each with `anan` vs `anan --tui`.
 :::
 
 ```
@@ -163,7 +163,7 @@ Help me set up a clean GitHub PR workflow for this codebase.
 **What success looks like:**
 
 - The banner shows your chosen model/provider
-- Hermes replies without error
+- anan Agent replies without error
 - It can use a tool if needed (terminal, file read, web search)
 - The conversation continues normally for more than one turn
 
@@ -174,8 +174,8 @@ If that works, you're past the hardest part.
 Before moving on, make sure resume works:
 
 ```bash
-hermes --continue    # Resume the most recent session
-hermes -c            # Short form
+anan --continue    # Resume the most recent session
+anan -c            # Short form
 ```
 
 That should bring you back to the session you just had. If it doesn't, check whether you're in the same profile and whether the session actually saved. This matters later when you're juggling multiple setups or machines.
@@ -271,7 +271,7 @@ mcp_servers:
 
 ```bash
 pip install -e '.[acp]'
-hermes acp
+anan acp
 ```
 
 See [ACP Editor Integration](../user-guide/features/acp.md).
@@ -284,7 +284,7 @@ These are the problems that waste the most time:
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Hermes opens but gives empty or broken replies | Provider auth or model selection is wrong | Run `anan model` again and confirm provider, model, and auth |
+| anan Agent opens but gives empty or broken replies | Provider auth or model selection is wrong | Run `anan model` again and confirm provider, model, and auth |
 | Custom endpoint "works" but returns garbage | Wrong base URL, model name, or not actually OpenAI-compatible | Verify the endpoint in a separate client first |
 | Gateway starts but nobody can message it | Bot token, allowlist, or platform setup is incomplete | Re-run `anan gateway setup` and check `anan gateway status` |
 | `anan --continue` can't find old session | Switched profiles or session never saved | Check `anan sessions list` and confirm you're in the right profile |
@@ -310,7 +310,7 @@ That sequence gets you from "broken vibes" back to a known state fast.
 
 | Command | Description |
 |---------|-------------|
-| `hermes` | Start chatting |
+| `anan` | Start chatting |
 | `anan model` | Choose your LLM provider and model |
 | `anan tools` | Configure which tools are enabled per platform |
 | `anan setup` | Full setup wizard (configures everything at once) |

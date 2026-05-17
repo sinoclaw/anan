@@ -19,7 +19,7 @@ This page covers:
 ### Validate the config snapshot
 
 ```bash
-hermes teams-pipeline validate
+anan teams-pipeline validate
 ```
 
 Use this first after any config change.
@@ -27,8 +27,8 @@ Use this first after any config change.
 ### Inspect token health
 
 ```bash
-hermes teams-pipeline token-health
-hermes teams-pipeline token-health --force-refresh
+anan teams-pipeline token-health
+anan teams-pipeline token-health --force-refresh
 ```
 
 Use `--force-refresh` when you suspect stale auth state.
@@ -36,14 +36,14 @@ Use `--force-refresh` when you suspect stale auth state.
 ### Inspect subscriptions
 
 ```bash
-hermes teams-pipeline subscriptions
+anan teams-pipeline subscriptions
 ```
 
 ### Renew near-expiry subscriptions
 
 ```bash
-hermes teams-pipeline maintain-subscriptions
-hermes teams-pipeline maintain-subscriptions --dry-run
+anan teams-pipeline maintain-subscriptions
+anan teams-pipeline maintain-subscriptions --dry-run
 ```
 
 ### Automating subscription renewal (REQUIRED for production)
@@ -52,23 +52,23 @@ hermes teams-pipeline maintain-subscriptions --dry-run
 
 You MUST run `maintain-subscriptions` on a schedule. Pick one of these three options:
 
-#### Option 1: Hermes cron (recommended if you already run the anan gateway)
+#### Option 1: anan Agent cron (recommended if you already run the anan gateway)
 
-Hermes ships a built-in cron scheduler. Add a script-only cron job that runs every 12 hours (gives 6x headroom against the 72h expiry window):
+anan Agent ships a built-in cron scheduler. Add a script-only cron job that runs every 12 hours (gives 6x headroom against the 72h expiry window):
 
 ```bash
-hermes cron add \
+anan cron add \
   --name "teams-pipeline-maintain-subscriptions" \
   --schedule "0 */12 * * *" \
   --script-only \
-  --command "hermes teams-pipeline maintain-subscriptions"
+  --command "anan teams-pipeline maintain-subscriptions"
 ```
 
 Verify it was registered and inspect the next run time:
 
 ```bash
-hermes cron list
-hermes cron show teams-pipeline-maintain-subscriptions
+anan cron list
+anan cron show teams-pipeline-maintain-subscriptions
 ```
 
 #### Option 2: systemd timer (recommended for Linux production deployments)
@@ -77,21 +77,21 @@ Create `/etc/systemd/system/anan-teams-pipeline-maintain.service`:
 
 ```ini
 [Unit]
-Description=Hermes Teams pipeline subscription maintenance
+Description=anan Agent Teams pipeline subscription maintenance
 After=network-online.target
 
 [Service]
 Type=oneshot
-User=hermes
-EnvironmentFile=/etc/hermes/env
-ExecStart=/usr/local/bin/hermes teams-pipeline maintain-subscriptions
+User=anan
+EnvironmentFile=/etc/anan/env
+ExecStart=/usr/local/bin/anan teams-pipeline maintain-subscriptions
 ```
 
 And `/etc/systemd/system/anan-teams-pipeline-maintain.timer`:
 
 ```ini
 [Unit]
-Description=Run Hermes Teams pipeline subscription maintenance every 12 hours
+Description=Run anan Agent Teams pipeline subscription maintenance every 12 hours
 
 [Timer]
 OnBootSec=5min
@@ -113,7 +113,7 @@ systemctl list-timers anan-teams-pipeline-maintain.timer
 #### Option 3: Plain crontab
 
 ```cron
-0 */12 * * * /usr/local/bin/hermes teams-pipeline maintain-subscriptions >> /var/log/hermes/teams-pipeline-maintain.log 2>&1
+0 */12 * * * /usr/local/bin/anan teams-pipeline maintain-subscriptions >> /var/log/anan/teams-pipeline-maintain.log 2>&1
 ```
 
 Make sure the cron environment has the `MSGRAPH_*` credentials. Simplest fix: source `~/.anan/.env` at the top of a wrapper script that crontab calls.
@@ -123,8 +123,8 @@ Make sure the cron environment has the `MSGRAPH_*` credentials. Simplest fix: so
 After you've set up the schedule, check renewal activity after the first scheduled run:
 
 ```bash
-hermes teams-pipeline subscriptions   # should show expirationDateTime advanced
-hermes teams-pipeline maintain-subscriptions --dry-run   # should show "0 expiring soon" most of the time
+anan teams-pipeline subscriptions   # should show expirationDateTime advanced
+anan teams-pipeline maintain-subscriptions --dry-run   # should show "0 expiring soon" most of the time
 ```
 
 If you ever see your Graph webhook mysteriously "stop working" after exactly ~72 hours, this is the first thing to check: did the renewal job actually run?
@@ -132,22 +132,22 @@ If you ever see your Graph webhook mysteriously "stop working" after exactly ~72
 ### Inspect recent jobs
 
 ```bash
-hermes teams-pipeline list
-hermes teams-pipeline list --status failed
-hermes teams-pipeline show <job-id>
+anan teams-pipeline list
+anan teams-pipeline list --status failed
+anan teams-pipeline show <job-id>
 ```
 
 ### Replay a stored job
 
 ```bash
-hermes teams-pipeline run <job-id>
+anan teams-pipeline run <job-id>
 ```
 
 ### Dry-run meeting artifact fetches
 
 ```bash
-hermes teams-pipeline fetch --meeting-id <meeting-id>
-hermes teams-pipeline fetch --join-web-url "<join-url>"
+anan teams-pipeline fetch --meeting-id <meeting-id>
+anan teams-pipeline fetch --join-web-url "<join-url>"
 ```
 
 ## Routine Runbook
@@ -157,16 +157,16 @@ hermes teams-pipeline fetch --join-web-url "<join-url>"
 Run these in order:
 
 ```bash
-hermes teams-pipeline validate
-hermes teams-pipeline token-health --force-refresh
-hermes teams-pipeline subscriptions
+anan teams-pipeline validate
+anan teams-pipeline token-health --force-refresh
+anan teams-pipeline subscriptions
 ```
 
 Then trigger or wait for a real meeting event and confirm:
 
 ```bash
-hermes teams-pipeline list
-hermes teams-pipeline show <job-id>
+anan teams-pipeline list
+anan teams-pipeline show <job-id>
 ```
 
 ### Daily or periodic checks
@@ -228,7 +228,7 @@ Check:
 - [ ] Notion and Linear sinks are configured only if actually needed
 - [ ] `anan teams-pipeline validate` returns an OK snapshot
 - [ ] `anan teams-pipeline token-health --force-refresh` succeeds
-- [ ] **`maintain-subscriptions` is scheduled** (Hermes cron, systemd timer, or crontab — see [Automating subscription renewal](#automating-subscription-renewal-required-for-production)). Without this, Graph subscriptions silently expire within 72 hours.
+- [ ] **`maintain-subscriptions` is scheduled** (anan Agent cron, systemd timer, or crontab — see [Automating subscription renewal](#automating-subscription-renewal-required-for-production)). Without this, Graph subscriptions silently expire within 72 hours.
 - [ ] a real end-to-end meeting event has produced a stored job
 - [ ] at least one summary has reached the intended delivery sink
 

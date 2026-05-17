@@ -6,7 +6,7 @@ description: "AI-native persistent memory via Honcho — dialectic reasoning, mu
 
 # Honcho Memory
 
-[Honcho](https://github.com/plastic-labs/honcho) is an AI-native memory backend that adds dialectic reasoning and deep user modeling on top of Hermes's built-in memory system. Instead of simple key-value storage, Honcho maintains a running model of who the user is — their preferences, communication style, goals, and patterns — by reasoning about conversations after they happen.
+[Honcho](https://github.com/plastic-labs/honcho) is an AI-native memory backend that adds dialectic reasoning and deep user modeling on top of anan Agent's built-in memory system. Instead of simple key-value storage, Honcho maintains a running model of who the user is — their preferences, communication style, goals, and patterns — by reasoning about conversations after they happen.
 
 :::info Honcho is a Memory Provider Plugin
 Honcho is integrated into the [Memory Providers](./memory-providers.md) system. All features below are available through the unified memory provider interface.
@@ -28,12 +28,12 @@ Honcho is integrated into the [Memory Providers](./memory-providers.md) system. 
 
 **Session-scoped context**: Base context now includes the session summary alongside the user representation and peer card. This gives the agent awareness of what has already been discussed in the current session, reducing repetition and enabling continuity.
 
-**Multi-agent profiles**: When multiple Hermes instances talk to the same user (e.g., a coding assistant and a personal assistant), Honcho maintains separate "peer" profiles. Each peer sees only its own observations and conclusions, preventing cross-contamination of context.
+**Multi-agent profiles**: When multiple anan Agent instances talk to the same user (e.g., a coding assistant and a personal assistant), Honcho maintains separate "peer" profiles. Each peer sees only its own observations and conclusions, preventing cross-contamination of context.
 
 ## Setup
 
 ```bash
-hermes memory setup    # select "honcho" from the provider list
+anan memory setup    # select "honcho" from the provider list
 ```
 
 Or configure manually:
@@ -127,7 +127,7 @@ Honcho is configured in `~/.honcho/config.json` (global) or `$ANAN_HOME/honcho.j
 | `sessionStrategy` | `'per-directory'` | `per-directory`, `per-repo`, `per-session`, or `global` |
 
 **Session strategy** controls how Honcho sessions map to your work:
-- `per-session` — each `hermes` run gets a fresh session. Clean starts, memory via tools. Recommended for new users.
+- `per-session` — each `anan` run gets a fresh session. Clean starts, memory via tools. Recommended for new users.
 - `per-directory` — one Honcho session per working directory. Context accumulates across runs.
 - `per-repo` — one session per git repository.
 - `global` — single session across all directories.
@@ -183,7 +183,7 @@ Common patterns:
 | AI shouldn't re-model the user from its own replies | `"ai": {"observeMe": true, "observeOthers": false}` |
 | Strong persona the AI peer shouldn't update from self-observation | `"ai": {"observeMe": false, "observeOthers": true}` |
 
-Server-side toggles set via the [Honcho dashboard](https://app.honcho.dev) win over local defaults — Hermes syncs them back at session init.
+Server-side toggles set via the [Honcho dashboard](https://app.honcho.dev) win over local defaults — anan Agent syncs them back at session init.
 
 ## Tools
 
@@ -200,16 +200,16 @@ When Honcho is active as the memory provider, five tools become available:
 ## CLI Commands
 
 ```bash
-hermes honcho status          # Connection status, config, and key settings
-hermes honcho setup           # Interactive setup wizard
-hermes honcho strategy        # Show or set session strategy
-hermes honcho peer            # Update peer names for multi-agent setups
-hermes honcho mode            # Show or set recall mode
-hermes honcho tokens          # Show or set context token budget
-hermes honcho identity        # Show Honcho peer identity
-hermes honcho sync            # Sync host blocks for all profiles
-hermes honcho enable          # Enable Honcho
-hermes honcho disable         # Disable Honcho
+anan honcho status          # Connection status, config, and key settings
+anan honcho setup           # Interactive setup wizard
+anan honcho strategy        # Show or set session strategy
+anan honcho peer            # Update peer names for multi-agent setups
+anan honcho mode            # Show or set recall mode
+anan honcho tokens          # Show or set context token budget
+anan honcho identity        # Show Honcho peer identity
+anan honcho sync            # Sync host blocks for all profiles
+anan honcho enable          # Enable Honcho
+anan honcho disable         # Disable Honcho
 ```
 
 ## Migrating from `anan honcho`

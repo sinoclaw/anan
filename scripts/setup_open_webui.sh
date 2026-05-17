@@ -6,7 +6,7 @@ set -euo pipefail
 # Idempotent by design:
 # - ensures ~/.anan/.env has API server settings
 # - installs Open WebUI into ~/.local/open-webui-venv
-# - writes a reusable launcher at ~/.local/bin/start-open-webui-hermes.sh
+# - writes a reusable launcher at ~/.local/bin/start-open-webui-anan.sh
 # - optionally installs a user service (launchd on macOS, systemd --user on Linux)
 #
 # Usage:
@@ -15,7 +15,7 @@ set -euo pipefail
 # Optional environment overrides:
 #   OPEN_WEBUI_PORT=8080
 #   OPEN_WEBUI_HOST=127.0.0.1
-#   OPEN_WEBUI_NAME='Johnny Hermes'
+#   OPEN_WEBUI_NAME='Johnny Anan'
 #   OPEN_WEBUI_ENABLE_SIGNUP=true
 #   OPEN_WEBUI_ENABLE_SERVICE=auto   # auto|true|false
 #   OPEN_WEBUI_VENV=~/.local/open-webui-venv
@@ -37,7 +37,7 @@ SINOCLAW_API_HOST="${SINOCLAW_API_HOST:-127.0.0.1}"
 SINOCLAW_API_CONNECT_HOST="${SINOCLAW_API_CONNECT_HOST:-127.0.0.1}"
 SINOCLAW_API_MODEL_NAME="${SINOCLAW_API_MODEL_NAME:-Anan Agent}"
 SINOCLAW_API_BASE_URL="http://${SINOCLAW_API_CONNECT_HOST}:${SINOCLAW_API_PORT}/v1"
-LAUNCHER_PATH="$HOME/.local/bin/start-open-webui-hermes.sh"
+LAUNCHER_PATH="$HOME/.local/bin/start-open-webui-anan.sh"
 LOG_DIR="$HOME/.anan/logs"
 
 log() {
@@ -184,7 +184,7 @@ set -euo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 API_KEY=\$(python3 - <<'PY'
 from pathlib import Path
-p = Path.home()/'.hermes'/'.env'
+p = Path.home()/'.anan'/'.env'
 for raw in p.read_text().splitlines():
     line = raw.strip()
     if line.startswith('API_SERVER_KEY='):
@@ -222,7 +222,7 @@ ensure_env_permissions() {
 }
 
 install_launchd_service() {
-  local plist="$HOME/Library/LaunchAgents/ai.openwebui.hermes.plist"
+  local plist="$HOME/Library/LaunchAgents/ai.openwebui.anan.plist"
   mkdir -p "$(dirname "$plist")"
   cat > "$plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -230,7 +230,7 @@ install_launchd_service() {
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>ai.openwebui.hermes</string>
+  <string>ai.openwebui.anan</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
@@ -251,8 +251,8 @@ install_launchd_service() {
 EOF
   launchctl bootout "gui/$(id -u)" "$plist" >/dev/null 2>&1 || true
   launchctl bootstrap "gui/$(id -u)" "$plist"
-  launchctl enable "gui/$(id -u)/ai.openwebui.hermes"
-  launchctl kickstart -k "gui/$(id -u)/ai.openwebui.hermes"
+  launchctl enable "gui/$(id -u)/ai.openwebui.anan"
+  launchctl kickstart -k "gui/$(id -u)/ai.openwebui.anan"
 }
 
 install_systemd_user_service() {
@@ -267,7 +267,7 @@ After=default.target
 
 [Service]
 Type=simple
-ExecStart=/bin/bash %h/.local/bin/start-open-webui-hermes.sh
+ExecStart=/bin/bash %h/.local/bin/start-open-webui-anan.sh
 Restart=always
 RestartSec=3
 WorkingDirectory=%h
@@ -287,7 +287,7 @@ start_foreground_hint() {
 }
 
 main() {
-  require_cmd hermes
+  require_cmd anan
   require_cmd curl
   require_cmd python3
 
@@ -342,7 +342,7 @@ main() {
   esac
 
   log "Done. Open WebUI should be available at: http://${OPEN_WEBUI_HOST}:${OPEN_WEBUI_PORT}"
-  log "Hermes API endpoint: ${SINOCLAW_API_BASE_URL}"
+  log "Anan API endpoint: ${SINOCLAW_API_BASE_URL}"
   log 'Important: Open WebUI persists connection settings after first launch. If you later save a wrong API key in the Admin UI, update/delete that connection there or reset its database.'
 }
 

@@ -6,19 +6,19 @@ description: "Complete guide to migrating your OpenClaw / Clawdbot setup to anan
 
 # Migrate from OpenClaw
 
-`anan claw migrate` imports your OpenClaw (or legacy Clawdbot/Moldbot) setup into Hermes. This guide covers exactly what gets migrated, the config key mappings, and what to verify after migration.
+`anan claw migrate` imports your OpenClaw (or legacy Clawdbot/Moldbot) setup into anan Agent. This guide covers exactly what gets migrated, the config key mappings, and what to verify after migration.
 
 ## Quick start
 
 ```bash
 # Preview then migrate (always shows a preview first, then asks to confirm)
-hermes claw migrate
+anan claw migrate
 
 # Preview only, no changes
-hermes claw migrate --dry-run
+anan claw migrate --dry-run
 
 # Full migration including API keys, skip confirmation
-hermes claw migrate --preset full --migrate-secrets --yes
+anan claw migrate --preset full --migrate-secrets --yes
 ```
 
 The migration always shows a full preview of what will be imported before making any changes. Review the list, then confirm to proceed.
@@ -31,7 +31,7 @@ Reads from `~/.anan/` by default. Legacy `~/.clawdbot/` or `~/.moltbot/` directo
 |--------|-------------|
 | `--dry-run` | Preview only — stop after showing what would be migrated. |
 | `--preset <name>` | `full` (all compatible settings) or `user-data` (excludes infrastructure config). Neither preset imports secrets by default — pass `--migrate-secrets` explicitly. |
-| `--overwrite` | Overwrite existing Hermes files on conflicts (default: refuse to apply when the plan has conflicts). |
+| `--overwrite` | Overwrite existing anan Agent files on conflicts (default: refuse to apply when the plan has conflicts). |
 | `--migrate-secrets` | Include API keys. Required even under `--preset full` — no preset imports secrets silently. |
 | `--no-backup` | Skip the pre-migration zip snapshot of `~/.anan/` (by default a single restore-point archive is written before apply, under `~/.anan/backups/pre-migration-*.zip`; restorable with `anan import`). |
 | `--source <path>` | Custom OpenClaw directory. |
@@ -43,7 +43,7 @@ Reads from `~/.anan/` by default. Legacy `~/.clawdbot/` or `~/.moltbot/` directo
 
 ### Persona, memory, and instructions
 
-| What | OpenClaw source | Hermes destination | Notes |
+| What | OpenClaw source | anan Agent destination | Notes |
 |------|----------------|-------------------|-------|
 | Persona | `workspace/SOUL.md` | `~/.anan/SOUL.md` | Direct copy |
 | Workspace instructions | `workspace/AGENTS.md` | `AGENTS.md` in `--workspace-target` | Requires `--workspace-target` flag |
@@ -55,18 +55,18 @@ Workspace files are also checked at `workspace.default/` and `workspace-main/` a
 
 ### Skills (4 sources)
 
-| Source | OpenClaw location | Hermes destination |
+| Source | OpenClaw location | anan Agent destination |
 |--------|------------------|-------------------|
 | Workspace skills | `workspace/skills/` | `~/.anan/skills/openclaw-imports/` |
 | Managed/shared skills | `~/.anan/skills/` | `~/.anan/skills/openclaw-imports/` |
 | Personal cross-project | `~/.agents/skills/` | `~/.anan/skills/openclaw-imports/` |
 | Project-level shared | `workspace/.agents/skills/` | `~/.anan/skills/openclaw-imports/` |
 
-Skill conflicts are handled by `--skill-conflict`: `skip` leaves the existing Hermes skill, `overwrite` replaces it, `rename` creates a `-imported` copy.
+Skill conflicts are handled by `--skill-conflict`: `skip` leaves the existing anan Agent skill, `overwrite` replaces it, `rename` creates a `-imported` copy.
 
 ### Model and provider configuration
 
-| What | OpenClaw config path | Hermes destination | Notes |
+| What | OpenClaw config path | anan Agent destination | Notes |
 |------|---------------------|-------------------|-------|
 | Default model | `agents.defaults.model` | `config.yaml` → `model` | Can be a string or `{primary, fallbacks}` object |
 | Custom providers | `models.providers.*` | `config.yaml` → `custom_providers` | Maps `baseUrl`, `apiType`/`api` — handles both short ("openai", "anthropic") and hyphenated ("openai-completions", "anthropic-messages", "google-generative-ai") values |
@@ -74,7 +74,7 @@ Skill conflicts are handled by `--skill-conflict`: `skip` leaves the existing He
 
 ### Agent behavior
 
-| What | OpenClaw config path | Hermes config path | Mapping |
+| What | OpenClaw config path | anan Agent config path | Mapping |
 |------|---------------------|-------------------|---------|
 | Max turns | `agents.defaults.timeoutSeconds` | `agent.max_turns` | `timeoutSeconds / 10`, capped at 200 |
 | Verbose mode | `agents.defaults.verboseDefault` | `agent.verbose` | "off" / "on" / "full" |
@@ -90,7 +90,7 @@ Skill conflicts are handled by `--skill-conflict`: `skip` leaves the existing He
 
 ### Session reset policies
 
-| OpenClaw config path | Hermes config path | Notes |
+| OpenClaw config path | anan Agent config path | Notes |
 |---------------------|-------------------|-------|
 | `session.reset.mode` | `session_reset.mode` | "daily", "idle", or both |
 | `session.reset.atHour` | `session_reset.at_hour` | Hour (0–23) for daily reset |
@@ -100,7 +100,7 @@ Note: OpenClaw also has `session.resetTriggers` (a simple string array like `["d
 
 ### MCP servers
 
-| OpenClaw field | Hermes field | Notes |
+| OpenClaw field | anan Agent field | Notes |
 |----------------|-------------|-------|
 | `mcp.servers.*.command` | `mcp_servers.*.command` | Stdio transport |
 | `mcp.servers.*.args` | `mcp_servers.*.args` | |
@@ -118,7 +118,7 @@ TTS settings are read from **two** OpenClaw config locations with this priority:
 2. Top-level `talk.providers.{provider}.*` (fallback)
 3. Legacy flat keys `messages.tts.{provider}.*` (oldest format)
 
-| What | Hermes destination |
+| What | anan Agent destination |
 |------|-------------------|
 | Provider name | `config.yaml` → `tts.provider` |
 | ElevenLabs voice ID | `config.yaml` → `tts.elevenlabs.voice_id` |
@@ -130,7 +130,7 @@ TTS settings are read from **two** OpenClaw config locations with this priority:
 
 ### Messaging platforms
 
-| Platform | OpenClaw config path | Hermes `.env` variable | Notes |
+| Platform | OpenClaw config path | anan Agent `.env` variable | Notes |
 |----------|---------------------|----------------------|-------|
 | Telegram | `channels.telegram.botToken` or `.accounts.default.botToken` | `TELEGRAM_BOT_TOKEN` | Token can be string or [SecretRef](#secretref-handling). Both flat and accounts layout supported. |
 | Telegram | `credentials/telegram-default-allowFrom.json` | `TELEGRAM_ALLOWED_USERS` | Comma-joined from `allowFrom[]` array |
@@ -148,7 +148,7 @@ TTS settings are read from **two** OpenClaw config locations with this priority:
 
 ### Other config
 
-| What | OpenClaw path | Hermes path | Notes |
+| What | OpenClaw path | anan Agent path | Notes |
 |------|-------------|-------------|-------|
 | Approval mode | `approvals.exec.mode` | `config.yaml` → `approvals.mode` | "auto"→"off", "always"→"manual", "smart"→"smart" |
 | Command allowlist | `exec-approvals.json` | `config.yaml` → `command_allowlist` | Patterns merged and deduped |
@@ -158,14 +158,14 @@ TTS settings are read from **two** OpenClaw config locations with this priority:
 | Gateway auth token | `gateway.auth.token` | `.env` → `SINOCLAW_GATEWAY_TOKEN` | Requires `--migrate-secrets` |
 | Working directory | `agents.defaults.workspace` | `.env` → `MESSAGING_CWD` | |
 
-### Archived (no direct Hermes equivalent)
+### Archived (no direct anan Agent equivalent)
 
 These are saved to `~/.anan/migration/openclaw/<timestamp>/archive/` for manual review:
 
-| What | Archive file | How to recreate in Hermes |
+| What | Archive file | How to recreate in anan Agent |
 |------|-------------|--------------------------|
 | `IDENTITY.md` | `archive/workspace/IDENTITY.md` | Merge into `SOUL.md` |
-| `TOOLS.md` | `archive/workspace/TOOLS.md` | Hermes has built-in tool instructions |
+| `TOOLS.md` | `archive/workspace/TOOLS.md` | anan Agent has built-in tool instructions |
 | `HEARTBEAT.md` | `archive/workspace/HEARTBEAT.md` | Use cron jobs for periodic tasks |
 | `BOOTSTRAP.md` | `archive/workspace/BOOTSTRAP.md` | Use context files or skills |
 | Cron jobs | `archive/cron-config.json` | Recreate with `anan cron create` |
@@ -175,7 +175,7 @@ These are saved to `~/.anan/migration/openclaw/<timestamp>/archive/` for manual 
 | Skills registry | `archive/skills-registry-config.json` | Use `anan skills config` |
 | UI/identity | `archive/ui-identity-config.json` | Use `/skin` command |
 | Logging | `archive/logging-diagnostics-config.json` | Set in `config.yaml` logging section |
-| Multi-agent list | `archive/agents-list.json` | Use Hermes profiles |
+| Multi-agent list | `archive/agents-list.json` | Use anan Agent profiles |
 | Channel bindings | `archive/bindings.json` | Manual setup per platform |
 | Complex channels | `archive/channels-deep-config.json` | Manual platform config |
 
@@ -211,7 +211,7 @@ OpenClaw config values for tokens and API keys can be in three formats:
 "channels": { "telegram": { "botToken": { "source": "env", "id": "TELEGRAM_BOT_TOKEN" } } }
 ```
 
-The migration resolves all three formats. For env templates and SecretRef objects with `source: "env"`, it looks up the value in `~/.anan/.env` and the `openclaw.json` env sub-object. SecretRef objects with `source: "file"` or `source: "exec"` can't be resolved automatically — the migration warns about these, and those values must be added to Hermes manually via `anan config set`.
+The migration resolves all three formats. For env templates and SecretRef objects with `source: "env"`, it looks up the value in `~/.anan/.env` and the `openclaw.json` env sub-object. SecretRef objects with `source: "file"` or `source: "exec"` can't be resolved automatically — the migration warns about these, and those values must be added to anan Agent manually via `anan config set`.
 
 ## After migration
 

@@ -28,7 +28,7 @@ Atropos BaseEnv (atroposlib/envs/base.py)
                                     compute_reward, evaluate, wandb_log
 ```
 
-Hermes environments are special because they run a **multi-turn agent loop with tool calling** — not just single-turn completions. The base env handles the loop; you implement the task and scoring.
+Anan environments are special because they run a **multi-turn agent loop with tool calling** — not just single-turn completions. The base env handles the loop; you implement the task and scoring.
 
 ## File Locations
 

@@ -25,7 +25,7 @@ Publish static sites to &#123;slug&#125;.here.now and store private files in clo
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # here.now
@@ -81,7 +81,7 @@ If the docs fetch fails or times out, continue with the local skill and live API
 
 ```bash
 PUBLISH="${SINOCLAW_SKILL_DIR}/scripts/publish.sh"
-bash "$PUBLISH" {file-or-dir} --client hermes
+bash "$PUBLISH" {file-or-dir} --client anan
 ```
 
 Outputs the live URL (e.g. `https://bright-canvas-a7k2.here.now/`).
@@ -99,7 +99,7 @@ You can also publish raw files without any HTML. Single files get a rich auto-vi
 
 ```bash
 PUBLISH="${SINOCLAW_SKILL_DIR}/scripts/publish.sh"
-bash "$PUBLISH" {file-or-dir} --slug {slug} --client hermes
+bash "$PUBLISH" {file-or-dir} --slug {slug} --client anan
 ```
 
 The script auto-loads the `claimToken` from `.herenow/state.json` when updating anonymous sites. Pass `--claim-token {token}` to override.
@@ -215,7 +215,7 @@ For Drives:
 | `--title {text}`       | Viewer title (non-HTML sites)             |
 | `--description {text}` | Viewer description                            |
 | `--ttl {seconds}`      | Set expiry (authenticated only)               |
-| `--client {name}`      | Agent name for attribution (e.g. `hermes`)    |
+| `--client {name}`      | Agent name for attribution (e.g. `anan`)    |
 | `--base-url {url}`     | API base URL (default: `https://here.now`)    |
 | `--allow-nonherenow-base-url` | Allow sending auth to non-default `--base-url` |
 | `--api-key {key}`      | API key override (prefer credentials file)    |

@@ -212,6 +212,7 @@ class GoalGenerator:
         llm: Optional[Callable[[list[dict[str, str]], float], Awaitable[str]]] = None,
         self_model: Optional[object] = None,
     ):
+        logger.warning("DEBUG GoalGenerator.__init__ called, id=%d", id(self))
         self._bus = bus or get_bus()
         self._llm = llm
         self._self_model = self_model
@@ -517,6 +518,8 @@ class GoalGenerator:
     # -------------------------------------------------------------------------
 
     async def attach(self) -> None:
+        import sys
+        print(f"[GoalGenerator] ATTACH id={id(self)} _pending={hasattr(self, '_pending')}", flush=True)
         self._unsubs.append(
             self._bus.subscribe("L6.metacognition.report", self._on_metacognition_report)
         )
@@ -866,6 +869,13 @@ class GoalGenerator:
         if active:
             goal_list = "; ".join(f"{g.description[:40]}({g.scope.value})" for g in active[:3])
             context_parts.append(f"当前活跃目标：{goal_list}")
+
+        # DEBUG: diagnose _pending AttributeError
+        if not hasattr(self, "_pending"):
+            import traceback
+            logger.warning("DEBUG _pending MISSING on GoalGenerator id=%d type=%s", id(self), type(self).__name__)
+            logger.warning("DEBUG _pending missing, traceback: %s", traceback.format_stack()[-3])
+            return
 
         if self._pending:
             pending_list = "; ".join(f"{a.target}={a.new_value:.2f}" for a in self._pending[:3])

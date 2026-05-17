@@ -22,22 +22,22 @@ The setup wizard probes your endpoint and auto-detects which transport it uses, 
 ## Quick Start
 
 ```bash
-hermes model
+anan model
 # → Select "Azure Foundry"
 # → Enter your endpoint URL
 # → Enter your API key
-# Hermes probes the endpoint and auto-detects transport + models
+# anan Agent probes the endpoint and auto-detects transport + models
 # → Pick a model from the list (or type a deployment name manually)
 ```
 
 The wizard will:
 
 1. **Sniff the URL path** — URLs ending in `/anthropic` are recognised as Azure Foundry Claude routes.
-2. **Probe `GET <base>/models`** — if the endpoint returns an OpenAI-shaped model list, Hermes switches to `chat_completions` and prefills a picker with the returned deployment IDs.
+2. **Probe `GET <base>/models`** — if the endpoint returns an OpenAI-shaped model list, anan Agent switches to `chat_completions` and prefills a picker with the returned deployment IDs.
 3. **Probe Anthropic Messages shape** — fallback for endpoints that do not expose `/models` but do accept the Anthropic Messages format.
 4. **Fall back to manual entry** — private/gated endpoints that reject every probe still work; you pick the API mode and type a deployment name by hand.
 
-Context length for the chosen model is resolved via Hermes' standard metadata chain (`models.dev`, provider metadata, and hardcoded family fallbacks) and stored in `config.yaml` so the model can size its own context window correctly.
+Context length for the chosen model is resolved via anan Agent's standard metadata chain (`models.dev`, provider metadata, and hardcoded family fallbacks) and stored in `config.yaml` so the model can size its own context window correctly.
 
 ## Configuration (written to `config.yaml`)
 
@@ -72,9 +72,9 @@ model:
 
 Important behaviour:
 
-- **GPT-5.x, codex, and o-series auto-route to the Responses API.** Azure Foundry deploys GPT-5 / codex / o1 / o3 / o4 models as Responses-API-only — calling `/chat/completions` against them returns `400 "The requested operation is unsupported."`. Hermes detects these model families by name and upgrades `api_mode` to `codex_responses` transparently, even when `config.yaml` still reads `api_mode: chat_completions`. GPT-4, GPT-4o, Llama, Mistral, and other deployments stay on `/chat/completions`.
+- **GPT-5.x, codex, and o-series auto-route to the Responses API.** Azure Foundry deploys GPT-5 / codex / o1 / o3 / o4 models as Responses-API-only — calling `/chat/completions` against them returns `400 "The requested operation is unsupported."`. anan Agent detects these model families by name and upgrades `api_mode` to `codex_responses` transparently, even when `config.yaml` still reads `api_mode: chat_completions`. GPT-4, GPT-4o, Llama, Mistral, and other deployments stay on `/chat/completions`.
 - **`max_completion_tokens` is used automatically.** Azure OpenAI (like direct OpenAI) requires `max_completion_tokens` for gpt-4o, o-series, and gpt-5.x models. anan sends the right parameter based on the endpoint.
-- **Pre-v1 endpoints that require `api-version`.** If you have a legacy base URL like `https://<resource>.openai.azure.com/openai?api-version=2025-04-01-preview`, Hermes extracts the query string and forwards it via `default_query` on every request (the OpenAI SDK otherwise drops it when joining paths).
+- **Pre-v1 endpoints that require `api-version`.** If you have a legacy base URL like `https://<resource>.openai.azure.com/openai?api-version=2025-04-01-preview`, anan Agent extracts the query string and forwards it via `default_query` on every request (the OpenAI SDK otherwise drops it when joining paths).
 
 ## Anthropic-style endpoints (Claude via Azure Foundry)
 
@@ -90,8 +90,8 @@ model:
 
 Important behaviour:
 
-- **`/v1` is stripped from the base URL.** The Anthropic SDK appends `/v1/messages` to every request URL — Hermes removes any trailing `/v1` before handing the URL to the SDK to avoid double-`/v1` paths.
-- **`api-version` is sent via `default_query`, not appended to the URL.** Azure Anthropic requires an `api-version` query string. Baking it into the base URL produces malformed paths like `/anthropic?api-version=.../v1/messages` and returns 404. Hermes passes `api-version=2025-04-15` via the Anthropic SDK's `default_query` instead.
+- **`/v1` is stripped from the base URL.** The Anthropic SDK appends `/v1/messages` to every request URL — anan Agent removes any trailing `/v1` before handing the URL to the SDK to avoid double-`/v1` paths.
+- **`api-version` is sent via `default_query`, not appended to the URL.** Azure Anthropic requires an `api-version` query string. Baking it into the base URL produces malformed paths like `/anthropic?api-version=.../v1/messages` and returns 404. anan Agent passes `api-version=2025-04-15` via the Anthropic SDK's `default_query` instead.
 - **OAuth token refresh is disabled.** Azure deployments use static API keys. The `~/.claude/.credentials.json` OAuth token refresh loop that applies to Anthropic Console is explicitly skipped for Azure endpoints to prevent the Claude Code OAuth token from overwriting your Azure key mid-session.
 
 ## Alternative: `provider: anthropic` + Azure base URL
@@ -106,7 +106,7 @@ model:
   default: claude-sonnet-4-6
 ```
 
-With `AZURE_ANTHROPIC_KEY` set in `~/.anan/.env`. Hermes detects `azure.com` in the base URL and short-circuits around the Claude Code OAuth token chain so the Azure key is used directly with `x-api-key` auth.
+With `AZURE_ANTHROPIC_KEY` set in `~/.anan/.env`. anan Agent detects `azure.com` in the base URL and short-circuits around the Claude Code OAuth token chain so the Azure key is used directly with `x-api-key` auth.
 
 `key_env` is the canonical snake_case field name; `api_key_env` (and the camelCase `keyEnv` / `apiKeyEnv`) are accepted as aliases. If both `key_env` and `AZURE_ANTHROPIC_KEY`/`ANTHROPIC_API_KEY` are set, the `key_env`-named env var wins.
 
@@ -114,13 +114,13 @@ With `AZURE_ANTHROPIC_KEY` set in `~/.anan/.env`. Hermes detects `azure.com` in 
 
 Azure does **not** expose a pure-API-key endpoint to list your *deployed* model deployments. Deployment enumeration requires Azure Resource Manager authentication (`az cognitiveservices account deployment list`) with an Azure AD principal, not the inference API key.
 
-What Hermes can do:
+What anan Agent can do:
 
-- Azure OpenAI v1 endpoints (`<resource>.openai.azure.com/openai/v1`) expose `GET /models` with the resource's **available** model catalog. Hermes uses this list to prefill the model picker.
+- Azure OpenAI v1 endpoints (`<resource>.openai.azure.com/openai/v1`) expose `GET /models` with the resource's **available** model catalog. anan Agent uses this list to prefill the model picker.
 - Azure Foundry `/anthropic` routes: detected via URL path, model name entered manually.
 - Private / firewalled endpoints: manual entry with a friendly "couldn't probe" message.
 
-You can always type a deployment name directly — Hermes does not validate against the returned list.
+You can always type a deployment name directly — anan Agent does not validate against the returned list.
 
 ## Environment variables
 
@@ -133,13 +133,13 @@ You can always type a deployment name directly — Hermes does not validate agai
 ## Troubleshooting
 
 **401 Unauthorized on gpt-5.x deployments.**
-Azure serves gpt-5.x on `/chat/completions`, not `/responses`. Hermes handles this automatically when the URL contains `openai.azure.com`, but if you see a 401 with an `Invalid API key` body, check that `api_mode` in your `config.yaml` is `chat_completions`.
+Azure serves gpt-5.x on `/chat/completions`, not `/responses`. anan Agent handles this automatically when the URL contains `openai.azure.com`, but if you see a 401 with an `Invalid API key` body, check that `api_mode` in your `config.yaml` is `chat_completions`.
 
 **404 on `/v1/messages?api-version=.../v1/messages`.**
-This is the malformed-URL bug from pre-fix Azure Anthropic setups. Upgrade Hermes — the `api-version` parameter is now passed via `default_query` rather than baked into the base URL, so the SDK can't corrupt it during URL joining.
+This is the malformed-URL bug from pre-fix Azure Anthropic setups. Upgrade anan Agent — the `api-version` parameter is now passed via `default_query` rather than baked into the base URL, so the SDK can't corrupt it during URL joining.
 
 **Wizard says "Auto-detection incomplete."**
-The endpoint rejected both the `/models` probe and the Anthropic Messages probe. This is normal for private endpoints behind a firewall or with an IP allow-list. Fall back to manual API mode selection and type your deployment name — everything still works, Hermes just can't prefill the picker.
+The endpoint rejected both the `/models` probe and the Anthropic Messages probe. This is normal for private endpoints behind a firewall or with an IP allow-list. Fall back to manual API mode selection and type your deployment name — everything still works, anan Agent just can't prefill the picker.
 
 **Wrong transport picked.**
 Run `anan model` again and the wizard will re-probe. If the probe still picks the wrong mode, you can edit `config.yaml` directly:

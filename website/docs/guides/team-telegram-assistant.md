@@ -29,7 +29,7 @@ Before starting, make sure you have:
 - **An LLM provider configured** — at minimum, an API key for OpenAI, Anthropic, or another supported provider in `~/.anan/.env`
 
 :::tip
-A $5/month VPS is plenty for running the gateway. Hermes itself is lightweight — the LLM API calls are what cost money, and those happen remotely.
+A $5/month VPS is plenty for running the gateway. anan Agent itself is lightweight — the LLM API calls are what cost money, and those happen remotely.
 :::
 
 ---
@@ -41,7 +41,7 @@ Every Telegram bot starts with **@BotFather** — Telegram's official bot for cr
 1. **Open Telegram** and search for `@BotFather`, or go to [t.me/BotFather](https://t.me/BotFather)
 
 2. **Send `/newbot`** — BotFather will ask you two things:
-   - **Display name** — what users see (e.g., `Team Hermes Assistant`)
+   - **Display name** — what users see (e.g., `Team anan Agent Assistant`)
    - **Username** — must end in `bot` (e.g., `myteam_sinoclaw_bot`)
 
 3. **Copy the bot token** — BotFather replies with something like:
@@ -229,13 +229,13 @@ DM pairing is more flexible — you don't need to collect user IDs upfront. Here
 
 ```bash
 # See all pending and approved users
-hermes pairing list
+anan pairing list
 
 # Revoke someone's access
-hermes pairing revoke telegram 987654321
+anan pairing revoke telegram 987654321
 
 # Clear expired pending codes
-hermes pairing clear-pending
+anan pairing clear-pending
 ```
 
 :::tip
@@ -291,7 +291,7 @@ Users can also change this per-session with the `/verbose` command in chat.
 
 Customize how the bot communicates by editing `~/.anan/SOUL.md`:
 
-For a full guide, see [Use SOUL.md with Hermes](/docs/guides/use-soul-with-hermes).
+For a full guide, see [Use SOUL.md with anan Agent](/docs/guides/use-soul-with-anan).
 
 ```markdown
 # Soul
@@ -352,8 +352,8 @@ partitions above 80%, containers that have restarted, or high memory usage.
 
 ```bash
 # From the CLI
-hermes cron list          # View all scheduled jobs
-hermes cron status        # Check if scheduler is running
+anan cron list          # View all scheduled jobs
+anan cron status        # Check if scheduler is running
 
 # From Telegram chat
 /cron list                # View jobs
@@ -403,7 +403,7 @@ journalctl --user -u anan-gateway -f
 tail -f ~/.anan/logs/gateway.log
 ```
 
-### Keep Hermes Updated
+### Keep anan Agent Updated
 
 From Telegram, send `/update` to the bot — it will pull the latest version and restart. Or from the server:
 

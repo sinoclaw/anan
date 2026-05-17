@@ -59,7 +59,7 @@ class TestPrediction:
 class TestPredictiveReasonerInit:
     def test_defaults(self):
         pr = PredictiveReasoner()
-        assert pr._horizon_s == 3.0
+        assert pr._horizon_s == 30.0
         assert pr._min_lift == 1.0
         assert pr._max_pending == 50
         assert pr._get_links() == []
@@ -104,9 +104,9 @@ class TestPredictiveReasonerAttach:
         bus = EventBus()
         pr = PredictiveReasoner(bus=bus, causal_links_fn=lambda: [("A", "B")])
         await pr.attach()
-        # attach() subscribes to 23 external event patterns (on_any) +
-        # L5.causal.link_discovered + L5.pattern.discovered = 25 total
-        assert len(pr._unsubs) == 25
+        # attach() subscribes to 30 external event patterns (on_any) +
+        # L5.causal.link_discovered + L5.pattern.discovered = 32 total
+        assert len(pr._unsubs) == 32
         await pr.detach()
 
 

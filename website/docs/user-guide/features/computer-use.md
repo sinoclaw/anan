@@ -32,7 +32,7 @@ cua-driver is the open-source equivalent.
    `curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh`.
 3. Grant macOS permissions when prompted:
    - **System Settings → Privacy & Security → Accessibility** → allow the
-     terminal (or Hermes app).
+     terminal (or anan Agent app).
    - **System Settings → Privacy & Security → Screen Recording** → allow
      the same.
 4. Start a session with the toolset enabled:
@@ -76,7 +76,7 @@ image blocks.
 
 ## Safety
 
-Hermes applies multi-layer guardrails:
+anan Agent applies multi-layer guardrails:
 
 - Destructive actions (click, type, drag, scroll, key, focus_app) require
   approval — either interactively via the CLI dialog or via the
@@ -94,7 +94,7 @@ every action confirmed.
 
 ## Token efficiency
 
-Screenshots are expensive. Hermes applies four layers of optimisation:
+Screenshots are expensive. anan Agent applies four layers of optimisation:
 
 - **Screenshot eviction** — the Anthropic adapter keeps only the 3 most
   recent screenshots in context; older ones become `[screenshot removed

@@ -22,7 +22,7 @@ The security model has seven layers:
 
 ## Dangerous Command Approval
 
-Before executing any command, Hermes checks it against a curated list of dangerous patterns. If a match is found, the user must explicitly approve it.
+Before executing any command, anan Agent checks it against a curated list of dangerous patterns. If a match is found, the user must explicitly approve it.
 
 ### Approval Modes
 
@@ -70,7 +70,7 @@ YOLO mode disables **all** dangerous command safety checks for the session — *
 
 ### Hardline Blocklist (Always-On Floor)
 
-Some commands are so catastrophic — irreversible filesystem wipes, fork bombs, direct block-device writes — that Hermes refuses to run them **regardless** of:
+Some commands are so catastrophic — irreversible filesystem wipes, fork bombs, direct block-device writes — that anan Agent refuses to run them **regardless** of:
 
 - `--yolo` / `/yolo` toggled on
 - `approvals.mode: off`
@@ -133,7 +133,7 @@ The following patterns trigger approval prompts (defined in `tools/approval.py`)
 | `find -exec rm` / `find -delete` | Find with destructive actions |
 | `cp`/`mv`/`install` to `/etc/` | Copy/move file into system config |
 | `sed -i` / `sed --in-place` on `/etc/` | In-place edit of system config |
-| `pkill`/`killall` hermes/gateway | Self-termination prevention |
+| `pkill`/`killall` anan/gateway | Self-termination prevention |
 | `gateway run` with `&`/`disown`/`nohup`/`setsid` | Prevents starting gateway outside service manager |
 
 :::info
@@ -188,7 +188,7 @@ Use `anan config edit` to review or remove patterns from your permanent allowlis
 
 ## User Authorization (Gateway)
 
-When running the messaging gateway, Hermes controls who can interact with the bot through a layered authorization system.
+When running the messaging gateway, anan Agent controls who can interact with the bot through a layered authorization system.
 
 ### Authorization Check Order
 
@@ -234,7 +234,7 @@ or configure platform allowlists (e.g., TELEGRAM_ALLOWED_USERS=your_id).
 
 ### DM Pairing System
 
-For more flexible authorization, Hermes includes a code-based pairing system. Instead of requiring user IDs upfront, unknown users receive a one-time pairing code that the bot owner approves via the CLI.
+For more flexible authorization, anan Agent includes a code-based pairing system. Instead of requiring user IDs upfront, unknown users receive a one-time pairing code that the bot owner approves via the CLI.
 
 **How it works:**
 
@@ -273,16 +273,16 @@ whatsapp:
 
 ```bash
 # List pending and approved users
-hermes pairing list
+anan pairing list
 
 # Approve a pairing code
-hermes pairing approve telegram ABC12DEF
+anan pairing approve telegram ABC12DEF
 
 # Revoke a user's access
-hermes pairing revoke telegram 123456789
+anan pairing revoke telegram 123456789
 
 # Clear all pending codes
-hermes pairing clear-pending
+anan pairing clear-pending
 ```
 
 **Storage:** Pairing data is stored in `~/.anan/pairing/` with per-platform JSON files:
@@ -292,7 +292,7 @@ hermes pairing clear-pending
 
 ## Container Isolation
 
-When using the `docker` terminal backend, Hermes applies strict security hardening to every container.
+When using the `docker` terminal backend, anan Agent applies strict security hardening to every container.
 
 ### Docker Security Flags
 
@@ -401,7 +401,7 @@ required_credential_files:
     description: Google OAuth2 client credentials
 ```
 
-When loaded, Hermes checks if these files exist in the active profile's `ANAN_HOME` and registers them for mounting:
+When loaded, anan Agent checks if these files exist in the active profile's `ANAN_HOME` and registers them for mounting:
 
 - **Docker**: Read-only bind mounts (`-v host:container:ro`)
 - **Modal**: Mounted at sandbox creation + synced before each command (handles mid-session OAuth setup)
@@ -423,7 +423,7 @@ Paths are relative to `~/.anan/`. Files are mounted to `/root/.anan/` inside the
 | Sandbox | Default Filter | Passthrough Override |
 |---------|---------------|---------------------|
 | **execute_code** | Blocks vars containing `KEY`, `TOKEN`, `SECRET`, `PASSWORD`, `CREDENTIAL`, `PASSWD`, `AUTH` in name; only allows safe-prefix vars through | ✅ Passthrough vars bypass both checks |
-| **terminal** (local) | Blocks explicit Hermes infrastructure vars (provider keys, gateway tokens, tool API keys) | ✅ Passthrough vars bypass the blocklist |
+| **terminal** (local) | Blocks explicit anan Agent infrastructure vars (provider keys, gateway tokens, tool API keys) | ✅ Passthrough vars bypass the blocklist |
 | **terminal** (Docker) | No host env vars by default | ✅ Passthrough vars + `docker_forward_env` forwarded via `-e` |
 | **terminal** (Modal) | No host env/files by default | ✅ Credential files mounted; env passthrough via sync |
 | **MCP** | Blocks everything except safe system vars + explicitly configured `env` | ❌ Not affected by passthrough (use MCP `env` config instead) |
@@ -434,7 +434,7 @@ Paths are relative to `~/.anan/`. Files are mounted to `/root/.anan/` inside the
 - Credential files are mounted **read-only** into Docker containers
 - Skills Guard scans skill content for suspicious env access patterns before installation
 - Missing/unset vars are never registered (you can't leak what doesn't exist)
-- Hermes infrastructure secrets (provider API keys, gateway tokens) should never be added to `env_passthrough` — they have dedicated mechanisms
+- anan Agent infrastructure secrets (provider API keys, gateway tokens) should never be added to `env_passthrough` — they have dedicated mechanisms
 
 ## MCP Credential Handling
 
@@ -483,7 +483,7 @@ security:
       - "*.internal.company.com"
       - "admin.example.com"
     shared_files:
-      - "/etc/hermes/blocked-sites.txt"
+      - "/etc/anan/blocked-sites.txt"
 ```
 
 When a blocked URL is requested, the tool returns an error explaining the domain is blocked by policy. The blocklist is enforced across `web_search`, `web_extract`, `browser_navigate`, and all URL-capable tools.
@@ -518,7 +518,7 @@ The host-substring guard (which blocks lookalike Unicode domain tricks even when
 
 ### Tirith Pre-Exec Security Scanning
 
-Hermes integrates [tirith](https://github.com/sheeki03/tirith) for content-level command scanning before execution. Tirith detects threats that pattern matching alone misses:
+anan Agent integrates [tirith](https://github.com/sheeki03/tirith) for content-level command scanning before execution. Tirith detects threats that pattern matching alone misses:
 
 - Homograph URL spoofing (internationalized domain attacks)
 - Pipe-to-interpreter patterns (`curl | bash`, `wget | sh`)
@@ -588,7 +588,7 @@ For maximum security, run the gateway on a separate machine or VM:
 terminal:
   backend: ssh
   ssh_host: "agent-worker.local"
-  ssh_user: "hermes"
+  ssh_user: "anan"
   ssh_key: "~/.ssh/sinoclaw_agent_key"
 ```
 

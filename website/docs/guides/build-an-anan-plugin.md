@@ -1,16 +1,16 @@
 ---
 sidebar_position: 9
 sidebar_label: "Build a Plugin"
-title: "Build a Hermes Plugin"
-description: "Step-by-step guide to building a complete Hermes plugin with tools, hooks, data files, and skills"
+title: "Build a anan Agent Plugin"
+description: "Step-by-step guide to building a complete anan Agent plugin with tools, hooks, data files, and skills"
 ---
 
-# Build a Hermes Plugin
+# Build a anan Agent Plugin
 
-This guide walks through building a complete Hermes plugin from scratch. By the end you'll have a working plugin with multiple tools, lifecycle hooks, shipped data files, and a bundled skill — everything the plugin system supports.
+This guide walks through building a complete anan Agent plugin from scratch. By the end you'll have a working plugin with multiple tools, lifecycle hooks, shipped data files, and a bundled skill — everything the plugin system supports.
 
 :::info Not sure which guide you need?
-Hermes has several distinct pluggable interfaces — some use Python `register_*` APIs, others are config-driven or drop-in directories. Use this map first:
+anan Agent has several distinct pluggable interfaces — some use Python `register_*` APIs, others are config-driven or drop-in directories. Use this map first:
 
 | If you want to add… | Read |
 |---|---|
@@ -61,7 +61,7 @@ provides_hooks:
   - post_tool_call
 ```
 
-This tells Hermes: "I'm a plugin called calculator, I provide tools and hooks." The `provides_tools` and `provides_hooks` fields are lists of what the plugin registers.
+This tells anan Agent: "I'm a plugin called calculator, I provide tools and hooks." The `provides_tools` and `provides_hooks` fields are lists of what the plugin registers.
 
 Optional fields you could add:
 ```yaml
@@ -222,7 +222,7 @@ def unit_convert(args: dict, **kwargs) -> str:
 1. **Signature:** `def my_handler(args: dict, **kwargs) -> str`
 2. **Return:** Always a JSON string. Success and errors alike.
 3. **Never raise:** Catch all exceptions, return error JSON instead.
-4. **Accept `**kwargs`:** Hermes may pass additional context in the future.
+4. **Accept `**kwargs`:** anan Agent may pass additional context in the future.
 
 ## Step 5: Write the registration
 
@@ -266,7 +266,7 @@ def register(ctx):
 - `ctx.register_cli_command()` registers a CLI subcommand (e.g. `anan my-plugin <subcommand>`)
 - `ctx.register_command()` registers an in-session slash command (e.g. `/myplugin <args>` inside CLI / gateway chat) — see [Register slash commands](#register-slash-commands) below
 - `ctx.dispatch_tool(name, arguments)` — call any other tool (built-in or from another plugin) with the parent agent's context (approvals, credentials, task_id) wired up automatically. Useful from slash-command handlers that need to invoke `terminal`, `read_file`, or any other tool as if the model had called it directly.
-- If this function crashes, the plugin is disabled but Hermes continues fine
+- If this function crashes, the plugin is disabled but anan Agent continues fine
 
 **`dispatch_tool` example — a slash command that runs a tool:**
 
@@ -284,10 +284,10 @@ The dispatched tool goes through the normal approval, redaction, and budget pipe
 
 ## Step 6: Test it
 
-Start Hermes:
+Start anan Agent:
 
 ```bash
-hermes
+anan
 ```
 
 You should see `calculator: calculate, unit_convert` in the banner's tool list.
@@ -466,7 +466,7 @@ All callbacks should accept `**kwargs` for forward compatibility. If a hook call
 
 ### `pre_llm_call` context injection
 
-This is the only hook whose return value matters. When a `pre_llm_call` callback returns a dict with a `"context"` key (or a plain string), Hermes injects that text into the **current turn's user message**. This is the mechanism for memory plugins, RAG integrations, guardrails, and any plugin that needs to provide the model with additional context.
+This is the only hook whose return value matters. When a `pre_llm_call` callback returns a dict with a `"context"` key (or a plain string), anan Agent injects that text into the **current turn's user message**. This is the mechanism for memory plugins, RAG integrations, guardrails, and any plugin that needs to provide the model with additional context.
 
 #### Return format
 
@@ -489,7 +489,7 @@ Injected context is appended to the **user message**, not the system prompt. Thi
 
 - **Prompt cache preservation** — the system prompt stays identical across turns. Anthropic and OpenRouter cache the system prompt prefix, so keeping it stable saves 75%+ on input tokens in multi-turn conversations. If plugins modified the system prompt, every turn would be a cache miss.
 - **Ephemeral** — the injection happens at API call time only. The original user message in the conversation history is never mutated, and nothing is persisted to the session database.
-- **The system prompt is Hermes's territory** — it contains model-specific guidance, tool enforcement rules, personality instructions, and cached skill content. Plugins contribute context alongside the user's input, not by altering the agent's core instructions.
+- **The system prompt is anan Agent's territory** — it contains model-specific guidance, tool enforcement rules, personality instructions, and cached skill content. Plugins contribute context alongside the user's input, not by altering the agent's core instructions.
 
 #### Example: Memory recall plugin
 
@@ -695,7 +695,7 @@ This guide covers **general plugins** (tools, hooks, slash commands, CLI command
 
 ## Specialized plugin types
 
-Hermes has five specialized plugin types beyond the general surface. Each ships as a directory under `plugins/<category>/<name>/` (bundled) or `~/.anan/plugins/<category>/<name>/` (user). The contract differs by category — pick the one you need, then read its full guide.
+anan Agent has five specialized plugin types beyond the general surface. Each ships as a directory under `plugins/<category>/<name>/` (bundled) or `~/.anan/plugins/<category>/<name>/` (user). The contract differs by category — pick the one you need, then read its full guide.
 
 ### Model provider plugins — add an LLM backend
 
@@ -880,11 +880,11 @@ description: Custom image generation backend
 
 ## Non-Python extension surfaces
 
-Hermes also accepts extensions that aren't Python plugins at all. These are shown in the [Pluggable interfaces table](/docs/user-guide/features/plugins#pluggable-interfaces--where-to-go-for-each); the sections below sketch each authoring style briefly.
+anan Agent also accepts extensions that aren't Python plugins at all. These are shown in the [Pluggable interfaces table](/docs/user-guide/features/plugins#pluggable-interfaces--where-to-go-for-each); the sections below sketch each authoring style briefly.
 
 ### MCP servers — register external tools
 
-Model Context Protocol (MCP) servers register their own tools into Hermes without any Python plugin. Declare them in `~/.anan/config.yaml`:
+Model Context Protocol (MCP) servers register their own tools into anan Agent without any Python plugin. Declare them in `~/.anan/config.yaml`:
 
 ```yaml
 mcp_servers:
@@ -899,7 +899,7 @@ mcp_servers:
       type: "oauth"
 ```
 
-Hermes connects to each server at startup, lists its tools, and registers them alongside built-ins. The LLM sees them exactly like any other tool. **Full guide:** [MCP](/docs/user-guide/features/mcp).
+anan Agent connects to each server at startup, lists its tools, and registers them alongside built-ins. The LLM sees them exactly like any other tool. **Full guide:** [MCP](/docs/user-guide/features/mcp).
 
 ### Gateway event hooks — fire on lifecycle events
 
@@ -1041,7 +1041,7 @@ def handler(args, **kwargs):
 
 **Missing `**kwargs` in handler signature:**
 ```python
-# Wrong — will break if Hermes passes extra context
+# Wrong — will break if anan Agent passes extra context
 def handler(args):
     ...
 

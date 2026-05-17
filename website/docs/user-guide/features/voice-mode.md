@@ -8,7 +8,7 @@ description: "Real-time voice conversations with anan Agent — CLI, Telegram, D
 
 anan Agent supports full voice interaction across CLI and messaging platforms. Talk to the agent using your microphone, hear spoken replies, and have live voice conversations in Discord voice channels.
 
-If you want a practical setup walkthrough with recommended configurations and real usage patterns, see [Use Voice Mode with Hermes](/docs/guides/use-voice-mode-with-hermes).
+If you want a practical setup walkthrough with recommended configurations and real usage patterns, see [Use Voice Mode with anan Agent](/docs/guides/use-voice-mode-with-anan).
 
 ## Prerequisites
 
@@ -16,10 +16,10 @@ Before using voice features, make sure you have:
 
 1. **anan Agent installed** — `pip install anan` (see [Installation](/docs/getting-started/installation))
 2. **An LLM provider configured** — run `anan model` or set your preferred provider credentials in `~/.anan/.env`
-3. **A working base setup** — run `hermes` to verify the agent responds to text before enabling voice
+3. **A working base setup** — run `anan` to verify the agent responds to text before enabling voice
 
 :::tip
-The `~/.anan/` directory and default `config.yaml` are created automatically the first time you run `hermes`. You only need to create `~/.anan/.env` manually for API keys.
+The `~/.anan/` directory and default `config.yaml` are created automatically the first time you run `anan`. You only need to create `~/.anan/.env` manually for API keys.
 :::
 
 ## Overview
@@ -112,7 +112,7 @@ Voice mode is available in both the **classic CLI** (`anan chat`) and the **TUI*
 Start the CLI and enable voice mode:
 
 ```bash
-hermes                # Start the interactive CLI
+anan                # Start the interactive CLI
 ```
 
 Then use these commands inside the CLI:
@@ -127,7 +127,7 @@ Then use these commands inside the CLI:
 
 ### How It Works
 
-1. Start the CLI with `hermes` and enable voice mode with `/voice on`
+1. Start the CLI with `anan` and enable voice mode with `/voice on`
 2. **Press Ctrl+B** — a beep plays (880Hz), recording starts
 3. **Speak** — a live audio level bar shows your input: `● [▁▂▃▅▇▇▅▂] ❯`
 4. **Stop speaking** — after 3 seconds of silence, recording auto-stops

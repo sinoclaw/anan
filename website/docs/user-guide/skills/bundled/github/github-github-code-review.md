@@ -25,7 +25,7 @@ Review PRs: diffs, inline comments via gh or REST.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # GitHub Code Review
@@ -352,7 +352,7 @@ When the user asks you to "review PR #N", "look at this PR", or gives you a PR U
 ### Step 1: Set up environment
 
 ```bash
-source "${ANAN_HOME:-$HOME/.hermes}/skills/github/github-auth/scripts/gh-env.sh"
+source "${ANAN_HOME:-$HOME/.anan}/skills/github/github-auth/scripts/gh-env.sh"
 # Or run the inline setup block from the top of this skill
 ```
 

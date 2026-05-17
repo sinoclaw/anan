@@ -22,12 +22,13 @@ L8 DriveSystem → L3 AttentionQueue 桥接
 from __future__ import annotations
 
 import logging
+import time
 from typing import TYPE_CHECKING, Optional
 
 from kernel.event_bus import EventBus, Event, get_bus
 
 if TYPE_CHECKING:
-    from layers.L3_attention.attention import AttentionQueue
+    from layers.L3_attention.attention import AttentionQueue, AttentionScore
     from layers.L8_drives.drive_system import DriveSystem
 
 logger = logging.getLogger("anan.l8_bridge")
@@ -78,14 +79,19 @@ class AttentionBridge:
     # -------------------------------------------------------------------------
 
     def _on_drive_updated(self, event: Event) -> None:
-        """L8.drive.updated → boost 对应的注意力项。"""
+        """L8.drive.updated → boost 对应的注意力项，或新建一个。
+
+        完整链路：L8 drive 激活 → AttentionBridge → L3.attention.queued → L4 反思
+        """
         if self._q is None:
             return
 
         payload = event.payload or {}
         active = payload.get("active", False)
         drive_name = payload.get("drive", "UNKNOWN")
+        drive_type = payload.get("drive_type", "UNKNOWN")
         goal_tags = payload.get("goal_tags", [])
+        reason = payload.get("reason", "")
 
         if not active:
             # 驱动抑制：不做降级（boost 只升不降，维持简单性）
@@ -107,11 +113,30 @@ class AttentionBridge:
                 self._q.boost(item.id, extra_score=boost_amount)
                 boosted += 1
 
-        if boosted > 0:
-            logger.info(
-                "Drive %s activated → boosted %d attention items (boost=%.2f)",
-                drive_name, boosted, boost_amount
+        # 如果没有匹配项，则新建一个注意力项（形成 L8→L3 联动）
+        if boosted == 0 and goal_tags:
+            item_id = f"drive-{drive_name.lower()}-{int(time.time())}"
+            label = f"驱动力激活：{drive_type}（{reason[:40] if reason else '自动'}）"
+            # urgency=boost_amount*2 让 boost 大的 drive 有更高 urgency
+            score = AttentionScore(
+                urgency=min(boost_amount * 2.0, 1.0),
+                importance=min(boost_amount * 1.5, 1.0),
+                interest=0.4,
             )
+            self._q.enqueue(
+                item_id=item_id,
+                label=label,
+                source=f"L8:{drive_name}",
+                score=score,
+                ttl_s=120.0,
+            )
+            logger.info(
+                "Drive %s activated → enqueued new attention item '%s' (boost=%.2f)",
+                drive_name, item_id, boost_amount
+            )
+            boosted = 1
+
+        if boosted > 0:
             self._bus.publish_sync(Event(
                 topic="L3.attention.drive_boost",
                 source="L8.bridge",

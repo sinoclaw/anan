@@ -25,7 +25,7 @@ Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Google Workspace
@@ -39,7 +39,7 @@ Gmail, Calendar, Drive, Contacts, Sheets, and Docs — through anan-managed OAut
 ## Scripts
 
 - `scripts/setup.py` — OAuth2 setup (run once to authorize)
-- `scripts/google_api.py` — compatibility wrapper CLI. It prefers `gws` for operations when available, while preserving Hermes' existing JSON output contract.
+- `scripts/google_api.py` — compatibility wrapper CLI. It prefers `gws` for operations when available, while preserving anan Agent's existing JSON output contract.
 
 ## First-Time Setup
 
@@ -49,7 +49,7 @@ on CLI, Telegram, Discord, or any platform.
 Define a shorthand first:
 
 ```bash
-GSETUP="python ${ANAN_HOME:-$HOME/.hermes}/skills/productivity/google-workspace/scripts/setup.py"
+GSETUP="python ${ANAN_HOME:-$HOME/.anan}/skills/productivity/google-workspace/scripts/setup.py"
 ```
 
 ### Step 0: Check if already set up
@@ -180,7 +180,7 @@ Should print `AUTHENTICATED`. Setup is complete — token refreshes automaticall
 All commands go through the API script. Set `GAPI` as a shorthand:
 
 ```bash
-GAPI="python ${ANAN_HOME:-$HOME/.hermes}/skills/productivity/google-workspace/scripts/google_api.py"
+GAPI="python ${ANAN_HOME:-$HOME/.anan}/skills/productivity/google-workspace/scripts/google_api.py"
 ```
 
 ### Gmail

@@ -158,7 +158,7 @@ All slash commands are defined in a central `COMMAND_REGISTRY` list of `CommandD
 - **Gateway** — `GATEWAY_KNOWN_COMMANDS` frozenset for hook emission, `resolve_command()` for dispatch
 - **Gateway help** — `gateway_help_lines()` generates `/help` output
 - **Telegram** — `telegram_bot_commands()` generates the BotCommand menu
-- **Slack** — `slack_subcommand_map()` generates `/hermes` subcommand routing
+- **Slack** — `slack_subcommand_map()` generates `/anan` subcommand routing
 - **Autocomplete** — `COMMANDS` flat dict feeds `SlashCommandCompleter`
 - **CLI help** — `COMMANDS_BY_CATEGORY` dict feeds `show_help()`
 
@@ -202,7 +202,7 @@ The TUI is a full replacement for the classic (prompt_toolkit) CLI, activated vi
 ### Process Model
 
 ```
-hermes --tui
+anan --tui
   └─ Node (Ink)  ──stdio JSON-RPC──  Python (tui_gateway)
        │                                  └─ AIAgent + tools + sessions
        └─ renders transcript, composer, prompts, activity
@@ -263,14 +263,14 @@ The dashboard embeds the real `anan --tui` — **not** a rewrite.  See `anan_cli
 
 ## Adding New Tools
 
-For most custom or local-only tools, do **not** edit Hermes core. Use the plugin
+For most custom or local-only tools, do **not** edit Anan core. Use the plugin
 route instead: create `~/.anan/plugins/<name>/plugin.yaml` and
 `~/.anan/plugins/<name>/__init__.py`, then register tools with
 `ctx.register_tool(...)`. Plugin toolsets are discovered automatically and can be
 enabled or disabled without touching `tools/` or `toolsets.py`.
 
 Use the built-in route below only when the user is explicitly contributing a new
-core Hermes tool that should ship in the base system.
+core Anan tool that should ship in the base system.
 
 Built-in/core tools require changes in **2 files**:
 
@@ -303,7 +303,7 @@ The registry handles schema collection, dispatch, availability checking, and err
 
 **Path references in tool schemas**: If the schema description mentions file paths (e.g. default output directories), use `display_anan_home()` to make them profile-aware. The schema is generated at import time, which is after `_apply_profile_override()` sets `ANAN_HOME`.
 
-**State files**: If a tool stores persistent state (caches, logs, checkpoints), use `get_anan_home()` for the base directory — never `Path.home() / ".hermes"`. This ensures each profile gets its own state.
+**State files**: If a tool stores persistent state (caches, logs, checkpoints), use `get_anan_home()` for the base directory — never `Path.home() / ".anan"`. This ensures each profile gets its own state.
 
 **Agent-level tools** (todo, memory): intercepted by `run_agent.py` before `handle_function_call()`. See `tools/todo_tool.py` for the pattern.
 
@@ -413,7 +413,7 @@ anan_cli/skin_engine.py    # SkinConfig dataclass, built-in skins, YAML loader
 
 ### Built-in skins
 
-- `default` — Classic Hermes gold/kawaii (the current look)
+- `default` — Classic Anan gold/kawaii (the current look)
 - `ares` — Crimson/bronze war-god theme with custom spinner wings
 - `mono` — Clean grayscale monochrome
 - `slate` — Cool blue developer-focused theme
@@ -464,7 +464,7 @@ Activate with `/skin cyberpunk` or `display.skin: cyberpunk` in config.yaml.
 
 ## Plugins
 
-Hermes has two plugin surfaces. Both live under `plugins/` in the repo so
+Anan has two plugin surfaces. Both live under `plugins/` in the repo so
 repo-shipped plugins can be discovered alongside user-installed ones in
 `~/.anan/plugins/` and pip-installed entry points.
 
@@ -479,7 +479,7 @@ can:
   `on_session_start`, `on_session_end`
 - Register new tools via `ctx.register_tool(...)`
 - Register CLI subcommands via `ctx.register_cli_command(...)` — the
-  plugin's argparse tree is wired into `hermes` at startup so
+  plugin's argparse tree is wired into `anan` at startup so
   `anan <pluginname> <subcmd>` works with no change to `main.py`
 
 Hooks are invoked from `model_tools.py` (pre/post tool) and `run_agent.py`
@@ -568,13 +568,13 @@ niche skills belong in `optional-skills/`.
 
 Standard fields: `name`, `description`, `version`, `author`, `license`,
 `platforms` (OS-gating list: `[macos]`, `[linux, macos]`, ...),
-`metadata.hermes.tags`, `metadata.hermes.category`,
-`metadata.hermes.related_skills`, `metadata.hermes.config` (config.yaml
+`metadata.anan.tags`, `metadata.anan.category`,
+`metadata.anan.related_skills`, `metadata.anan.config` (config.yaml
 settings the skill needs — stored under `skills.config.<key>`, prompted
 during setup, injected at load time).
 
 Top-level `tags:` and `category:` are also accepted and mirrored from
-`metadata.hermes.*` by the loader.
+`metadata.anan.*` by the loader.
 
 ---
 
@@ -771,7 +771,7 @@ in config.yaml (or `SINOCLAW_BACKGROUND_NOTIFICATIONS` env var):
 
 ## Profiles: Multi-Instance Support
 
-Hermes supports **profiles** — multiple fully isolated instances, each with its own
+Anan supports **profiles** — multiple fully isolated instances, each with its own
 `ANAN_HOME` directory (config, API keys, memory, sessions, skills, gateway, etc.).
 
 The core mechanism: `_apply_profile_override()` in `anan_cli/main.py` sets

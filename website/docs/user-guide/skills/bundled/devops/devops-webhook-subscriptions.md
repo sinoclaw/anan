@@ -22,7 +22,7 @@ Webhook subscriptions: event-driven agent runs.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Webhook Subscriptions
@@ -33,7 +33,7 @@ Create dynamic webhook subscriptions so external services (GitHub, GitLab, Strip
 
 The webhook platform must be enabled before subscriptions can be created. Check with:
 ```bash
-hermes webhook list
+anan webhook list
 ```
 
 If it says "Webhook platform is not enabled", set it up:
@@ -82,7 +82,7 @@ All management is via the `anan webhook` CLI command:
 
 ### Create a subscription
 ```bash
-hermes webhook subscribe <name> \
+anan webhook subscribe <name> \
   --prompt "Prompt template with {payload.fields}" \
   --events "event1,event2" \
   --description "What this does" \
@@ -96,18 +96,18 @@ Returns the webhook URL and HMAC secret. The user configures their service to PO
 
 ### List subscriptions
 ```bash
-hermes webhook list
+anan webhook list
 ```
 
 ### Remove a subscription
 ```bash
-hermes webhook remove <name>
+anan webhook remove <name>
 ```
 
 ### Test a subscription
 ```bash
-hermes webhook test <name>
-hermes webhook test <name> --payload '{"key": "value"}'
+anan webhook test <name>
+anan webhook test <name> --payload '{"key": "value"}'
 ```
 
 ## Prompt Templates
@@ -125,7 +125,7 @@ If no prompt is specified, the full JSON payload is dumped into the agent prompt
 
 ### GitHub: new issues
 ```bash
-hermes webhook subscribe github-issues \
+anan webhook subscribe github-issues \
   --events "issues" \
   --prompt "New GitHub issue #{issue.number}: {issue.title}\n\nAction: {action}\nAuthor: {issue.user.login}\nBody:\n{issue.body}\n\nPlease triage this issue." \
   --deliver telegram \
@@ -140,7 +140,7 @@ Then in GitHub repo Settings → Webhooks → Add webhook:
 
 ### GitHub: PR reviews
 ```bash
-hermes webhook subscribe github-prs \
+anan webhook subscribe github-prs \
   --events "pull_request" \
   --prompt "PR #{pull_request.number} {action}: {pull_request.title}\nBy: {pull_request.user.login}\nBranch: {pull_request.head.ref}\n\n{pull_request.body}" \
   --skills "github-code-review" \
@@ -149,7 +149,7 @@ hermes webhook subscribe github-prs \
 
 ### Stripe: payment events
 ```bash
-hermes webhook subscribe stripe-payments \
+anan webhook subscribe stripe-payments \
   --events "payment_intent.succeeded,payment_intent.payment_failed" \
   --prompt "Payment {data.object.status}: {data.object.amount} cents from {data.object.receipt_email}" \
   --deliver telegram \
@@ -158,7 +158,7 @@ hermes webhook subscribe stripe-payments \
 
 ### CI/CD: build notifications
 ```bash
-hermes webhook subscribe ci-builds \
+anan webhook subscribe ci-builds \
   --events "pipeline" \
   --prompt "Build {object_attributes.status} on {project.name} branch {object_attributes.ref}\nCommit: {commit.message}" \
   --deliver discord \
@@ -167,7 +167,7 @@ hermes webhook subscribe ci-builds \
 
 ### Generic monitoring alert
 ```bash
-hermes webhook subscribe alerts \
+anan webhook subscribe alerts \
   --prompt "Alert: {alert.name}\nSeverity: {alert.severity}\nMessage: {alert.message}\n\nPlease investigate and suggest remediation." \
   --deliver origin
 ```
@@ -183,7 +183,7 @@ Use this for:
 - Any webhook where an LLM round trip would be wasted effort
 
 ```bash
-hermes webhook subscribe antenna-matches \
+anan webhook subscribe antenna-matches \
   --deliver telegram \
   --deliver-chat-id "123456789" \
   --deliver-only \

@@ -69,7 +69,7 @@ When `FIRECRAWL_API_URL` is set, the API key is optional (disable server auth wi
 
 ### SearXNG (free, self-hosted)
 
-SearXNG is a privacy-respecting, open-source metasearch engine that aggregates results from 70+ search engines. **No API key required** — just point Hermes at a running SearXNG instance.
+SearXNG is a privacy-respecting, open-source metasearch engine that aggregates results from 70+ search engines. **No API key required** — just point anan Agent at a running SearXNG instance.
 
 SearXNG is **search-only** — `web_extract` and `web_crawl` require a separate extract provider.
 
@@ -123,7 +123,7 @@ Open `~/searxng/searxng/settings.yml` and find the `formats` block (around line 
 formats:
   - html
 
-# After (enable JSON for Hermes):
+# After (enable JSON for anan Agent):
 formats:
   - html
   - json
@@ -145,7 +145,7 @@ curl -s "http://localhost:8888/search?q=test&format=json" | python3 -c \
 
 You should see something like `10 results`. If you get a `403 Forbidden`, JSON format is still disabled — recheck step 4.
 
-**7. Configure Hermes:**
+**7. Configure anan Agent:**
 
 ```bash
 # ~/.anan/.env
@@ -189,7 +189,7 @@ web:
   extract_backend: "firecrawl"   # or tavily, exa, parallel
 ```
 
-With this config, Hermes uses SearXNG for all search queries and Firecrawl for URL extraction — combining free search with high-quality extraction.
+With this config, anan Agent uses SearXNG for all search queries and Firecrawl for URL extraction — combining free search with high-quality extraction.
 
 ---
 
@@ -264,7 +264,7 @@ When per-capability keys are empty, both fall through to `web.backend`. When `we
 
 ### Auto-detection
 
-If no backend is explicitly configured, Hermes picks the first available one based on which credentials are set:
+If no backend is explicitly configured, anan Agent picks the first available one based on which credentials are set:
 
 | Credential present | Auto-selected backend |
 |--------------------|-----------------------|

@@ -6,28 +6,28 @@ description: "Connect anan Agent to personal WeChat accounts via the iLink Bot A
 
 # Weixin (WeChat)
 
-Connect Hermes to [WeChat](https://weixin.qq.com/) (微信), Tencent's personal messaging platform. The adapter uses Tencent's **iLink Bot API** for personal WeChat accounts — this is distinct from WeCom (Enterprise WeChat). Messages are delivered via long-polling, so no public endpoint or webhook is required.
+Connect anan Agent to [WeChat](https://weixin.qq.com/) (微信), Tencent's personal messaging platform. The adapter uses Tencent's **iLink Bot API** for personal WeChat accounts — this is distinct from WeCom (Enterprise WeChat). Messages are delivered via long-polling, so no public endpoint or webhook is required.
 
 :::info
 This adapter is for **personal WeChat accounts** (微信). If you need enterprise/corporate WeChat, see the [WeCom adapter](./wecom.md) instead.
 :::
 
 :::warning iLink bot identity — ordinary WeChat groups may not work
-QR login connects Hermes to an **iLink bot identity** (e.g. `a5ace6fd482e@im.bot`), **not** a fully scriptable ordinary personal WeChat account. Consequences:
+QR login connects anan Agent to an **iLink bot identity** (e.g. `a5ace6fd482e@im.bot`), **not** a fully scriptable ordinary personal WeChat account. Consequences:
 
 - The iLink bot identity generally **cannot be invited into ordinary WeChat groups** the way a normal contact can.
 - iLink typically **does not deliver ordinary WeChat group events** (including `@`-mentions of the personal account used for QR login) to the gateway for most bot-type accounts.
 - `@`-mentioning the personal WeChat account used to scan the QR code is **not** the same as `@`-mentioning the iLink bot — the bot is a separate identity.
-- The `WEIXIN_GROUP_POLICY` / `WEIXIN_GROUP_ALLOWED_USERS` settings below only take effect when iLink actually returns group events for your account type. If it doesn't, group messages will never reach Hermes regardless of policy.
+- The `WEIXIN_GROUP_POLICY` / `WEIXIN_GROUP_ALLOWED_USERS` settings below only take effect when iLink actually returns group events for your account type. If it doesn't, group messages will never reach anan Agent regardless of policy.
 
-In practice, most deployments only get DMs to the iLink bot working reliably. If group delivery doesn't work after configuration, the limitation is on the iLink side, not in Hermes. The gateway logs a `WARNING` at startup whenever `WEIXIN_GROUP_POLICY` is set to anything other than `disabled`.
+In practice, most deployments only get DMs to the iLink bot working reliably. If group delivery doesn't work after configuration, the limitation is on the iLink side, not in anan Agent. The gateway logs a `WARNING` at startup whenever `WEIXIN_GROUP_POLICY` is set to anything other than `disabled`.
 :::
 
 ## Prerequisites
 
 - A personal WeChat account
 - Python packages: `aiohttp` and `cryptography`
-- Terminal QR rendering is included when Hermes is installed with the `messaging` extra
+- Terminal QR rendering is included when anan Agent is installed with the `messaging` extra
 
 Install the required dependencies:
 
@@ -303,7 +303,7 @@ Only one Weixin gateway instance can use a given token at a time. The adapter ac
 | Session expired (`errcode=-14`) | Your login session has expired. Re-run `anan gateway setup` to scan a new QR code |
 | QR code expired during setup | The QR auto-refreshes up to 3 times. If it keeps expiring, check your network connection |
 | Bot doesn't respond to DMs | Check `WEIXIN_DM_POLICY` — if set to `allowlist`, the sender must be in `WEIXIN_ALLOWED_USERS` |
-| Bot ignores group messages | Group policy defaults to `disabled`. Set `WEIXIN_GROUP_POLICY=open` or `allowlist` — but note that QR-login iLink bot identities (`...@im.bot`) typically cannot receive ordinary WeChat group messages at all. If the gateway logs show no raw inbound events for group messages, the limitation is on the iLink side, not in Hermes. |
+| Bot ignores group messages | Group policy defaults to `disabled`. Set `WEIXIN_GROUP_POLICY=open` or `allowlist` — but note that QR-login iLink bot identities (`...@im.bot`) typically cannot receive ordinary WeChat group messages at all. If the gateway logs show no raw inbound events for group messages, the limitation is on the iLink side, not in anan Agent. |
 | Media download/upload fails | Ensure `cryptography` is installed. Check network access to `novac2c.cdn.weixin.qq.com` |
 | `Blocked unsafe URL (SSRF protection)` | The outbound media URL points to a private/internal address. Only public URLs are allowed |
 | Voice messages show as text | If WeChat provides a transcription, the adapter uses the text. This is expected behavior |

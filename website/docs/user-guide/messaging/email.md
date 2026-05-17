@@ -6,7 +6,7 @@ description: "Set up anan Agent as an email assistant via IMAP/SMTP"
 
 # Email Setup
 
-Hermes can receive and reply to emails using standard IMAP and SMTP protocols. Send an email to the agent's address and it replies in-thread — no special client or bot API needed. Works with Gmail, Outlook, Yahoo, Fastmail, or any provider that supports IMAP/SMTP.
+anan Agent can receive and reply to emails using standard IMAP and SMTP protocols. Send an email to the agent's address and it replies in-thread — no special client or bot API needed. Works with Gmail, Outlook, Yahoo, Fastmail, or any provider that supports IMAP/SMTP.
 
 :::info No External Dependencies
 The Email adapter uses Python's built-in `imaplib`, `smtplib`, and `email` modules. No additional packages or external services are required.
@@ -43,7 +43,7 @@ Most email providers support IMAP/SMTP. Check your provider's documentation for:
 
 ---
 
-## Step 1: Configure Hermes
+## Step 1: Configure anan Agent
 
 The easiest way:
 
@@ -59,7 +59,7 @@ Add to `~/.anan/.env`:
 
 ```bash
 # Required
-EMAIL_ADDRESS=hermes@gmail.com
+EMAIL_ADDRESS=anan@gmail.com
 EMAIL_PASSWORD=abcd efgh ijkl mnop    # App password (not your regular password)
 EMAIL_IMAP_HOST=imap.gmail.com
 EMAIL_SMTP_HOST=smtp.gmail.com
@@ -135,7 +135,7 @@ When enabled, attachment and inline parts are skipped before payload decoding. T
 
 ## Access Control
 
-Email access follows the same pattern as all other Hermes platforms:
+Email access follows the same pattern as all other anan Agent platforms:
 
 1. **`EMAIL_ALLOWED_USERS` set** → only emails from those addresses are processed
 2. **No allowlist set** → unknown senders get a pairing code

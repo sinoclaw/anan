@@ -1,14 +1,14 @@
 ---
 sidebar_position: 1
 title: "Messaging Gateway"
-description: "Chat with Hermes from Telegram, Discord, Slack, WhatsApp, Signal, SMS, Email, Home Assistant, Mattermost, Matrix, DingTalk, Yuanbao, Microsoft Teams, Webhooks, or any OpenAI-compatible frontend via the API server — architecture and setup overview"
+description: "Chat with anan Agent from Telegram, Discord, Slack, WhatsApp, Signal, SMS, Email, Home Assistant, Mattermost, Matrix, DingTalk, Yuanbao, Microsoft Teams, Webhooks, or any OpenAI-compatible frontend via the API server — architecture and setup overview"
 ---
 
 # Messaging Gateway
 
-Chat with Hermes from Telegram, Discord, Slack, WhatsApp, Signal, SMS, Email, Home Assistant, Mattermost, Matrix, DingTalk, Feishu/Lark, WeCom, Weixin, BlueBubbles (iMessage), QQ, Yuanbao, Microsoft Teams, or your browser. The gateway is a single background process that connects to all your configured platforms, handles sessions, runs cron jobs, and delivers voice messages.
+Chat with anan Agent from Telegram, Discord, Slack, WhatsApp, Signal, SMS, Email, Home Assistant, Mattermost, Matrix, DingTalk, Feishu/Lark, WeCom, Weixin, BlueBubbles (iMessage), QQ, Yuanbao, Microsoft Teams, or your browser. The gateway is a single background process that connects to all your configured platforms, handles sessions, runs cron jobs, and delivers voice messages.
 
-For the full voice feature set — including CLI microphone mode, spoken replies in messaging, and Discord voice-channel conversations — see [Voice Mode](/docs/user-guide/features/voice-mode) and [Use Voice Mode with Hermes](/docs/guides/use-voice-mode-with-hermes).
+For the full voice feature set — including CLI microphone mode, spoken replies in messaging, and Discord voice-channel conversations — see [Voice Mode](/docs/user-guide/features/voice-mode) and [Use Voice Mode with anan Agent](/docs/guides/use-voice-mode-with-anan).
 
 ## Platform Comparison
 
@@ -211,11 +211,11 @@ Instead of manually configuring user IDs, unknown users receive a one-time pairi
 ```bash
 # The user sees: "Pairing code: XKGH5N7P"
 # You approve them with:
-hermes pairing approve telegram XKGH5N7P
+anan pairing approve telegram XKGH5N7P
 
 # Other pairing commands:
-hermes pairing list          # View pending + approved users
-hermes pairing revoke telegram 123456789  # Remove access
+anan pairing list          # View pending + approved users
+anan pairing revoke telegram 123456789  # Remove access
 ```
 
 Pairing codes expire after 1 hour, are rate-limited, and use cryptographic randomness.
@@ -242,7 +242,7 @@ display:
   busy_ack_enabled: true   # set to false to suppress the ⚡/⏳/⏩ chat reply entirely
 ```
 
-The first time you message a busy agent on any platform, Hermes appends a one-line reminder to the busy-ack explaining the knob (`"💡 First-time tip — …"`). The reminder fires once per install — a flag under `onboarding.seen.busy_input_prompt` latches it. Delete that key to see the tip again.
+The first time you message a busy agent on any platform, anan Agent appends a one-line reminder to the busy-ack explaining the knob (`"💡 First-time tip — …"`). The reminder fires once per install — a flag under `onboarding.seen.busy_input_prompt` latches it. Delete that key to see the tip again.
 
 If you find the busy-ack noisy — especially with voice input or rapid-fire messages — set `display.busy_ack_enabled: false`. Your input is still queued/steered/interrupts as normal, only the chat reply is silenced.
 
@@ -273,7 +273,7 @@ Run a prompt in a separate background session so the agent works on it independe
 /background Check all servers in the cluster and report any that are down
 ```
 
-Hermes confirms immediately:
+anan Agent confirms immediately:
 
 ```
 🔄 Background task started: "Check all servers in the cluster..."
@@ -345,10 +345,10 @@ journalctl -u anan-gateway -f
 
 Use the user service on laptops and dev boxes. Use the system service on VPS or headless hosts that should come back at boot without relying on systemd linger.
 
-Avoid keeping both the user and system gateway units installed at once unless you really mean to. Hermes will warn if it detects both because start/stop/status behavior gets ambiguous.
+Avoid keeping both the user and system gateway units installed at once unless you really mean to. anan Agent will warn if it detects both because start/stop/status behavior gets ambiguous.
 
 :::info Multiple installations
-If you run multiple Hermes installations on the same machine (with different `ANAN_HOME` directories), each gets its own systemd service name. The default `~/.anan` uses `anan-gateway`; other installations use `anan-gateway-<hash>`. The `anan gateway` commands automatically target the correct service for your current `ANAN_HOME`.
+If you run multiple anan Agent installations on the same machine (with different `ANAN_HOME` directories), each gets its own systemd service name. The default `~/.anan` uses `anan-gateway`; other installations use `anan-gateway-<hash>`. The `anan gateway` commands automatically target the correct service for your current `ANAN_HOME`.
 :::
 
 ### macOS (launchd)
@@ -361,18 +361,18 @@ anan gateway status                # Check status
 tail -f ~/.anan/logs/gateway.log   # View logs
 ```
 
-The generated plist lives at `~/Library/LaunchAgents/ai.hermes.gateway.plist`. It includes three environment variables:
+The generated plist lives at `~/Library/LaunchAgents/ai.anan.gateway.plist`. It includes three environment variables:
 
 - **PATH** — your full shell PATH at install time, with the venv `bin/` and `node_modules/.bin` prepended. This ensures user-installed tools (Node.js, ffmpeg, etc.) are available to gateway subprocesses like the WhatsApp bridge.
 - **VIRTUAL_ENV** — points to the Python virtualenv so tools can resolve packages correctly.
-- **ANAN_HOME** — scopes the gateway to your Hermes installation.
+- **ANAN_HOME** — scopes the gateway to your anan Agent installation.
 
 :::tip PATH changes after install
 launchd plists are static — if you install new tools (e.g. a new Node.js version via nvm, or ffmpeg via Homebrew) after setting up the gateway, run `anan gateway install` again to capture the updated PATH. The gateway will detect the stale plist and reload automatically.
 :::
 
 :::info Multiple installations
-Like the Linux systemd service, each `ANAN_HOME` directory gets its own launchd label. The default `~/.anan` uses `ai.hermes.gateway`; other installations use `ai.hermes.gateway-<suffix>`.
+Like the Linux systemd service, each `ANAN_HOME` directory gets its own launchd label. The default `~/.anan` uses `ai.anan.gateway`; other installations use `ai.anan.gateway-<suffix>`.
 :::
 
 ## Platform-Specific Toolsets
@@ -402,7 +402,7 @@ Each platform has its own toolset:
 | QQBot | `anan-qqbot` | Full tools including terminal |
 | Yuanbao | `anan-yuanbao` | Full tools including terminal |
 | Microsoft Teams | `anan-teams` | Full tools including terminal |
-| API Server | `hermes` (default) | Full tools including terminal |
+| API Server | `anan` (default) | Full tools including terminal |
 | Webhooks | `anan-webhook` | Full tools including terminal |
 
 ## Next Steps

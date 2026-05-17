@@ -25,7 +25,7 @@ Humanize text: strip AI-isms and add real voice.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Humanizer: Remove AI Writing Patterns
@@ -43,9 +43,9 @@ Load this skill whenever the user asks to:
 - match their voice in writing they're producing
 - review text for AI tells before publishing
 
-Also apply this skill to **your own** output when writing user-facing prose — release notes, PR descriptions, documentation, long-form explanations, summaries. Hermes's baseline voice already strips most of these, but a focused pass catches what slips through.
+Also apply this skill to **your own** output when writing user-facing prose — release notes, PR descriptions, documentation, long-form explanations, summaries. anan Agent's baseline voice already strips most of these, but a focused pass catches what slips through.
 
-## How to use it in Hermes
+## How to use it in anan Agent
 
 The text usually arrives one of three ways:
 1. **Inline** — user pastes the text directly into the message. Work on it in-place, reply with the rewrite.

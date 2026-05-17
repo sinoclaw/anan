@@ -10,12 +10,12 @@ Server-side LLM fact extraction with semantic search, reranking, and automatic d
 ## Setup
 
 ```bash
-hermes memory setup    # select "mem0"
+anan memory setup    # select "mem0"
 ```
 
 Or manually:
 ```bash
-hermes config set memory.provider mem0
+anan config set memory.provider mem0
 echo "MEM0_API_KEY=your-key" >> ~/.anan/.env
 ```
 
@@ -26,7 +26,7 @@ Config file: `$ANAN_HOME/mem0.json`
 | Key | Default | Description |
 |-----|---------|-------------|
 | `user_id` | `anan-user` | User identifier on Mem0 |
-| `agent_id` | `hermes` | Agent identifier |
+| `agent_id` | `anan` | Agent identifier |
 | `rerank` | `true` | Enable reranking for recall |
 
 ## Tools

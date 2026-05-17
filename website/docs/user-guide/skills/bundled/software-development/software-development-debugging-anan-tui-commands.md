@@ -1,14 +1,14 @@
 ---
-title: "Debugging Hermes Tui Commands — Debug Hermes TUI slash commands: Python, gateway, Ink UI"
-sidebar_label: "Debugging Hermes Tui Commands"
-description: "Debug Hermes TUI slash commands: Python, gateway, Ink UI"
+title: "Debugging anan Agent Tui Commands — Debug anan Agent TUI slash commands: Python, gateway, Ink UI"
+sidebar_label: "Debugging anan Agent Tui Commands"
+description: "Debug anan Agent TUI slash commands: Python, gateway, Ink UI"
 ---
 
 {/* This page is auto-generated from the skill's SKILL.md by website/scripts/generate-skill-docs.py. Edit the source SKILL.md, not this page. */}
 
-# Debugging Hermes Tui Commands
+# Debugging anan Agent Tui Commands
 
-Debug Hermes TUI slash commands: Python, gateway, Ink UI.
+Debug anan Agent TUI slash commands: Python, gateway, Ink UI.
 
 ## Skill metadata
 
@@ -25,16 +25,16 @@ Debug Hermes TUI slash commands: Python, gateway, Ink UI.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
-# Debugging Hermes TUI Slash Commands
+# Debugging anan Agent TUI Slash Commands
 
 ## Overview
 
-Hermes slash commands span three layers — Python command registry, tui_gateway JSON-RPC bridge, and the Ink/TypeScript frontend. When a command misbehaves (missing from autocomplete, works in CLI but not TUI, config persists but UI doesn't update), the bug is almost always one layer being out of sync with another.
+anan Agent slash commands span three layers — Python command registry, tui_gateway JSON-RPC bridge, and the Ink/TypeScript frontend. When a command misbehaves (missing from autocomplete, works in CLI but not TUI, config persists but UI doesn't update), the bug is almost always one layer being out of sync with another.
 
-Use this skill when you encounter issues with slash commands in the Hermes TUI, particularly when commands aren't showing in autocomplete, aren't working properly in the TUI, or need to be added/updated.
+Use this skill when you encounter issues with slash commands in the anan Agent TUI, particularly when commands aren't showing in autocomplete, aren't working properly in the TUI, or need to be added/updated.
 
 ## When to Use
 

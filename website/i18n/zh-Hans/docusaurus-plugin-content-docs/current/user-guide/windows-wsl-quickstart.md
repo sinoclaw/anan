@@ -1,13 +1,13 @@
 ---
 title: "Windows 用户快速上手（WSL2）"
-description: "在 Windows 上通过 WSL2 安装 uv、Hermes 与 Tool Gateway 的推荐路径与常见坑"
+description: "在 Windows 上通过 WSL2 安装 uv、Anan 与 Tool Gateway 的推荐路径与常见坑"
 sidebar_label: "Windows（WSL2）"
 sidebar_position: 2
 ---
 
 # Windows 用户快速上手（WSL2）
 
-上游开发与 CI 以 **Linux / macOS** 为主；在 Windows 上，**官方推荐路径是 WSL2**，而不是在「旧版原生 CMD/PowerShell」里直接跑完整 Hermes 栈。本页给出从 0 到可跑 `hermes` + Tool Gateway 的最短闭环。
+上游开发与 CI 以 **Linux / macOS** 为主；在 Windows 上，**官方推荐路径是 WSL2**，而不是在「旧版原生 CMD/PowerShell」里直接跑完整 Anan 栈。本页给出从 0 到可跑 `anan` + Tool Gateway 的最短闭环。
 
 ## 1. 安装 WSL2 与发行版
 
@@ -41,7 +41,7 @@ uv --version
 在 WSL 里 clone 本仓库（或你的 fork），进入目录后按 [安装说明](/getting-started/installation) 使用 `uv sync` / 文档中的推荐命令安装依赖。
 
 :::tip 路径与权限
-Hermes 默认配置目录为 `~/.anan/`（在 WSL 内即 Linux 家目录）。请勿把 WSL 项目放在会被 Windows 杀毒实时深度扫描的极慢盘符上；推荐放在 WSL 文件系统（例如 `~/projects/...`）而非 `/mnt/c/...` 下的重度 IO 路径。
+Anan 默认配置目录为 `~/.anan/`（在 WSL 内即 Linux 家目录）。请勿把 WSL 项目放在会被 Windows 杀毒实时深度扫描的极慢盘符上；推荐放在 WSL 文件系统（例如 `~/projects/...`）而非 `/mnt/c/...` 下的重度 IO 路径。
 :::
 
 ## 4. 模型与 Tool Gateway

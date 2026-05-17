@@ -6,7 +6,7 @@ description: "Use anan Agent inside ACP-compatible editors such as VS Code, Zed,
 
 # ACP Editor Integration
 
-anan Agent can run as an ACP server, letting ACP-compatible editors talk to Hermes over stdio and render:
+anan Agent can run as an ACP server, letting ACP-compatible editors talk to anan Agent over stdio and render:
 
 - chat messages
 - tool activity
@@ -15,11 +15,11 @@ anan Agent can run as an ACP server, letting ACP-compatible editors talk to Herm
 - approval prompts
 - streamed thinking / response chunks
 
-ACP is a good fit when you want Hermes to behave like an editor-native coding agent instead of a standalone CLI or messaging bot.
+ACP is a good fit when you want anan Agent to behave like an editor-native coding agent instead of a standalone CLI or messaging bot.
 
-## What Hermes exposes in ACP mode
+## What anan Agent exposes in ACP mode
 
-Hermes runs with a curated `anan-acp` toolset designed for editor workflows. It includes:
+anan Agent runs with a curated `anan-acp` toolset designed for editor workflows. It includes:
 
 - file tools: `read_file`, `write_file`, `patch`, `search_files`
 - terminal tools: `terminal`, `process`
@@ -33,7 +33,7 @@ It intentionally excludes things that do not fit typical editor UX, such as mess
 
 ## Installation
 
-Install Hermes normally, then add the ACP extra:
+Install anan Agent normally, then add the ACP extra:
 
 ```bash
 pip install -e '.[acp]'
@@ -47,10 +47,10 @@ This installs the `agent-client-protocol` dependency and enables:
 
 ## Launching the ACP server
 
-Any of the following starts Hermes in ACP mode:
+Any of the following starts anan Agent in ACP mode:
 
 ```bash
-hermes acp
+anan acp
 ```
 
 ```bash
@@ -61,7 +61,7 @@ anan-acp
 python -m acp_adapter
 ```
 
-Hermes logs to stderr so stdout remains reserved for ACP JSON-RPC traffic.
+anan Agent logs to stderr so stdout remains reserved for ACP JSON-RPC traffic.
 
 ## Editor setup
 
@@ -75,13 +75,13 @@ To connect:
 2. Select **anan Agent** from the built-in agent list.
 3. Connect and start chatting.
 
-If you want to define Hermes manually, add it through VS Code settings under `acp.agents`:
+If you want to define anan Agent manually, add it through VS Code settings under `acp.agents`:
 
 ```json
 {
   "acp.agents": {
     "anan Agent": {
-      "command": "hermes",
+      "command": "anan",
       "args": ["acp"]
     }
   }
@@ -97,7 +97,7 @@ Example settings snippet:
   "agent_servers": {
     "anan": {
       "type": "custom",
-      "command": "hermes",
+      "command": "anan",
       "args": ["acp"],
     },
   },
@@ -123,19 +123,19 @@ acp_registry/agent.json
 It advertises a command-based agent whose launch command is:
 
 ```text
-hermes acp
+anan acp
 ```
 
 ## Configuration and credentials
 
-ACP mode uses the same Hermes configuration as the CLI:
+ACP mode uses the same anan Agent configuration as the CLI:
 
 - `~/.anan/.env`
 - `~/.anan/config.yaml`
 - `~/.anan/skills/`
 - `~/.anan/state.db`
 
-Provider resolution uses Hermes' normal runtime resolver, so ACP inherits the currently configured provider and credentials.
+Provider resolution uses anan Agent's normal runtime resolver, so ACP inherits the currently configured provider and credentials.
 
 ## Session behavior
 
@@ -149,11 +149,11 @@ Each session stores:
 - current conversation history
 - cancel event
 
-The underlying `AIAgent` still uses Hermes' normal persistence/logging paths, but ACP `list/load/resume/fork` are scoped to the currently running ACP server process.
+The underlying `AIAgent` still uses anan Agent's normal persistence/logging paths, but ACP `list/load/resume/fork` are scoped to the currently running ACP server process.
 
 ## Working directory behavior
 
-ACP sessions bind the editor's cwd to the Hermes task ID so file and terminal tools run relative to the editor workspace, not the server process cwd.
+ACP sessions bind the editor's cwd to the anan Agent task ID so file and terminal tools run relative to the editor workspace, not the server process cwd.
 
 ## Approvals
 
@@ -172,7 +172,7 @@ On timeout or error, the approval bridge denies the request.
 Check:
 
 - the editor is pointed at the correct `acp_registry/` path
-- Hermes is installed and on your PATH
+- anan Agent is installed and on your PATH
 - the ACP extra is installed (`pip install -e '.[acp]'`)
 
 ### ACP starts but immediately errors
@@ -181,16 +181,16 @@ Try these checks:
 
 ```bash
 anan doctor
-hermes status
-hermes acp
+anan status
+anan acp
 ```
 
 ### Missing credentials
 
-ACP mode does not have its own login flow. It uses Hermes' existing provider setup. Configure credentials with:
+ACP mode does not have its own login flow. It uses anan Agent's existing provider setup. Configure credentials with:
 
 ```bash
-hermes model
+anan model
 ```
 
 or by editing `~/.anan/.env`.

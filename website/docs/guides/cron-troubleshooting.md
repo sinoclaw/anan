@@ -1,7 +1,7 @@
 ---
 sidebar_position: 12
 title: "Cron Troubleshooting"
-description: "Diagnose and fix common Hermes cron issues — jobs not firing, delivery failures, skill loading errors, and performance problems"
+description: "Diagnose and fix common anan Agent cron issues — jobs not firing, delivery failures, skill loading errors, and performance problems"
 ---
 
 # Cron Troubleshooting
@@ -15,7 +15,7 @@ When a cron job isn't behaving as expected, work through these checks in order. 
 ### Check 1: Verify the job exists and is active
 
 ```bash
-hermes cron list
+anan cron list
 ```
 
 Look for the job and confirm its state is `[active]` (not `[paused]` or `[completed]`). If it shows `[completed]`, the repeat count may be exhausted — edit the job to reset it.
@@ -46,7 +46,7 @@ Jobs use the local timezone. If your machine's clock is wrong or in a different 
 
 ```bash
 date
-hermes cron list   # Compare next_run times with local time
+anan cron list   # Compare next_run times with local time
 ```
 
 ---
@@ -144,10 +144,10 @@ If a job ran and failed, you may see error context in:
 ### Check 2: Common error patterns
 
 **"No such file or directory" for scripts**
-The `script` path must be an absolute path (or relative to the Hermes config directory). Verify:
+The `script` path must be an absolute path (or relative to the anan Agent config directory). Verify:
 ```bash
 ls ~/.anan/scripts/your-script.py   # Must exist
-hermes cron edit <job_id> --script ~/.anan/scripts/your-script.py
+anan cron edit <job_id> --script ~/.anan/scripts/your-script.py
 ```
 
 **"Skill not found" at job execution**
@@ -165,7 +165,7 @@ The scheduler uses file-based locking to prevent overlapping ticks. If two gatew
 
 Kill duplicate gateway processes:
 ```bash
-ps aux | grep hermes
+ps aux | grep anan
 # Kill duplicate processes, keep only one
 ```
 
@@ -199,10 +199,10 @@ Scripts that dump megabytes of output will slow down the agent and may hit token
 ## Diagnostic Commands
 
 ```bash
-hermes cron list                    # Show all jobs, states, next_run times
-hermes cron run <job_id>            # Schedule for next tick (for testing)
-hermes cron edit <job_id>           # Fix configuration issues
-hermes logs                         # View recent Hermes logs
+anan cron list                    # Show all jobs, states, next_run times
+anan cron run <job_id>            # Schedule for next tick (for testing)
+anan cron edit <job_id>           # Fix configuration issues
+anan logs                         # View recent anan Agent logs
 anan skills list                  # Verify installed skills
 ```
 

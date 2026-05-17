@@ -297,7 +297,7 @@ Your Supabase edge function signs the payload with HMAC-SHA256 and POSTs to `htt
 ### Example: Dynamic subscription via CLI
 
 ```bash
-hermes webhook subscribe antenna-matches \
+anan webhook subscribe antenna-matches \
   --deliver telegram \
   --deliver-chat-id "123456789" \
   --deliver-only \
@@ -334,7 +334,7 @@ In addition to static routes in `config.yaml`, you can create webhook subscripti
 ### Create a subscription
 
 ```bash
-hermes webhook subscribe github-issues \
+anan webhook subscribe github-issues \
   --events "issues" \
   --prompt "New issue #{issue.number}: {issue.title}\nBy: {issue.user.login}\n\n{issue.body}" \
   --deliver telegram \
@@ -347,20 +347,20 @@ This returns the webhook URL and an auto-generated HMAC secret. Configure your s
 ### List subscriptions
 
 ```bash
-hermes webhook list
+anan webhook list
 ```
 
 ### Remove a subscription
 
 ```bash
-hermes webhook remove github-issues
+anan webhook remove github-issues
 ```
 
 ### Test a subscription
 
 ```bash
-hermes webhook test github-issues
-hermes webhook test github-issues --payload '{"issue": {"number": 42, "title": "Test"}}'
+anan webhook test github-issues
+anan webhook test github-issues --payload '{"issue": {"number": 42, "title": "Test"}}'
 ```
 
 ### How dynamic subscriptions work

@@ -9,12 +9,12 @@ description: "How to build an image-generation backend plugin for anan Agent"
 Image-gen provider plugins register a backend that services every `image_generate` tool call — DALL·E, gpt-image, Grok, Flux, Imagen, Stable Diffusion, fal, Replicate, a local ComfyUI rig, anything. Built-in providers (OpenAI, OpenAI-Codex, xAI) all ship as plugins. You can add a new one, or override a bundled one, by dropping a directory into `plugins/image_gen/<name>/`.
 
 :::tip
-Image-gen is one of several **backend plugins** Hermes supports. The others (with more specialized ABCs) are [Memory Provider Plugins](/docs/developer-guide/memory-provider-plugin), [Context Engine Plugins](/docs/developer-guide/context-engine-plugin), and [Model Provider Plugins](/docs/developer-guide/model-provider-plugin). General tool/hook/CLI plugins live in [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin).
+Image-gen is one of several **backend plugins** anan Agent supports. The others (with more specialized ABCs) are [Memory Provider Plugins](/docs/developer-guide/memory-provider-plugin), [Context Engine Plugins](/docs/developer-guide/context-engine-plugin), and [Model Provider Plugins](/docs/developer-guide/model-provider-plugin). General tool/hook/CLI plugins live in [Build a anan Agent Plugin](/docs/guides/build-a-anan-plugin).
 :::
 
 ## How discovery works
 
-Hermes scans for image-gen backends in three places:
+anan Agent scans for image-gen backends in three places:
 
 1. **Bundled** — `<repo>/plugins/image_gen/<name>/` (auto-loaded with `kind: backend`, always available)
 2. **User** — `~/.anan/plugins/image_gen/<name>/` (opt-in via `plugins.enabled`)
@@ -253,14 +253,14 @@ mkdir -p $ANAN_HOME/plugins/image_gen/my-backend
 # …copy __init__.py + plugin.yaml into that dir…
 
 export MY_BACKEND_API_KEY=your-test-key
-hermes plugins enable my-backend
+anan plugins enable my-backend
 
 # Pick it as the active provider
 echo "image_gen:" >> $ANAN_HOME/config.yaml
 echo "  provider: my-backend" >> $ANAN_HOME/config.yaml
 
 # Exercise it
-hermes -z "Generate an image of a corgi in a spacesuit"
+anan -z "Generate an image of a corgi in a spacesuit"
 ```
 
 Or interactively: `anan tools` → "Image Generation" → select `my-backend` → enter API key if prompted.
@@ -285,4 +285,4 @@ my-backend-imggen = "my_backend_imggen_package"
 
 - [Image Generation](/docs/user-guide/features/image-generation) — user-facing feature documentation
 - [Plugins overview](/docs/user-guide/features/plugins) — all plugin types at a glance
-- [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin) — general tools/hooks/slash commands guide
+- [Build a anan Agent Plugin](/docs/guides/build-a-anan-plugin) — general tools/hooks/slash commands guide

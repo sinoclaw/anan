@@ -12,7 +12,7 @@ anan Agent can automatically snapshot your project before **destructive operatio
 Enable checkpoints per-session with `--checkpoints`:
 
 ```bash
-hermes chat --checkpoints
+anan chat --checkpoints
 ```
 
 Or enable globally in `~/.anan/config.yaml`:
@@ -59,16 +59,16 @@ CLI for inspecting and managing the store outside a session:
 
 At a high level:
 
-- Hermes detects when tools are about to **modify files** in your working tree.
+- anan Agent detects when tools are about to **modify files** in your working tree.
 - Once per conversation turn (per directory), it:
   - Resolves a reasonable project root for the file.
   - Initialises or reuses the **single shared shadow store** at `~/.anan/checkpoints/store/`.
-  - Stages into a per-project index, builds a tree, and commits to a per-project ref (`refs/hermes/<project-hash>`).
+  - Stages into a per-project index, builds a tree, and commits to a per-project ref (`refs/anan/<project-hash>`).
 - These per-project refs form a checkpoint history that you can inspect and restore via `/rollback`.
 
 ```mermaid
 flowchart LR
-  user["User command\n(hermes, gateway)"]
+  user["User command\n(anan, gateway)"]
   agent["AIAgent\n(run_agent.py)"]
   tools["File & terminal tools"]
   cpMgr["CheckpointManager"]
@@ -121,7 +121,7 @@ From a CLI session:
 /rollback
 ```
 
-Hermes responds with a formatted list showing change statistics:
+anan Agent responds with a formatted list showing change statistics:
 
 ```text
 📸 Checkpoints for /path/to/project:
@@ -138,7 +138,7 @@ Hermes responds with a formatted list showing change statistics:
 ## Inspecting the Store from the Shell
 
 ```bash
-hermes checkpoints
+anan checkpoints
 ```
 
 Sample output:
@@ -165,7 +165,7 @@ Clear with: anan checkpoints clear-legacy
 Force a full sweep (ignores the 24h idempotency marker):
 
 ```bash
-hermes checkpoints prune --retention-days 3 --max-size-mb 200
+anan checkpoints prune --retention-days 3 --max-size-mb 200
 ```
 
 ## Previewing Changes with `/rollback diff`
@@ -184,7 +184,7 @@ This shows a git diff stat summary followed by the actual diff.
 /rollback 1
 ```
 
-Behind the scenes, Hermes:
+Behind the scenes, anan Agent:
 
 1. Verifies the target commit exists in the shadow store.
 2. Takes a **pre-rollback snapshot** of the current state so you can "undo the undo" later.
@@ -202,7 +202,7 @@ Restore just one file from a checkpoint without affecting the rest of the direct
 ## Safety and Performance Guards
 
 - **Git availability** — if `git` is not found on `PATH`, checkpoints are transparently disabled.
-- **Directory scope** — Hermes skips overly broad directories (root `/`, home `$HOME`).
+- **Directory scope** — anan Agent skips overly broad directories (root `/`, home `$HOME`).
 - **Repository size** — directories with more than 50,000 files are skipped.
 - **Per-file size cap** — files larger than `max_file_size_mb` (default 10 MB) are excluded from the snapshot. Prevents accidentally swallowing datasets, model weights, or generated media.
 - **Total store size cap** — when the store exceeds `max_total_size_mb` (default 500 MB), the oldest commit per project is dropped round-robin until under the cap.
@@ -216,7 +216,7 @@ Restore just one file from a checkpoint without affecting the rest of the direct
 ~/.anan/checkpoints/
   ├── store/                 # single shared bare git repo
   │   ├── HEAD, objects/     # git internals (shared across projects)
-  │   ├── refs/hermes/<hash> # per-project branch tip
+  │   ├── refs/anan/<hash> # per-project branch tip
   │   ├── indexes/<hash>     # per-project git index
   │   ├── projects/<hash>.json  # workdir + created_at + last_touch
   │   └── info/exclude
@@ -233,7 +233,7 @@ Before the v2 rewrite, each working directory got its own complete shadow git re
 On first v2 run, any pre-v2 shadow repos are moved into `~/.anan/checkpoints/legacy-<timestamp>/` so the new single-store layout starts clean. Old `/rollback` history is still reachable by manually inspecting the legacy archive with `git`; once you're confident you don't need it, run:
 
 ```bash
-hermes checkpoints clear-legacy
+anan checkpoints clear-legacy
 ```
 
 to reclaim the space. Legacy archives are also swept by `auto_prune` after `retention_days`.

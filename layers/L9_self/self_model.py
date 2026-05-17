@@ -243,6 +243,21 @@ class SelfModel:
             return True
         return False
 
+    def add_identity(self, fact: str) -> bool:
+        """Add an identity fact from LLM self-reflection.
+
+        Returns True if this was new (not already known).
+        """
+        if not fact or fact in self.identity_facts:
+            return False
+        self.identity_facts.append(fact)
+        self.n_facts = (
+            len(self.identity_facts) + len(self.vision_facts) +
+            len(self.history_facts) + len(self.wisdom_facts)
+        )
+        self.last_updated = datetime.now().isoformat()
+        return True
+
 
 # --------------------------------------------------------------------------
 # Builder — load from disk

@@ -79,6 +79,8 @@ class PatternMiner:
         history_limit: int = 500,
         mine_on_event: Optional[str] = "L0.circadian.bedtime",
         self_model: Optional[object] = None,   # L9 SelfModel — optional
+        min_interval_std_s: float = 1.0,   # Filter periodic antecedents (e.g. ticks)
+        min_occurrences_for_periodic_check: int = 4,   # Need ≥N intervals before checking periodicity
     ):
         self._bus = bus or get_bus()
         self._window = window
@@ -90,6 +92,8 @@ class PatternMiner:
         self._history_limit = history_limit
         self._mine_on_event = mine_on_event
         self._sm = self_model
+        self._min_interval_std_s = min_interval_std_s
+        self._min_occurrences_for_periodic_check = min_occurrences_for_periodic_check
 
         self._discovered: dict[tuple[str, str], _Discovered] = {}
         self._unsubs: list[Callable[[], None]] = []
@@ -158,23 +162,73 @@ class PatternMiner:
         if len(history) < self._min_support * 2:
             return []
 
-        topics = [self._abstract(e.topic) for e in history]
-        # Skip self-emitted L5 events to avoid feedback loop
-        topics = [t for t in topics if not t.startswith("L5.")]
-        # Skip infrastructure-level wildcard topics — these carry no cognitive signal
-        topics = [t for t in topics if t not in (
-            "session.*",
-            "conversation.*",
-            "gateway.message.*",
-            "gateway.presence.*",
-            "gateway.typing.*",
-        )]
+        # Abstract and filter — exclude L5 self-events and infrastructure noise
+        filtered_indices_set: set[int] = {
+            i for i, e in enumerate(history)
+            if not self._abstract(e.topic).startswith("L5.")
+            and self._abstract(e.topic) not in (
+                "session.*", "conversation.*",
+                "gateway.message.*", "gateway.presence.*", "gateway.typing.*",
+            )
+        }
+        filtered_topics_set: set[str] = {e.topic for i, e in enumerate(history) if i in filtered_indices_set}
+        topics = [self._abstract(e.topic) for i, e in enumerate(history) if i in filtered_indices_set]
 
         # Count baselines
         topic_counts = Counter(topics)
         total = len(topics)
         if total == 0:
             return []
+
+        # Detect periodic antecedents BEFORE abstraction, per raw topic.
+        # This correctly identifies tick-like signals (e.g. L0.circadian.tick
+        # firing at ~30s interval) even when multiple raw topics share the same
+        # abstract prefix (e.g. L0.circadian.* = L0.circadian.tick ∪ L0.circadian.bedtime).
+        import statistics
+        raw_ante_intervals: dict[str, list[float]] = defaultdict(list)
+        prev_ts_raw: dict[str, float] = {}
+        for e in history:
+            if e.topic not in filtered_topics_set:
+                continue
+            raw = e.topic
+            if prev_ts_raw.get(raw) is not None:
+                interval = e.ts - prev_ts_raw[raw]
+                if interval > 0:
+                    raw_ante_intervals[raw].append(interval)
+            prev_ts_raw[raw] = e.ts
+        periodic_raw = {
+            raw for raw, intervals in raw_ante_intervals.items()
+            if (len(intervals) >= self._min_occurrences_for_periodic_check
+                and statistics.stdev(intervals) < self._min_interval_std_s)
+        }
+        if periodic_raw:
+            logger.info("[MINER] filtering periodic raw topics (std < %.1fs, n≥%d): %s",
+                         self._min_interval_std_s, self._min_occurrences_for_periodic_check, periodic_raw)
+
+        # Compute abstract-level periodic set for co-occurrence filtering.
+        # A wildcard antecedent (e.g. L0.circadian.*) is excluded if ANY of its
+        # constituent raw topics was periodic — otherwise patterns from that
+        # abstract would leak through when mixed intervals mask periodicity.
+        periodic_abstracts: set[str] = set()
+        if periodic_raw:
+            abstract_to_raws: dict[str, set[str]] = defaultdict(set)
+            for e in history:
+                if e.topic not in filtered_topics_set:
+                    continue
+                abstract = self._abstract(e.topic)
+                abstract_to_raws[abstract].add(e.topic)
+            periodic_abstracts = {
+                abstract for abstract, raws in abstract_to_raws.items()
+                if raws & periodic_raw  # any constituent raw is periodic
+            }
+        # Hardcoded fallback: always filter these known periodic topics, even before
+        # enough history accumulates for dynamic stdev detection. Prevents spurious
+        # correlations from two periodic signals aligning (e.g. L0.circadian.tick at
+        # ~30s and L8.drive.dormant at ~30s → high-lift false causal link).
+        KNOWN_PERIODIC: set[str] = {"L0.circadian.*", "L8.drive.*"}
+        periodic_abstracts |= KNOWN_PERIODIC
+        if periodic_abstracts:
+            logger.info("[MINER] filtering periodic abstracts (std < %.1fs): %s", self._min_interval_std_s, periodic_abstracts)
 
         # Count co-occurrences (X at i, Y at i+1..i+window, Y != X)
         co_counts: dict[tuple[str, str], int] = defaultdict(int)
@@ -198,6 +252,15 @@ class PatternMiner:
         now = datetime.now()
         for (x, y), support in co_counts.items():
             if support < self._min_support:
+                continue
+            # Filter spurious patterns where both antecedent AND consequent are periodic.
+            # Two independent periodic signals can align by chance (e.g. 30s tick and
+            # 30s drive-update), producing a high-lift co-occurrence that is not causal.
+            if x in periodic_abstracts and y in periodic_abstracts:
+                logger.debug("[MINER] filtered periodic↔periodic: %s → %s (both periodic)", x, y)
+                continue
+            # Filter pure periodic antecedents (single periodic source, no co-occurrence claim)
+            if x in periodic_abstracts:
                 continue
             ante = antecedent_counts[x]
             if ante == 0:

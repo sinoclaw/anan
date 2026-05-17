@@ -25,12 +25,12 @@ Spotify: play, search, queue, manage playlists and devices.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Spotify
 
-Control the user's Spotify account via the Hermes Spotify toolset (7 tools). Setup guide: https://anan.nousresearch.com/docs/user-guide/features/spotify
+Control the user's Spotify account via the anan Agent Spotify toolset (7 tools). Setup guide: https://anan.nousresearch.com/docs/user-guide/features/spotify
 
 ## When to use this skill
 

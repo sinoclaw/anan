@@ -8,19 +8,19 @@ description: "Set up anan Agent as a Matrix bot"
 
 anan Agent integrates with Matrix, the open, federated messaging protocol. Matrix lets you run your own homeserver or use a public one like matrix.org — either way, you keep control of your communications. The bot connects via the `mautrix` Python SDK, processes messages through the anan Agent pipeline (including tool use, memory, and reasoning), and responds in real time. It supports text, file attachments, images, audio, video, and optional end-to-end encryption (E2EE).
 
-Hermes works with any Matrix homeserver — Synapse, Conduit, Dendrite, or matrix.org.
+anan Agent works with any Matrix homeserver — Synapse, Conduit, Dendrite, or matrix.org.
 
-Before setup, here's the part most people want to know: how Hermes behaves once it's connected.
+Before setup, here's the part most people want to know: how anan Agent behaves once it's connected.
 
-## How Hermes Behaves
+## How anan Agent Behaves
 
 | Context | Behavior |
 |---------|----------|
-| **DMs** | Hermes responds to every message. No `@mention` needed. Each DM has its own session. Set `MATRIX_DM_MENTION_THREADS=true` to start a thread when the bot is `@mentioned` in a DM. |
-| **Rooms** | By default, Hermes requires an `@mention` to respond. Set `MATRIX_REQUIRE_MENTION=false` or add room IDs to `MATRIX_FREE_RESPONSE_ROOMS` for free-response rooms. Room invites are auto-accepted. |
-| **Threads** | Hermes supports Matrix threads (MSC3440). If you reply in a thread, Hermes keeps the thread context isolated from the main room timeline. Threads where the bot has already participated do not require a mention. |
-| **Auto-threading** | By default, Hermes auto-creates a thread for each message it responds to in a room. This keeps conversations isolated. Set `MATRIX_AUTO_THREAD=false` to disable. |
-| **Shared rooms with multiple users** | By default, Hermes isolates session history per user inside the room. Two people talking in the same room do not share one transcript unless you explicitly disable that. |
+| **DMs** | anan Agent responds to every message. No `@mention` needed. Each DM has its own session. Set `MATRIX_DM_MENTION_THREADS=true` to start a thread when the bot is `@mentioned` in a DM. |
+| **Rooms** | By default, anan Agent requires an `@mention` to respond. Set `MATRIX_REQUIRE_MENTION=false` or add room IDs to `MATRIX_FREE_RESPONSE_ROOMS` for free-response rooms. Room invites are auto-accepted. |
+| **Threads** | anan Agent supports Matrix threads (MSC3440). If you reply in a thread, anan Agent keeps the thread context isolated from the main room timeline. Threads where the bot has already participated do not require a mention. |
+| **Auto-threading** | By default, anan Agent auto-creates a thread for each message it responds to in a room. This keeps conversations isolated. Set `MATRIX_AUTO_THREAD=false` to disable. |
+| **Shared rooms with multiple users** | By default, anan Agent isolates session history per user inside the room. Two people talking in the same room do not share one transcript unless you explicitly disable that. |
 
 :::tip
 The bot automatically joins rooms when invited. Just invite the bot's Matrix user to any room and it will join and start responding.
@@ -100,7 +100,7 @@ If you run your own homeserver (Synapse, Conduit, Dendrite):
 register_new_matrix_user -c /etc/synapse/homeserver.yaml http://localhost:8008
 ```
 
-2. Choose a username like `hermes` — the full user ID will be `@anan:your-server.org`.
+2. Choose a username like `anan` — the full user ID will be `@anan:your-server.org`.
 
 ### Option B: Use matrix.org or Another Public Homeserver
 
@@ -109,11 +109,11 @@ register_new_matrix_user -c /etc/synapse/homeserver.yaml http://localhost:8008
 
 ### Option C: Use Your Own Account
 
-You can also run Hermes as your own user. This means the bot posts as you — useful for personal assistants.
+You can also run anan Agent as your own user. This means the bot posts as you — useful for personal assistants.
 
 ## Step 2: Get an Access Token
 
-Hermes needs an access token to authenticate with the homeserver. You have two options:
+anan Agent needs an access token to authenticate with the homeserver. You have two options:
 
 ### Option A: Access Token (Recommended)
 
@@ -145,7 +145,7 @@ The access token gives full access to the bot's Matrix account. Never share it p
 
 ### Option B: Password Login
 
-Instead of providing an access token, you can give Hermes the bot's user ID and password. Hermes will log in automatically on startup. This is simpler but means the password is stored in your `.env` file.
+Instead of providing an access token, you can give anan Agent the bot's user ID and password. anan Agent will log in automatically on startup. This is simpler but means the password is stored in your `.env` file.
 
 ```bash
 MATRIX_USER_ID=@anan:your-server.org
@@ -235,7 +235,7 @@ You can run `anan gateway` in the background or as a systemd service for persist
 
 ## End-to-End Encryption (E2EE)
 
-Hermes supports Matrix end-to-end encryption, so you can chat with your bot in encrypted rooms.
+anan Agent supports Matrix end-to-end encryption, so you can chat with your bot in encrypted rooms.
 
 ### Requirements
 
@@ -270,7 +270,7 @@ Add to your `~/.anan/.env`:
 MATRIX_ENCRYPTION=true
 ```
 
-When E2EE is enabled, Hermes:
+When E2EE is enabled, anan Agent:
 
 - Stores encryption keys in `~/.anan/platforms/matrix/store/` (legacy installs: `~/.anan/matrix/store/`)
 - Uploads device keys on first connection
@@ -287,12 +287,12 @@ MATRIX_RECOVERY_KEY=EsT... your recovery key here
 
 **Where to find it:** In Element, go to **Settings** → **Security & Privacy** → **Encryption** → your recovery key (also called the "Security Key"). This is the key you were asked to save when you first set up cross-signing.
 
-On each startup, if `MATRIX_RECOVERY_KEY` is set, Hermes imports cross-signing keys from the homeserver's secure secret storage and signs the current device. This is idempotent and safe to leave enabled permanently.
+On each startup, if `MATRIX_RECOVERY_KEY` is set, anan Agent imports cross-signing keys from the homeserver's secure secret storage and signs the current device. This is idempotent and safe to leave enabled permanently.
 
 :::warning[Deleting the crypto store]
 If you delete `~/.anan/platforms/matrix/store/crypto.db`, the bot loses its encryption identity. Simply restarting with the same device ID will **not** fully recover — the homeserver still holds one-time keys signed with the old identity key, and peers cannot establish new Olm sessions.
 
-Hermes detects this condition on startup and refuses to enable E2EE, logging: `device XXXX has stale one-time keys on the server signed with a previous identity key`.
+anan Agent detects this condition on startup and refuses to enable E2EE, logging: `device XXXX has stale one-time keys on the server signed with a previous identity key`.
 
 **Easiest recovery: generate a new access token** (which gets a fresh device ID with no stale key history). See the "Upgrading from a previous version with E2EE" section below. This is the most reliable path and avoids touching the homeserver database.
 
@@ -316,10 +316,10 @@ Hermes detects this condition on startup and refuses to enable E2EE, logging: `d
    ```
    Note: deleting a device via the admin API may also invalidate the associated access token. You may need to generate a new token afterward.
 
-2. Delete the local crypto store and restart Hermes:
+2. Delete the local crypto store and restart anan Agent:
    ```bash
    rm -f ~/.anan/platforms/matrix/store/crypto.db*
-   # restart hermes
+   # restart anan
    ```
 
 Other Matrix clients (Element, matrix-commander) may cache the old device keys. After recovery, type `/discardsession` in Element to force a new encryption session with the bot.
@@ -380,7 +380,7 @@ If this returns your user info, the token is valid. If it returns an error, gene
 pip install 'mautrix[encryption]'
 ```
 
-Or with Hermes extras:
+Or with anan Agent extras:
 
 ```bash
 pip install 'anan[matrix]'
@@ -402,7 +402,7 @@ pip install 'anan[matrix]'
 If you also manually deleted `crypto.db`, see the "Deleting the crypto store" warning in the E2EE section above — there are additional steps to clear stale one-time keys from the homeserver.
 :::
 
-If you previously used Hermes with `MATRIX_ENCRYPTION=true` and are upgrading to
+If you previously used anan Agent with `MATRIX_ENCRYPTION=true` and are upgrading to
 a version that uses the new SQLite-based crypto store, the bot's encryption
 identity has changed. Your Matrix client (Element) may cache the old device keys
 and refuse to share encryption sessions with the bot.
@@ -471,7 +471,7 @@ normally.
 
 :::tip
 **New installations are not affected.** This migration is only needed if you had
-a working E2EE setup with a previous version of Hermes and are upgrading.
+a working E2EE setup with a previous version of anan Agent and are upgrading.
 
 **Why a new access token?** Each Matrix access token is bound to a specific device
 ID. Reusing the same device ID with new encryption keys causes other Matrix
@@ -565,7 +565,7 @@ FROM python:3.11-slim
 RUN apt-get update && apt-get install -y libolm-dev && rm -rf /var/lib/apt/lists/*
 RUN pip install 'anan[matrix]'
 
-CMD ["hermes", "gateway"]
+CMD ["anan", "gateway"]
 ```
 
 That's the entire container. No API keys for OpenRouter, Anthropic, or any inference provider.
@@ -619,7 +619,7 @@ Session continuity is maintained via the `X-anan-Session-Id` header. The host's 
 
 **Cause**: Long-running tool executions can delay the sync loop, or the homeserver is slow.
 
-**Fix**: The sync loop automatically retries every 5 seconds on error. Check the Hermes logs for sync-related warnings. If the bot consistently falls behind, ensure your homeserver has adequate resources.
+**Fix**: The sync loop automatically retries every 5 seconds on error. Check the anan Agent logs for sync-related warnings. If the bot consistently falls behind, ensure your homeserver has adequate resources.
 
 ### Bot is offline
 
@@ -646,5 +646,5 @@ For more information on securing your anan Agent deployment, see the [Security G
 - **Any homeserver**: Works with Synapse, Conduit, Dendrite, matrix.org, or any spec-compliant Matrix homeserver. No specific homeserver software required.
 - **Federation**: If you're on a federated homeserver, the bot can communicate with users from other servers — just add their full `@user:server` IDs to `MATRIX_ALLOWED_USERS`.
 - **Auto-join**: The bot automatically accepts room invites and joins. It starts responding immediately after joining.
-- **Media support**: Hermes can send and receive images, audio, video, and file attachments. Media is uploaded to your homeserver using the Matrix content repository API.
+- **Media support**: anan Agent can send and receive images, audio, video, and file attachments. Media is uploaded to your homeserver using the Matrix content repository API.
 - **Native voice messages (MSC3245)**: The Matrix adapter automatically tags outgoing voice messages with the `org.matrix.msc3245.voice` flag. This means TTS responses and voice audio are rendered as **native voice bubbles** in Element and other clients that support MSC3245, rather than as generic audio file attachments. Incoming voice messages with the MSC3245 flag are also correctly identified and routed to speech-to-text transcription. No configuration is needed — this works automatically.

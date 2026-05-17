@@ -17,7 +17,7 @@ Credential pools handle same-provider rotation (e.g., multiple OpenRouter keys).
 
 ## Primary Model Fallback
 
-When your main LLM provider encounters errors — rate limits, server overload, auth failures, connection drops — Hermes can automatically switch to a backup provider:model pair mid-session without losing your conversation.
+When your main LLM provider encounters errors — rate limits, server overload, auth failures, connection drops — anan Agent can automatically switch to a backup provider:model pair mid-session without losing your conversation.
 
 ### Configuration
 
@@ -40,7 +40,7 @@ fallback_model:
 Both `provider` and `model` are **required**. If either is missing, the fallback is disabled.
 
 :::note `fallback_model` vs `fallback_providers`
-`fallback_model` (singular) is the legacy single-fallback key — Hermes still honors it for back-compat. `fallback_providers` (plural, list) supports multiple fallbacks tried in order; `anan fallback` writes to this key. When both are set, Hermes merges them with `fallback_providers` taking priority.
+`fallback_model` (singular) is the legacy single-fallback key — anan Agent still honors it for back-compat. `fallback_providers` (plural, list) supports multiple fallbacks tried in order; `anan fallback` writes to this key. When both are set, anan Agent merges them with `fallback_providers` taking priority.
 :::
 
 ### Supported Providers
@@ -107,7 +107,7 @@ The fallback activates automatically when the primary model fails with:
 - **Not found** (HTTP 404) — immediately
 - **Invalid responses** — when the API returns malformed or empty responses repeatedly
 
-When triggered, Hermes:
+When triggered, anan Agent:
 
 1. Resolves credentials for the fallback provider
 2. Builds a new API client
@@ -117,7 +117,7 @@ When triggered, Hermes:
 The switch is seamless — your conversation history, tool calls, and context are preserved. The agent continues from exactly where it left off, just using a different model.
 
 :::info Per-Turn, Not Per-Session
-Fallback is **turn-scoped**: each new user message starts with the primary model restored. If the primary fails mid-turn, fallback activates for that turn only. On the next message, Hermes tries the primary again. Within a single turn, fallback activates at most once — if the fallback also fails, normal error handling takes over (retries, then error message). This prevents cascading failover loops within a turn while giving the primary model a fresh chance every turn.
+Fallback is **turn-scoped**: each new user message starts with the primary model restored. If the primary fails mid-turn, fallback activates for that turn only. On the next message, anan Agent tries the primary again. Within a single turn, fallback activates at most once — if the fallback also fails, normal error handling takes over (retries, then error message). This prevents cascading failover loops within a turn while giving the primary model a fresh chance every turn.
 :::
 
 ### Examples
@@ -178,7 +178,7 @@ There are no environment variables for `fallback_model` — it is configured exc
 
 ## Auxiliary Task Fallback
 
-Hermes uses separate lightweight models for side tasks. Each task has its own provider resolution chain that acts as a built-in fallback system.
+anan Agent uses separate lightweight models for side tasks. Each task has its own provider resolution chain that acts as a built-in fallback system.
 
 ### Tasks with Independent Provider Resolution
 
@@ -196,7 +196,7 @@ Hermes uses separate lightweight models for side tasks. Each task has its own pr
 
 ### Auto-Detection Chain
 
-When a task's provider is set to `"auto"` (the default), Hermes tries providers in order until one works:
+When a task's provider is set to `"auto"` (the default), anan Agent tries providers in order until one works:
 
 **For text tasks (compression, web extract, etc.):**
 
@@ -212,7 +212,7 @@ Main provider (if vision-capable) → OpenRouter → Nous Portal →
 Codex OAuth → Anthropic → Custom endpoint → give up
 ```
 
-If the resolved provider fails at call time, Hermes also has an internal retry: if the provider is not OpenRouter and no explicit `base_url` is set, it tries OpenRouter as a last-resort fallback.
+If the resolved provider fails at call time, anan Agent also has an internal retry: if the provider is not OpenRouter and no explicit `base_url` is set, it tries OpenRouter as a last-resort fallback.
 
 ### Configuring Auxiliary Providers
 
@@ -269,7 +269,7 @@ fallback_model:
   # base_url: http://localhost:8000/v1               # Optional custom endpoint
 ```
 
-For `auxiliary.session_search`, Hermes also supports:
+For `auxiliary.session_search`, anan Agent also supports:
 
 - `max_concurrency` to limit how many session summaries run at once
 - `extra_body` to pass provider-specific OpenAI-compatible request fields through on the summarization calls
@@ -315,7 +315,7 @@ auxiliary:
     model: "qwen2.5-vl"
 ```
 
-`base_url` takes precedence over `provider`. Hermes uses the configured `api_key` for authentication, falling back to `OPENAI_API_KEY` if not set. It does **not** reuse `OPENROUTER_API_KEY` for custom endpoints.
+`base_url` takes precedence over `provider`. anan Agent uses the configured `api_key` for authentication, falling back to `OPENAI_API_KEY` if not set. It does **not** reuse `OPENROUTER_API_KEY` for custom endpoints.
 
 ---
 
@@ -334,7 +334,7 @@ auxiliary:
 Older configs with `compression.summary_model` / `compression.summary_provider` / `compression.summary_base_url` are automatically migrated to `auxiliary.compression.*` on first load (config version 17).
 :::
 
-If no provider is available for compression, Hermes drops middle conversation turns without generating a summary rather than failing the session.
+If no provider is available for compression, anan Agent drops middle conversation turns without generating a summary rather than failing the session.
 
 ---
 

@@ -8,8 +8,8 @@ description: "Running anan Agent in Docker and using Docker as a terminal backen
 
 There are two distinct ways Docker intersects with anan Agent:
 
-1. **Running Hermes IN Docker** — the agent itself runs inside a container (this page's primary focus)
-2. **Docker as a terminal backend** — the agent runs on your host but executes every command inside a single, persistent Docker sandbox container that survives across tool calls, `/new`, and subagents for the life of the Hermes process (see [Configuration → Docker Backend](./configuration.md#docker-backend))
+1. **Running anan Agent IN Docker** — the agent itself runs inside a container (this page's primary focus)
+2. **Docker as a terminal backend** — the agent runs on your host but executes every command inside a single, persistent Docker sandbox container that survives across tool calls, `/new`, and subagents for the life of the anan Agent process (see [Configuration → Docker Backend](./configuration.md#docker-backend))
 
 This page covers option 1. The container stores all user data (config, API keys, sessions, skills, memories) in a single directory mounted from the host at `/opt/data`. The image itself is stateless and can be upgraded by pulling a new version without losing any configuration.
 
@@ -73,7 +73,7 @@ docker run -d \
   anan/anan gateway run
 ```
 
-The entrypoint starts `anan dashboard` in the background (running as the non-root `hermes` user) before `exec`-ing the main command. Dashboard output is prefixed with `[dashboard]` in `docker logs` so it's easy to separate from gateway logs.
+The entrypoint starts `anan dashboard` in the background (running as the non-root `anan` user) before `exec`-ing the main command. Dashboard output is prefixed with `[dashboard]` in `docker logs` so it's easy to separate from gateway logs.
 
 | Environment variable | Description | Default |
 |---------------------|-------------|---------|
@@ -101,17 +101,17 @@ docker run -it --rm \
 Or if you have already opened a terminal in your running container (via Docker Desktop for instance), just run:
 
 ```sh
-/opt/hermes/.venv/bin/hermes
+/opt/anan/.venv/bin/anan
 ```
 
 ## Persistent volumes
 
-The `/opt/data` volume is the single source of truth for all Hermes state. It maps to your host's `~/.anan/` directory and contains:
+The `/opt/data` volume is the single source of truth for all anan Agent state. It maps to your host's `~/.anan/` directory and contains:
 
 | Path | Contents |
 |------|----------|
 | `.env` | API keys and secrets |
-| `config.yaml` | All Hermes configuration |
+| `config.yaml` | All anan Agent configuration |
 | `SOUL.md` | Agent personality/identity |
 | `sessions/` | Conversation history |
 | `memories/` | Persistent memory store |
@@ -122,12 +122,12 @@ The `/opt/data` volume is the single source of truth for all Hermes state. It ma
 | `skins/` | Custom CLI skins |
 
 :::warning
-Never run two Hermes **gateway** containers against the same data directory simultaneously — session files and memory stores are not designed for concurrent write access.
+Never run two anan Agent **gateway** containers against the same data directory simultaneously — session files and memory stores are not designed for concurrent write access.
 :::
 
 ## Multi-profile support
 
-Hermes supports [multiple profiles](../reference/profile-commands.md) — separate `~/.anan/` directories that let you run independent agents (different SOUL, skills, memory, sessions, credentials) from a single installation. **When running under Docker, using Hermes' built-in multi-profile feature is not recommended.**
+anan Agent supports [multiple profiles](../reference/profile-commands.md) — separate `~/.anan/` directories that let you run independent agents (different SOUL, skills, memory, sessions, credentials) from a single installation. **When running under Docker, using anan Agent's built-in multi-profile feature is not recommended.**
 
 Instead, the recommended pattern is **one container per profile**, with each container bind-mounting its own host directory as `/opt/data`:
 
@@ -202,9 +202,9 @@ For persistent deployment with both the gateway and dashboard, a `docker-compose
 
 ```yaml
 services:
-  hermes:
+  anan:
     image: anan/anan:latest
-    container_name: hermes
+    container_name: anan
     restart: unless-stopped
     command: gateway run
     ports:
@@ -229,7 +229,7 @@ Start with `docker compose up -d` and view logs with `docker compose logs -f`. D
 
 ## Resource limits
 
-The Hermes container needs moderate resources. Recommended minimums:
+The anan Agent container needs moderate resources. Recommended minimums:
 
 | Resource | Minimum | Recommended |
 |----------|---------|-------------|
@@ -254,7 +254,7 @@ docker run -d \
 
 The official image is based on `debian:13.4` and includes:
 
-- Python 3 with all Hermes dependencies (`uv pip install -e ".[all]"`)
+- Python 3 with all anan Agent dependencies (`uv pip install -e ".[all]"`)
 - Node.js + npm (for browser automation and WhatsApp bridge)
 - Playwright with Chromium (`npx playwright install --with-deps chromium --only-shell`)
 - ripgrep, ffmpeg, git, and tini as system utilities
@@ -269,10 +269,10 @@ The entrypoint script (`docker/entrypoint.sh`) bootstraps the data volume on fir
 - Copies default `SOUL.md` if missing
 - Syncs bundled skills using a manifest-based approach (preserves user edits)
 - Optionally launches `anan dashboard` as a background side-process when `SINOCLAW_DASHBOARD=1` (see [Running the dashboard](#running-the-dashboard))
-- Then runs `hermes` with whatever arguments you pass
+- Then runs `anan` with whatever arguments you pass
 
 :::warning
-Do not override the image entrypoint unless you keep `/opt/hermes/docker/entrypoint.sh` in the command chain. The entrypoint drops root privileges to the `hermes` user before gateway state files are created. Starting `anan gateway run` as root inside the official image is refused by default because it can leave root-owned files in `/opt/data` and break later dashboard or gateway starts. Set `SINOCLAW_ALLOW_ROOT_GATEWAY=1` only when you intentionally accept that risk.
+Do not override the image entrypoint unless you keep `/opt/anan/docker/entrypoint.sh` in the command chain. The entrypoint drops root privileges to the `anan` user before gateway state files are created. Starting `anan gateway run` as root inside the official image is refused by default because it can leave root-owned files in `/opt/data` and break later dashboard or gateway starts. Set `SINOCLAW_ALLOW_ROOT_GATEWAY=1` only when you intentionally accept that risk.
 :::
 
 ## Upgrading
@@ -281,7 +281,7 @@ Pull the latest image and recreate the container. Your data directory is untouch
 
 ```sh
 docker pull anan/anan:latest
-docker rm -f hermes
+docker rm -f anan
 docker run -d \
   --name anan \
   --restart unless-stopped \
@@ -298,13 +298,13 @@ docker compose up -d
 
 ## Skills and credential files
 
-When using Docker as the execution environment (not the methods above, but when the agent runs commands inside a Docker sandbox — see [Configuration → Docker Backend](./configuration.md#docker-backend)), Hermes reuses a single long-lived container for all tool calls and automatically bind-mounts the skills directory (`~/.anan/skills/`) and any credential files declared by skills into that container as read-only volumes. Skill scripts, templates, and references are available inside the sandbox without manual configuration, and because the container persists for the life of the Hermes process, any dependencies you install or files you write stay around for the next tool call.
+When using Docker as the execution environment (not the methods above, but when the agent runs commands inside a Docker sandbox — see [Configuration → Docker Backend](./configuration.md#docker-backend)), anan Agent reuses a single long-lived container for all tool calls and automatically bind-mounts the skills directory (`~/.anan/skills/`) and any credential files declared by skills into that container as read-only volumes. Skill scripts, templates, and references are available inside the sandbox without manual configuration, and because the container persists for the life of the anan Agent process, any dependencies you install or files you write stay around for the next tool call.
 
 The same syncing happens for SSH and Modal backends — skills and credential files are uploaded via rsync or the Modal mount API before each command.
 
 ## Connecting to local inference servers (vLLM, Ollama, etc.)
 
-When running Hermes in Docker and your inference server (vLLM, Ollama, text-generation-inference, etc.) is also running on the host or in another container, networking requires extra attention.
+When running anan Agent in Docker and your inference server (vLLM, Ollama, text-generation-inference, etc.) is also running on the host or in another container, networking requires extra attention.
 
 ### Docker Compose (recommended)
 
@@ -330,9 +330,9 @@ services:
           devices:
             - capabilities: [gpu]
 
-  hermes:
+  anan:
     image: anan/anan:latest
-    container_name: hermes
+    container_name: anan
     restart: unless-stopped
     command: gateway run
     ports:
@@ -358,7 +358,7 @@ model:
 ```
 
 :::tip Key points
-- Use the **container name** (`vllm`) as the hostname — not `localhost` or `127.0.0.1`, which refer to the Hermes container itself.
+- Use the **container name** (`vllm`) as the hostname — not `localhost` or `127.0.0.1`, which refer to the anan Agent container itself.
 - The `model` value must match the `--served-model-name` you passed to vLLM.
 - Set `api_key` to any non-empty string (vLLM requires the header but doesn't validate it by default).
 - Do **not** include a trailing slash in `base_url`.
@@ -411,7 +411,7 @@ model:
 
 ### Verifying connectivity
 
-From inside the Hermes container, confirm the inference server is reachable:
+From inside the anan Agent container, confirm the inference server is reachable:
 
 ```sh
 docker exec anan curl -s http://vllm:8000/v1/models
@@ -439,13 +439,13 @@ model:
 
 ### Container exits immediately
 
-Check logs: `docker logs hermes`. Common causes:
+Check logs: `docker logs anan`. Common causes:
 - Missing or invalid `.env` file — run interactively first to complete setup
 - Port conflicts if running with exposed ports
 
 ### "Permission denied" errors
 
-The container's entrypoint drops privileges to the non-root `hermes` user (UID 10000) via `gosu`. If your host `~/.anan/` is owned by a different UID, set `SINOCLAW_UID`/`SINOCLAW_GID` to match your host user, or ensure the data directory is writable:
+The container's entrypoint drops privileges to the non-root `anan` user (UID 10000) via `gosu`. If your host `~/.anan/` is owned by a different UID, set `SINOCLAW_UID`/`SINOCLAW_GID` to match your host user, or ensure the data directory is writable:
 
 ```sh
 chmod -R 755 ~/.anan
@@ -468,7 +468,7 @@ docker run -d \
 The `--restart unless-stopped` flag handles most transient failures. If the gateway is stuck, restart the container:
 
 ```sh
-docker restart hermes
+docker restart anan
 ```
 
 ### Checking container health

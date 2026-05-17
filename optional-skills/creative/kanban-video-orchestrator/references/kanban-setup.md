@@ -1,7 +1,7 @@
 # Kanban Setup — Project Bootstrap & Profile Configuration
 
 Once the brief is locked and the team is designed, the next step is producing
-the actual `setup.sh` that creates the project workspace, configures Hermes
+the actual `setup.sh` that creates the project workspace, configures Anan
 profiles, and fires the initial kanban task.
 
 This file documents the patterns. The companion script
@@ -116,7 +116,7 @@ PY
 }
 ```
 
-PyYAML must be installed in the user's Python (it ships with most Hermes
+PyYAML must be installed in the user's Python (it ships with most Anan
 installs). If absent: `pip install pyyaml`.
 
 The setup script should also **validate** the patch by re-reading the file
@@ -149,7 +149,7 @@ deeper-than-baseline kanban guidance.
 The final action of setup.sh is firing the kanban:
 
 ```bash
-hermes kanban create "Direct production of <video title>" \
+anan kanban create "Direct production of <video title>" \
     --assignee director \
     --workspace dir:"$HOME/projects/video-pipeline/${PROJECT_SLUG}" \
     --tenant ${PROJECT_SLUG} \

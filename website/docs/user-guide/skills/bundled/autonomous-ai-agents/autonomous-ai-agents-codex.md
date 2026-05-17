@@ -25,12 +25,12 @@ Delegate coding to OpenAI Codex CLI (features, PRs).
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Codex CLI
 
-Delegate coding tasks to [Codex](https://github.com/openai/codex) via the Hermes terminal. Codex is OpenAI's autonomous coding agent CLI.
+Delegate coding tasks to [Codex](https://github.com/openai/codex) via the anan Agent terminal. Codex is OpenAI's autonomous coding agent CLI.
 
 ## When to use
 
@@ -49,7 +49,7 @@ Requires the codex CLI and a git repository.
 - **Must run inside a git repository** — Codex refuses to run outside one
 - Use `pty=true` in terminal calls — Codex is an interactive terminal app
 
-For Hermes itself, `model.provider: openai-codex` uses anan-managed Codex
+For anan Agent itself, `model.provider: openai-codex` uses anan-managed Codex
 OAuth from `~/.anan/auth.json` after `anan auth add openai-codex`. For the
 standalone Codex CLI, a valid CLI OAuth session may live under
 `~/.codex/auth.json`; do not treat a missing `OPENAI_API_KEY` alone as proof

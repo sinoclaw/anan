@@ -7,7 +7,7 @@ description: "Set up anan Agent as an SMS chatbot via Twilio"
 
 # SMS Setup (Twilio)
 
-Hermes connects to SMS through the [Twilio](https://www.twilio.com/) API. People text your Twilio phone number and get AI responses back — same conversational experience as Telegram or Discord, but over standard text messages.
+anan Agent connects to SMS through the [Twilio](https://www.twilio.com/) API. People text your Twilio phone number and get AI responses back — same conversational experience as Telegram or Discord, but over standard text messages.
 
 :::info Shared Credentials
 The SMS gateway shares credentials with the optional [telephony skill](/docs/reference/skills-catalog). If you've already set up Twilio for voice calls or one-off SMS, the gateway works with the same `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_PHONE_NUMBER`.
@@ -32,7 +32,7 @@ The SMS gateway shares credentials with the optional [telephony skill](/docs/ref
 
 ---
 
-## Step 2: Configure Hermes
+## Step 2: Configure anan Agent
 
 ### Interactive setup (recommended)
 
@@ -71,7 +71,7 @@ Twilio needs to know where to send incoming messages. In the [Twilio Console](ht
    - **HTTP Method**: `POST`
 
 :::tip Exposing Your Webhook
-If you're running Hermes locally, use a tunnel to expose the webhook:
+If you're running anan Agent locally, use a tunnel to expose the webhook:
 
 ```bash
 # Using cloudflared
@@ -113,7 +113,7 @@ You should see:
 
 If you see `Refusing to start: SMS_WEBHOOK_URL is required`, set `SMS_WEBHOOK_URL` to the public URL configured in your Twilio Console (see Step 3).
 
-Text your Twilio number — Hermes will respond via SMS.
+Text your Twilio number — anan Agent will respond via SMS.
 
 ---
 
@@ -148,7 +148,7 @@ Text your Twilio number — Hermes will respond via SMS.
 
 ### Webhook signature validation
 
-Hermes validates that inbound webhooks genuinely originate from Twilio by verifying the `X-Twilio-Signature` header (HMAC-SHA1). This prevents attackers from injecting forged messages.
+anan Agent validates that inbound webhooks genuinely originate from Twilio by verifying the `X-Twilio-Signature` header (HMAC-SHA1). This prevents attackers from injecting forged messages.
 
 **`SMS_WEBHOOK_URL` is required.** Set it to the public URL configured in your Twilio Console. The adapter will refuse to start without it.
 

@@ -6,7 +6,7 @@ description: "How the messaging gateway boots, authorizes users, routes sessions
 
 # Gateway Internals
 
-The messaging gateway is the long-running process that connects Hermes to 14+ external messaging platforms through a unified architecture.
+The messaging gateway is the long-running process that connects anan Agent to 14+ external messaging platforms through a unified architecture.
 
 ## Key Files
 

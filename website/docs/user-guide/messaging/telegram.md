@@ -85,7 +85,7 @@ anan Agent uses numeric Telegram user IDs to control access. Your user ID is **n
 
 Save this number; you'll need it for the next step.
 
-## Step 5: Configure Hermes
+## Step 5: Configure anan Agent
 
 ### Option A: Interactive Setup (Recommended)
 
@@ -162,7 +162,7 @@ Anything on this list delivered as a native attachment on platforms that support
 
 ## Webhook Mode
 
-By default, Hermes connects to Telegram using **long polling** — the gateway makes outbound requests to Telegram's servers to fetch new updates. This works well for local and always-on deployments.
+By default, anan Agent connects to Telegram using **long polling** — the gateway makes outbound requests to Telegram's servers to fetch new updates. This works well for local and always-on deployments.
 
 For **cloud deployments** (Fly.io, Railway, Render, etc.), **webhook mode** is more cost-effective. These platforms can auto-wake suspended machines on inbound HTTP traffic, but not on outbound connections. Since polling is outbound, a polling bot can never sleep. Webhook mode flips the direction — Telegram pushes updates to your bot's HTTPS URL, enabling sleep-when-idle deployments.
 
@@ -260,9 +260,9 @@ Group chat IDs are negative numbers (e.g., `-1001234567890`). Your personal DM c
 
 ### Incoming Voice (Speech-to-Text)
 
-Voice messages you send on Telegram are automatically transcribed by Hermes's configured STT provider and injected as text into the conversation.
+Voice messages you send on Telegram are automatically transcribed by anan Agent's configured STT provider and injected as text into the conversation.
 
-- `local` uses `faster-whisper` on the machine running Hermes — no API key required
+- `local` uses `faster-whisper` on the machine running anan Agent — no API key required
 - `groq` uses Groq Whisper and requires `GROQ_API_KEY`
 - `openai` uses OpenAI Whisper and requires `VOICE_TOOLS_OPENAI_KEY`
 
@@ -297,8 +297,8 @@ anan Agent works in Telegram group chats with a few considerations:
   - `@botusername` mentions
   - `/command@botusername` (Telegram's bot-menu command form that includes the bot name)
   - matches for one of your configured regex wake words in `telegram.mention_patterns`
-- Use `telegram.ignored_threads` to keep Hermes silent in specific Telegram forum topics, even when the group would otherwise allow free responses or mention-triggered replies
-- If `telegram.require_mention` is left unset or false, Hermes keeps the previous open-group behavior and responds to normal group messages it can see
+- Use `telegram.ignored_threads` to keep anan Agent silent in specific Telegram forum topics, even when the group would otherwise allow free responses or mention-triggered replies
+- If `telegram.require_mention` is left unset or false, anan Agent keeps the previous open-group behavior and responds to normal group messages it can see
 
 ### Troubleshooting: works in DMs but not groups
 
@@ -306,12 +306,12 @@ If the bot responds in a private chat but stays silent in a group, check these
 gates in order:
 
 1. **Telegram delivery:** turn off BotFather privacy mode, promote the bot to
-   admin, or mention the bot directly. Hermes cannot respond to group messages
+   admin, or mention the bot directly. anan Agent cannot respond to group messages
    that Telegram never delivers to the bot.
 2. **Rejoin after changing privacy:** remove the bot from the group and add it
    again after changing BotFather privacy settings. Telegram may keep the old
    delivery behavior for existing memberships.
-3. **Hermes authorization:** make sure the sender is listed in
+3. **anan Agent authorization:** make sure the sender is listed in
    `TELEGRAM_ALLOWED_USERS` or `TELEGRAM_GROUP_ALLOWED_USERS`, or allow the
    group chat with `TELEGRAM_GROUP_ALLOWED_CHATS`.
 4. **Mention filters:** if `telegram.require_mention: true` is set, normal
@@ -349,7 +349,7 @@ Messages in Telegram topics `31` and `42` are always ignored before the mention 
 
 ## Private Chat Topics (Bot API 9.4)
 
-Telegram Bot API 9.4 (February 2026) introduced **Private Chat Topics** — bots can create forum-style topic threads directly in 1-on-1 DM chats, no supergroup needed. This lets you run multiple isolated workspaces within your existing DM with Hermes.
+Telegram Bot API 9.4 (February 2026) introduced **Private Chat Topics** — bots can create forum-style topic threads directly in 1-on-1 DM chats, no supergroup needed. This lets you run multiple isolated workspaces within your existing DM with anan Agent.
 
 ### Use case
 
@@ -366,11 +366,11 @@ Each topic gets its own conversation session, history, and context — completel
 :::caution Prerequisites
 Before adding topics to your config, the user must **enable Topics mode** in the DM chat with the bot:
 
-1. Open your private chat with the Hermes bot in Telegram
+1. Open your private chat with the anan Agent bot in Telegram
 2. Tap the bot's name at the top to open chat info
 3. Enable **Topics** (the toggle to turn the chat into a forum)
 
-Without this, Hermes will log `The chat is not a forum` on startup and skip topic creation. This is a Telegram client-side setting — the bot cannot enable it programmatically.
+Without this, anan Agent will log `The chat is not a forum` on startup and skip topic creation. This is a Telegram client-side setting — the bot cannot enable it programmatically.
 :::
 
 Add topics under `platforms.telegram.extra.dm_topics` in `~/.anan/config.yaml`:
@@ -403,7 +403,7 @@ platforms:
 
 ### How it works
 
-1. On gateway startup, Hermes calls `createForumTopic` for each topic that doesn't have a `thread_id` yet
+1. On gateway startup, anan Agent calls `createForumTopic` for each topic that doesn't have a `thread_id` yet
 2. The `thread_id` is saved back to `config.yaml` automatically — subsequent restarts skip the API call
 3. Each topic maps to an isolated session key: `agent:main:telegram:dm:{chat_id}:{thread_id}`
 4. Messages in each topic have their own conversation history, memory flush, and context window
@@ -455,7 +455,7 @@ In **@BotFather**, open your bot → **Bot Settings → Threads Settings**:
 1. Turn on **Threaded Mode** (enables `has_topics_enabled`)
 2. Do **not** disable users creating topics (keeps `allows_users_to_create_topics` on)
 
-When the user first runs `/topic`, Hermes calls `getMe` to verify both flags. If either is off, anan sends a screenshot of the BotFather Threads Settings page and explains what to toggle — no activation happens until prerequisites are met.
+When the user first runs `/topic`, anan Agent calls `getMe` to verify both flags. If either is off, anan sends a screenshot of the BotFather Threads Settings page and explains what to toggle — no activation happens until prerequisites are met.
 
 ### Activation flow
 
@@ -465,7 +465,7 @@ From the root DM, send:
 /topic
 ```
 
-Hermes will:
+anan Agent will:
 
 1. Check `getMe().has_topics_enabled` and `allows_users_to_create_topics`
 2. If both are true, enable multi-session topic mode for this DM
@@ -479,17 +479,17 @@ After activation, the **root DM is a lobby**: normal prompts are rejected with g
 1. Open the bot DM in Telegram
 2. Tap **All Messages** at the top of the bot interface, then send any message
 3. Telegram creates a new topic for that message
-4. Hermes responds inside that topic — the topic is now a standalone session
+4. anan Agent responds inside that topic — the topic is now a standalone session
 
 Every topic gets its own conversation history, model state, tool execution, and session ID. The isolation key is `agent:main:telegram:dm:{chat_id}:{thread_id}` — identical to the config-driven DM topics isolation.
 
 ### Auto-renamed topics
 
-When Hermes generates a session title for a topic (via the auto-title pipeline, after the first exchange), the Telegram topic itself is renamed to match — e.g. "New Topic" becomes "Database migration plan". The rename is best-effort: failures are logged but don't break the session.
+When anan Agent generates a session title for a topic (via the auto-title pipeline, after the first exchange), the Telegram topic itself is renamed to match — e.g. "New Topic" becomes "Database migration plan". The rename is best-effort: failures are logged but don't break the session.
 
 ### `/new` inside a topic
 
-Resets the current topic's session (new session ID, fresh history) without touching other topics. Hermes replies with a reminder that for parallel work, creating another topic (via **All Messages**) is usually what you want.
+Resets the current topic's session (new session ID, fresh history) without touching other topics. anan Agent replies with a reminder that for parallel work, creating another topic (via **All Messages**) is usually what you want.
 
 ### Restoring a previous session
 
@@ -504,9 +504,9 @@ This binds the current topic to an existing anan session instead of starting fre
 - The target session must belong to the same Telegram user
 - The target session must not already be bound to another topic
 
-Hermes confirms with the session title and replays the last assistant message for context.
+anan Agent confirms with the session title and replays the last assistant message for context.
 
-To discover session IDs, send `/topic` (no argument) in the root DM — Hermes lists the user's unlinked Telegram sessions.
+To discover session IDs, send `/topic` (no argument) in the root DM — anan Agent lists the user's unlinked Telegram sessions.
 
 ### `/topic` inside a topic (no argument)
 
@@ -528,7 +528,7 @@ Shows the current topic's binding: session title, session ID, and hints for `/ne
 
 ### Disabling multi-session mode
 
-Send `/topic off` in the root DM. Hermes flips the row off, clears the chat's `(thread_id → session_id)` bindings, and the root DM reverts to a normal Hermes chat. Existing topics in Telegram aren't deleted — they just stop being gated as independent sessions. Re-run `/topic` later to turn it back on.
+Send `/topic off` in the root DM. anan Agent flips the row off, clears the chat's `(thread_id → session_id)` bindings, and the root DM reverts to a normal anan Agent chat. Existing topics in Telegram aren't deleted — they just stop being gated as independent sessions. Re-run `/topic` later to turn it back on.
 
 If you need to clean up by hand (e.g. a bulk reset across many chats), remove the rows directly:
 
@@ -538,9 +538,9 @@ sqlite3 ~/.anan/state.db \
    DELETE FROM telegram_dm_topic_bindings WHERE chat_id = '<your_chat_id>';"
 ```
 
-### Downgrading Hermes
+### Downgrading anan Agent
 
-If you downgrade to a Hermes version that predates `/topic`, the feature simply stops working — the `telegram_dm_topic_mode` and `telegram_dm_topic_bindings` tables remain in `state.db` but are ignored by older code. DMs revert to the native per-thread isolation (each `message_thread_id` still gets its own session via `build_session_key`), so your existing Telegram topics keep working as parallel sessions. The root DM is no longer a lobby — messages there go into the agent like they used to. Re-upgrading reactivates multi-session mode exactly where it was.
+If you downgrade to a anan Agent version that predates `/topic`, the feature simply stops working — the `telegram_dm_topic_mode` and `telegram_dm_topic_bindings` tables remain in `state.db` but are ignored by older code. DMs revert to the native per-thread isolation (each `message_thread_id` still gets its own session via `build_session_key`), so your existing Telegram topics keep working as parallel sessions. The root DM is no longer a lobby — messages there go into the agent like they used to. Re-upgrading reactivates multi-session mode exactly where it was.
 
 ## Group Forum Topic Skill Binding
 
@@ -587,7 +587,7 @@ platforms:
 
 ### How it works
 
-1. When a message arrives in a mapped group topic, Hermes looks up the `chat_id` and `thread_id` in `group_topics` config
+1. When a message arrives in a mapped group topic, anan Agent looks up the `chat_id` and `thread_id` in `group_topics` config
 2. If a matching entry has a `skill` field, that skill is auto-loaded for the session — identical to DM topic skill binding
 3. Topics without a `skill` key get session isolation only (existing behavior, unchanged)
 4. Unmapped `thread_id` values or `chat_id` values fall through silently — no error, no skill
@@ -597,7 +597,7 @@ platforms:
 | | DM Topics | Group Topics |
 |---|---|---|
 | Config key | `extra.dm_topics` | `extra.group_topics` |
-| Topic creation | Hermes creates topics via API if `thread_id` is missing | Admin creates topics in Telegram UI |
+| Topic creation | anan Agent creates topics via API if `thread_id` is missing | Admin creates topics in Telegram UI |
 | `thread_id` | Auto-populated after creation | Must be set manually |
 | `icon_color` / `icon_custom_emoji_id` | Supported | Not applicable (admin controls appearance) |
 | Skill binding | ✓ | ✓ |
@@ -609,13 +609,13 @@ To find a topic's `thread_id`, open the topic in Telegram Web or Desktop and loo
 
 ## Recent Bot API Features
 
-- **Bot API 9.4 (Feb 2026):** Private Chat Topics — bots can create forum topics in 1-on-1 DM chats via `createForumTopic`. Hermes uses this for two distinct features: operator-curated [Private Chat Topics](#private-chat-topics-bot-api-94) (config-driven, fixed topic list) and user-driven [Multi-session DM mode](#multi-session-dm-mode-topic) (activated by `/topic`, unlimited user-created topics).
+- **Bot API 9.4 (Feb 2026):** Private Chat Topics — bots can create forum topics in 1-on-1 DM chats via `createForumTopic`. anan Agent uses this for two distinct features: operator-curated [Private Chat Topics](#private-chat-topics-bot-api-94) (config-driven, fixed topic list) and user-driven [Multi-session DM mode](#multi-session-dm-mode-topic) (activated by `/topic`, unlimited user-created topics).
 - **Privacy policy:** Telegram now requires bots to have a privacy policy. Set one via BotFather with `/setprivacy_policy`, or Telegram may auto-generate a placeholder. This is particularly important if your bot is public-facing.
 - **Message streaming:** Bot API 9.x added support for streaming long responses, which can improve perceived latency for lengthy agent replies.
 
 ## Rendering: Tables and Link Previews
 
-Telegram's MarkdownV2 has no native table syntax — pipe tables render as backslash-escaped noise if passed through raw. Hermes normalizes markdown tables automatically:
+Telegram's MarkdownV2 has no native table syntax — pipe tables render as backslash-escaped noise if passed through raw. anan Agent normalizes markdown tables automatically:
 
 - **Small tables** are flattened into **row-group bullets** — each row becomes a readable bulleted list under the column headings. Good for 2–4 columns and short cells.
 - **Larger or wider tables** fall back to a **fenced code block** with aligned columns so nothing collapses. A one-line prompt hint is added so the agent knows to prefer prose follow-ups over more tables on Telegram.
@@ -632,7 +632,7 @@ gateway:
         disable_link_previews: true
 ```
 
-When enabled, Hermes attaches Telegram's `LinkPreviewOptions(is_disabled=True)` to every outgoing message and falls back to the legacy `disable_web_page_preview` parameter on older `python-telegram-bot` versions.
+When enabled, anan Agent attaches Telegram's `LinkPreviewOptions(is_disabled=True)` to every outgoing message and falls back to the legacy `disable_web_page_preview` parameter on older `python-telegram-bot` versions.
 
 ## Group Allowlisting
 
@@ -687,7 +687,7 @@ TELEGRAM_GROUP_ALLOWED_CHATS="-1001234567890"
 
 ## Interactive Model Picker
 
-When you send `/model` with no arguments in a Telegram chat, Hermes shows an interactive inline keyboard for switching models:
+When you send `/model` with no arguments in a Telegram chat, anan Agent shows an interactive inline keyboard for switching models:
 
 1. **Provider selection** — buttons showing each available provider with model counts (e.g., "OpenAI (15)", "✓ Anthropic (12)" for the current provider).
 2. **Model selection** — paginated model list with **Prev**/**Next** navigation, a **Back** button to return to providers, and **Cancel**.
@@ -759,10 +759,10 @@ Or add it to `~/.anan/.env`:
 HTTPS_PROXY=http://proxy.example.com:8080
 ```
 
-The proxy applies to both the primary transport and all fallback IP transports. No additional Hermes configuration is needed — if the environment variable is set, it's used automatically.
+The proxy applies to both the primary transport and all fallback IP transports. No additional anan Agent configuration is needed — if the environment variable is set, it's used automatically.
 
 :::note
-This covers the custom fallback transport layer that Hermes uses for Telegram connections. The standard `httpx` client used elsewhere already respects proxy env vars natively.
+This covers the custom fallback transport layer that anan Agent uses for Telegram connections. The standard `httpx` client used elsewhere already respects proxy env vars natively.
 :::
 
 ## Message Reactions

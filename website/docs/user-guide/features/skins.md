@@ -32,7 +32,7 @@ display:
 
 | Skin | Description | Agent branding | Visual character |
 |------|-------------|----------------|------------------|
-| `default` | Classic Hermes — gold and kawaii | `anan Agent` | Warm gold borders, cornsilk text, kawaii faces in spinners. The familiar caduceus banner. Clean and inviting. |
+| `default` | Classic anan Agent — gold and kawaii | `anan Agent` | Warm gold borders, cornsilk text, kawaii faces in spinners. The familiar caduceus banner. Clean and inviting. |
 | `ares` | War-god theme — crimson and bronze | `Ares Agent` | Deep crimson borders with bronze accents. Aggressive spinner verbs ("forging", "marching", "tempering steel"). Custom sword-and-shield ASCII art banner. |
 | `mono` | Monochrome — clean grayscale | `anan Agent` | All grays — no color. Borders are `#555555`, text is `#c9d1d9`. Ideal for minimal terminal setups or screen recordings. |
 | `slate` | Cool blue — developer-focused | `anan Agent` | Royal blue borders (`#4169e1`), soft blue text. Calm and professional. No custom spinner — uses default faces. |
@@ -95,7 +95,7 @@ Text strings used throughout the CLI interface.
 | `agent_name` | Name shown in banner title and status display | `anan Agent` |
 | `welcome` | Welcome message shown at CLI startup | `Welcome to anan Agent! Type your message or /help for commands.` |
 | `goodbye` | Message shown on exit | `Goodbye! ⚕` |
-| `response_label` | Label on the response box header | ` ⚕ Hermes ` |
+| `response_label` | Label on the response box header | ` ⚕ anan Agent ` |
 | `prompt_symbol` | Symbol before the user input prompt (bare token, renderers add a trailing space) | `❯` |
 | `help_header` | Header text for the `/help` command output | `(^_^)? Available Commands` |
 
@@ -212,16 +212,16 @@ branding:
 tool_prefix: "▏"
 ```
 
-## Hermes Mod — Visual Skin Editor
+## anan Agent Mod — Visual Skin Editor
 
-[Hermes Mod](https://github.com/cocktailpeanut/anan-mod) is a community-built web UI for creating and managing skins visually. Instead of writing YAML by hand, you get a point-and-click editor with live preview.
+[anan Agent Mod](https://github.com/cocktailpeanut/anan-mod) is a community-built web UI for creating and managing skins visually. Instead of writing YAML by hand, you get a point-and-click editor with live preview.
 
-![Hermes Mod skin editor](https://raw.githubusercontent.com/cocktailpeanut/anan-mod/master/nous.png)
+![anan Agent Mod skin editor](https://raw.githubusercontent.com/cocktailpeanut/anan-mod/master/nous.png)
 
 **What it does:**
 
 - Lists all built-in and custom skins
-- Opens any skin into a visual editor with all Hermes skin fields (colors, spinner, branding, tool prefix, tool emojis)
+- Opens any skin into a visual editor with all anan Agent skin fields (colors, spinner, branding, tool prefix, tool emojis)
 - Generates `banner_logo` text art from a text prompt
 - Converts uploaded images (PNG, JPG, GIF, WEBP) into `banner_hero` ASCII art with multiple render styles (braille, ASCII ramp, blocks, dots)
 - Saves directly to `~/.anan/skins/`
@@ -259,7 +259,7 @@ npm start
 6. Click **Save** to write the skin YAML to `~/.anan/skins/`.
 7. Click **Activate** to set it as the current skin (updates `display.skin` in `config.yaml`).
 
-Hermes Mod respects the `ANAN_HOME` environment variable, so it works with [profiles](/docs/user-guide/profiles) too.
+anan Agent Mod respects the `ANAN_HOME` environment variable, so it works with [profiles](/docs/user-guide/profiles) too.
 
 ## Operational notes
 

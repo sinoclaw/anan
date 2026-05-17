@@ -6,18 +6,18 @@ description: "Use anan Agent with Google Gemini — native AI Studio API, API-ke
 
 # Google Gemini
 
-anan Agent supports Google Gemini as a native provider using the **Google AI Studio / Gemini API** — not the OpenAI-compatible endpoint. This lets Hermes translate its internal OpenAI-shaped message and tool loop into Gemini's native `generateContent` API while preserving tool calling, streaming, multimodal inputs, and Gemini-specific response metadata.
+anan Agent supports Google Gemini as a native provider using the **Google AI Studio / Gemini API** — not the OpenAI-compatible endpoint. This lets anan Agent translate its internal OpenAI-shaped message and tool loop into Gemini's native `generateContent` API while preserving tool calling, streaming, multimodal inputs, and Gemini-specific response metadata.
 
-Hermes also supports a separate **Google Gemini (OAuth)** provider that uses the same Cloud Code Assist backend as Google's Gemini CLI. Use the API-key provider (`gemini`) for the lowest-risk official API path.
+anan Agent also supports a separate **Google Gemini (OAuth)** provider that uses the same Cloud Code Assist backend as Google's Gemini CLI. Use the API-key provider (`gemini`) for the lowest-risk official API path.
 
 ## Prerequisites
 
 - **Google AI Studio API key** — create one at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-- **Billing-enabled Google Cloud project** — recommended for agent use. Gemini's free tier is too small for long-running agent sessions because Hermes may make several model calls per user turn.
-- **Hermes installed** — no extra Python package is required for the native Gemini provider.
+- **Billing-enabled Google Cloud project** — recommended for agent use. Gemini's free tier is too small for long-running agent sessions because anan Agent may make several model calls per user turn.
+- **anan Agent installed** — no extra Python package is required for the native Gemini provider.
 
 :::tip API key path
-Set `GOOGLE_API_KEY` or `GEMINI_API_KEY`. Hermes checks both names for the `gemini` provider.
+Set `GOOGLE_API_KEY` or `GEMINI_API_KEY`. anan Agent checks both names for the `gemini` provider.
 :::
 
 ## Quick Start
@@ -27,13 +27,13 @@ Set `GOOGLE_API_KEY` or `GEMINI_API_KEY`. Hermes checks both names for the `gemi
 echo "GOOGLE_API_KEY=..." >> ~/.anan/.env
 
 # Select Gemini as your provider
-hermes model
+anan model
 # → Choose "More providers..." → "Google AI Studio"
-# → Hermes checks your key tier and shows Gemini models
+# → anan Agent checks your key tier and shows Gemini models
 # → Select a model
 
 # Start chatting
-hermes chat
+anan chat
 ```
 
 If you prefer direct config editing, use the native Gemini API base URL:
@@ -70,18 +70,18 @@ The recommended endpoint is:
 https://generativelanguage.googleapis.com/v1beta
 ```
 
-Hermes detects this endpoint and creates its native Gemini adapter. Internally, Hermes still keeps the agent loop in OpenAI-shaped messages, then translates each request to Gemini's native schema:
+anan Agent detects this endpoint and creates its native Gemini adapter. Internally, anan Agent still keeps the agent loop in OpenAI-shaped messages, then translates each request to Gemini's native schema:
 
 - `messages[]` → Gemini `contents[]`
 - system prompts → Gemini `systemInstruction`
 - tool schemas → Gemini `functionDeclarations`
 - tool results → Gemini `functionResponse` parts
-- streaming responses → OpenAI-shaped stream chunks for the Hermes loop
+- streaming responses → OpenAI-shaped stream chunks for the anan Agent loop
 
 :::note Gemini 3 thought signatures
-For Gemini 3 tool use, Hermes preserves the `thoughtSignature` values attached to function-call parts and replays them on the next tool turn. That covers the validation-critical path for multi-step agent workflows.
+For Gemini 3 tool use, anan Agent preserves the `thoughtSignature` values attached to function-call parts and replays them on the next tool turn. That covers the validation-critical path for multi-step agent workflows.
 
-Gemini 3 may also attach thought signatures to other response parts. Hermes' native adapter is optimized for agent tool loops today, so it does not yet replay every non-tool-call signature with full part-level fidelity.
+Gemini 3 may also attach thought signatures to other response parts. anan Agent's native adapter is optimized for agent tool loops today, so it does not yet replay every non-tool-call signature with full part-level fidelity.
 :::
 
 ### Prefer the Native Endpoint
@@ -92,7 +92,7 @@ Google also exposes an OpenAI-compatible endpoint:
 https://generativelanguage.googleapis.com/v1beta/openai/
 ```
 
-For anan agent sessions, prefer the native Gemini endpoint above. Hermes includes a native Gemini adapter so it can map multi-turn tool use, tool-call results, streaming, multimodal inputs, and Gemini response metadata directly onto Gemini's `generateContent` API. The OpenAI-compatible endpoint is still useful when you specifically need OpenAI API compatibility.
+For anan agent sessions, prefer the native Gemini endpoint above. anan Agent includes a native Gemini adapter so it can map multi-turn tool use, tool-call results, streaming, multimodal inputs, and Gemini response metadata directly onto Gemini's `generateContent` API. The OpenAI-compatible endpoint is still useful when you specifically need OpenAI API compatibility.
 
 If you previously set `GEMINI_BASE_URL` to the `/openai` URL, remove it or change it:
 
@@ -102,18 +102,18 @@ GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
 
 ### OAuth Provider
 
-Hermes also has a `google-gemini-cli` provider:
+anan Agent also has a `google-gemini-cli` provider:
 
 ```bash
-hermes model
+anan model
 # → Choose "Google Gemini (OAuth)"
 ```
 
-This uses browser PKCE login and the Cloud Code Assist backend. It can be useful for users who want Gemini CLI-style OAuth, but Hermes shows an explicit warning because Google may treat use of the Gemini CLI OAuth client from third-party software as a policy violation. For production or lowest-risk usage, prefer the API-key provider above.
+This uses browser PKCE login and the Cloud Code Assist backend. It can be useful for users who want Gemini CLI-style OAuth, but anan Agent shows an explicit warning because Google may treat use of the Gemini CLI OAuth client from third-party software as a policy violation. For production or lowest-risk usage, prefer the API-key provider above.
 
 ## Available Models
 
-The `anan model` picker shows Gemini models maintained in Hermes' provider registry. Common choices include:
+The `anan model` picker shows Gemini models maintained in anan Agent's provider registry. Common choices include:
 
 | Model | ID | Notes |
 |-------|----|-------|
@@ -130,7 +130,7 @@ Use Gemini's native model IDs such as `gemini-3-flash-preview`, not OpenRouter-s
 
 ### Latest Aliases
 
-Google publishes moving aliases for the Pro and Flash Gemini families. `gemini-pro-latest` and `gemini-flash-latest` are useful when you want Google to advance the model automatically without changing your Hermes config.
+Google publishes moving aliases for the Pro and Flash Gemini families. `gemini-pro-latest` and `gemini-flash-latest` are useful when you want Google to advance the model automatically without changing your anan Agent config.
 
 | Alias | Currently tracks | Notes |
 |-------|------------------|-------|
@@ -148,7 +148,7 @@ If you need strict reproducibility, prefer explicit model IDs such as `gemini-3.
 
 ### Gemma via the Gemini API
 
-Google also exposes Gemma models through the Gemini API. Hermes recognizes these as Google models, but hides very low-throughput Gemma entries from the default model picker so new users do not accidentally select an evaluation-tier model for a long-running agent session.
+Google also exposes Gemma models through the Gemini API. anan Agent recognizes these as Google models, but hides very low-throughput Gemma entries from the default model picker so new users do not accidentally select an evaluation-tier model for a long-running agent session.
 
 Useful evaluation IDs include:
 
@@ -218,7 +218,7 @@ The gateway reads `config.yaml` and uses the same Gemini provider configuration.
 
 ### "Gemini native client requires an API key"
 
-Hermes could not find a usable API key. Add one of these to `~/.anan/.env`:
+anan Agent could not find a usable API key. Add one of these to `~/.anan/.env`:
 
 ```bash
 GOOGLE_API_KEY=...
@@ -230,12 +230,12 @@ Then run `anan model` again.
 
 ### "This Google API key is on the free tier"
 
-Hermes probes Gemini API keys during setup. Free-tier quotas can be exhausted after a handful of agent turns because tool use, retries, compression, and auxiliary tasks may require multiple model calls.
+anan Agent probes Gemini API keys during setup. Free-tier quotas can be exhausted after a handful of agent turns because tool use, retries, compression, and auxiliary tasks may require multiple model calls.
 
 Enable billing on the Google Cloud project attached to your key, regenerate the key if needed, then run:
 
 ```bash
-hermes model
+anan model
 ```
 
 ### "404 model not found"
@@ -244,7 +244,7 @@ The selected model is not available for your account, region, or key. Run `anan 
 
 ### Gemma model is not shown in `anan model`
 
-Hermes may hide low-throughput Gemma models from the picker by default. If you intentionally want to evaluate one, set the model ID directly in `~/.anan/config.yaml`.
+anan Agent may hide low-throughput Gemma models from the picker by default. If you intentionally want to evaluate one, set the model ID directly in `~/.anan/config.yaml`.
 
 ### "429 quota exceeded" on Gemma
 
@@ -266,11 +266,11 @@ GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
 
 ### OAuth login warning
 
-The `google-gemini-cli` provider uses a Gemini CLI / Cloud Code Assist OAuth flow. Hermes warns before starting it because this is distinct from the official AI Studio API-key path. Use `provider: gemini` with `GOOGLE_API_KEY` for the official API-key integration.
+The `google-gemini-cli` provider uses a Gemini CLI / Cloud Code Assist OAuth flow. anan Agent warns before starting it because this is distinct from the official AI Studio API-key path. Use `provider: gemini` with `GOOGLE_API_KEY` for the official API-key integration.
 
 ### Tool calling fails with schema errors
 
-Upgrade Hermes and rerun `anan model`. The native Gemini adapter sanitizes tool schemas for Gemini's stricter function-declaration format; older builds or custom endpoints may not.
+Upgrade anan Agent and rerun `anan model`. The native Gemini adapter sanitizes tool schemas for Gemini's stricter function-declaration format; older builds or custom endpoints may not.
 
 ## Related
 

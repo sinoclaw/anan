@@ -28,21 +28,21 @@ Open PowerShell and run:
 irm https://raw.githubusercontent.com/anan/anan/main/scripts/install.ps1 | iex
 ```
 
-The installer handles **everything**: `uv`, Python 3.11, Node.js 22, `ripgrep`, `ffmpeg`, **and a portable Git Bash** (MinGit — a slim, self-contained Git for Windows distribution that Hermes uses for shell commands).  It clones the repo under `%LOCALAPPDATA%\hermes\anan`, creates a virtualenv, and adds `hermes` to your **User PATH**.  Restart your terminal (or open a new PowerShell window) after the install so PATH picks up.
+The installer handles **everything**: `uv`, Python 3.11, Node.js 22, `ripgrep`, `ffmpeg`, **and a portable Git Bash** (MinGit — a slim, self-contained Git for Windows distribution that anan Agent uses for shell commands).  It clones the repo under `%LOCALAPPDATA%\anan\anan`, creates a virtualenv, and adds `anan` to your **User PATH**.  Restart your terminal (or open a new PowerShell window) after the install so PATH picks up.
 
 **How Git is handled:**
 1. If `git` is already on your PATH, the installer uses your existing install.
-2. Otherwise it downloads portable **MinGit** (~45MB, from the official `git-for-windows` GitHub release) and unpacks it to `%LOCALAPPDATA%\hermes\git`.  No admin rights required.  Completely isolated — it won't interfere with any system Git install, broken or otherwise.
+2. Otherwise it downloads portable **MinGit** (~45MB, from the official `git-for-windows` GitHub release) and unpacks it to `%LOCALAPPDATA%\anan\git`.  No admin rights required.  Completely isolated — it won't interfere with any system Git install, broken or otherwise.
 
-**Why not use winget?**  Earlier designs auto-installed Git via `winget install Git.Git`, but winget fails badly when a system Git install is in a partial or broken state (exactly when users need the installer to just work).  The portable MinGit approach sidesteps winget, the Windows installer registry, and any existing system Git entirely.  If the Hermes Git install itself ever breaks, `Remove-Item %LOCALAPPDATA%\hermes\git` and re-run the installer — no system impact, no uninstall drama.
+**Why not use winget?**  Earlier designs auto-installed Git via `winget install Git.Git`, but winget fails badly when a system Git install is in a partial or broken state (exactly when users need the installer to just work).  The portable MinGit approach sidesteps winget, the Windows installer registry, and any existing system Git entirely.  If the anan Agent Git install itself ever breaks, `Remove-Item %LOCALAPPDATA%\anan\git` and re-run the installer — no system impact, no uninstall drama.
 
-The installer also sets `SINOCLAW_GIT_BASH_PATH` to the located `bash.exe` so Hermes resolves it deterministically in fresh shells.
+The installer also sets `SINOCLAW_GIT_BASH_PATH` to the located `bash.exe` so anan Agent resolves it deterministically in fresh shells.
 
-If you prefer WSL2, the Linux installer above works inside it; both native and WSL installs can coexist without conflict (native data lives under `%LOCALAPPDATA%\hermes`, WSL data lives under `~/.anan`).
+If you prefer WSL2, the Linux installer above works inside it; both native and WSL installs can coexist without conflict (native data lives under `%LOCALAPPDATA%\anan`, WSL data lives under `~/.anan`).
 
 ### Android / Termux
 
-Hermes now ships a Termux-aware installer path too:
+anan Agent now ships a Termux-aware installer path too:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
@@ -72,18 +72,18 @@ Set `SINOCLAW_DISABLE_WINDOWS_UTF8=1` in your environment if you hit an encoding
 
 ### What the Installer Does
 
-The installer handles everything automatically — all dependencies (Python, Node.js, ripgrep, ffmpeg), the repo clone, virtual environment, global `hermes` command setup, and LLM provider configuration. By the end, you're ready to chat.
+The installer handles everything automatically — all dependencies (Python, Node.js, ripgrep, ffmpeg), the repo clone, virtual environment, global `anan` command setup, and LLM provider configuration. By the end, you're ready to chat.
 
 #### Install Layout
 
 Where the installer puts things depends on whether you're installing as a normal user or as root:
 
-| Installer | Code lives at | `hermes` binary | Data directory |
+| Installer | Code lives at | `anan` binary | Data directory |
 |---|---|---|---|
-| Per-user (normal) | `~/.anan/anan/` | `~/.local/bin/hermes` (symlink) | `~/.anan/` |
-| Root-mode (`sudo curl … \| sudo bash`) | `/usr/local/lib/anan/` | `/usr/local/bin/hermes` | `/root/.anan/` (or `$ANAN_HOME`) |
+| Per-user (normal) | `~/.anan/anan/` | `~/.local/bin/anan` (symlink) | `~/.anan/` |
+| Root-mode (`sudo curl … \| sudo bash`) | `/usr/local/lib/anan/` | `/usr/local/bin/anan` | `/root/.anan/` (or `$ANAN_HOME`) |
 
-The root-mode **FHS layout** (`/usr/local/lib/…`, `/usr/local/bin/hermes`) matches where other system-wide developer tools land on Linux. It's useful for shared-machine deployments where one system install should serve every user. Per-user config (auth, skills, sessions) still lives under each user's `~/.anan/` or explicit `ANAN_HOME`.
+The root-mode **FHS layout** (`/usr/local/lib/…`, `/usr/local/bin/anan`) matches where other system-wide developer tools land on Linux. It's useful for shared-machine deployments where one system install should serve every user. Per-user config (auth, skills, sessions) still lives under each user's `~/.anan/` or explicit `ANAN_HOME`.
 
 ### After Installation
 
@@ -91,13 +91,13 @@ Reload your shell and start chatting:
 
 ```bash
 source ~/.bashrc   # or: source ~/.zshrc
-hermes             # Start chatting!
+anan             # Start chatting!
 ```
 
 To reconfigure individual settings later, use the dedicated commands:
 
 ```bash
-hermes model          # Choose your LLM provider and model
+anan model          # Choose your LLM provider and model
 anan tools          # Configure which tools are enabled
 anan gateway setup  # Set up messaging platforms
 anan config set     # Set individual config values
@@ -136,7 +136,7 @@ If you want to clone the repo and install from source — for contributing, runn
 
 | Problem | Solution |
 |---------|----------|
-| `hermes: command not found` | Reload your shell (`source ~/.bashrc`) or check PATH |
+| `anan: command not found` | Reload your shell (`source ~/.bashrc`) or check PATH |
 | `API key not set` | Run `anan model` to configure your provider, or `anan config set OPENROUTER_API_KEY your_key` |
 | Missing config after update | Run `anan config check` then `anan config migrate` |
 

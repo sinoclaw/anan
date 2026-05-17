@@ -6,7 +6,7 @@ author: youssefea
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
-  hermes:
+  anan:
     tags: [Base, Blockchain, Crypto, Web3, RPC, DeFi, EVM, L2, Ethereum]
     related_skills: []
 ---

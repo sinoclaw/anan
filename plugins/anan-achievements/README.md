@@ -1,12 +1,12 @@
-# Hermes Achievements
+# Anan Achievements
 
-> **Bundled with Anan Agent.** Originally authored by [@PCinkusz](https://github.com/PCinkusz) at https://github.com/PCinkusz/anan-achievements — vendored into `plugins/anan-achievements/` so it ships with the dashboard out-of-the-box and stays in lockstep with Hermes feature changes. Upstream repo remains the staging ground for new badges and UI iteration.
+> **Bundled with Anan Agent.** Originally authored by [@PCinkusz](https://github.com/PCinkusz) at https://github.com/PCinkusz/anan-achievements — vendored into `plugins/anan-achievements/` so it ships with the dashboard out-of-the-box and stays in lockstep with Anan feature changes. Upstream repo remains the staging ground for new badges and UI iteration.
 >
-> When Hermes is installed via `pip install anan` or cloned from source, this plugin auto-registers as a dashboard tab on first `anan dashboard` launch. No separate install step. See [Built-in Plugins → anan-achievements](../../website/docs/user-guide/features/built-in-plugins.md) in the main docs.
+> When Anan is installed via `pip install anan` or cloned from source, this plugin auto-registers as a dashboard tab on first `anan dashboard` launch. No separate install step. See [Built-in Plugins → anan-achievements](../../website/docs/user-guide/features/built-in-plugins.md) in the main docs.
 
-Achievement system for the Hermes Dashboard: collectible, tiered badges generated from real local Anan session history.
+Achievement system for the Anan Dashboard: collectible, tiered badges generated from real local Anan session history.
 
-![Hermes Achievements dashboard](docs/assets/achievements-dashboard-hd.png)
+![Anan Achievements dashboard](docs/assets/achievements-dashboard-hd.png)
 
 The screenshots use temporary demo tier data to show the full visual range. The plugin itself reads real local Anan session history by default.
 
@@ -16,7 +16,7 @@ The screenshots use temporary demo tier data to show the full visual range. The 
 
 ## What it does
 
-Hermes Achievements scans local Anan sessions and unlocks badges based on real agent behavior:
+Anan Achievements scans local Anan sessions and unlocks badges based on real agent behavior:
 
 - autonomous tool chains
 - debugging and recovery patterns
@@ -30,7 +30,7 @@ Achievements have three visible states:
 
 - **Unlocked** — earned at least one tier
 - **Discovered** — known achievement, progress visible, not earned yet
-- **Secret** — hidden until Hermes detects the first related signal
+- **Secret** — hidden until Anan detects the first related signal
 
 Most achievements level through:
 
@@ -58,7 +58,7 @@ Version `0.2.x` expands the catalog to 60+ achievements, including model/provide
 
 ## Install
 
-Clone into your Hermes plugins directory:
+Clone into your Anan plugins directory:
 
 ```bash
 git clone https://github.com/PCinkusz/anan-achievements ~/.anan/plugins/anan-achievements

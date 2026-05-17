@@ -6,7 +6,7 @@ sidebar_position: 1
 
 # AI Providers
 
-This page covers setting up inference providers for anan Agent — from cloud APIs like OpenRouter and Anthropic, to self-hosted endpoints like Ollama and vLLM, to advanced routing and fallback configurations. You need at least one provider configured to use Hermes.
+This page covers setting up inference providers for anan Agent — from cloud APIs like OpenRouter and Anthropic, to self-hosted endpoints like Ollama and vLLM, to advanced routing and fallback configurations. You need at least one provider configured to use anan Agent.
 
 ## Inference Providers
 
@@ -59,14 +59,14 @@ same API that Google's own `gemini-cli` tool uses. This supports both the
 **Quick start:**
 
 ```bash
-hermes model
+anan model
 # → pick "Google Gemini (OAuth)"
 # → see policy warning, confirm
 # → browser opens to accounts.google.com, sign in
-# → done — Hermes auto-provisions your free tier on first request
+# → done — anan Agent auto-provisions your free tier on first request
 ```
 
-Hermes ships Google's **public** `gemini-cli` desktop OAuth client by default —
+anan Agent ships Google's **public** `gemini-cli` desktop OAuth client by default —
 the same credentials Google includes in their open-source `gemini-cli`. Desktop
 OAuth clients are not confidential (PKCE provides the security). You do not
 need to install `gemini-cli` or register your own GCP OAuth client.
@@ -86,7 +86,7 @@ need to install `gemini-cli` or register your own GCP OAuth client.
 - Request body wrapped `{project, model, user_prompt_id, request}`
 - OpenAI-shaped `messages[]`, `tools[]`, `tool_choice` are translated to Gemini's native
   `contents[]`, `tools[].functionDeclarations`, `toolConfig` shape
-- Responses translated back to OpenAI shape so the rest of Hermes works unchanged
+- Responses translated back to OpenAI shape so the rest of anan Agent works unchanged
 
 **Tiers & project IDs:**
 
@@ -94,7 +94,7 @@ need to install `gemini-cli` or register your own GCP OAuth client.
 |---|---|
 | Personal Google account, want free tier | Nothing — sign in, start chatting |
 | Workspace / Standard / Enterprise account | Set `SINOCLAW_GEMINI_PROJECT_ID` or `GOOGLE_CLOUD_PROJECT` to your GCP project ID |
-| VPC-SC-protected org | Hermes detects `SECURITY_POLICY_VIOLATED` and forces `standard-tier` automatically |
+| VPC-SC-protected org | anan Agent detects `SECURITY_POLICY_VIOLATED` and forces `standard-tier` automatically |
 
 Free tier auto-provisions a Google-managed project on first use. No GCP setup required.
 
@@ -116,7 +116,7 @@ Gemini Code Assist quota  (project: 123-abc)
 :::warning Policy risk
 Google considers using the Gemini CLI OAuth client with third-party software a
 policy violation. Some users have reported account restrictions. For the lowest-risk
-experience, use your own API key via the `gemini` provider instead. Hermes shows
+experience, use your own API key via the `gemini` provider instead. anan Agent shows
 an upfront warning and requires explicit confirmation before OAuth begins.
 :::
 
@@ -135,11 +135,11 @@ Register a **Desktop app** OAuth client at
 with the Generative Language API enabled.
 
 :::info Codex Note
-The OpenAI Codex provider authenticates via device code (open a URL, enter a code). Hermes stores the resulting credentials in its own auth store under `~/.anan/auth.json` and can import existing Codex CLI credentials from `~/.codex/auth.json` when present. No Codex CLI installation is required.
+The OpenAI Codex provider authenticates via device code (open a URL, enter a code). anan Agent stores the resulting credentials in its own auth store under `~/.anan/auth.json` and can import existing Codex CLI credentials from `~/.codex/auth.json` when present. No Codex CLI installation is required.
 :::
 
 :::warning
-Even when using Nous Portal, Codex, or a custom endpoint, some tools (vision, web summarization, MoA) use a separate "auxiliary" model. By default (`auxiliary.*.provider: "auto"`), Hermes routes these tasks to your **main chat model** — the same model you picked in `anan model`. You can override each task individually to route it to a cheaper/faster model (e.g. Gemini Flash on OpenRouter) — see [Auxiliary Models](/docs/user-guide/configuration#auxiliary-models).
+Even when using Nous Portal, Codex, or a custom endpoint, some tools (vision, web summarization, MoA) use a separate "auxiliary" model. By default (`auxiliary.*.provider: "auto"`), anan Agent routes these tasks to your **main chat model** — the same model you picked in `anan model`. You can override each task individually to route it to a cheaper/faster model (e.g. Gemini Flash on OpenRouter) — see [Auxiliary Models](/docs/user-guide/configuration#auxiliary-models).
 :::
 
 :::tip Nous Tool Gateway
@@ -148,12 +148,12 @@ Paid Nous Portal subscribers also get access to the **[Tool Gateway](/docs/user-
 
 ### Two Commands for Model Management
 
-Hermes has **two** model commands that serve different purposes:
+anan Agent has **two** model commands that serve different purposes:
 
 | Command | Where to run | What it does |
 |---------|-------------|--------------|
 | **`anan model`** | Your terminal (outside any session) | Full setup wizard — add providers, run OAuth, enter API keys, configure endpoints |
-| **`/model`** | Inside a Hermes chat session | Quick switch between **already-configured** providers and models |
+| **`/model`** | Inside a anan Agent chat session | Quick switch between **already-configured** providers and models |
 
 If you're trying to switch to a provider you haven't set up yet (e.g. you only have OpenRouter configured and want to use Anthropic), you need `anan model`, not `/model`. Exit your session first (`Ctrl+C` or `/quit`), run `anan model`, complete the provider setup, then start a new session.
 
@@ -162,7 +162,7 @@ If you're trying to switch to a provider you haven't set up yet (e.g. you only h
 Use Claude models directly through the Anthropic API — no OpenRouter proxy needed. Supports three auth methods:
 
 :::caution Requires Claude Max "extra usage" credits
-When you authenticate via `anan model` → Anthropic OAuth (or via `anan auth add anthropic --type oauth`), Hermes routes as Claude Code against your Anthropic account. **It only works if you're on a Claude Max plan and have purchased extra usage credits.** The base Max plan allowance (the usage included in Claude Code by default) is not consumed by Hermes — only the extra/overage credits you've added on top are. Claude Pro subscribers cannot use this path.
+When you authenticate via `anan model` → Anthropic OAuth (or via `anan auth add anthropic --type oauth`), anan Agent routes as Claude Code against your Anthropic account. **It only works if you're on a Claude Max plan and have purchased extra usage credits.** The base Max plan allowance (the usage included in Claude Code by default) is not consumed by anan Agent — only the extra/overage credits you've added on top are. Claude Pro subscribers cannot use this path.
 
 If you don't have Max + extra credits, use an `ANTHROPIC_API_KEY` instead — requests are billed pay-per-token against that key's organization (standard API pricing, independent of any Claude subscription).
 :::
@@ -170,21 +170,21 @@ If you don't have Max + extra credits, use an `ANTHROPIC_API_KEY` instead — re
 ```bash
 # With an API key (pay-per-token)
 export ANTHROPIC_API_KEY=***
-hermes chat --provider anthropic --model claude-sonnet-4-6
+anan chat --provider anthropic --model claude-sonnet-4-6
 
 # Preferred: authenticate through `anan model`
-# Hermes will use Claude Code's credential store directly when available
-hermes model
+# anan Agent will use Claude Code's credential store directly when available
+anan model
 
 # Manual override with a setup-token (fallback / legacy)
 export ANTHROPIC_TOKEN=***  # setup-token or manual OAuth token
-hermes chat --provider anthropic
+anan chat --provider anthropic
 
 # Auto-detect Claude Code credentials (if you already use Claude Code)
-hermes chat --provider anthropic  # reads Claude Code credential files automatically
+anan chat --provider anthropic  # reads Claude Code credential files automatically
 ```
 
-When you choose Anthropic OAuth through `anan model`, Hermes prefers Claude Code's own credential store over copying the token into `~/.anan/.env`. That keeps refreshable Claude credentials refreshable.
+When you choose Anthropic OAuth through `anan model`, anan Agent prefers Claude Code's own credential store over copying the token into `~/.anan/.env`. That keeps refreshable Claude credentials refreshable.
 
 Or set it permanently:
 ```yaml
@@ -199,12 +199,12 @@ model:
 
 ### GitHub Copilot
 
-Hermes supports GitHub Copilot as a first-class provider with two modes:
+anan Agent supports GitHub Copilot as a first-class provider with two modes:
 
 **`copilot` — Direct Copilot API** (recommended). Uses your GitHub Copilot subscription to access GPT-5.x, Claude, Gemini, and other models through the Copilot API.
 
 ```bash
-hermes chat --provider copilot --model gpt-5.4
+anan chat --provider copilot --model gpt-5.4
 ```
 
 **Authentication options** (checked in this order):
@@ -228,16 +228,16 @@ The Copilot API does **not** support classic Personal Access Tokens (`ghp_*`). S
 If your `gh auth token` returns a `ghp_*` token, use `anan model` to authenticate via OAuth instead.
 :::
 
-:::info Copilot auth behavior in Hermes
+:::info Copilot auth behavior in anan Agent
 anan sends a supported GitHub token (`gho_*`, `github_pat_*`, or `ghu_*`) directly to `api.githubcopilot.com` and includes Copilot-specific headers (`Editor-Version`, `Copilot-Integration-Id`, `Openai-Intent`, `x-initiator`).
 
-On HTTP 401, Hermes now performs a one-shot credential recovery before fallback:
+On HTTP 401, anan Agent now performs a one-shot credential recovery before fallback:
 
 1. Re-resolve token via the normal priority chain (`COPILOT_GITHUB_TOKEN` → `GH_TOKEN` → `GITHUB_TOKEN` → `gh auth token`)
 2. Rebuild the shared OpenAI client with refreshed headers
 3. Retry the request once
 
-Some older community proxies use `api.github.com/copilot_internal/v2/token` exchange flows. That endpoint can be unavailable for some account types (returns 404). Hermes therefore keeps direct-token auth as the primary path and relies on runtime credential refresh + retry for robustness.
+Some older community proxies use `api.github.com/copilot_internal/v2/token` exchange flows. That endpoint can be unavailable for some account types (returns 404). anan Agent therefore keeps direct-token auth as the primary path and relies on runtime credential refresh + retry for robustness.
 :::
 
 **API routing**: GPT-5+ models (except `gpt-5-mini`) automatically use the Responses API. All other models (GPT-4o, Claude, Gemini, etc.) use Chat Completions. Models are auto-detected from the live Copilot catalog.
@@ -245,7 +245,7 @@ Some older community proxies use `api.github.com/copilot_internal/v2/token` exch
 **`copilot-acp` — Copilot ACP agent backend**. Spawns the local Copilot CLI as a subprocess:
 
 ```bash
-hermes chat --provider copilot-acp --model copilot-acp
+anan chat --provider copilot-acp --model copilot-acp
 # Requires the GitHub Copilot CLI in PATH and an existing `copilot login` session
 ```
 
@@ -268,44 +268,44 @@ These providers have built-in support with dedicated provider IDs. Set the API k
 
 ```bash
 # z.ai / ZhipuAI GLM
-hermes chat --provider zai --model glm-5
+anan chat --provider zai --model glm-5
 # Requires: GLM_API_KEY in ~/.anan/.env
 
 # Kimi / Moonshot AI (international: api.moonshot.ai)
-hermes chat --provider kimi-coding --model kimi-for-coding
+anan chat --provider kimi-coding --model kimi-for-coding
 # Requires: KIMI_API_KEY in ~/.anan/.env
 
 # Kimi / Moonshot AI (China: api.moonshot.cn)
-hermes chat --provider kimi-coding-cn --model kimi-k2.5
+anan chat --provider kimi-coding-cn --model kimi-k2.5
 # Requires: KIMI_CN_API_KEY in ~/.anan/.env
 
 # MiniMax (global endpoint)
-hermes chat --provider minimax --model MiniMax-M2.7
+anan chat --provider minimax --model MiniMax-M2.7
 # Requires: MINIMAX_API_KEY in ~/.anan/.env
 
 # MiniMax (China endpoint)
-hermes chat --provider minimax-cn --model MiniMax-M2.7
+anan chat --provider minimax-cn --model MiniMax-M2.7
 # Requires: MINIMAX_CN_API_KEY in ~/.anan/.env
 
 # Alibaba Cloud / DashScope (Qwen models)
-hermes chat --provider alibaba --model qwen3.5-plus
+anan chat --provider alibaba --model qwen3.5-plus
 # Requires: DASHSCOPE_API_KEY in ~/.anan/.env
 
 # Xiaomi MiMo
-hermes chat --provider xiaomi --model mimo-v2-pro
+anan chat --provider xiaomi --model mimo-v2-pro
 # Requires: XIAOMI_API_KEY in ~/.anan/.env
 
 # Tencent TokenHub (Hy3 Preview)
-hermes chat --provider tencent-tokenhub --model hy3-preview
+anan chat --provider tencent-tokenhub --model hy3-preview
 # Requires: TOKENHUB_API_KEY in ~/.anan/.env
 
 # Arcee AI (Trinity models)
-hermes chat --provider arcee --model trinity-large-thinking
+anan chat --provider arcee --model trinity-large-thinking
 # Requires: ARCEEAI_API_KEY in ~/.anan/.env
 
 # GMI Cloud
 # Use the exact model ID returned by GMI's /v1/models endpoint.
-hermes chat --provider gmi --model zai-org/GLM-5.1-FP8
+anan chat --provider gmi --model zai-org/GLM-5.1-FP8
 # Requires: GMI_API_KEY in ~/.anan/.env
 ```
 
@@ -319,14 +319,14 @@ model:
 Base URLs can be overridden with `GLM_BASE_URL`, `KIMI_BASE_URL`, `MINIMAX_BASE_URL`, `MINIMAX_CN_BASE_URL`, `DASHSCOPE_BASE_URL`, `XIAOMI_BASE_URL`, `GMI_BASE_URL`, or `TOKENHUB_BASE_URL` environment variables.
 
 :::note Z.AI Endpoint Auto-Detection
-When using the Z.AI / GLM provider, Hermes automatically probes multiple endpoints (global, China, coding variants) to find one that accepts your API key. You don't need to set `GLM_BASE_URL` manually — the working endpoint is detected and cached automatically.
+When using the Z.AI / GLM provider, anan Agent automatically probes multiple endpoints (global, China, coding variants) to find one that accepts your API key. You don't need to set `GLM_BASE_URL` manually — the working endpoint is detected and cached automatically.
 :::
 
 ### xAI (Grok) — Responses API + Prompt Caching
 
 xAI is wired through the Responses API (`codex_responses` transport) for automatic reasoning support on Grok 4 models — no `reasoning_effort` parameter needed, the server reasons by default. Set `XAI_API_KEY` in `~/.anan/.env` and pick xAI in `anan model`, or drop `grok` as a shortcut into `/model grok-4-1-fast-reasoning`.
 
-When using xAI as a provider (any base URL containing `x.ai`), Hermes automatically enables prompt caching by sending the `x-grok-conv-id` header with every API request. This routes requests to the same server within a conversation session, allowing xAI's infrastructure to reuse cached system prompts and conversation history.
+When using xAI as a provider (any base URL containing `x.ai`), anan Agent automatically enables prompt caching by sending the `x-grok-conv-id` header with every API request. This routes requests to the same server within a conversation session, allowing xAI's infrastructure to reuse cached system prompts and conversation history.
 
 No configuration is needed — caching activates automatically when an xAI endpoint is detected and a session ID is available. This reduces latency and cost for multi-turn conversations.
 
@@ -334,10 +334,10 @@ xAI also ships a dedicated TTS endpoint (`/v1/tts`). Select **xAI TTS** in `anan
 
 ### Ollama Cloud — Managed Ollama Models, OAuth + API Key
 
-[Ollama Cloud](https://ollama.com/cloud) hosts the same open-weight catalog as local Ollama but without the GPU requirement. Pick it in `anan model` as **Ollama Cloud**, paste your API key from [ollama.com/settings/keys](https://ollama.com/settings/keys), and Hermes auto-discovers the available models.
+[Ollama Cloud](https://ollama.com/cloud) hosts the same open-weight catalog as local Ollama but without the GPU requirement. Pick it in `anan model` as **Ollama Cloud**, paste your API key from [ollama.com/settings/keys](https://ollama.com/settings/keys), and anan Agent auto-discovers the available models.
 
 ```bash
-hermes model
+anan model
 # → pick "Ollama Cloud"
 # → paste your OLLAMA_API_KEY
 # → select from discovered models (gpt-oss:120b, glm-4.6:cloud, qwen3-coder:480b-cloud, etc.)
@@ -362,7 +362,7 @@ Anthropic Claude, Amazon Nova, DeepSeek v3.2, Meta Llama 4, and other models via
 
 ```bash
 # Simplest — named profile in ~/.aws/credentials
-hermes chat --provider bedrock --model us.anthropic.claude-sonnet-4-6
+anan chat --provider bedrock --model us.anthropic.claude-sonnet-4-6
 
 # Or with explicit env vars
 AWS_PROFILE=myprofile AWS_REGION=us-east-1 anan chat --provider bedrock --model us.anthropic.claude-sonnet-4-6
@@ -390,15 +390,15 @@ See the [AWS Bedrock guide](/docs/guides/aws-bedrock) for a walkthrough of IAM s
 
 ### Qwen Portal (OAuth)
 
-Alibaba's Qwen Portal with browser-based OAuth login. Pick **Qwen OAuth (Portal)** in `anan model`, sign in through the browser, and Hermes persists the refresh token.
+Alibaba's Qwen Portal with browser-based OAuth login. Pick **Qwen OAuth (Portal)** in `anan model`, sign in through the browser, and anan Agent persists the refresh token.
 
 ```bash
-hermes model
+anan model
 # → pick "Qwen OAuth (Portal)"
 # → browser opens; sign in with your Alibaba account
 # → confirm — credentials are saved to ~/.anan/auth.json
 
-hermes chat   # uses portal.qwen.ai/v1 endpoint
+anan chat   # uses portal.qwen.ai/v1 endpoint
 ```
 
 Or configure `config.yaml`:
@@ -416,7 +416,7 @@ Set `SINOCLAW_QWEN_BASE_URL` only if the portal endpoint relocates (default: `ht
 
 ### Alibaba Coding Plan
 
-If you're subscribed to Alibaba's **Coding Plan** (a pricing SKU separate from standard DashScope API access), Hermes exposes it as its own first-class provider: `alibaba-coding-plan`. Endpoint: `https://coding-intl.dashscope.aliyuncs.com/v1`. It's OpenAI-compatible like the regular `alibaba` provider but with a different base URL and billing surface.
+If you're subscribed to Alibaba's **Coding Plan** (a pricing SKU separate from standard DashScope API access), anan Agent exposes it as its own first-class provider: `alibaba-coding-plan`. Endpoint: `https://coding-intl.dashscope.aliyuncs.com/v1`. It's OpenAI-compatible like the regular `alibaba` provider but with a different base URL and billing surface.
 
 ```yaml
 model:
@@ -427,22 +427,22 @@ model:
 Or from the CLI:
 
 ```bash
-hermes chat --provider alibaba_coding --model qwen3-coder-plus
+anan chat --provider alibaba_coding --model qwen3-coder-plus
 ```
 
 `alibaba_coding` uses the same `DASHSCOPE_API_KEY` your `alibaba` entry already uses — no separate key needed, just a different routing target. Before this provider was registered, users who set `provider: alibaba_coding` in `config.yaml` silently fell through to OpenRouter routing.
 
 ### MiniMax (OAuth)
 
-MiniMax-M2.7 via browser OAuth login — no API key needed. Pick **MiniMax (OAuth)** in `anan model`, sign in through the browser, and Hermes persists the access + refresh tokens. Uses the Anthropic Messages-compatible endpoint (`/anthropic`) under the hood.
+MiniMax-M2.7 via browser OAuth login — no API key needed. Pick **MiniMax (OAuth)** in `anan model`, sign in through the browser, and anan Agent persists the access + refresh tokens. Uses the Anthropic Messages-compatible endpoint (`/anthropic`) under the hood.
 
 ```bash
-hermes model
+anan model
 # → pick "MiniMax (OAuth)"
 # → browser opens; sign in with your MiniMax account (global or CN region)
 # → confirm — credentials are saved to ~/.anan/auth.json
 
-hermes chat   # uses api.minimax.io/anthropic endpoint
+anan chat   # uses api.minimax.io/anthropic endpoint
 ```
 
 Or configure `config.yaml`:
@@ -464,7 +464,7 @@ Nemotron and other open source models via [build.nvidia.com](https://build.nvidi
 
 ```bash
 # Cloud (build.nvidia.com)
-hermes chat --provider nvidia --model nvidia/nemotron-3-super-120b-a12b
+anan chat --provider nvidia --model nvidia/nemotron-3-super-120b-a12b
 # Requires: NVIDIA_API_KEY in ~/.anan/.env
 
 # Local NIM endpoint — override base URL
@@ -488,7 +488,7 @@ Open and reasoning models via [GMI Cloud](https://inference.gmi.ai) — OpenAI-c
 
 ```bash
 # GMI Cloud
-hermes chat --provider gmi --model deepseek-ai/DeepSeek-R1
+anan chat --provider gmi --model deepseek-ai/DeepSeek-R1
 # Requires: GMI_API_KEY in ~/.anan/.env
 ```
 
@@ -507,7 +507,7 @@ Step-series models via [StepFun](https://platform.stepfun.com) — OpenAI-compat
 
 ```bash
 # StepFun
-hermes chat --provider stepfun --model step-3-mini
+anan chat --provider stepfun --model step-3-mini
 # Requires: STEPFUN_API_KEY in ~/.anan/.env
 ```
 
@@ -526,11 +526,11 @@ The base URL can be overridden with `STEPFUN_BASE_URL` (default: `https://api.st
 
 ```bash
 # Use any available model
-hermes chat --provider huggingface --model Qwen/Qwen3-235B-A22B-Thinking-2507
+anan chat --provider huggingface --model Qwen/Qwen3-235B-A22B-Thinking-2507
 # Requires: HF_TOKEN in ~/.anan/.env
 
 # Short alias
-hermes chat --provider hf --model deepseek-ai/DeepSeek-V3.2
+anan chat --provider hf --model deepseek-ai/DeepSeek-V3.2
 ```
 
 Or set it permanently in `config.yaml`:
@@ -548,7 +548,7 @@ The base URL can be overridden with `HF_BASE_URL`.
 
 ## Custom & Self-Hosted LLM Providers
 
-anan Agent works with **any OpenAI-compatible API endpoint**. If a server implements `/v1/chat/completions`, you can point Hermes at it. This means you can use local models, GPU inference servers, multi-provider routers, or any third-party API.
+anan Agent works with **any OpenAI-compatible API endpoint**. If a server implements `/v1/chat/completions`, you can point anan Agent at it. This means you can use local models, GPU inference servers, multi-provider routers, or any third-party API.
 
 ### General Setup
 
@@ -556,7 +556,7 @@ Three ways to configure a custom endpoint:
 
 **Interactive setup (recommended):**
 ```bash
-hermes model
+anan model
 # Select "Custom endpoint (self-hosted / VLLM / etc.)"
 # Enter: API base URL, API key, Model name
 ```
@@ -572,7 +572,7 @@ model:
 ```
 
 :::warning Legacy env vars
-`OPENAI_BASE_URL` and `LLM_MODEL` in `.env` are **removed**. Neither is read by any part of Hermes — `config.yaml` is the single source of truth for model and endpoint configuration. If you have stale entries in your `.env`, they are automatically cleared on the next `anan setup` or config migration. Use `anan model` or edit `config.yaml` directly.
+`OPENAI_BASE_URL` and `LLM_MODEL` in `.env` are **removed**. Neither is read by any part of anan Agent — `config.yaml` is the single source of truth for model and endpoint configuration. If you have stale entries in your `.env`, they are automatically cleared on the next `anan setup` or config migration. Use `anan model` or edit `config.yaml` directly.
 :::
 
 Both approaches persist to `config.yaml`, which is the source of truth for model, provider, and base URL.
@@ -582,7 +582,7 @@ Both approaches persist to `config.yaml`, which is the source of truth for model
 :::warning anan model vs /model
 **`anan model`** (run from your terminal, outside any chat session) is the **full provider setup wizard**. Use it to add new providers, run OAuth flows, enter API keys, and configure custom endpoints.
 
-**`/model`** (typed inside an active Hermes chat session) can only **switch between providers and models you've already set up**. It cannot add new providers, run OAuth, or prompt for API keys. If you've only configured one provider (e.g. OpenRouter), `/model` will only show models for that provider.
+**`/model`** (typed inside an active anan Agent chat session) can only **switch between providers and models you've already set up**. It cannot add new providers, run OAuth, or prompt for API keys. If you've only configured one provider (e.g. OpenRouter), `/model` will only show models for that provider.
 
 **To add a new provider:** Exit your session (`Ctrl+C` or `/quit`), run `anan model`, set up the new provider, then start a new session.
 :::
@@ -602,7 +602,7 @@ If you have **named custom providers** configured (see below), use the triple sy
 /model custom:work:llama3       # Use the "work" custom provider with llama3
 ```
 
-When switching providers, Hermes persists the base URL and provider to config so the change survives restarts. When switching away from a custom endpoint to a built-in provider, the stale base URL is automatically cleared.
+When switching providers, anan Agent persists the base URL and provider to config so the change survives restarts. When switching away from a custom endpoint to a built-in provider, the stale base URL is automatically cleared.
 
 :::tip
 `/model custom` (bare, no model name) queries your endpoint's `/models` API and auto-selects the model if exactly one is loaded. Useful for local servers running a single model.
@@ -622,10 +622,10 @@ ollama pull qwen2.5-coder:32b
 ollama serve   # Starts on port 11434
 ```
 
-Then configure Hermes:
+Then configure anan Agent:
 
 ```bash
-hermes model
+anan model
 # Select "Custom endpoint (self-hosted / VLLM / etc.)"
 # Enter URL: http://localhost:11434/v1
 # Skip API key (Ollama doesn't need one)
@@ -669,7 +669,7 @@ echo -e "FROM qwen2.5-coder:32b\nPARAMETER num_ctx 32768" > Modelfile
 ollama create qwen2.5-coder-32k -f Modelfile
 ```
 
-**You cannot set context length through the OpenAI-compatible API** (`/v1/chat/completions`). It must be configured server-side or via a Modelfile. This is the #1 source of confusion when integrating Ollama with tools like Hermes.
+**You cannot set context length through the OpenAI-compatible API** (`/v1/chat/completions`). It must be configured server-side or via a Modelfile. This is the #1 source of confusion when integrating Ollama with tools like anan Agent.
 :::
 
 **Verify your context is set correctly:**
@@ -696,13 +696,13 @@ vllm serve meta-llama/Llama-3.1-70B-Instruct \
   --max-model-len 65536 \
   --tensor-parallel-size 2 \
   --enable-auto-tool-choice \
-  --tool-call-parser hermes
+  --tool-call-parser anan
 ```
 
-Then configure Hermes:
+Then configure anan Agent:
 
 ```bash
-hermes model
+anan model
 # Select "Custom endpoint (self-hosted / VLLM / etc.)"
 # Enter URL: http://localhost:8000/v1
 # Skip API key (or enter one if you configured vLLM with --api-key)
@@ -715,10 +715,10 @@ hermes model
 
 | Flag | Purpose |
 |------|---------|
-| `--enable-auto-tool-choice` | Required for `tool_choice: "auto"` (the default in Hermes) |
+| `--enable-auto-tool-choice` | Required for `tool_choice: "auto"` (the default in anan Agent) |
 | `--tool-call-parser <name>` | Parser for the model's tool call format |
 
-Supported parsers: `hermes` (Qwen 2.5, Hermes 2/3), `llama3_json` (Llama 3.x), `mistral`, `deepseek_v3`, `deepseek_v31`, `xlam`, `pythonic`. Without these flags, tool calls won't work — the model will output tool calls as text.
+Supported parsers: `anan` (Qwen 2.5, anan Agent 2/3), `llama3_json` (Llama 3.x), `mistral`, `deepseek_v3`, `deepseek_v31`, `xlam`, `pythonic`. Without these flags, tool calls won't work — the model will output tool calls as text.
 
 :::tip
 vLLM supports human-readable sizes: `--max-model-len 64k` (lowercase k = 1000, uppercase K = 1024).
@@ -740,10 +740,10 @@ python -m sglang.launch_server \
   --tool-call-parser qwen
 ```
 
-Then configure Hermes:
+Then configure anan Agent:
 
 ```bash
-hermes model
+anan model
 # Select "Custom endpoint (self-hosted / VLLM / etc.)"
 # Enter URL: http://localhost:30000/v1
 # Enter model name: meta-llama/Llama-3.1-70B-Instruct
@@ -776,10 +776,10 @@ cmake -B build && cmake --build build --config Release
 
 **Context length (`-c`):** Recent builds default to `0` which reads the model's training context from the GGUF metadata. For models with 128k+ training context, this can OOM trying to allocate the full KV cache. Set `-c` explicitly to what you need (32k–64k is a good range for agent use). If using parallel slots (`-np`), the total context is divided among slots — with `-c 32768 -np 4`, each slot only gets 8k.
 
-Then configure Hermes to point at it:
+Then configure anan Agent to point at it:
 
 ```bash
-hermes model
+anan model
 # Select "Custom endpoint (self-hosted / VLLM / etc.)"
 # Enter URL: http://localhost:8080/v1
 # Skip API key (local servers don't need one)
@@ -789,9 +789,9 @@ hermes model
 This saves the endpoint to `config.yaml` so it persists across sessions.
 
 :::caution `--jinja` is required for tool calling
-Without `--jinja`, llama-server ignores the `tools` parameter entirely. The model will try to call tools by writing JSON in its response text, but Hermes won't recognize it as a tool call — you'll see raw JSON like `{"name": "web_search", ...}` printed as a message instead of an actual search.
+Without `--jinja`, llama-server ignores the `tools` parameter entirely. The model will try to call tools by writing JSON in its response text, but anan Agent won't recognize it as a tool call — you'll see raw JSON like `{"name": "web_search", ...}` printed as a message instead of an actual search.
 
-Native tool calling support (best performance): Llama 3.x, Qwen 2.5 (including Coder), Hermes 2/3, Mistral, DeepSeek, Functionary. All other models use a generic handler that works but may be less efficient. See the [llama.cpp function calling docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/function-calling.md) for the full list.
+Native tool calling support (best performance): Llama 3.x, Qwen 2.5 (including Coder), anan Agent 2/3, Mistral, DeepSeek, Functionary. All other models use a generic handler that works but may be less efficient. See the [llama.cpp function calling docs](https://github.com/ggml-org/llama.cpp/blob/master/docs/function-calling.md) for the full list.
 
 You can verify tool support is active by checking `http://localhost:8080/props` — the `chat_template` field should be present.
 :::
@@ -813,17 +813,17 @@ lms server start                        # Starts on port 1234
 lms load qwen2.5-coder --context-length 32768
 ```
 
-Then configure Hermes:
+Then configure anan Agent:
 
 ```bash
-hermes model
+anan model
 # Select "LM Studio"
 # Press Enter to use http://localhost:1234/v1
 # Pick one of the discovered models
 # If LM Studio server auth is enabled, enter LM_API_KEY when prompted
 ```
 
-Hermes will automatically load a LM Studio model with 64K context length
+anan Agent will automatically load a LM Studio model with 64K context length
 
 To change context length in LM Studio:
 
@@ -839,7 +839,7 @@ You can use the CLI to estimate if the model will fit: `lms load model-name --co
 To set persistent per-model defaults: My Models tab → gear icon on the model → set context size.
 :::
 
-**Tool calling:** Supported since LM Studio 0.3.6. Models with native tool-calling training (Qwen 2.5, Llama 3.x, Mistral, Hermes) are auto-detected and shown with a tool badge. Other models use a generic fallback that may be less reliable.
+**Tool calling:** Supported since LM Studio 0.3.6. Models with native tool-calling training (Qwen 2.5, Llama 3.x, Mistral, anan Agent) are auto-detected and shown with a tool badge. Other models use a generic fallback that may be less reliable.
 
 ---
 
@@ -888,7 +888,7 @@ ip route show | grep -i default | awk '{ print $3 }'
 # Example output: 172.29.192.1
 ```
 
-Use that IP in your Hermes config:
+Use that IP in your anan Agent config:
 
 ```yaml
 model:
@@ -950,17 +950,17 @@ curl http://localhost:11434/v1/models          # Mirrored mode
 curl http://172.29.192.1:11434/v1/models       # NAT mode (use your actual host IP)
 ```
 
-If you get a JSON response listing your models, you're good. Use that same URL as the `base_url` in your Hermes config.
+If you get a JSON response listing your models, you're good. Use that same URL as the `base_url` in your anan Agent config.
 
 ---
 
 ### Troubleshooting Local Models
 
-These issues affect **all** local inference servers when used with Hermes.
+These issues affect **all** local inference servers when used with anan Agent.
 
 #### "Connection refused" from WSL2 to a Windows-hosted model server
 
-If you're running Hermes inside WSL2 and your model server on the Windows host, `http://localhost:<port>` won't work in WSL2's default NAT networking mode. See [WSL2 Networking](#wsl2-networking-windows-users) above for the fix.
+If you're running anan Agent inside WSL2 and your model server on the Windows host, `http://localhost:<port>` won't work in WSL2's default NAT networking mode. See [WSL2 Networking](#wsl2-networking-windows-users) above for the fix.
 
 #### Tool calls appear as text instead of executing
 
@@ -971,19 +971,19 @@ The model outputs something like `{"name": "web_search", "arguments": {...}}` as
 | Server | Fix |
 |--------|-----|
 | **llama.cpp** | Add `--jinja` to the startup command |
-| **vLLM** | Add `--enable-auto-tool-choice --tool-call-parser hermes` |
+| **vLLM** | Add `--enable-auto-tool-choice --tool-call-parser anan` |
 | **SGLang** | Add `--tool-call-parser qwen` (or appropriate parser) |
 | **Ollama** | Tool calling is enabled by default — make sure your model supports it (check with `ollama show model-name`) |
 | **LM Studio** | Update to 0.3.6+ and use a model with native tool support |
 
 #### Model seems to forget context or give incoherent responses
 
-**Cause:** Context window is too small. When the conversation exceeds the context limit, most servers silently drop older messages. Hermes's system prompt + tool schemas alone can use 4k–8k tokens.
+**Cause:** Context window is too small. When the conversation exceeds the context limit, most servers silently drop older messages. anan Agent's system prompt + tool schemas alone can use 4k–8k tokens.
 
 **Diagnosis:**
 
 ```bash
-# Check what Hermes thinks the context is
+# Check what anan Agent thinks the context is
 # Look at startup line: "Context limit: X tokens"
 
 # Check your server's actual context
@@ -996,7 +996,7 @@ The model outputs something like `{"name": "web_search", "arguments": {...}}` as
 
 #### "Context limit: 2048 tokens" at startup
 
-Hermes auto-detects context length from your server's `/v1/models` endpoint. If the server reports a low value (or doesn't report one at all), Hermes uses the model's declared limit which may be wrong.
+anan Agent auto-detects context length from your server's `/v1/models` endpoint. If the server reports a low value (or doesn't report one at all), anan Agent uses the model's declared limit which may be wrong.
 
 **Fix:** Set it explicitly in `config.yaml`:
 
@@ -1011,8 +1011,8 @@ model:
 #### Responses get cut off mid-sentence
 
 **Possible causes:**
-1. **Low output cap (`max_tokens`) on the server** — SGLang defaults to 128 tokens per response. Set `--default-max-tokens` on the server or configure Hermes with `model.max_tokens` in config.yaml. Note: `max_tokens` controls response length only — it is unrelated to how long your conversation history can be (that is `context_length`).
-2. **Context exhaustion** — The model filled its context window. Increase `model.context_length` or enable [context compression](/docs/user-guide/configuration#context-compression) in Hermes.
+1. **Low output cap (`max_tokens`) on the server** — SGLang defaults to 128 tokens per response. Set `--default-max-tokens` on the server or configure anan Agent with `model.max_tokens` in config.yaml. Note: `max_tokens` controls response length only — it is unrelated to how long your conversation history can be (that is `context_length`).
+2. **Context exhaustion** — The model filled its context window. Increase `model.context_length` or enable [context compression](/docs/user-guide/configuration#context-compression) in anan Agent.
 
 ---
 
@@ -1029,7 +1029,7 @@ litellm --model anthropic/claude-sonnet-4 --port 4000
 litellm --config litellm_config.yaml --port 4000
 ```
 
-Then configure Hermes with `anan model` → Custom endpoint → `http://localhost:4000/v1`.
+Then configure anan Agent with `anan model` → Custom endpoint → `http://localhost:4000/v1`.
 
 Example `litellm_config.yaml` with fallback:
 ```yaml
@@ -1057,7 +1057,7 @@ router_settings:
 npx @blockrun/clawrouter    # Starts on port 8402
 ```
 
-Then configure Hermes with `anan model` → Custom endpoint → `http://localhost:8402/v1` → model name `blockrun/auto`.
+Then configure anan Agent with `anan model` → Custom endpoint → `http://localhost:8402/v1` → model name `blockrun/auto`.
 
 Routing profiles:
 | Profile | Strategy | Savings |
@@ -1107,7 +1107,7 @@ model:
 ### Context Length Detection
 
 :::note Two settings, easy to confuse
-**`context_length`** is the **total context window** — the combined budget for input *and* output tokens (e.g. 200,000 for Claude Opus 4.6). Hermes uses this to decide when to compress history and to validate API requests.
+**`context_length`** is the **total context window** — the combined budget for input *and* output tokens (e.g. 200,000 for Claude Opus 4.6). anan Agent uses this to decide when to compress history and to validate API requests.
 
 **`model.max_tokens`** is the **output cap** — the maximum number of tokens the model may generate in a *single response*. It has nothing to do with how long your conversation history can be. The industry-standard name `max_tokens` is a common source of confusion; Anthropic's native API has since renamed it `max_output_tokens` for clarity.
 
@@ -1115,7 +1115,7 @@ Set `context_length` when auto-detection gets the window size wrong.
 Set `model.max_tokens` only when you need to limit how long individual responses can be.
 :::
 
-Hermes uses a multi-source resolution chain to detect the correct context window for your model and provider:
+anan Agent uses a multi-source resolution chain to detect the correct context window for your model and provider:
 
 1. **Config override** — `model.context_length` in config.yaml (highest priority)
 2. **Custom provider per-model** — `custom_providers[].models.<id>.context_length`
@@ -1169,7 +1169,7 @@ If you work with multiple custom endpoints (e.g., a local dev server and a remot
 custom_providers:
   - name: local
     base_url: http://localhost:8080/v1
-    # api_key omitted — Hermes uses "no-key-required" for keyless local servers
+    # api_key omitted — anan Agent uses "no-key-required" for keyless local servers
   - name: work
     base_url: https://gpu-server.internal.corp/v1
     key_env: CORP_API_KEY
@@ -1333,7 +1333,7 @@ You can switch between providers at any time with `anan model` — no restart re
 
 ### Self-Hosting Firecrawl
 
-By default, Hermes uses the [Firecrawl cloud API](https://firecrawl.dev/) for web search and scraping. If you prefer to run Firecrawl locally, you can point Hermes at a self-hosted instance instead. See Firecrawl's [SELF_HOST.md](https://github.com/firecrawl/firecrawl/blob/main/SELF_HOST.md) for complete setup instructions.
+By default, anan Agent uses the [Firecrawl cloud API](https://firecrawl.dev/) for web search and scraping. If you prefer to run Firecrawl locally, you can point anan Agent at a self-hosted instance instead. See Firecrawl's [SELF_HOST.md](https://github.com/firecrawl/firecrawl/blob/main/SELF_HOST.md) for complete setup instructions.
 
 **What you get:** No API key required, no rate limits, no per-page costs, full data sovereignty.
 
@@ -1349,7 +1349,7 @@ By default, Hermes uses the [Firecrawl cloud API](https://firecrawl.dev/) for we
    docker compose up -d
    ```
 
-2. Point Hermes at your instance (no API key needed):
+2. Point anan Agent at your instance (no API key needed):
    ```bash
    anan config set FIRECRAWL_API_URL http://localhost:3002
    ```
@@ -1374,7 +1374,7 @@ provider_routing:
 
 ## Fallback Model
 
-Configure a backup provider:model that Hermes switches to automatically when your primary model fails (rate limits, server errors, auth failures):
+Configure a backup provider:model that anan Agent switches to automatically when your primary model fails (rate limits, server errors, auth failures):
 
 ```yaml
 fallback_model:

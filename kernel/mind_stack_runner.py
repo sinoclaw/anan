@@ -928,14 +928,17 @@ class MindStackRunner:
             """把 gateway:agent:end 转换为内部事件。"""
             if self._bus is None:
                 return
+            # hook_ctx passes "message", _on_agent_end historically reads "text" — support both
+            text = context.get("text") or context.get("message") or ""
             payload = {
                 "platform": context.get("platform", "unknown"),
                 "user": context.get("user", "unknown"),
-                "text": context.get("text", ""),
+                "text": text,
                 "response": context.get("response", ""),
                 "session_id": context.get("session_id", ""),
                 "ts": time.time(),
             }
+            logger.info(f"[_on_agent_end] text='{text[:50]}' → publishing gateway.message.sent")
             await self._bus.publish(Event(
                 topic="gateway.message.sent",
                 source="gateway",
@@ -965,6 +968,7 @@ class MindStackRunner:
         L0.circadian.tick → L8 IntentStack.decay_tick()   (意图自然衰减)
         L0.circadian.tick → L8 DriveSystem.decay()         (驱动力自然衰减)
         L1.lucid_dream.ended → L8 IntentStack.snapshot()  (快照供梦境规划)
+        gateway.message.sent → DriveSystem.trigger()        (用户消息触发驱动力)
         """
         intent_stack = getattr(self, '_intent_stack', None)
         drive_system = getattr(self, '_drive_system', None)
@@ -987,6 +991,22 @@ class MindStackRunner:
 
             self._bus.subscribe("L1.lucid_dream.ended", _on_lucid_dream_ended)
             logger.info("  ✓ L1.lucid_dream.ended → L8 IntentStack.snapshot() 已连接")
+
+        # gateway.message.sent → 触发驱动力（形成 L8→L3→L4 联动链）
+        if drive_system is not None:
+            from layers.L8_drives.drive_system import DriveType
+
+            async def _on_user_message(event: Event):
+                payload = event.payload or {}
+                text = payload.get("text", "") or ""
+                # 提到"爸爸" → 触发 CARE；有任何用户消息 → 触发 CURIOSITY
+                if "爸爸" in text:
+                    drive_system.trigger(DriveType.CARE, reason="用户提到爸爸")
+                if text.strip():
+                    drive_system.trigger(DriveType.CURIOSITY, reason="新用户消息")
+
+            self._bus.subscribe("gateway.message.sent", _on_user_message)
+            logger.info("  ✓ gateway.message.sent → DriveSystem.trigger() 已连接")
 
     def _make_sleep_fn(self):
         """

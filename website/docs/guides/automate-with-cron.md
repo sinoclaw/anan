@@ -1,7 +1,7 @@
 ---
 sidebar_position: 11
 title: "Automate Anything with Cron"
-description: "Real-world automation patterns using Hermes cron — monitoring, reports, pipelines, and multi-skill workflows"
+description: "Real-world automation patterns using anan Agent cron — monitoring, reports, pipelines, and multi-skill workflows"
 ---
 
 # Automate Anything with Cron
@@ -15,7 +15,7 @@ Cron jobs run in fresh agent sessions with no memory of your current chat. Promp
 :::
 
 :::tip Don't need the LLM? Use no-agent mode.
-For recurring watchdogs where the script already produces the exact message you want to send (memory alerts, disk alerts, CI pings, heartbeats), skip the LLM entirely with [script-only cron jobs](/docs/guides/cron-script-only). Zero tokens, same scheduler. You can ask Hermes to set one up for you in chat — the `cronjob` tool knows when to pick `no_agent=True` and writes the script for you.
+For recurring watchdogs where the script already produces the exact message you want to send (memory alerts, disk alerts, CI pings, heartbeats), skip the LLM entirely with [script-only cron jobs](/docs/guides/cron-script-only). Zero tokens, same scheduler. You can ask anan Agent to set one up for you in chat — the `cronjob` tool knows when to pick `no_agent=True` and writes the script for you.
 :::
 
 ---
@@ -93,7 +93,7 @@ Keep it under 500 words — highlight only what matters." --name "Weekly AI dige
 From the CLI:
 
 ```bash
-hermes cron create "0 9 * * 1" \
+anan cron create "0 9 * * 1" \
   "Generate a weekly report covering the top AI news, trending ML GitHub repos, and most-discussed HN posts. Format with sections, include links, keep under 500 words." \
   --name "Weekly AI digest" \
   --deliver telegram

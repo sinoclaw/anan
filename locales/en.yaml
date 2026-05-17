@@ -1,4 +1,4 @@
-# Hermes static-message catalog -- English (baseline / source of truth)
+# Anan static-message catalog -- English (baseline / source of truth)
 #
 # Only user-facing static messages from the CLI approval prompt and a handful
 # of gateway slash-command replies live here.  Agent-generated output, log

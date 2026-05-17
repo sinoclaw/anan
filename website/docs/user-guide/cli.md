@@ -9,42 +9,42 @@ description: "Master the anan Agent terminal interface — commands, keybindings
 anan Agent's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
 
 :::tip
-Hermes also ships a modern TUI with modal overlays, mouse selection, and non-blocking input. Launch it with `anan --tui` — see the [TUI](tui.md) guide.
+anan Agent also ships a modern TUI with modal overlays, mouse selection, and non-blocking input. Launch it with `anan --tui` — see the [TUI](tui.md) guide.
 :::
 
 ## Running the CLI
 
 ```bash
 # Start an interactive session (default)
-hermes
+anan
 
 # Single query mode (non-interactive)
-hermes chat -q "Hello"
+anan chat -q "Hello"
 
 # With a specific model
-hermes chat --model "anthropic/claude-sonnet-4"
+anan chat --model "anthropic/claude-sonnet-4"
 
 # With a specific provider
-hermes chat --provider nous        # Use Nous Portal
-hermes chat --provider openrouter  # Force OpenRouter
+anan chat --provider nous        # Use Nous Portal
+anan chat --provider openrouter  # Force OpenRouter
 
 # With specific toolsets
-hermes chat --toolsets "web,terminal,skills"
+anan chat --toolsets "web,terminal,skills"
 
 # Start with one or more skills preloaded
-hermes -s anan-dev,github-auth
-hermes chat -s github-pr-workflow -q "open a draft PR"
+anan -s anan-dev,github-auth
+anan chat -s github-pr-workflow -q "open a draft PR"
 
 # Resume previous sessions
-hermes --continue             # Resume the most recent CLI session (-c)
-hermes --resume <session_id>  # Resume a specific session by ID (-r)
+anan --continue             # Resume the most recent CLI session (-c)
+anan --resume <session_id>  # Resume a specific session by ID (-r)
 
 # Verbose mode (debug output)
-hermes chat --verbose
+anan chat --verbose
 
 # Isolated git worktree (for running multiple agents in parallel)
-hermes -w                         # Interactive mode in worktree
-hermes -w -q "Fix issue #123"     # Single query in worktree
+anan -w                         # Interactive mode in worktree
+anan -w -q "Fix issue #123"     # Single query in worktree
 ```
 
 ## Interface Layout
@@ -100,7 +100,7 @@ When resuming a previous session (`anan -c` or `anan --resume <id>`), a "Previou
 | `Ctrl+X Ctrl+E` | Emacs-style alternate binding for the external editor (same behavior as `Ctrl+G`). |
 | `Ctrl+C` | Interrupt agent (double-press within 2s to force exit) |
 | `Ctrl+D` | Exit |
-| `Ctrl+Z` | Suspend Hermes to background (Unix only). Run `fg` in the shell to resume. |
+| `Ctrl+Z` | Suspend anan Agent to background (Unix only). Run `fg` in the shell to resume. |
 | `Tab` | Accept auto-suggestion (ghost text) or autocomplete slash commands |
 
 **Multiline paste preview.** When you paste a multi-line block, the CLI echoes a compact single-line preview (`[pasted: 47 lines, 1,842 chars — press Enter to send]`) instead of dumping the whole payload into the scrollback. The full content is still what gets sent; this is just display polish.
@@ -109,7 +109,7 @@ When resuming a previous session (`anan -c` or `anan --resume <id>`), a "Previou
 
 ## Slash Commands
 
-Type `/` to see the autocomplete dropdown. Hermes supports a large set of CLI slash commands, dynamic skill commands, and user-defined quick commands.
+Type `/` to see the autocomplete dropdown. anan Agent supports a large set of CLI slash commands, dynamic skill commands, and user-defined quick commands.
 
 Common examples:
 
@@ -122,7 +122,7 @@ Common examples:
 | `/background <prompt>` | Run a prompt in a separate background session |
 | `/skin` | Show or switch the active CLI skin |
 | `/voice on` | Enable CLI voice mode (press `Ctrl+B` to record) |
-| `/voice tts` | Toggle spoken playback for Hermes replies |
+| `/voice tts` | Toggle spoken playback for anan Agent replies |
 | `/reasoning high` | Increase reasoning effort |
 | `/title My Session` | Name the current session |
 
@@ -159,11 +159,11 @@ Then type `/status`, `/gpu`, or `/restart` in any chat. See the [Configuration g
 If you already know which skills you want active for the session, pass them at launch time:
 
 ```bash
-hermes -s anan-dev,github-auth
-hermes chat -s github-pr-workflow -s github-auth
+anan -s anan-dev,github-auth
+anan chat -s github-pr-workflow -s github-auth
 ```
 
-Hermes loads each named skill into the session prompt before the first turn. The same flag works in interactive mode and single-query mode.
+anan Agent loads each named skill into the session prompt before the first turn. The same flag works in interactive mode and single-query mode.
 
 ## Skill Slash Commands
 
@@ -196,7 +196,7 @@ You can also define custom personalities in `~/.anan/config.yaml`:
 personalities:
   helpful: "You are a helpful, friendly AI assistant."
   kawaii: "You are a kawaii assistant! Use cute expressions..."
-  pirate: "Arrr! Ye be talkin' to Captain Hermes..."
+  pirate: "Arrr! Ye be talkin' to Captain anan Agent..."
   # Add your own!
 ```
 
@@ -219,7 +219,7 @@ Pasting multi-line text is supported — use any of the newline keys above, or s
 
 ### Shift+Enter compatibility
 
-Most terminals send the same byte sequence for `Enter` and `Shift+Enter` by default, so applications cannot distinguish them. Hermes recognises `Shift+Enter` only when the terminal sends a distinct sequence via the [Kitty keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) or xterm's `modifyOtherKeys` mode.
+Most terminals send the same byte sequence for `Enter` and `Shift+Enter` by default, so applications cannot distinguish them. anan Agent recognises `Shift+Enter` only when the terminal sends a distinct sequence via the [Kitty keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) or xterm's `modifyOtherKeys` mode.
 
 | Terminal | Status |
 |---|---|
@@ -228,7 +228,7 @@ Most terminals send the same byte sequence for `Enter` and `Shift+Enter` by defa
 | Windows Terminal Preview 1.25+ | Supported once the Kitty protocol is enabled in settings |
 | macOS Terminal.app, stock Windows Terminal (stable) | Not supported — `Shift+Enter` is indistinguishable from `Enter` |
 
-Where the terminal cannot distinguish them, `Alt+Enter` and `Ctrl+J` continue to work everywhere. **On Windows Terminal specifically, `Alt+Enter` is captured by the terminal (toggles fullscreen) and never reaches Hermes — use `Ctrl+Enter` (delivered as `Ctrl+J`) or `Ctrl+J` directly for a newline.**
+Where the terminal cannot distinguish them, `Alt+Enter` and `Ctrl+J` continue to work everywhere. **On Windows Terminal specifically, `Alt+Enter` is captured by the terminal (toggles fullscreen) and never reaches anan Agent — use `Ctrl+Enter` (delivered as `Ctrl+J`) or `Ctrl+J` directly for a newline.**
 
 ## Interrupting the Agent
 
@@ -269,12 +269,12 @@ You can also change it inside the CLI:
 ```
 
 :::tip First-touch hint
-The very first time you press Enter while Hermes is working, Hermes prints a one-line reminder explaining the `/busy` knob (`"(tip) Your message interrupted the current run…"`). It only fires once per install — a flag in `config.yaml` under `onboarding.seen.busy_input_prompt` latches it. Delete that key to see the tip again.
+The very first time you press Enter while anan Agent is working, anan Agent prints a one-line reminder explaining the `/busy` knob (`"(tip) Your message interrupted the current run…"`). It only fires once per install — a flag in `config.yaml` under `onboarding.seen.busy_input_prompt` latches it. Delete that key to see the tip again.
 :::
 
 ### Suspending to Background
 
-On Unix systems, press **`Ctrl+Z`** to suspend Hermes to the background — just like any terminal process. The shell prints a confirmation:
+On Unix systems, press **`Ctrl+Z`** to suspend anan Agent to the background — just like any terminal process. The shell prints a confirmation:
 
 ```
 anan Agent has been suspended. Run `fg` to bring anan Agent back.
@@ -332,12 +332,12 @@ Messages:       28 (5 user, 18 tool calls)
 Resume options:
 
 ```bash
-hermes --continue                          # Resume the most recent CLI session
-hermes -c                                  # Short form
-hermes -c "my project"                     # Resume a named session (latest in lineage)
-hermes --resume 20260225_143052_a1b2c3     # Resume a specific session by ID
-hermes --resume "refactoring auth"         # Resume by title
-hermes -r 20260225_143052_a1b2c3           # Short form
+anan --continue                          # Resume the most recent CLI session
+anan -c                                  # Short form
+anan -c "my project"                     # Resume a named session (latest in lineage)
+anan --resume 20260225_143052_a1b2c3     # Resume a specific session by ID
+anan --resume "refactoring auth"         # Resume by title
+anan -r 20260225_143052_a1b2c3           # Short form
 ```
 
 Resuming restores the full conversation history from SQLite. The agent sees all previous messages, tool calls, and responses — just as if you never left.
@@ -346,7 +346,7 @@ Use `/title My Session Name` inside a chat to name the current session, or `anan
 
 ### Session Storage
 
-CLI sessions are stored in Hermes's SQLite state database under `~/.anan/state.db`. The database keeps:
+CLI sessions are stored in anan Agent's SQLite state database under `~/.anan/state.db`. The database keeps:
 
 - session metadata (ID, title, timestamps, token counters)
 - message history
@@ -381,7 +381,7 @@ Run a prompt in a separate background session while continuing to use the CLI fo
 /background Analyze the logs in /var/log and summarize any errors from today
 ```
 
-Hermes immediately confirms the task and gives you back the prompt:
+anan Agent immediately confirms the task and gives you back the prompt:
 
 ```
 🔄 Background task #1 started: "Analyze the logs in /var/log and summarize..."
@@ -402,7 +402,7 @@ Each `/background` prompt spawns a **completely separate agent session** in a da
 When a background task finishes, the result appears as a panel in your terminal:
 
 ```
-╭─ ⚕ Hermes (background #1) ──────────────────────────────────╮
+╭─ ⚕ anan Agent (background #1) ──────────────────────────────────╮
 │ Found 3 errors in syslog from today:                         │
 │ 1. OOM killer invoked at 03:22 — killed process nginx        │
 │ 2. Disk I/O error on /dev/sda1 at 07:15                      │
@@ -431,5 +431,5 @@ By default, the CLI runs in quiet mode which:
 
 For debug output:
 ```bash
-hermes chat --verbose
+anan chat --verbose
 ```

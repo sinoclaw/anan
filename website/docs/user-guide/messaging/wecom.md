@@ -6,7 +6,7 @@ description: "Connect anan Agent to WeCom via the AI Bot WebSocket gateway"
 
 # WeCom (Enterprise WeChat)
 
-Connect Hermes to [WeCom](https://work.weixin.qq.com/) (企业微信), Tencent's enterprise messaging platform. The adapter uses WeCom's AI Bot WebSocket gateway for real-time bidirectional communication — no public endpoint or webhook needed.
+Connect anan Agent to [WeCom](https://work.weixin.qq.com/) (企业微信), Tencent's enterprise messaging platform. The adapter uses WeCom's AI Bot WebSocket gateway for real-time bidirectional communication — no public endpoint or webhook needed.
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ Connect Hermes to [WeCom](https://work.weixin.qq.com/) (企业微信), Tencent's
 anan gateway setup
 ```
 
-Select **WeCom** and scan the QR code with your WeCom mobile app. Hermes will automatically create a bot application with the correct permissions and save the credentials.
+Select **WeCom** and scan the QR code with your WeCom mobile app. anan Agent will automatically create a bot application with the correct permissions and save the credentials.
 
 The setup wizard will:
 1. Display a QR code in your terminal
@@ -47,7 +47,7 @@ If scan-to-create is not available, the wizard falls back to manual input:
 Keep the Bot Secret private. Anyone with it can impersonate your bot.
 :::
 
-### Step 2: Configure Hermes
+### Step 2: Configure anan Agent
 
 #### Option A: Interactive Setup (Recommended)
 

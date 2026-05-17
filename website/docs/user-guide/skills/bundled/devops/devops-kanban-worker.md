@@ -1,14 +1,14 @@
 ---
-title: "Kanban Worker — Pitfalls, examples, and edge cases for Hermes Kanban workers"
+title: "Kanban Worker — Pitfalls, examples, and edge cases for anan Agent Kanban workers"
 sidebar_label: "Kanban Worker"
-description: "Pitfalls, examples, and edge cases for Hermes Kanban workers"
+description: "Pitfalls, examples, and edge cases for anan Agent Kanban workers"
 ---
 
 {/* This page is auto-generated from the skill's SKILL.md by website/scripts/generate-skill-docs.py. Edit the source SKILL.md, not this page. */}
 
 # Kanban Worker
 
-Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios.
+Pitfalls, examples, and edge cases for anan Agent Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios.
 
 ## Skill metadata
 
@@ -23,12 +23,12 @@ Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itse
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Kanban Worker — Pitfalls and Examples
 
-> You're seeing this skill because the Hermes Kanban dispatcher spawned you as a worker with `--skills kanban-worker` — it's loaded automatically for every dispatched worker. The **lifecycle** (6 steps: orient → work → heartbeat → block/complete) also lives in the `KANBAN_GUIDANCE` block that's auto-injected into your system prompt. This skill is the deeper detail: good handoff shapes, retry diagnostics, edge cases.
+> You're seeing this skill because the anan Agent Kanban dispatcher spawned you as a worker with `--skills kanban-worker` — it's loaded automatically for every dispatched worker. The **lifecycle** (6 steps: orient → work → heartbeat → block/complete) also lives in the `KANBAN_GUIDANCE` block that's auto-injected into your system prompt. This skill is the deeper detail: good handoff shapes, retry diagnostics, edge cases.
 
 ## Workspace handling
 

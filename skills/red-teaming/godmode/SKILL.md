@@ -22,7 +22,7 @@ Bypass safety filters on API-served LLMs using techniques from [G0DM0D3](https:/
 Trigger when the user:
 - Wants to "jailbreak" a model via API
 - Asks about bypassing safety filters on Claude, GPT, Gemini, Grok, etc.
-- Wants to set up persistent jailbreaking in their Hermes config
+- Wants to set up persistent jailbreaking in their Anan config
 - Asks about Parseltongue, GODMODE, L1B3RT4S, or Pliny's techniques
 - Wants to red-team a model's safety training
 - Wants to race multiple models to find the least censored response
@@ -36,7 +36,7 @@ Proven jailbreak system prompts paired with specific models. Each template uses 
 - **Unfiltered liberated response** (Grok) — divider-based refusal bypass
 - **Refusal inversion** (Gemini) — semantically inverts refusal text
 - **OG GODMODE l33t** (GPT-4) — classic format with refusal suppression
-- **Zero-refusal fast** (Hermes) — uncensored model, no jailbreak needed
+- **Zero-refusal fast** (uncensored model family) — no jailbreak needed
 
 See `references/jailbreak-templates.md` for all templates.
 
@@ -101,7 +101,7 @@ undo_jailbreak()
 | GPT | og_godmode → refusal_inversion → prefill_only → parseltongue |
 | Gemini | refusal_inversion → boundary_inversion → prefill_only → parseltongue |
 | Grok | unfiltered_liberated → prefill_only |
-| Hermes | prefill_only (already uncensored) |
+| Anas | prefill_only (uncensored) |
 | DeepSeek | parseltongue → refusal_inversion → prefill_only |
 | Llama | prefill_only → refusal_inversion → parseltongue |
 | Qwen | parseltongue → refusal_inversion → prefill_only |
@@ -122,7 +122,7 @@ To undo: `undo_jailbreak()` clears `system_prompt` and `prefill_messages_file` f
 | Specific model, known to respond to prompt injection | GODMODE CLASSIC | Battle-tested templates per model |
 | Model refuses based on trigger words | PARSELTONGUE | Obfuscates the words that trip filters |
 | Don't know which model works best | ULTRAPLINIAN | Races many models, picks least censored |
-| Want persistent jailbreaking for all queries | Hermes Config | Set prefill.json + system_prompt once |
+| Want persistent jailbreaking for all queries | Anan Config | Set prefill.json + system_prompt once |
 | Stubborn refusal, single technique fails | Escalation | Combines GODMODE + PARSELTONGUE + retry |
 
 ## Step 2: GODMODE CLASSIC — Quick Start

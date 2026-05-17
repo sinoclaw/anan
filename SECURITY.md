@@ -17,7 +17,7 @@ Anan Agent does **not** operate a bug bounty program. Security issues should be 
 
 ## 2. Trust Model
 
-The core assumption is that Hermes is a **personal agent** with one trusted operator.
+The core assumption is that Anan is a **personal agent** with one trusted operator.
 
 ### Operator & Session Trust
 - **Single Tenant:** The system protects the operator from LLM actions, not from malicious co-tenants. Multi-user isolation must happen at the OS/host level.
@@ -38,7 +38,7 @@ The approval system (`tools/approval.py`) is a core security boundary. Terminal 
 - **MCP Servers:** Lower trust. MCP subprocesses receive a filtered environment (`_build_safe_env()` in `tools/mcp_tool.py`) — only safe baseline variables (`PATH`, `HOME`, `XDG_*`) plus variables explicitly declared in the server's `env` config block are passed through. Host credentials are stripped by default. Additionally, packages invoked via `npx`/`uvx` are checked against the OSV malware database before spawning.
 
 ### Code Execution Sandbox
-The `execute_code` tool (`tools/code_execution_tool.py`) runs LLM-generated Python scripts in a child process with API keys and tokens stripped from the environment to prevent credential exfiltration. Only environment variables explicitly declared by loaded skills (via `env_passthrough`) or by the user in `config.yaml` (`terminal.env_passthrough`) are passed through. The child accesses Hermes tools via RPC, not direct API calls.
+The `execute_code` tool (`tools/code_execution_tool.py`) runs LLM-generated Python scripts in a child process with API keys and tokens stripped from the environment to prevent credential exfiltration. Only environment variables explicitly declared by loaded skills (via `env_passthrough`) or by the user in `config.yaml` (`terminal.env_passthrough`) are passed through. The child accesses Anan tools via RPC, not direct API calls.
 
 ### Subagents
 - **No recursive delegation:** The `delegate_task` tool is disabled for child agents.

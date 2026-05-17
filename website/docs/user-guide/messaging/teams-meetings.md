@@ -6,7 +6,7 @@ description: "Set up the Microsoft Teams meeting summary pipeline with Microsoft
 
 # Microsoft Teams Meetings
 
-Use the Teams meeting pipeline when you want Hermes to ingest Microsoft Graph meeting events, fetch transcripts first, fall back to recordings plus STT when needed, and deliver a structured summary to downstream sinks.
+Use the Teams meeting pipeline when you want anan Agent to ingest Microsoft Graph meeting events, fetch transcripts first, fall back to recordings plus STT when needed, and deliver a structured summary to downstream sinks.
 
 This page focuses on setup and enablement:
 - Graph credentials
@@ -28,16 +28,16 @@ The pipeline:
 Operator actions stay in the CLI:
 
 ```bash
-hermes teams-pipeline validate
-hermes teams-pipeline list
-hermes teams-pipeline maintain-subscriptions
+anan teams-pipeline validate
+anan teams-pipeline list
+anan teams-pipeline maintain-subscriptions
 ```
 
 ## Prerequisites
 
 Before enabling the meetings pipeline, make sure you have:
 
-- a working Hermes install
+- a working anan Agent install
 - the existing [Microsoft Teams bot setup](/docs/user-guide/messaging/teams) if you want Teams outbound delivery
 - Microsoft Graph application credentials with the permissions required for the meeting resources you plan to subscribe to
 - a public HTTPS URL that Microsoft Graph can call for webhook delivery
@@ -141,7 +141,7 @@ platforms:
 
 ### `graph`
 
-Use this when you want Hermes to post the summary through Microsoft Graph into a Teams chat or channel.
+Use this when you want anan Agent to post the summary through Microsoft Graph into a Teams chat or channel.
 
 Supported targets:
 - `chat_id`
@@ -162,13 +162,13 @@ platforms:
 
 ## Step 4: Start the Gateway
 
-Start Hermes normally after updating config:
+Start anan Agent normally after updating config:
 
 ```bash
 anan gateway run
 ```
 
-Or, if you run Hermes in Docker, start the gateway the same way you already do for your deployment.
+Or, if you run anan Agent in Docker, start the gateway the same way you already do for your deployment.
 
 Check the listener:
 
@@ -183,12 +183,12 @@ Use the plugin CLI to create and inspect subscriptions.
 Examples:
 
 ```bash
-hermes teams-pipeline subscribe \
+anan teams-pipeline subscribe \
   --resource communications/onlineMeetings/getAllTranscripts \
   --notification-url https://ops.example.com/msgraph/webhook \
   --client-state "$MSGRAPH_WEBHOOK_CLIENT_STATE"
 
-hermes teams-pipeline subscribe \
+anan teams-pipeline subscribe \
   --resource communications/onlineMeetings/getAllRecordings \
   --notification-url https://ops.example.com/msgraph/webhook \
   --client-state "$MSGRAPH_WEBHOOK_CLIENT_STATE"
@@ -196,7 +196,7 @@ hermes teams-pipeline subscribe \
 
 :::warning Graph subscriptions expire in 72 hours
 
-Microsoft Graph caps webhook subscriptions at 72 hours and will not auto-renew them. You MUST schedule `anan teams-pipeline maintain-subscriptions` before going live, or notifications will silently stop three days after any manual subscription creation. See [Automating subscription renewal](/docs/guides/operate-teams-meeting-pipeline#automating-subscription-renewal-required-for-production) in the operator runbook — three options (Hermes cron, systemd timer, plain crontab).
+Microsoft Graph caps webhook subscriptions at 72 hours and will not auto-renew them. You MUST schedule `anan teams-pipeline maintain-subscriptions` before going live, or notifications will silently stop three days after any manual subscription creation. See [Automating subscription renewal](/docs/guides/operate-teams-meeting-pipeline#automating-subscription-renewal-required-for-production) in the operator runbook — three options (anan Agent cron, systemd timer, plain crontab).
 
 :::
 
@@ -207,14 +207,14 @@ For subscription maintenance and day-2 operator flows, continue with the guide: 
 Run the built-in validation snapshot:
 
 ```bash
-hermes teams-pipeline validate
+anan teams-pipeline validate
 ```
 
 Useful companion checks:
 
 ```bash
-hermes teams-pipeline token-health
-hermes teams-pipeline subscriptions
+anan teams-pipeline token-health
+anan teams-pipeline subscriptions
 ```
 
 ## Troubleshooting

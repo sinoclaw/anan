@@ -8,7 +8,7 @@ Create a plugin directory in `~/.anan/plugins/` (or under `plugins/platforms/`
 for bundled plugins) with a `plugin.yaml` and `adapter.py`.  The adapter
 inherits from `BasePlatformAdapter` and registers via
 `ctx.register_platform()` in the `register(ctx)` entry point.  This requires
-**zero changes to core Hermes code**.
+**zero changes to core Anan code**.
 
 The plugin system automatically handles: adapter creation, config parsing,
 user authorization, cron delivery, send_message routing, system prompt hints,
@@ -42,7 +42,7 @@ plugin guide with code examples and hook documentation.
 
 ## Built-in Path (Core Contributors Only)
 
-Checklist for integrating a platform directly into the Hermes core.
+Checklist for integrating a platform directly into the Anan core.
 Use this as a reference when building a built-in adapter — every item here
 is a real integration point. Missing any of them will cause broken
 functionality, missing features, or inconsistent behavior.

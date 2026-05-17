@@ -1557,7 +1557,7 @@ class DreamingPlugin:
                 source="DreamingPlugin",
             ))
         except Exception as e:
-            logger.debug(f"daydreaming: failed to publish L1.daydream.started: {e}")
+            logger.warning(f"daydreaming: failed to publish L1.daydream.started: {e}")
 
         # Collect raw content fragments for stream-of-consciousness generation
         fragments = []
@@ -1648,7 +1648,7 @@ Write a short stream-of-consciousness monologue in first person.
                     payload={"phase": "daydream", "n_lines": len(body_lines)},
                 ))
         except Exception as e:
-            logger.debug(f"daydreaming: failed to publish L1.daydream.ended: {e}")
+            logger.warning(f"daydreaming: failed to publish L1.daydream.ended: {e}")
 
         logger.info(f"daydreaming: idle daydream sweep complete, {len(body_lines)} lines")
 

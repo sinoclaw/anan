@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: "CLI Commands Reference"
-description: "Authoritative reference for Hermes terminal commands and command families"
+description: "Authoritative reference for anan Agent terminal commands and command families"
 ---
 
 # CLI Commands Reference
@@ -13,7 +13,7 @@ For in-chat slash commands, see [Slash Commands Reference](./slash-commands.md).
 ## Global entrypoint
 
 ```bash
-hermes [global-options] <command> [subcommand/options]
+anan [global-options] <command> [subcommand/options]
 ```
 
 ### Global options
@@ -21,7 +21,7 @@ hermes [global-options] <command> [subcommand/options]
 | Option | Description |
 |--------|-------------|
 | `--version`, `-V` | Show version and exit. |
-| `--profile <name>`, `-p <name>` | Select which Hermes profile to use for this invocation. Overrides the sticky default set by `anan profile use`. |
+| `--profile <name>`, `-p <name>` | Select which anan Agent profile to use for this invocation. Overrides the sticky default set by `anan profile use`. |
 | `--resume <session>`, `-r <session>` | Resume a previous session by ID or title. |
 | `--continue [name]`, `-c [name]` | Resume the most recent session, or the most recent session matching a title. |
 | `--worktree`, `-w` | Start in an isolated git worktree for parallel-agent workflows. |
@@ -55,15 +55,15 @@ hermes [global-options] <command> [subcommand/options]
 | `anan debug` | Debug tools — upload logs and system info for support. |
 | `anan backup` | Back up anan home directory to a zip file. |
 | `anan checkpoints` | Inspect / prune / clear `~/.anan/checkpoints/` (the shadow store used by `/rollback`). Run with no args for a status overview. |
-| `anan import` | Restore a Hermes backup from a zip file. |
+| `anan import` | Restore a anan Agent backup from a zip file. |
 | `anan logs` | View, tail, and filter agent/gateway/error log files. |
 | `anan config` | Show, edit, migrate, and query configuration files. |
 | `anan pairing` | Approve or revoke messaging pairing codes. |
 | `anan skills` | Browse, install, publish, audit, and configure skills. |
 | `anan curator` | Background skill maintenance — status, run, pause, pin. See [Curator](../user-guide/features/curator.md). |
 | `anan memory` | Configure external memory provider. Plugin-specific subcommands (e.g. `anan honcho`) register automatically when their provider is active. |
-| `anan acp` | Run Hermes as an ACP server for editor integration. |
-| `anan mcp` | Manage MCP server configurations and run Hermes as an MCP server. |
+| `anan acp` | Run anan Agent as an ACP server for editor integration. |
+| `anan mcp` | Manage MCP server configurations and run anan Agent as an MCP server. |
 | `anan plugins` | Manage anan Agent plugins (install, enable, disable, remove). |
 | `anan tools` | Configure enabled tools per platform. |
 | `anan sessions` | Browse, export, prune, rename, and delete sessions. |
@@ -71,16 +71,16 @@ hermes [global-options] <command> [subcommand/options]
 | `anan fallback` | Interactive manager for the fallback provider chain. |
 | `anan claw` | OpenClaw migration helpers. |
 | `anan dashboard` | Launch the web dashboard for managing config, API keys, and sessions. |
-| `anan profile` | Manage profiles — multiple isolated Hermes instances. |
+| `anan profile` | Manage profiles — multiple isolated anan Agent instances. |
 | `anan completion` | Print shell completion scripts (bash/zsh/fish). |
 | `anan version` | Show version information. |
 | `anan update` | Pull latest code and reinstall dependencies. `--check` prints commit diff without pulling; `--backup` takes a pre-pull `ANAN_HOME` snapshot. |
-| `anan uninstall` | Remove Hermes from the system. |
+| `anan uninstall` | Remove anan Agent from the system. |
 
 ## `anan chat`
 
 ```bash
-hermes chat [options]
+anan chat [options]
 ```
 
 Common options:
@@ -108,13 +108,13 @@ Common options:
 Examples:
 
 ```bash
-hermes
-hermes chat -q "Summarize the latest PRs"
-hermes chat --provider openrouter --model anthropic/claude-sonnet-4.6
-hermes chat --toolsets web,terminal,skills
-hermes chat --quiet -q "Return only JSON"
-hermes chat --worktree -q "Review this repo and open a PR"
-hermes chat --ignore-user-config --ignore-rules -q "Repro without my personal setup"
+anan
+anan chat -q "Summarize the latest PRs"
+anan chat --provider openrouter --model anthropic/claude-sonnet-4.6
+anan chat --toolsets web,terminal,skills
+anan chat --quiet -q "Return only JSON"
+anan chat --worktree -q "Review this repo and open a PR"
+anan chat --ignore-user-config --ignore-rules -q "Repro without my personal setup"
 ```
 
 ### `anan -z <prompt>` — scripted one-shot
@@ -122,11 +122,11 @@ hermes chat --ignore-user-config --ignore-rules -q "Repro without my personal se
 For programmatic callers (shell scripts, CI, cron, parent processes piping in a prompt), `anan -z` is the purest one-shot entry point: **single prompt in, final response text out, nothing else on stdout or stderr.** No banner, no spinner, no tool previews, no `Session:` line — just the agent's final reply as plain text.
 
 ```bash
-hermes -z "What's the capital of France?"
+anan -z "What's the capital of France?"
 # → Paris.
 
 # Parent scripts can cleanly capture the response:
-answer=$(hermes -z "summarize this" < /path/to/file.txt)
+answer=$(anan -z "summarize this" < /path/to/file.txt)
 ```
 
 Per-run overrides (no mutation to `~/.anan/config.yaml`):
@@ -137,7 +137,7 @@ Per-run overrides (no mutation to `~/.anan/config.yaml`):
 | `--provider <provider>` | `SINOCLAW_INFERENCE_PROVIDER` | Override the provider for this run |
 
 ```bash
-hermes -z "…" --provider openrouter --model openai/gpt-5.5
+anan -z "…" --provider openrouter --model openai/gpt-5.5
 # or:
 SINOCLAW_INFERENCE_MODEL=anthropic/claude-sonnet-4.6 anan -z "…"
 ```
@@ -146,10 +146,10 @@ Same agent, same tools, same skills — just strips every interactive / cosmetic
 
 ## `anan model`
 
-Interactive provider + model selector. **This is the command for adding new providers, setting up API keys, and running OAuth flows.** Run it from your terminal — not from inside an active Hermes chat session.
+Interactive provider + model selector. **This is the command for adding new providers, setting up API keys, and running OAuth flows.** Run it from your terminal — not from inside an active anan Agent chat session.
 
 ```bash
-hermes model
+anan model
 ```
 
 Use this when you want to:
@@ -163,7 +163,7 @@ Use this when you want to:
 :::warning anan model vs /model — know the difference
 **`anan model`** (run from your terminal, outside any anan session) is the **full provider setup wizard**. It can add new providers, run OAuth flows, prompt for API keys, and configure endpoints.
 
-**`/model`** (typed inside an active Hermes chat session) can only **switch between providers and models you've already set up**. It cannot add new providers, run OAuth, or prompt for API keys.
+**`/model`** (typed inside an active anan Agent chat session) can only **switch between providers and models you've already set up**. It cannot add new providers, run OAuth, or prompt for API keys.
 
 **If you need to add a new provider:** Exit your anan session first (`Ctrl+C` or `/quit`), then run `anan model` from your terminal prompt.
 :::
@@ -255,7 +255,7 @@ Options:
 ## `anan whatsapp`
 
 ```bash
-hermes whatsapp
+anan whatsapp
 ```
 
 Runs the WhatsApp pairing/setup flow, including mode selection and QR-code pairing.
@@ -263,9 +263,9 @@ Runs the WhatsApp pairing/setup flow, including mode selection and QR-code pairi
 ## `anan slack`
 
 ```bash
-hermes slack manifest              # print manifest to stdout
-hermes slack manifest --write      # write to ~/.anan/slack-manifest.json
-hermes slack manifest --slashes-only  # just the features.slash_commands array
+anan slack manifest              # print manifest to stdout
+anan slack manifest --write      # write to ~/.anan/slack-manifest.json
+anan slack manifest --slashes-only  # just the features.slash_commands array
 ```
 
 Generates a Slack app manifest that registers every gateway command in
@@ -279,7 +279,7 @@ reinstall if scopes or slash commands changed.
 | Flag | Default | Purpose |
 |------|---------|---------|
 | `--write [PATH]` | stdout | Write to a file instead of stdout. Bare `--write` writes `$ANAN_HOME/slack-manifest.json`. |
-| `--name NAME` | `Hermes` | Bot display name in Slack. |
+| `--name NAME` | `anan Agent` | Bot display name in Slack. |
 | `--description DESC` | default blurb | Bot description shown in the Slack app directory. |
 | `--slashes-only` | off | Emit only `features.slash_commands` for merging into a manually-maintained manifest. |
 
@@ -312,7 +312,7 @@ Subcommands: `add`, `list`, `remove`, `reset`. When called with no subcommand, l
 ## `anan status`
 
 ```bash
-hermes status [--all] [--deep]
+anan status [--all] [--deep]
 ```
 
 | Option | Description |
@@ -323,7 +323,7 @@ hermes status [--all] [--deep]
 ## `anan cron`
 
 ```bash
-hermes cron <list|create|edit|pause|resume|run|remove|status|tick>
+anan cron <list|create|edit|pause|resume|run|remove|status|tick>
 ```
 
 | Subcommand | Description |
@@ -341,7 +341,7 @@ hermes cron <list|create|edit|pause|resume|run|remove|status|tick>
 ## `anan kanban`
 
 ```bash
-hermes kanban [--board <slug>] <action> [options]
+anan kanban [--board <slug>] <action> [options]
 ```
 
 Multi-profile, multi-project collaboration board. Each install can host many boards (one per project, repo, or domain); each board is a standalone queue with its own SQLite DB and dispatcher scope. New installs start with one board called `default`, whose DB is `~/.anan/kanban.db` for back-compat; additional boards live at `~/.anan/kanban/boards/<slug>/kanban.db`. The gateway-embedded dispatcher sweeps every board per tick.
@@ -385,16 +385,16 @@ Examples:
 
 ```bash
 # Create a second board and put a task on it without switching away.
-hermes kanban boards create atm10-server --name "ATM10 Server" --icon 🎮
-hermes kanban --board atm10-server create "Restart server" --assignee ops
+anan kanban boards create atm10-server --name "ATM10 Server" --icon 🎮
+anan kanban --board atm10-server create "Restart server" --assignee ops
 
 # Switch the active board for subsequent calls.
-hermes kanban boards switch atm10-server
-hermes kanban list                  # shows atm10-server tasks
+anan kanban boards switch atm10-server
+anan kanban list                  # shows atm10-server tasks
 
 # Archive a board (recoverable) or hard-delete it.
-hermes kanban boards rm atm10-server
-hermes kanban boards rm atm10-server --delete
+anan kanban boards rm atm10-server
+anan kanban boards rm atm10-server --delete
 ```
 
 Board resolution order (highest precedence first): `--board <slug>` flag → `SINOCLAW_KANBAN_BOARD` env var → `~/.anan/kanban/current` file → `default`.
@@ -406,7 +406,7 @@ For the full design — comparison with Cline Kanban / Paperclip / NanoClaw / Ge
 ## `anan webhook`
 
 ```bash
-hermes webhook <subscribe|list|remove|test>
+anan webhook <subscribe|list|remove|test>
 ```
 
 Manage dynamic webhook subscriptions for event-driven agent activation. Requires the webhook platform to be enabled in config — if not configured, prints setup instructions.
@@ -421,7 +421,7 @@ Manage dynamic webhook subscriptions for event-driven agent activation. Requires
 ### `anan webhook subscribe`
 
 ```bash
-hermes webhook subscribe <name> [options]
+anan webhook subscribe <name> [options]
 ```
 
 | Option | Description |
@@ -450,10 +450,10 @@ anan doctor [--fix]
 ## `anan dump`
 
 ```bash
-hermes dump [--show-keys]
+anan dump [--show-keys]
 ```
 
-Outputs a compact, plain-text summary of your entire Hermes setup. Designed to be copy-pasted into Discord, GitHub issues, or Telegram when asking for support — no ANSI colors, no special formatting, just data.
+Outputs a compact, plain-text summary of your entire anan Agent setup. Designed to be copy-pasted into Discord, GitHub issues, or Telegram when asking for support — no ANSI colors, no special formatting, just data.
 
 | Option | Description |
 |--------|-------------|
@@ -463,7 +463,7 @@ Outputs a compact, plain-text summary of your entire Hermes setup. Designed to b
 
 | Section | Details |
 |---------|---------|
-| **Header** | Hermes version, release date, git commit hash |
+| **Header** | anan Agent version, release date, git commit hash |
 | **Environment** | OS, Python version, OpenAI SDK version |
 | **Identity** | Active profile name, ANAN_HOME path |
 | **Model** | Configured default model and provider |
@@ -537,7 +537,7 @@ Upload a debug report (system info + recent logs) to a paste service and get a s
 | `--expire <days>` | Paste expiry in days (default: 7). |
 | `--local` | Print the report locally instead of uploading. |
 
-The report includes system info (OS, Python version, Hermes version), recent agent and gateway logs (512 KB limit per file), and redacted API key status. Keys are always redacted — no secrets are uploaded.
+The report includes system info (OS, Python version, anan Agent version), recent agent and gateway logs (512 KB limit per file), and redacted API key status. Keys are always redacted — no secrets are uploaded.
 
 Paste services tried in order: paste.rs, dpaste.com.
 
@@ -553,10 +553,10 @@ anan debug share --local      # Print report to terminal (no upload)
 ## `anan backup`
 
 ```bash
-hermes backup [options]
+anan backup [options]
 ```
 
-Create a zip archive of your Hermes configuration, skills, sessions, and data. The backup excludes the anan codebase itself.
+Create a zip archive of your anan Agent configuration, skills, sessions, and data. The backup excludes the anan codebase itself.
 
 | Option | Description |
 |--------|-------------|
@@ -564,7 +564,7 @@ Create a zip archive of your Hermes configuration, skills, sessions, and data. T
 | `-q`, `--quick` | Quick snapshot: only critical state files (config.yaml, state.db, .env, auth, cron jobs). Much faster than a full backup. |
 | `-l`, `--label <name>` | Label for the snapshot (only used with `--quick`). |
 
-The backup uses SQLite's `backup()` API for safe copying, so it works correctly even when Hermes is running (WAL-mode safe).
+The backup uses SQLite's `backup()` API for safe copying, so it works correctly even when anan Agent is running (WAL-mode safe).
 
 **What's excluded from the zip:**
 
@@ -575,16 +575,16 @@ The backup uses SQLite's `backup()` API for safe copying, so it works correctly 
 ### Examples
 
 ```bash
-hermes backup                           # Full backup to ~/anan-backup-*.zip
-hermes backup -o /tmp/hermes.zip        # Full backup to specific path
-hermes backup --quick                   # Quick state-only snapshot
-hermes backup --quick --label "pre-upgrade"  # Quick snapshot with label
+anan backup                           # Full backup to ~/anan-backup-*.zip
+anan backup -o /tmp/anan.zip        # Full backup to specific path
+anan backup --quick                   # Quick state-only snapshot
+anan backup --quick --label "pre-upgrade"  # Quick snapshot with label
 ```
 
 ## `anan checkpoints`
 
 ```bash
-hermes checkpoints [COMMAND]
+anan checkpoints [COMMAND]
 ```
 
 Inspect and manage the shadow git store at `~/.anan/checkpoints/` — the storage layer behind the in-session `/rollback` command. Safe to run any time; does not require the agent to be running.
@@ -610,11 +610,11 @@ Inspect and manage the shadow git store at `~/.anan/checkpoints/` — the storag
 ### Examples
 
 ```bash
-hermes checkpoints                                  # status overview
-hermes checkpoints prune --retention-days 3         # aggressive cleanup
-hermes checkpoints prune --max-size-mb 200          # tighten size cap once
-hermes checkpoints clear-legacy -f                  # drop v1 archive dirs
-hermes checkpoints clear -f                         # wipe everything
+anan checkpoints                                  # status overview
+anan checkpoints prune --retention-days 3         # aggressive cleanup
+anan checkpoints prune --max-size-mb 200          # tighten size cap once
+anan checkpoints clear-legacy -f                  # drop v1 archive dirs
+anan checkpoints clear -f                         # wipe everything
 ```
 
 See [Checkpoints and `/rollback`](../user-guide/checkpoints-and-rollback.md) for the full architecture and the in-session commands.
@@ -622,10 +622,10 @@ See [Checkpoints and `/rollback`](../user-guide/checkpoints-and-rollback.md) for
 ## `anan import`
 
 ```bash
-hermes import <zipfile> [options]
+anan import <zipfile> [options]
 ```
 
-Restore a previously created Hermes backup into your anan home directory. All files in the archive overwrite existing files in your anan home; `--force` only skips the confirmation prompt that fires when the target already has a Hermes installation.
+Restore a previously created anan Agent backup into your anan home directory. All files in the archive overwrite existing files in your anan home; `--force` only skips the confirmation prompt that fires when the target already has a anan Agent installation.
 
 | Option | Description |
 |--------|-------------|
@@ -637,17 +637,17 @@ Stop the gateway before importing to avoid conflicts with running processes.
 
 ### Examples
 ```bash
-hermes import ~/anan-backup-20260423.zip           # Prompts before overwriting existing config
-hermes import ~/anan-backup-20260423.zip --force   # Overwrite without prompting
+anan import ~/anan-backup-20260423.zip           # Prompts before overwriting existing config
+anan import ~/anan-backup-20260423.zip --force   # Overwrite without prompting
 ```
 
 ## `anan logs`
 
 ```bash
-hermes logs [log_name] [options]
+anan logs [log_name] [options]
 ```
 
-View, tail, and filter Hermes log files. All logs are stored in `~/.anan/logs/` (or `<profile>/logs/` for non-default profiles).
+View, tail, and filter anan Agent log files. All logs are stored in `~/.anan/logs/` (or `<profile>/logs/` for non-default profiles).
 
 ### Log files
 
@@ -673,25 +673,25 @@ View, tail, and filter Hermes log files. All logs are stored in `~/.anan/logs/` 
 
 ```bash
 # View the last 50 lines of agent.log (default)
-hermes logs
+anan logs
 
 # Follow agent.log in real time
-hermes logs -f
+anan logs -f
 
 # View the last 100 lines of gateway.log
-hermes logs gateway -n 100
+anan logs gateway -n 100
 
 # Show only warnings and errors from the last hour
-hermes logs --level WARNING --since 1h
+anan logs --level WARNING --since 1h
 
 # Filter by a specific session
-hermes logs --session abc123
+anan logs --session abc123
 
 # Follow errors.log, starting from 30 minutes ago
-hermes logs errors --since 30m -f
+anan logs errors --since 30m -f
 
 # List all log files with their sizes
-hermes logs list
+anan logs list
 ```
 
 ### Filtering
@@ -700,14 +700,14 @@ Filters can be combined. When multiple filters are active, a log line must pass 
 
 ```bash
 # WARNING+ lines from the last 2 hours containing session "tg-12345"
-hermes logs --level WARNING --since 2h --session tg-12345
+anan logs --level WARNING --since 2h --session tg-12345
 ```
 
 Lines without a parseable timestamp are included when `--since` is active (they may be continuation lines from a multi-line log entry). Lines without a detectable level are included when `--level` is active.
 
 ### Log rotation
 
-Hermes uses Python's `RotatingFileHandler`. Old logs are rotated automatically — look for `agent.log.1`, `agent.log.2`, etc. The `anan logs list` subcommand shows all log files including rotated ones.
+anan Agent uses Python's `RotatingFileHandler`. Old logs are rotated automatically — look for `agent.log.1`, `agent.log.2`, etc. The `anan logs list` subcommand shows all log files including rotated ones.
 
 ## `anan config`
 
@@ -730,7 +730,7 @@ Subcommands:
 ## `anan pairing`
 
 ```bash
-hermes pairing <list|approve|revoke|clear-pending>
+anan pairing <list|approve|revoke|clear-pending>
 ```
 
 | Subcommand | Description |
@@ -789,7 +789,7 @@ Notes:
 - `--force` can override non-dangerous policy blocks for third-party/community skills.
 - `--force` does not override a `dangerous` scan verdict.
 - `--source skills-sh` searches the public `skills.sh` directory.
-- `--source well-known` lets you point Hermes at a site exposing `/.well-known/skills/index.json`.
+- `--source well-known` lets you point anan Agent at a site exposing `/.well-known/skills/index.json`.
 - Passing an `http(s)://…/*.md` URL installs a single-file SKILL.md directly. When frontmatter has no `name:` and the URL slug isn't a valid identifier, an interactive terminal prompts for a name; non-interactive surfaces (`/skills install` inside the TUI, gateway platforms) require `--name <x>` instead.
 
 ## `anan curator`
@@ -841,7 +841,7 @@ See [Fallback Providers](../user-guide/features/fallback-providers.md).
 ## `anan hooks`
 
 ```bash
-hermes hooks <subcommand>
+anan hooks <subcommand>
 ```
 
 Inspect shell-script hooks declared in `~/.anan/config.yaml`, test them against synthetic payloads, and manage the first-use consent allowlist at `~/.anan/shell-hooks-allowlist.json`.
@@ -858,7 +858,7 @@ See [Hooks](../user-guide/features/hooks.md) for event signatures and payload sh
 ## `anan memory`
 
 ```bash
-hermes memory <subcommand>
+anan memory <subcommand>
 ```
 
 Set up and manage external memory provider plugins. Available providers: honcho, openviking, mem0, hindsight, holographic, retaindb, byterover, supermemory. Only one external provider can be active at a time. Built-in memory (MEMORY.md/USER.md) is always active.
@@ -878,10 +878,10 @@ When an external memory provider is active, it may register its own top-level `a
 ## `anan acp`
 
 ```bash
-hermes acp
+anan acp
 ```
 
-Starts Hermes as an ACP (Agent Client Protocol) stdio server for editor integration.
+Starts anan Agent as an ACP (Agent Client Protocol) stdio server for editor integration.
 
 Related entrypoints:
 
@@ -901,26 +901,26 @@ See [ACP Editor Integration](../user-guide/features/acp.md) and [ACP Internals](
 ## `anan mcp`
 
 ```bash
-hermes mcp <subcommand>
+anan mcp <subcommand>
 ```
 
-Manage MCP (Model Context Protocol) server configurations and run Hermes as an MCP server.
+Manage MCP (Model Context Protocol) server configurations and run anan Agent as an MCP server.
 
 | Subcommand | Description |
 |------------|-------------|
-| `serve [-v\|--verbose]` | Run Hermes as an MCP server — expose conversations to other agents. |
+| `serve [-v\|--verbose]` | Run anan Agent as an MCP server — expose conversations to other agents. |
 | `add <name> [--url URL] [--command CMD] [--args ...] [--auth oauth\|header]` | Add an MCP server with automatic tool discovery. |
 | `remove <name>` (alias: `rm`) | Remove an MCP server from config. |
 | `list` (alias: `ls`) | List configured MCP servers. |
 | `test <name>` | Test connection to an MCP server. |
 | `configure <name>` (alias: `config`) | Toggle tool selection for a server. |
 
-See [MCP Config Reference](./mcp-config-reference.md), [Use MCP with Hermes](../guides/use-mcp-with-hermes.md), and [MCP Server Mode](../user-guide/features/mcp.md#running-anan-as-an-mcp-server).
+See [MCP Config Reference](./mcp-config-reference.md), [Use MCP with anan Agent](../guides/use-mcp-with-anan.md), and [MCP Server Mode](../user-guide/features/mcp.md#running-anan-as-an-mcp-server).
 
 ## `anan plugins`
 
 ```bash
-hermes plugins [subcommand]
+anan plugins [subcommand]
 ```
 
 Unified plugin management — general plugins, memory providers, and context engines in one place. Running `anan plugins` with no subcommand opens a composite interactive screen with two sections:
@@ -944,7 +944,7 @@ Provider plugin selections are saved to `config.yaml`:
 
 General plugin disabled list is stored in `config.yaml` under `plugins.disabled`.
 
-See [Plugins](../user-guide/features/plugins.md) and [Build a Hermes Plugin](../guides/build-a-anan-plugin.md).
+See [Plugins](../user-guide/features/plugins.md) and [Build a anan Agent Plugin](../guides/build-a-anan-plugin.md).
 
 ## `anan tools`
 
@@ -961,7 +961,7 @@ Without `--summary`, this launches the interactive per-platform tool configurati
 ## `anan sessions`
 
 ```bash
-hermes sessions <subcommand>
+anan sessions <subcommand>
 ```
 
 Subcommands:
@@ -979,7 +979,7 @@ Subcommands:
 ## `anan insights`
 
 ```bash
-hermes insights [--days N] [--source platform]
+anan insights [--days N] [--source platform]
 ```
 
 | Option | Description |
@@ -990,16 +990,16 @@ hermes insights [--days N] [--source platform]
 ## `anan claw`
 
 ```bash
-hermes claw migrate [options]
+anan claw migrate [options]
 ```
 
-Migrate your OpenClaw setup to Hermes. Reads from `~/.anan` (or a custom path) and writes to `~/.anan`. Automatically detects legacy directory names (`~/.clawdbot`, `~/.moltbot`) and config filenames (`clawdbot.json`, `moltbot.json`).
+Migrate your OpenClaw setup to anan Agent. Reads from `~/.anan` (or a custom path) and writes to `~/.anan`. Automatically detects legacy directory names (`~/.clawdbot`, `~/.moltbot`) and config filenames (`clawdbot.json`, `moltbot.json`).
 
 | Option | Description |
 |--------|-------------|
 | `--dry-run` | Preview what would be migrated without writing anything. |
 | `--preset <name>` | Migration preset: `full` (all compatible settings) or `user-data` (excludes infrastructure config). Neither preset imports secrets — pass `--migrate-secrets` explicitly. |
-| `--overwrite` | Overwrite existing Hermes files on conflicts (default: refuse to apply when the plan has conflicts). |
+| `--overwrite` | Overwrite existing anan Agent files on conflicts (default: refuse to apply when the plan has conflicts). |
 | `--migrate-secrets` | Include API keys in migration. Required even under `--preset full`. |
 | `--no-backup` | Skip the pre-migration zip snapshot of `~/.anan/` (by default a single restore-point archive is written to `~/.anan/backups/pre-migration-*.zip` before apply; restorable with `anan import`). |
 | `--source <path>` | Custom OpenClaw directory (default: `~/.anan`). |
@@ -1009,7 +1009,7 @@ Migrate your OpenClaw setup to Hermes. Reads from `~/.anan` (or a custom path) a
 
 ### What gets migrated
 
-The migration covers 30+ categories across persona, memory, skills, model providers, messaging platforms, agent behavior, session policies, MCP servers, TTS, and more. Items are either **directly imported** into Hermes equivalents or **archived** for manual review.
+The migration covers 30+ categories across persona, memory, skills, model providers, messaging platforms, agent behavior, session policies, MCP servers, TTS, and more. Items are either **directly imported** into anan Agent equivalents or **archived** for manual review.
 
 **Directly imported:** SOUL.md, MEMORY.md, USER.md, AGENTS.md, skills (4 source directories), default model, custom providers, MCP servers, messaging platform tokens and allowlists (Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Mattermost), agent defaults (reasoning effort, compression, human delay, timezone, sandbox), session reset policies, approval rules, TTS config, browser settings, tool settings, exec timeout, command allowlist, gateway config, and API keys from 3 sources.
 
@@ -1023,25 +1023,25 @@ For the complete config key mapping, SecretRef handling details, and post-migrat
 
 ```bash
 # Preview what would be migrated
-hermes claw migrate --dry-run
+anan claw migrate --dry-run
 
 # Full migration (all compatible settings, no secrets)
-hermes claw migrate --preset full
+anan claw migrate --preset full
 
 # Full migration including API keys
-hermes claw migrate --preset full --migrate-secrets
+anan claw migrate --preset full --migrate-secrets
 
 # Migrate user data only (no secrets), overwrite conflicts
-hermes claw migrate --preset user-data --overwrite
+anan claw migrate --preset user-data --overwrite
 
 # Migrate from a custom OpenClaw path
-hermes claw migrate --source /home/user/old-openclaw
+anan claw migrate --source /home/user/old-openclaw
 ```
 
 ## `anan dashboard`
 
 ```bash
-hermes dashboard [options]
+anan dashboard [options]
 ```
 
 Launch the web dashboard — a browser-based UI for managing configuration, API keys, and monitoring sessions. Requires `pip install anan[web]` (FastAPI + Uvicorn). See [Web Dashboard](/docs/user-guide/features/web-dashboard) for full documentation.
@@ -1054,19 +1054,19 @@ Launch the web dashboard — a browser-based UI for managing configuration, API 
 
 ```bash
 # Default — opens browser to http://127.0.0.1:9119
-hermes dashboard
+anan dashboard
 
 # Custom port, no browser
-hermes dashboard --port 8080 --no-open
+anan dashboard --port 8080 --no-open
 ```
 
 ## `anan profile`
 
 ```bash
-hermes profile <subcommand>
+anan profile <subcommand>
 ```
 
-Manage profiles — multiple isolated Hermes instances, each with its own config, sessions, skills, and home directory.
+Manage profiles — multiple isolated anan Agent instances, each with its own config, sessions, skills, and home directory.
 
 | Subcommand | Description |
 |------------|-------------|
@@ -1086,36 +1086,36 @@ Manage profiles — multiple isolated Hermes instances, each with its own config
 Examples:
 
 ```bash
-hermes profile list
-hermes profile create work --clone
-hermes profile use work
-hermes profile alias work --name h-work
-hermes profile export work -o work-backup.tar.gz
-hermes profile import work-backup.tar.gz --name restored
-hermes profile install github.com/user/my-distro --alias
-hermes profile update work
+anan profile list
+anan profile create work --clone
+anan profile use work
+anan profile alias work --name h-work
+anan profile export work -o work-backup.tar.gz
+anan profile import work-backup.tar.gz --name restored
+anan profile install github.com/user/my-distro --alias
+anan profile update work
 anan -p work chat -q "Hello from work profile"
 ```
 
 ## `anan completion`
 
 ```bash
-hermes completion [bash|zsh|fish]
+anan completion [bash|zsh|fish]
 ```
 
-Print a shell completion script to stdout. Source the output in your shell profile for tab-completion of Hermes commands, subcommands, and profile names.
+Print a shell completion script to stdout. Source the output in your shell profile for tab-completion of anan Agent commands, subcommands, and profile names.
 
 Examples:
 
 ```bash
 # Bash
-hermes completion bash >> ~/.bashrc
+anan completion bash >> ~/.bashrc
 
 # Zsh
-hermes completion zsh >> ~/.zshrc
+anan completion zsh >> ~/.zshrc
 
 # Fish
-hermes completion fish > ~/.config/fish/completions/hermes.fish
+anan completion fish > ~/.config/fish/completions/anan.fish
 ```
 
 ## `anan update`
@@ -1135,7 +1135,7 @@ Pulls the latest `anan` code and reinstalls dependencies in your venv, then re-r
 Additional behavior:
 
 - **Pairing data snapshot.** Even when `--backup` is off, `anan update` takes a lightweight snapshot of `~/.anan/pairing/` and the Feishu comment rules before `git pull`. You can roll it back with `anan backup restore --state pre-update` if a pull rewrites a file you were editing.
-- **Legacy `anan.service` warning.** If Hermes detects a pre-rename `anan.service` systemd unit (instead of the current `anan-gateway.service`), it prints a one-time migration hint so you can avoid flap-loop issues.
+- **Legacy `anan.service` warning.** If anan Agent detects a pre-rename `anan.service` systemd unit (instead of the current `anan-gateway.service`), it prints a one-time migration hint so you can avoid flap-loop issues.
 - **Exit codes.** `0` on success, `1` on pull/install/post-install errors, `2` on unexpected working-tree changes that block `git pull`.
 
 ## `anan fallback`
@@ -1162,7 +1162,7 @@ See [Fallback Providers](/docs/user-guide/features/fallback-providers) for behav
 |---------|-------------|
 | `anan version` | Print version information. |
 | `anan update` | Pull latest changes and reinstall dependencies. |
-| `anan uninstall [--full] [--yes]` | Remove Hermes, optionally deleting all config/data. |
+| `anan uninstall [--full] [--yes]` | Remove anan Agent, optionally deleting all config/data. |
 
 ## See also
 

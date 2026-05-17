@@ -25,7 +25,7 @@ RL training requires:
 - **Python >= 3.11** (Tinker package requirement)
 - **TINKER_API_KEY** — API key for the Tinker training service
 - **WANDB_API_KEY** — API key for [Weights & Biases](https://wandb.ai/) metrics tracking
-- The `tinker-atropos` submodule (at `tinker-atropos/` relative to the Hermes root)
+- The `tinker-atropos` submodule (at `tinker-atropos/` relative to the anan Agent root)
 
 ```bash
 # Set up API keys

@@ -11,7 +11,7 @@ The web dashboard is a browser-based UI for managing your anan Agent installatio
 ## Quick Start
 
 ```bash
-hermes dashboard
+anan dashboard
 ```
 
 This starts a local web server and opens `http://127.0.0.1:9119` in your browser. The dashboard runs entirely on your machine — no data leaves localhost.
@@ -28,13 +28,13 @@ This starts a local web server and opens `http://127.0.0.1:9119` in your browser
 
 ```bash
 # Custom port
-hermes dashboard --port 8080
+anan dashboard --port 8080
 
 # Bind to all interfaces (use with caution on shared networks)
-hermes dashboard --host 0.0.0.0
+anan dashboard --host 0.0.0.0
 
 # Start without opening browser
-hermes dashboard --no-open
+anan dashboard --no-open
 ```
 
 ## Prerequisites
@@ -64,7 +64,7 @@ The status page auto-refreshes every 5 seconds.
 
 ### Chat
 
-The **Chat** tab embeds the full Hermes TUI (the same interface you get from `anan --tui`) directly in the browser. Everything you can do in the terminal TUI — slash commands, model picker, tool-call cards, markdown streaming, clarify/sudo/approval prompts, skin theming — works identically here, because the dashboard is running the real TUI binary and rendering its ANSI output through [xterm.js](https://xtermjs.org/) with its WebGL renderer for pixel-perfect cell layout.
+The **Chat** tab embeds the full anan Agent TUI (the same interface you get from `anan --tui`) directly in the browser. Everything you can do in the terminal TUI — slash commands, model picker, tool-call cards, markdown streaming, clarify/sudo/approval prompts, skin theming — works identically here, because the dashboard is running the real TUI binary and rendering its ANSI output through [xterm.js](https://xtermjs.org/) with its WebGL renderer for pixel-perfect cell layout.
 
 **How it works:**
 
@@ -307,7 +307,7 @@ If you're contributing to the web dashboard frontend:
 
 ```bash
 # Terminal 1: start the backend API
-hermes dashboard --no-open
+anan dashboard --no-open
 
 # Terminal 2: start the Vite dev server with HMR
 cd web/
@@ -333,8 +333,8 @@ Built-in themes:
 
 | Theme | Character |
 |-------|-----------|
-| **Hermes Teal** (`default`) | Dark teal + cream, system fonts, comfortable spacing |
-| **Hermes Teal (Large)** (`default-large`) | Same as default with 18px text and roomier spacing |
+| **anan Agent Teal** (`default`) | Dark teal + cream, system fonts, comfortable spacing |
+| **anan Agent Teal (Large)** (`default-large`) | Same as default with 18px text and roomier spacing |
 | **Midnight** (`midnight`) | Deep blue-violet, Inter + JetBrains Mono |
 | **Ember** (`ember`) | Warm crimson + bronze, Spectral serif + IBM Plex Mono |
 | **Mono** (`mono`) | Grayscale, IBM Plex, compact |

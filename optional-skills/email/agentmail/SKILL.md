@@ -4,7 +4,7 @@ description: Give the agent its own dedicated email inbox via AgentMail. Send, r
 version: 1.0.0
 platforms: [linux, macos, windows]
 metadata:
-  hermes:
+  anan:
     tags: [email, communication, agentmail, mcp]
     category: email
 ---
@@ -47,7 +47,7 @@ mcp_servers:
 
 ### 3. Restart anan
 ```bash
-hermes
+anan
 ```
 All 11 AgentMail tools are now available automatically.
 
@@ -115,7 +115,7 @@ All 11 AgentMail tools are now available automatically.
 ## Verification
 After setup, test with:
 ```
-hermes --toolsets mcp -q "Create an AgentMail inbox called test-agent and tell me its email address"
+anan --toolsets mcp -q "Create an AgentMail inbox called test-agent and tell me its email address"
 ```
 You should see the new inbox address returned.
 

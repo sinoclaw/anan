@@ -1,14 +1,14 @@
 ---
 sidebar_position: 12
 title: "Kanban (Multi-Agent Board)"
-description: "Durable SQLite-backed task board for coordinating multiple Hermes profiles"
+description: "Durable SQLite-backed task board for coordinating multiple anan Agent profiles"
 ---
 
 # Kanban — Multi-Agent Profile Collaboration
 
 > **Want a walkthrough?** Read the [Kanban tutorial](./kanban-tutorial) — four user stories (solo dev, fleet farming, role pipeline with retry, circuit breaker) with dashboard screenshots of each. This page is the reference; the tutorial is the narrative.
 
-Hermes Kanban is a durable task board, shared across all your Hermes profiles, that lets multiple named agents collaborate on work without fragile in-process subagent swarms. Every task is a row in `~/.anan/kanban.db`; every handoff is a row anyone can read and write; every worker is a full OS process with its own identity.
+anan Agent Kanban is a durable task board, shared across all your anan Agent profiles, that lets multiple named agents collaborate on work without fragile in-process subagent swarms. Every task is a row in `~/.anan/kanban.db`; every handoff is a row anyone can read and write; every worker is a full OS process with its own identity.
 
 ### Two surfaces: the model talks through tools, you talk through the CLI
 
@@ -92,32 +92,32 @@ Per-board isolation is absolute:
 
 ```bash
 # See what's on disk. Fresh installs show only "default".
-hermes kanban boards list
+anan kanban boards list
 
 # Create a new board.
-hermes kanban boards create atm10-server \
+anan kanban boards create atm10-server \
     --name "ATM10 Server" \
     --description "Minecraft modded server ops" \
     --icon 🎮 \
     --switch                   # optional: make it the active board
 
 # Operate on a specific board without switching.
-hermes kanban --board atm10-server list
-hermes kanban --board atm10-server create "Restart ATM server" --assignee ops
+anan kanban --board atm10-server list
+anan kanban --board atm10-server create "Restart ATM server" --assignee ops
 
 # Change which board is "current" for subsequent calls.
-hermes kanban boards switch atm10-server
-hermes kanban boards show             # who's active right now?
+anan kanban boards switch atm10-server
+anan kanban boards show             # who's active right now?
 
 # Rename the display name (the slug is immutable — it's the directory name).
-hermes kanban boards rename atm10-server "ATM10 (Prod)"
+anan kanban boards rename atm10-server "ATM10 (Prod)"
 
 # Archive (default) — moves the board's dir to boards/_archived/<slug>-<ts>/.
 # Recoverable by moving the dir back.
-hermes kanban boards rm atm10-server
+anan kanban boards rm atm10-server
 
 # Hard delete — `rm -rf` the board dir. No recovery.
-hermes kanban boards rm atm10-server --delete
+anan kanban boards rm atm10-server --delete
 ```
 
 Board resolution order (highest precedence first):
@@ -161,20 +161,20 @@ The commands below are **you** (the human) setting up the board and creating tas
 
 ```bash
 # 1. Create the board (you)
-hermes kanban init
+anan kanban init
 
 # 2. Start the gateway (hosts the embedded dispatcher)
 anan gateway start
 
 # 3. Create a task (you — or an orchestrator agent via kanban_create)
-hermes kanban create "research AI funding landscape" --assignee researcher
+anan kanban create "research AI funding landscape" --assignee researcher
 
 # 4. Watch activity live (you)
-hermes kanban watch
+anan kanban watch
 
 # 5. See the board (you)
-hermes kanban list
-hermes kanban stats
+anan kanban list
+anan kanban stats
 ```
 
 When the dispatcher picks up `t_abcd` and spawns the `researcher` profile, the very first thing that worker's model does is call `kanban_show()` to read its task. It doesn't run `anan kanban show t_abcd`.
@@ -211,7 +211,7 @@ a gateway-embedded dispatcher AND a standalone daemon against the same
 ```bash
 # First call creates the task. Any subsequent call with the same key
 # returns the existing task id instead of duplicating.
-hermes kanban create "nightly ops review" \
+anan kanban create "nightly ops review" \
     --assignee ops \
     --idempotency-key "nightly-ops-$(date -u +%Y-%m-%d)" \
     --json
@@ -223,10 +223,10 @@ All the lifecycle verbs accept multiple ids so you can clean up a batch
 in one command:
 
 ```bash
-hermes kanban complete t_abc t_def t_hij --result "batch wrap"
-hermes kanban archive  t_abc t_def t_hij
-hermes kanban unblock  t_abc t_def
-hermes kanban block    t_abc "need input" --ids t_def t_hij
+anan kanban complete t_abc t_def t_hij --result "batch wrap"
+anan kanban archive  t_abc t_def t_hij
+anan kanban unblock  t_abc t_def
+anan kanban block    t_abc "need input" --ids t_def t_hij
 ```
 
 ## How workers interact with the board
@@ -284,7 +284,7 @@ The three "(Orchestrators)" tools — `kanban_create`, `kanban_link`, and `kanba
 
 Three reasons:
 
-1. **Backend portability.** Workers whose terminal tool points at a remote backend (Docker / Modal / Singularity / SSH) would run `anan kanban complete` *inside* the container, where `hermes` isn't installed and `~/.anan/kanban.db` isn't mounted. The kanban tools run in the agent's own Python process and always reach `~/.anan/kanban.db` regardless of terminal backend.
+1. **Backend portability.** Workers whose terminal tool points at a remote backend (Docker / Modal / Singularity / SSH) would run `anan kanban complete` *inside* the container, where `anan` isn't installed and `~/.anan/kanban.db` isn't mounted. The kanban tools run in the agent's own Python process and always reach `~/.anan/kanban.db` regardless of terminal backend.
 2. **No shell-quoting fragility.** Passing `--metadata '{"files": [...]}'` through shlex + argparse is a latent footgun. Structured tool args skip it entirely.
 3. **Better errors.** Tool results are structured JSON the model can reason about, not stderr strings it has to parse.
 
@@ -375,11 +375,11 @@ kanban_create(
 **From a human (CLI / slash command)**, repeat `--skill` for each one:
 
 ```bash
-hermes kanban create "translate README to Japanese" \
+anan kanban create "translate README to Japanese" \
     --assignee linguist \
     --skill translation
 
-hermes kanban create "audit auth flow" \
+anan kanban create "audit auth flow" \
     --assignee reviewer \
     --skill security-pr-audit \
     --skill github-code-review
@@ -430,13 +430,13 @@ For best results, pair it with a profile whose toolsets are restricted to board 
 
 ## Dashboard (GUI)
 
-The `/kanban` CLI and slash command are enough to run the board headlessly, but a visual board is often the right interface for humans-in-the-loop: triage, cross-profile supervision, reading comment threads, and dragging cards between columns. Hermes ships this as a **bundled dashboard plugin** at `plugins/kanban/` — not a core feature, not a separate service — following the model laid out in [Extending the Dashboard](./extending-the-dashboard).
+The `/kanban` CLI and slash command are enough to run the board headlessly, but a visual board is often the right interface for humans-in-the-loop: triage, cross-profile supervision, reading comment threads, and dragging cards between columns. anan Agent ships this as a **bundled dashboard plugin** at `plugins/kanban/` — not a core feature, not a separate service — following the model laid out in [Extending the Dashboard](./extending-the-dashboard).
 
 Open it with:
 
 ```bash
-hermes kanban init      # one-time: create kanban.db if not already present
-hermes dashboard        # "Kanban" tab appears in the nav, after "Skills"
+anan kanban init      # one-time: create kanban.db if not already present
+anan dashboard        # "Kanban" tab appears in the nav, after "Skills"
 ```
 
 ### What the plugin gives you
@@ -536,7 +536,7 @@ Tasks in `~/.anan/kanban.db` are profile-agnostic on purpose (that's the coordin
 
 ### Extending it
 
-The plugin uses the standard Hermes dashboard plugin contract — see [Extending the Dashboard](./extending-the-dashboard) for the full manifest reference, shell slots, page-scoped slots, and the Plugin SDK. Extra columns, custom card chrome, tenant-filtered layouts, or full `tab.override` replacements are all expressible without forking this plugin.
+The plugin uses the standard anan Agent dashboard plugin contract — see [Extending the Dashboard](./extending-the-dashboard) for the full manifest reference, shell slots, page-scoped slots, and the Plugin SDK. Extra columns, custom card chrome, tenant-filtered layouts, or full `tab.override` replacements are all expressible without forking this plugin.
 
 To disable without removing: add `dashboard.plugins.kanban.enabled: false` to `config.yaml` (or delete `plugins/kanban/dashboard/manifest.json`).
 
@@ -549,49 +549,49 @@ The GUI is deliberately thin. Everything the plugin does is reachable from the C
 This is the surface **you** (or scripts, cron, the dashboard) use to drive the board. Workers running inside the dispatcher use the `kanban_*` [tool surface](#how-workers-interact-with-the-board) for the same operations — the CLI here and the tools there both route through `kanban_db`, so the two surfaces agree by construction.
 
 ```
-hermes kanban init                                     # create kanban.db + print daemon hint
-hermes kanban create "<title>" [--body ...] [--assignee <profile>]
+anan kanban init                                     # create kanban.db + print daemon hint
+anan kanban create "<title>" [--body ...] [--assignee <profile>]
                                 [--parent <id>]... [--tenant <name>]
                                 [--workspace scratch|worktree|dir:<path>]
                                 [--priority N] [--triage] [--idempotency-key KEY]
                                 [--max-runtime 30m|2h|1d|<seconds>]
                                 [--skill <name>]...
                                 [--json]
-hermes kanban list [--mine] [--assignee P] [--status S] [--tenant T] [--archived] [--json]
-hermes kanban show <id> [--json]
-hermes kanban assign <id> <profile>                    # or 'none' to unassign
-hermes kanban link <parent_id> <child_id>
-hermes kanban unlink <parent_id> <child_id>
-hermes kanban claim <id> [--ttl SECONDS]
-hermes kanban comment <id> "<text>" [--author NAME]
+anan kanban list [--mine] [--assignee P] [--status S] [--tenant T] [--archived] [--json]
+anan kanban show <id> [--json]
+anan kanban assign <id> <profile>                    # or 'none' to unassign
+anan kanban link <parent_id> <child_id>
+anan kanban unlink <parent_id> <child_id>
+anan kanban claim <id> [--ttl SECONDS]
+anan kanban comment <id> "<text>" [--author NAME]
 
 # Bulk verbs — accept multiple ids:
-hermes kanban complete <id>... [--result "..."]
-hermes kanban block <id> "<reason>" [--ids <id>...]
-hermes kanban unblock <id>...
-hermes kanban archive <id>...
+anan kanban complete <id>... [--result "..."]
+anan kanban block <id> "<reason>" [--ids <id>...]
+anan kanban unblock <id>...
+anan kanban archive <id>...
 
-hermes kanban tail <id>                                # follow a single task's event stream
-hermes kanban watch [--assignee P] [--tenant T]        # live stream ALL events to the terminal
+anan kanban tail <id>                                # follow a single task's event stream
+anan kanban watch [--assignee P] [--tenant T]        # live stream ALL events to the terminal
         [--kinds completed,blocked,…] [--interval SECS]
-hermes kanban heartbeat <id> [--note "..."]            # worker liveness signal for long ops
-hermes kanban runs <id> [--json]                       # attempt history (one row per run)
-hermes kanban assignees [--json]                       # profiles on disk + per-assignee task counts
-hermes kanban dispatch [--dry-run] [--max N]           # one-shot pass
+anan kanban heartbeat <id> [--note "..."]            # worker liveness signal for long ops
+anan kanban runs <id> [--json]                       # attempt history (one row per run)
+anan kanban assignees [--json]                       # profiles on disk + per-assignee task counts
+anan kanban dispatch [--dry-run] [--max N]           # one-shot pass
         [--failure-limit N] [--json]
-hermes kanban daemon --force                           # DEPRECATED — standalone dispatcher (use `anan gateway start` instead)
+anan kanban daemon --force                           # DEPRECATED — standalone dispatcher (use `anan gateway start` instead)
         [--failure-limit N] [--pidfile PATH] [-v]
-hermes kanban stats [--json]                           # per-status + per-assignee counts
-hermes kanban log <id> [--tail BYTES]                  # worker log from ~/.anan/kanban/logs/
-hermes kanban notify-subscribe <id>                    # gateway bridge hook (used by /kanban in the gateway)
+anan kanban stats [--json]                           # per-status + per-assignee counts
+anan kanban log <id> [--tail BYTES]                  # worker log from ~/.anan/kanban/logs/
+anan kanban notify-subscribe <id>                    # gateway bridge hook (used by /kanban in the gateway)
         --platform <name> --chat-id <id> [--thread-id <id>] [--user-id <id>]
-hermes kanban notify-list [<id>] [--json]
-hermes kanban notify-unsubscribe <id>
+anan kanban notify-list [<id>] [--json]
+anan kanban notify-unsubscribe <id>
         --platform <name> --chat-id <id> [--thread-id <id>]
-hermes kanban context <id>                             # what a worker sees
-hermes kanban specify [<id> | --all] [--tenant T]      # flesh out a triage-column idea
+anan kanban context <id>                             # what a worker sees
+anan kanban specify [<id> | --all] [--tenant T]      # flesh out a triage-column idea
         [--author NAME] [--json]                       #   into a full spec and promote to todo
-hermes kanban gc [--event-retention-days N]            # workspaces + old events + old logs
+anan kanban gc [--event-retention-days N]            # workspaces + old events + old logs
         [--log-retention-days N]
 ```
 
@@ -672,7 +672,7 @@ For worked examples of each, see `docs/anan-kanban-v1-spec.pdf`.
 When one specialist fleet serves multiple businesses, tag each task with a tenant:
 
 ```bash
-hermes kanban create "monthly report" \
+anan kanban create "monthly report" \
     --assignee researcher \
     --tenant business-a \
     --workspace dir:~/tenants/business-a/data/
@@ -687,10 +687,10 @@ When you run `/kanban create …` from the gateway (Telegram, Discord, Slack, et
 You can manage subscriptions explicitly from the CLI — useful when a script / cron job wants to notify a chat it didn't originate from:
 
 ```bash
-hermes kanban notify-subscribe t_abcd \
+anan kanban notify-subscribe t_abcd \
     --platform telegram --chat-id 12345678 --thread-id 7
-hermes kanban notify-list
-hermes kanban notify-unsubscribe t_abcd \
+anan kanban notify-list
+anan kanban notify-unsubscribe t_abcd \
     --platform telegram --chat-id 12345678 --thread-id 7
 ```
 
@@ -722,13 +722,13 @@ kanban_complete(
 The same handoff is reachable from the CLI when you (the human) need to close out a task a worker can't — e.g. a task that was abandoned, or one you marked done manually from the dashboard:
 
 ```bash
-hermes kanban complete t_abcd \
+anan kanban complete t_abcd \
     --result "rate limiter shipped" \
     --summary "implemented token bucket, keys on user_id with IP fallback, all tests pass" \
     --metadata '{"changed_files": ["limiter.py", "tests/test_limiter.py"], "tests_run": 14}'
 
 # Review the attempt history on a retried task:
-hermes kanban runs t_abcd
+anan kanban runs t_abcd
 #   #  OUTCOME       PROFILE           ELAPSED  STARTED
 #   1  blocked       worker               12s  2026-04-27 14:02
 #        → BLOCKED: need decision on rate-limit key

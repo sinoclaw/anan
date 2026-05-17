@@ -8,7 +8,7 @@ description: "Classic watchdog cron jobs that skip the LLM entirely — a script
 
 Sometimes you already know exactly what message you want to send. You don't need an agent to reason about it — you just need a script to run on a timer, and its output (if any) to land in Telegram / Discord / Slack / Signal.
 
-Hermes calls this **no-agent mode**. It's the cron system minus the LLM.
+anan Agent calls this **no-agent mode**. It's the cron system minus the LLM.
 
 ```
    ┌──────────────────┐          ┌──────────────────┐
@@ -49,7 +49,7 @@ The real win of no-agent mode is that the agent itself can set up the watchdog f
 
 > **You:** ping me on telegram if RAM is over 85% every 5 minutes
 >
-> **Hermes:** *(writes `~/.anan/scripts/memory-watchdog.sh`, then calls `cronjob(...)` with `no_agent=true`)*
+> **anan Agent:** *(writes `~/.anan/scripts/memory-watchdog.sh`, then calls `cronjob(...)` with `no_agent=true`)*
 >
 > Set up. Runs every 5 min, alerts Telegram only when RAM is over 85%. Script: `memory-watchdog.sh`. Job ID: `abc123`.
 
@@ -83,7 +83,7 @@ From that point on every tick is free: the scheduler runs the script, pipes its 
 
 ### What the agent decides for you
 
-When you phrase a request like "alert me when X" or "every N minutes check Y and tell me if Z", Hermes' `cronjob` tool description tells it to reach for `no_agent=True` whenever the message content is fully determined by the script. It falls back to the normal LLM-driven path when the request needs reasoning (*"summarize the new issues"*, *"pick the most interesting headlines"*, *"draft a friendly reminder"*).
+When you phrase a request like "alert me when X" or "every N minutes check Y and tell me if Z", anan Agent's `cronjob` tool description tells it to reach for `no_agent=True` whenever the message content is fully determined by the script. It falls back to the normal LLM-driven path when the request needs reasoning (*"summarize the new issues"*, *"pick the most interesting headlines"*, *"draft a friendly reminder"*).
 
 You don't have to specify `--no-agent` yourself. Just describe the behavior.
 
@@ -93,13 +93,13 @@ The agent can pause, resume, edit, and remove jobs the same way it creates them:
 
 > **You:** stop the memory watchdog for tonight
 >
-> **Hermes:** *(calls `cronjob(action='pause', job_id='abc123')`)*
+> **anan Agent:** *(calls `cronjob(action='pause', job_id='abc123')`)*
 >
 > Paused. Resume with "turn it back on" or via `anan cron resume abc123`.
 
 > **You:** change it to every 15 minutes
 >
-> **Hermes:** *(calls `cronjob(action='update', job_id='abc123', schedule='every 15m')`)*
+> **anan Agent:** *(calls `cronjob(action='update', job_id='abc123', schedule='every 15m')`)*
 
 The full lifecycle (create / list / update / pause / resume / run-now / remove) is available to the agent without you learning any CLI commands.
 
@@ -121,15 +121,15 @@ EOF
 chmod +x ~/.anan/scripts/memory-watchdog.sh
 
 # 2. Schedule it
-hermes cron create "every 5m" \
+anan cron create "every 5m" \
   --no-agent \
   --script memory-watchdog.sh \
   --deliver telegram \
   --name "memory-watchdog"
 
 # 3. Verify
-hermes cron list
-hermes cron run <job_id>    # fire it once to test
+anan cron list
+anan cron run <job_id>    # fire it once to test
 ```
 
 That's the whole thing. No prompt, no skill, no model.
@@ -165,10 +165,10 @@ We intentionally do NOT honour `#!/...` shebangs — keeping the interpreter set
 Same as all other cron jobs:
 
 ```bash
-hermes cron create "every 5m"        # interval
-hermes cron create "every 2h"
-hermes cron create "0 9 * * *"       # standard cron: 9am daily
-hermes cron create "30m"             # one-shot: run once in 30 minutes
+anan cron create "every 5m"        # interval
+anan cron create "every 2h"
+anan cron create "0 9 * * *"       # standard cron: 9am daily
+anan cron create "30m"             # one-shot: run once in 30 minutes
 ```
 
 See the [cron feature reference](/docs/user-guide/features/cron) for the full syntax.
@@ -192,13 +192,13 @@ No running gateway is required at script-run time for bot-token platforms (Teleg
 ## Editing and Lifecycle
 
 ```bash
-hermes cron list                                    # see all jobs
-hermes cron pause <job_id>                          # stop firing, keep definition
-hermes cron resume <job_id>
-hermes cron edit <job_id> --schedule "every 10m"    # adjust cadence
-hermes cron edit <job_id> --agent                   # flip to LLM mode
-hermes cron edit <job_id> --no-agent --script …     # flip back
-hermes cron remove <job_id>                         # delete it
+anan cron list                                    # see all jobs
+anan cron pause <job_id>                          # stop firing, keep definition
+anan cron resume <job_id>
+anan cron edit <job_id> --schedule "every 10m"    # adjust cadence
+anan cron edit <job_id> --agent                   # flip to LLM mode
+anan cron edit <job_id> --no-agent --script …     # flip back
+anan cron remove <job_id>                         # delete it
 ```
 
 Everything that works on LLM jobs (pause, resume, manual trigger, delivery target changes) works on no-agent jobs too.
@@ -218,7 +218,7 @@ df -h / /home 2>/dev/null | awk -v t="$THRESHOLD" '
 EOF
 chmod +x ~/.anan/scripts/disk-alert.sh
 
-hermes cron create "*/15 * * * *" \
+anan cron create "*/15 * * * *" \
   --no-agent \
   --script disk-alert.sh \
   --deliver telegram \
@@ -232,11 +232,11 @@ Silent when both filesystems are under 90%; fires exactly one line per over-thre
 | Approach | What runs | When to use |
 |----------|-----------|-------------|
 | `anan send` (one-shot) | Any shell command piping into it | Ad-hoc delivery or as the action of an external scheduler (systemd, launchd) |
-| `cronjob --no-agent` (this page) | Your script on Hermes' schedule | Recurring watchdogs / alerts / metrics that don't need reasoning |
+| `cronjob --no-agent` (this page) | Your script on anan Agent's schedule | Recurring watchdogs / alerts / metrics that don't need reasoning |
 | `cronjob` (default, LLM) | Agent with optional pre-check script | When the message content requires reasoning over data |
-| OS cron + `anan send` | Your script on the OS schedule | When Hermes might be unhealthy (the thing you're monitoring) |
+| OS cron + `anan send` | Your script on the OS schedule | When anan Agent might be unhealthy (the thing you're monitoring) |
 
-For critical system-health watchdogs that must fire *even when the gateway is down*, keep using OS-level cron + a plain `curl` or `anan send` call — those run as independent OS processes and don't depend on Hermes being up. The in-gateway scheduler is the right choice when the thing being monitored is external.
+For critical system-health watchdogs that must fire *even when the gateway is down*, keep using OS-level cron + a plain `curl` or `anan send` call — those run as independent OS processes and don't depend on anan Agent being up. The in-gateway scheduler is the right choice when the thing being monitored is external.
 
 ## Related
 

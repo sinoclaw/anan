@@ -8,26 +8,26 @@ Run multiple independent anan agents on the same machine — each with its own c
 
 ## What are profiles?
 
-A profile is a separate anan home directory. Each profile gets its own directory containing its own `config.yaml`, `.env`, `SOUL.md`, memories, sessions, skills, cron jobs, and state database. Profiles let you run separate agents for different purposes — a coding assistant, a personal bot, a research agent — without mixing up Hermes state.
+A profile is a separate anan home directory. Each profile gets its own directory containing its own `config.yaml`, `.env`, `SOUL.md`, memories, sessions, skills, cron jobs, and state database. Profiles let you run separate agents for different purposes — a coding assistant, a personal bot, a research agent — without mixing up anan Agent state.
 
 When you create a profile, it automatically becomes its own command. Create a profile called `coder` and you immediately have `coder chat`, `coder setup`, `coder gateway start`, etc.
 
 ## Quick start
 
 ```bash
-hermes profile create coder       # creates profile + "coder" command alias
+anan profile create coder       # creates profile + "coder" command alias
 coder setup                       # configure API keys and model
 coder chat                        # start chatting
 ```
 
-That's it. `coder` is now its own Hermes profile with its own config, memory, and state.
+That's it. `coder` is now its own anan Agent profile with its own config, memory, and state.
 
 ## Creating a profile
 
 ### Blank profile
 
 ```bash
-hermes profile create mybot
+anan profile create mybot
 ```
 
 Creates a fresh profile with bundled skills seeded. Run `mybot setup` to configure API keys, model, and gateway tokens.
@@ -35,7 +35,7 @@ Creates a fresh profile with bundled skills seeded. Run `mybot setup` to configu
 ### Clone config only (`--clone`)
 
 ```bash
-hermes profile create work --clone
+anan profile create work --clone
 ```
 
 Copies your current profile's `config.yaml`, `.env`, and `SOUL.md` into the new profile. Same API keys and model, but fresh sessions and memory. Edit `~/.anan/profiles/work/.env` for different API keys, or `~/.anan/profiles/work/SOUL.md` for a different personality.
@@ -43,7 +43,7 @@ Copies your current profile's `config.yaml`, `.env`, and `SOUL.md` into the new 
 ### Clone everything (`--clone-all`)
 
 ```bash
-hermes profile create backup --clone-all
+anan profile create backup --clone-all
 ```
 
 Copies **everything** — config, API keys, personality, all memories, full session history, skills, cron jobs, plugins. A complete snapshot. Useful for backups or forking an agent that already has context.
@@ -51,7 +51,7 @@ Copies **everything** — config, API keys, personality, all memories, full sess
 ### Clone from a specific profile
 
 ```bash
-hermes profile create work --clone --clone-from coder
+anan profile create work --clone --clone-from coder
 ```
 
 :::tip Honcho memory + profiles
@@ -81,20 +81,20 @@ You can also target a profile explicitly with any command:
 
 ```bash
 anan -p coder chat
-hermes --profile=coder doctor
-hermes chat -p coder -q "hello"    # works in any position
+anan --profile=coder doctor
+anan chat -p coder -q "hello"    # works in any position
 ```
 
 ### Sticky default (`anan profile use`)
 
 ```bash
-hermes profile use coder
-hermes chat                   # now targets coder
+anan profile use coder
+anan chat                   # now targets coder
 anan tools                  # configures coder's tools
-hermes profile use default    # switch back
+anan profile use default    # switch back
 ```
 
-Sets a default so plain `hermes` commands target that profile. Like `kubectl config use-context`.
+Sets a default so plain `anan` commands target that profile. Like `kubectl config use-context`.
 
 ### Knowing where you are
 
@@ -108,7 +108,7 @@ The CLI always shows which profile is active:
 
 Profiles are often confused with workspaces or sandboxes, but they are different things:
 
-- A **profile** gives Hermes its own state directory: `config.yaml`, `.env`, `SOUL.md`, sessions, memory, logs, cron jobs, and gateway state.
+- A **profile** gives anan Agent its own state directory: `config.yaml`, `.env`, `SOUL.md`, sessions, memory, logs, cron jobs, and gateway state.
 - A **workspace** or **working directory** is where terminal commands start. That is controlled separately by `terminal.cwd`.
 - A **sandbox** is what limits filesystem access. Profiles do **not** sandbox the agent.
 
@@ -122,7 +122,7 @@ terminal:
   cwd: /absolute/path/to/project
 ```
 
-Using `cwd: "."` on the local backend means "the directory Hermes was launched from", not "the profile directory".
+Using `cwd: "."` on the local backend means "the directory anan Agent was launched from", not "the profile directory".
 
 Also note:
 
@@ -198,17 +198,17 @@ User-modified skills are never overwritten.
 ## Managing profiles
 
 ```bash
-hermes profile list           # show all profiles with status
-hermes profile show coder     # detailed info for one profile
-hermes profile rename coder dev-bot   # rename (updates alias + service)
-hermes profile export coder   # export to coder.tar.gz
-hermes profile import coder.tar.gz   # import from archive
+anan profile list           # show all profiles with status
+anan profile show coder     # detailed info for one profile
+anan profile rename coder dev-bot   # rename (updates alias + service)
+anan profile export coder   # export to coder.tar.gz
+anan profile import coder.tar.gz   # import from archive
 ```
 
 ## Deleting a profile
 
 ```bash
-hermes profile delete coder
+anan profile delete coder
 ```
 
 This stops the gateway, removes the systemd/launchd service, removes the command alias, and deletes all profile data. You'll be asked to type the profile name to confirm.
@@ -223,17 +223,17 @@ You cannot delete the default profile (`~/.anan`). To remove everything, use `an
 
 ```bash
 # Bash
-eval "$(hermes completion bash)"
+eval "$(anan completion bash)"
 
 # Zsh
-eval "$(hermes completion zsh)"
+eval "$(anan completion zsh)"
 ```
 
 Add the line to your `~/.bashrc` or `~/.zshrc` for persistent completion. Completes profile names after `-p`, profile subcommands, and top-level commands.
 
 ## How it works
 
-Profiles use the `ANAN_HOME` environment variable. When you run `coder chat`, the wrapper script sets `ANAN_HOME=~/.anan/profiles/coder` before launching hermes. Since 119+ files in the codebase resolve paths via `get_anan_home()`, Hermes state automatically scopes to the profile's directory — config, sessions, memory, skills, state database, gateway PID, logs, and cron jobs.
+Profiles use the `ANAN_HOME` environment variable. When you run `coder chat`, the wrapper script sets `ANAN_HOME=~/.anan/profiles/coder` before launching anan. Since 119+ files in the codebase resolve paths via `get_anan_home()`, anan Agent state automatically scopes to the profile's directory — config, sessions, memory, skills, state database, gateway PID, logs, and cron jobs.
 
 This is separate from terminal working directory. Tool execution starts from `terminal.cwd` (or the launch directory when `cwd: "."` on the local backend), not automatically from `ANAN_HOME`.
 
@@ -245,10 +245,10 @@ A profile you built on one machine can be packaged as a **git repository** and i
 
 ```bash
 # Install a whole agent from a git repo
-hermes profile install github.com/you/research-bot --alias
+anan profile install github.com/you/research-bot --alias
 
 # Update later when the author ships a new version (keeps your memories + .env)
-hermes profile update research-bot
+anan profile update research-bot
 ```
 
 See **[Profile Distributions: Share a Whole Agent](./profile-distributions.md)** for the full guide — authoring, publishing, update semantics, security model, and use cases.

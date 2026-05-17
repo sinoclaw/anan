@@ -1,6 +1,6 @@
 # Langfuse Observability Plugin
 
-This plugin ships bundled with Hermes but is **opt-in** — it only loads when
+This plugin ships bundled with Anan but is **opt-in** — it only loads when
 you explicitly enable it.
 
 ## Enable
@@ -9,11 +9,11 @@ Pick one:
 
 ```bash
 # Interactive: walks you through credentials + SDK install + enable
-hermes tools  # → Langfuse Observability
+anan tools  # → Langfuse Observability
 
 # Manual
 pip install langfuse
-hermes plugins enable observability/langfuse
+anan plugins enable observability/langfuse
 ```
 
 ## Required credentials
@@ -32,8 +32,8 @@ open.
 ## Verify
 
 ```bash
-hermes plugins list                 # observability/langfuse should show "enabled"
-hermes chat -q "hello"              # then check Langfuse for a "Hermes turn" trace
+anan plugins list                 # observability/langfuse should show "enabled"
+anan chat -q "hello"              # then check Langfuse for an "Anan turn" trace
 ```
 
 ## Optional tuning
@@ -49,5 +49,5 @@ SINOCLAW_LANGFUSE_DEBUG=true           # verbose plugin logging
 ## Disable
 
 ```bash
-hermes plugins disable observability/langfuse
+anan plugins disable observability/langfuse
 ```

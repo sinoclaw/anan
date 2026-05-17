@@ -43,7 +43,7 @@ bash "${ANAN_HOME:-$HOME/.hermes}/skills/creative/touchdesigner-mcp/scripts/setu
 The script will:
 1. Check if TD is running
 2. Download twozero.tox if not already cached
-3. Add `twozero_td` MCP server to Hermes config (if missing)
+3. Add `twozero_td` MCP server to Anan config (if missing)
 4. Test the MCP connection on port 40404
 5. Report what manual steps remain (drag .tox into TD, enable MCP toggle)
 

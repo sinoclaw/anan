@@ -25,7 +25,7 @@ Debug Python: pdb REPL + debugpy remote (DAP).
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Python Debugger (pdb + debugpy)
@@ -214,7 +214,7 @@ echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
 
 ### Connecting a client from the terminal
 
-The easiest terminal-side DAP client is VS Code CLI or a small script. From inside Hermes you have two practical options:
+The easiest terminal-side DAP client is VS Code CLI or a small script. From inside anan Agent you have two practical options:
 
 **Option 1: `debugpy`'s own CLI REPL** — not an official feature, but a tiny DAP client script:
 
@@ -259,7 +259,7 @@ This is fine for one-off automation but painful as an interactive UX.
 
 ```json
 {
-  "name": "Attach to Hermes",
+  "name": "Attach to anan Agent",
   "type": "debugpy",
   "request": "attach",
   "connect": { "host": "127.0.0.1", "port": 5678 },
@@ -296,7 +296,7 @@ nc 127.0.0.1 4444
 See Recipe 3. Always add `-p no:xdist` or run single tests without xdist.
 
 ### `run_agent.py` / CLI — one-shot
-Easiest: add `breakpoint()` near the suspect line, then run `hermes` normally. Control returns to your terminal at the pause point.
+Easiest: add `breakpoint()` near the suspect line, then run `anan` normally. Control returns to your terminal at the pause point.
 
 ### `tui_gateway` subprocess (spawned by `anan --tui`)
 The gateway runs as a child of the Node TUI. Options:
@@ -344,7 +344,7 @@ Long-lived. Use `remote-pdb` at a handler, or `debugpy` with `--wait-for-client`
 
 8. **`scripts/run_tests.sh` strips credentials and sets `HOME=<tmpdir>`.** If your bug depends on user config or real API keys, it won't reproduce under the wrapper. Debug with raw `pytest` first to repro, then re-confirm under the wrapper.
 
-9. **Forking / multiprocessing.** pdb does not follow forks. Each child needs its own `breakpoint()` or `set_trace()`. For Hermes subagents, debug one process at a time.
+9. **Forking / multiprocessing.** pdb does not follow forks. Each child needs its own `breakpoint()` or `set_trace()`. For anan Agent subagents, debug one process at a time.
 
 ## Verification Checklist
 

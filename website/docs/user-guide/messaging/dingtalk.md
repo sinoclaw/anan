@@ -8,15 +8,15 @@ description: "Set up anan Agent as a DingTalk chatbot"
 
 anan Agent integrates with DingTalk (钉钉) as a chatbot, letting you chat with your AI assistant through direct messages or group chats. The bot connects via DingTalk's Stream Mode — a long-lived WebSocket connection that requires no public URL or webhook server — and replies using markdown-formatted messages through DingTalk's session webhook API.
 
-Before setup, here's the part most people want to know: how Hermes behaves once it's in your DingTalk workspace.
+Before setup, here's the part most people want to know: how anan Agent behaves once it's in your DingTalk workspace.
 
-## How Hermes Behaves
+## How anan Agent Behaves
 
 | Context | Behavior |
 |---------|----------|
-| **DMs (1:1 chat)** | Hermes responds to every message. No `@mention` needed. Each DM has its own session. |
-| **Group chats** | Hermes responds when you `@mention` it. Without a mention, Hermes ignores the message. |
-| **Shared groups with multiple users** | By default, Hermes isolates session history per user inside the group. Two people talking in the same group do not share one transcript unless you explicitly disable that. |
+| **DMs (1:1 chat)** | anan Agent responds to every message. No `@mention` needed. Each DM has its own session. |
+| **Group chats** | anan Agent responds when you `@mention` it. Without a mention, anan Agent ignores the message. |
+| **Shared groups with multiple users** | By default, anan Agent isolates session history per user inside the group. Two people talking in the same group do not share one transcript unless you explicitly disable that. |
 
 ### Session Model in DingTalk
 
@@ -174,7 +174,7 @@ You can run `anan gateway` in the background or as a systemd service for persist
 
 ### AI Cards
 
-Hermes can reply using DingTalk AI Cards instead of plain markdown messages. Cards provide a richer, more structured display and support streaming updates as the agent generates its response.
+anan Agent can reply using DingTalk AI Cards instead of plain markdown messages. Cards provide a richer, more structured display and support streaming updates as the agent generates its response.
 
 To enable AI Cards, configure a card template ID in `config.yaml`:
 
@@ -190,7 +190,7 @@ You can find your card template ID in the DingTalk Developer Console under your 
 
 ### Emoji Reactions
 
-Hermes automatically adds emoji reactions to your messages to show processing status:
+anan Agent automatically adds emoji reactions to your messages to show processing status:
 
 - 🤔Thinking — added when the bot starts processing your message
 - 🥳Done — added when the response is complete (replaces the Thinking reaction)

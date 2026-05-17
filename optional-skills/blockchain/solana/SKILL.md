@@ -6,7 +6,7 @@ author: Deniz Alagoz (gizdusum), enhanced by anan Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
-  hermes:
+  anan:
     tags: [Solana, Blockchain, Crypto, Web3, RPC, DeFi, NFT]
     related_skills: []
 ---

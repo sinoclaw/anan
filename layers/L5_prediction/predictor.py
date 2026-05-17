@@ -81,7 +81,7 @@ class PredictiveReasoner:
         bus: Optional[EventBus] = None,
         causal_links_fn: Optional[Callable[[], list]] = None,
         self_model=None,
-        horizon_s: float = 3.0,
+        horizon_s: float = 30.0,   # Match tick interval so predictions have time to be right
         min_lift: float = 1.0,
         max_pending: int = 50,
         llm: Optional[Callable[..., Awaitable[str]]] = None,
@@ -96,6 +96,17 @@ class PredictiveReasoner:
 
         # 活跃 cause 窗口：最近出现的 cause 事件
         self._active_causes: deque[tuple[float, str]] = deque(maxlen=200)
+
+        # Known periodic antecedents — skip predictions from clock-like signals
+        # that produce spurious correlations (e.g. L0.circadian.tick every 30s
+        # coinciding with L8.drive.* updates that also happen ~30s apart).
+        # These are matched as wildcards so L0.circadian.* blocks all circadian
+        # variants, L7.goal.* blocks all goal variants, etc.
+        self._periodic_cause_skip: list[str] = [
+            "L0.circadian.*",
+            "L7.goal.*",
+            "L8.intent.*",
+        ]
 
         # 待确认的预测：effect 还不知道有没有发生
         self._pending: deque[Prediction] = deque(maxlen=max_pending)
@@ -191,6 +202,11 @@ class PredictiveReasoner:
             "L8.intent.proposed",
             "L8.intent.weakened",
             "L8.intent.abandoned",
+            "L8.drive.active",
+            "L8.drive.updated",
+            "L8.drive.suggestion",
+            "L8.drive.satisfied",
+            "L8.drive.dormant",
             "L9.self.updated",
         ]
         for ev in external_events:
@@ -276,6 +292,9 @@ class PredictiveReasoner:
 
             if not fnmatch.fnmatch(cause, link_cause):
                 continue
+            # Skip periodic antecedents — they cause spurious predictions
+            if any(fnmatch.fnmatch(cause, pat) for pat in self._periodic_cause_skip):
+                continue
             if link_lift < self._min_lift:
                 continue
 
@@ -334,6 +353,11 @@ class PredictiveReasoner:
         now = time.time()
         resolved = 0
 
+        if not self._pending:
+            return
+
+        logger.info("[RESOLVE] called with topic=%r, pending=%d", topic, len(self._pending))
+
         new_pending: deque[Prediction] = deque(maxlen=self._max_pending)
 
         for pred in self._pending:
@@ -343,35 +367,43 @@ class PredictiveReasoner:
                 continue
 
             age = now - pred.issued_at
+            match = fnmatch.fnmatch(topic, pred.effect)
+            expired = age > pred.horizon_s
+            logger.info("[RESOLVE] pred: cause=%r effect=%r age=%.1fs horizon=%.1fs match=%s expired=%s",
+                         pred.cause, pred.effect, age, pred.horizon_s, match, expired)
 
-            if fnmatch.fnmatch(topic, pred.effect):
+            if match:
                 # Effect confirmed!
                 pred.outcome = "confirmed"
-                new_pending.append(pred)
+                logger.info("[RESOLVE] >>> PUBLISHING CONFIRMED: %s -> %s", pred.cause, pred.effect)
                 await self._async_publish("L5.prediction.confirmed", {
                     "cause": pred.cause,
                     "effect": pred.effect,
                     "prediction_horizon_s": round(age, 2),
                 })
                 resolved += 1
-            elif age > pred.horizon_s:
+                logger.info("[RESOLVE] *** CONFIRMED: %s -> %s", pred.cause, pred.effect)
+                new_pending.append(pred)
+            elif expired:
                 # Expired without effect appearing
                 pred.outcome = "failed"
-                new_pending.append(pred)
+                logger.info("[RESOLVE] >>> PUBLISHING FAILED: %s -> %s (age=%.1fs)", pred.cause, pred.effect, age)
                 await self._async_publish("L5.prediction.failed", {
                     "cause": pred.cause,
                     "predicted_effect": pred.effect,
                     "age_s": round(age, 2),
                 })
                 resolved += 1
+                logger.info("[RESOLVE] *** FAILED: %s -> %s (age=%.1fs)", pred.cause, pred.effect, age)
+                new_pending.append(pred)
             else:
-                # Still pending
+                # Still pending — keep it for future resolution
                 new_pending.append(pred)
 
         self._pending = new_pending
 
         if resolved > 0:
-            logger.debug("Resolved %d predictions (confirmed/failed)", resolved)
+            logger.info("[RESOLVE] resolved %d predictions", resolved)
 
     async def _async_publish(self, topic: str, payload: dict) -> None:
         """Publish asynchronously to avoid blocking the event loop."""
@@ -471,12 +503,13 @@ class PredictiveReasoner:
 
         try:
             explanation = await self._llm([{"role": "user", "content": prompt}])
-            await self._async_publish("L5.prediction.explained", {
-                "cause": cause,
-                "effect": effect,
-                "lift": round(lift, 2),
-                "explanation": explanation.strip(),
-            })
+            if explanation and explanation.strip():
+                await self._async_publish("L5.prediction.explained", {
+                    "cause": cause,
+                    "effect": effect,
+                    "lift": round(lift, 2),
+                    "explanation": explanation.strip(),
+                })
         except Exception as exc:
             logger.warning("LLM causal explanation failed: %s", exc)
 

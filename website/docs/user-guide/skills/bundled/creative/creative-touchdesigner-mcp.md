@@ -25,7 +25,7 @@ Control a running TouchDesigner instance via twozero MCP — create operators, s
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # TouchDesigner Integration (twozero MCP)
@@ -53,13 +53,13 @@ Hub health check: `GET http://localhost:40404/mcp` returns JSON with instance PI
 Run the setup script to handle everything:
 
 ```bash
-bash "${ANAN_HOME:-$HOME/.hermes}/skills/creative/touchdesigner-mcp/scripts/setup.sh"
+bash "${ANAN_HOME:-$HOME/.anan}/skills/creative/touchdesigner-mcp/scripts/setup.sh"
 ```
 
 The script will:
 1. Check if TD is running
 2. Download twozero.tox if not already cached
-3. Add `twozero_td` MCP server to Hermes config (if missing)
+3. Add `twozero_td` MCP server to anan Agent config (if missing)
 4. Test the MCP connection on port 40404
 5. Report what manual steps remain (drag .tox into TD, enable MCP toggle)
 

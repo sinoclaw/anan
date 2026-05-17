@@ -6,7 +6,7 @@ description: "How the ACP adapter works: lifecycle, sessions, event bridge, appr
 
 # ACP Internals
 
-The ACP adapter wraps Hermes' synchronous `AIAgent` in an async JSON-RPC stdio server.
+The ACP adapter wraps anan Agent's synchronous `AIAgent` in an async JSON-RPC stdio server.
 
 Key implementation files:
 
@@ -22,7 +22,7 @@ Key implementation files:
 ## Boot flow
 
 ```text
-hermes acp / anan-acp / python -m acp_adapter
+anan acp / anan-acp / python -m acp_adapter
   -> acp_adapter.entry.main()
   -> load ~/.anan/.env
   -> configure stderr logging
@@ -92,15 +92,15 @@ asyncio.run_coroutine_threadsafe(...)
 
 Mapping:
 
-- `allow_once` -> Hermes `once`
-- `allow_always` -> Hermes `always`
-- reject options -> Hermes `deny`
+- `allow_once` -> anan Agent `once`
+- `allow_always` -> anan Agent `always`
+- reject options -> anan Agent `deny`
 
 Timeouts and bridge failures deny by default.
 
 ### Tool rendering helpers
 
-`acp_adapter/tools.py` maps Hermes tools to ACP tool kinds and builds editor-facing content.
+`acp_adapter/tools.py` maps anan Agent tools to ACP tool kinds and builds editor-facing content.
 
 Examples:
 
@@ -142,7 +142,7 @@ prompt(..., session_id)
 
 ACP does not implement its own auth store.
 
-Instead it reuses Hermes' runtime resolver:
+Instead it reuses anan Agent's runtime resolver:
 
 - `acp_adapter/auth.py`
 - `anan_cli/runtime_provider.py`

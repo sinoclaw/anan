@@ -123,6 +123,12 @@ class TestPatternDiscovery:
     async def test_single_pattern_discovered(self):
         """Mine after some events fire — at least one pattern should surface."""
         bus = EventBus()
+
+        # Use a custom abstractor that maps these test topics to a non-periodic
+        # abstract, bypassing the KNOWN_PERIODIC and dynamic periodic filters.
+        def non_periodic_abstract(topic: str) -> str:
+            return f"test.{topic.split('.')[1]}.*"
+
         pm = PatternMiner(
             bus=bus,
             window=5,
@@ -130,23 +136,26 @@ class TestPatternDiscovery:
             min_confidence=0.5,
             min_lift=1.0,
             cooldown_s=0.1,
+            topic_abstractor=non_periodic_abstract,
+            min_interval_std_s=0.0,  # disable periodic detection filter in this test
         )
         await pm.attach()
 
-        # Fire events that create a pattern: A always followed by B within window
+        # Fire events that create a pattern: A always followed by B within window.
+        import random
         for _ in range(5):
-            await bus.publish(Event(topic="L3.attention.shift", source="test", payload={}))
+            await bus.publish(Event(topic="L4.thought.generated", source="test", payload={}))
             await asyncio.sleep(0.01)
-            await bus.publish(Event(topic="L8.drive.suggestion", source="test", payload={}))
-            await asyncio.sleep(0.01)
+            await bus.publish(Event(topic="L7.goal.achieved", source="test", payload={}))
+            await asyncio.sleep(random.uniform(0.01, 0.09))
 
         patterns = await pm.mine_now()
 
-        # Should discover L3.attention.* → L8.drive.* (abstracted)
+        # Should discover test.thought.* → test.goal.* via custom abstractor
         antecedents = [p.antecedent for p in patterns]
         consequents = [p.consequent for p in patterns]
-        assert "L3.attention.*" in antecedents
-        assert "L8.drive.*" in consequents
+        assert "test.thought.*" in antecedents
+        assert "test.goal.*" in consequents
 
         await pm.detach()
 
@@ -183,20 +192,27 @@ class TestPatternDiscovery:
     @pytest.mark.asyncio
     async def test_stats_after_mining(self):
         bus = EventBus()
+
+        def non_periodic_abstract(topic: str) -> str:
+            return f"test.{topic.split('.')[1]}.*"
+
         pm = PatternMiner(
             bus=bus,
             window=5,
             min_support=2,
             min_confidence=0.5,
             min_lift=1.0,
+            topic_abstractor=non_periodic_abstract,
+            min_interval_std_s=0.0,  # disable periodic detection filter in this test
         )
         await pm.attach()
 
+        import random
         for _ in range(5):
-            await bus.publish(Event(topic="L3.attention.shift", source="test", payload={}))
+            await bus.publish(Event(topic="L4.thought.generated", source="test", payload={}))
             await asyncio.sleep(0.01)
-            await bus.publish(Event(topic="L8.drive.suggestion", source="test", payload={}))
-            await asyncio.sleep(0.01)
+            await bus.publish(Event(topic="L7.goal.achieved", source="test", payload={}))
+            await asyncio.sleep(random.uniform(0.01, 0.09))
 
         patterns = await pm.mine_now()
         stats = pm.stats()

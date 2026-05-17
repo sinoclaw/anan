@@ -43,14 +43,14 @@ else
     fi
 fi
 
-# ── 3. Ensure Hermes config has twozero_td MCP entry ──
+# ── 3. Ensure Anan config has twozero_td MCP entry ──
 if [[ ! -f "$SINOCLAW_CFG" ]]; then
-    echo -e " ${FAIL} Hermes config not found at ${SINOCLAW_CFG}"
+    echo -e " ${FAIL} Anan config not found at ${SINOCLAW_CFG}"
     manual_steps+=("Create ${SINOCLAW_CFG} with twozero_td MCP server entry")
 elif grep -q 'twozero_td' "$SINOCLAW_CFG" 2>/dev/null; then
-    echo -e " ${OK} twozero_td MCP entry exists in Hermes config"
+    echo -e " ${OK} twozero_td MCP entry exists in Anan config"
 else
-    echo -e " ${WARN} Adding twozero_td MCP entry to Hermes config..."
+    echo -e " ${WARN} Adding twozero_td MCP entry to Anan config..."
     python3 -c "
 import yaml, sys, copy
 

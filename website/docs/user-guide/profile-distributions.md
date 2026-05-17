@@ -36,7 +36,7 @@ my-research-agent/
 Recipients run:
 
 ```bash
-hermes profile install github.com/you/my-research-agent --alias
+anan profile install github.com/you/my-research-agent --alias
 ```
 
 …and they now have the whole agent. They fill in their own API keys (`.env.EXAMPLE` → `.env`), and they can run `my-research-agent chat` or address it through Telegram / Discord / Slack / any gateway platform. When you push a new version, they run `anan profile update my-research-agent` and pull your changes — their memories and sessions stay put.
@@ -52,7 +52,7 @@ We considered tarballs, HTTP archives, a custom format. None of them beat git:
 - **Private repos work for free.** SSH keys, `git credential` helpers, GitHub CLI stored credentials — whatever auth your terminal is already set up for applies transparently.
 - **Reproducibility is a commit SHA.** The same thing pip and npm record.
 
-The tradeoff: recipients need git installed. On any machine running Hermes in 2026, that's already true.
+The tradeoff: recipients need git installed. On any machine running anan Agent in 2026, that's already true.
 
 ## When should you use a distribution?
 
@@ -82,7 +82,7 @@ Below is the full end-to-end flow. Pick the side you care about.
 Build and refine the agent like any other profile:
 
 ```bash
-hermes profile create research-bot
+anan profile create research-bot
 research-bot setup                    # configure model, API keys
 # Edit ~/.anan/profiles/research-bot/SOUL.md
 # Install skills, wire up MCP servers, schedule cron jobs, etc.
@@ -195,7 +195,7 @@ When omitted, the defaults above apply — which is what most distributions want
 ### Install
 
 ```bash
-hermes profile install github.com/you/research-bot --alias
+anan profile install github.com/you/research-bot --alias
 ```
 
 What happens:
@@ -214,22 +214,22 @@ Any git URL works:
 
 ```bash
 # GitHub shorthand
-hermes profile install github.com/you/research-bot
+anan profile install github.com/you/research-bot
 
 # Full HTTPS
-hermes profile install https://github.com/you/research-bot.git
+anan profile install https://github.com/you/research-bot.git
 
 # SSH
-hermes profile install git@github.com:you/research-bot.git
+anan profile install git@github.com:you/research-bot.git
 
 # Self-hosted, GitLab, Gitea, Forgejo — any Git host
-hermes profile install https://git.example.com/team/research-bot.git
+anan profile install https://git.example.com/team/research-bot.git
 
 # Private repo using your configured git auth
-hermes profile install git@github.com:your-org/internal-bot.git
+anan profile install git@github.com:your-org/internal-bot.git
 
 # Local directory during development (no git push needed)
-hermes profile install ~/my-profile-in-progress/
+anan profile install ~/my-profile-in-progress/
 ```
 
 ### Override the profile name
@@ -238,9 +238,9 @@ Two users wanting the same distribution under different profile names:
 
 ```bash
 # Alice
-hermes profile install github.com/acme/support-bot --name support-us --alias
+anan profile install github.com/acme/support-bot --name support-us --alias
 # Bob (same distribution, different local name)
-hermes profile install github.com/acme/support-bot --name support-eu --alias
+anan profile install github.com/acme/support-bot --name support-eu --alias
 ```
 
 ### Fill in env vars
@@ -248,7 +248,7 @@ hermes profile install github.com/acme/support-bot --name support-eu --alias
 After install, the agent's profile contains a `.env.EXAMPLE`:
 
 ```
-# Environment variables required by this Hermes distribution.
+# Environment variables required by this anan Agent distribution.
 # Copy to `.env` and fill in your own values before running.
 
 # OpenAI API key (for model access)
@@ -272,7 +272,7 @@ Required keys that were already in your shell environment (e.g. `OPENAI_API_KEY`
 ### Check what you installed
 
 ```bash
-hermes profile info research-bot
+anan profile info research-bot
 ```
 
 Shows:
@@ -282,7 +282,7 @@ Distribution: research-bot
 Version:      1.0.0
 Description:  Autonomous research assistant with arXiv and web tools
 Author:       Your Name
-Requires:     Hermes >=0.12.0
+Requires:     anan Agent >=0.12.0
 Source:       https://github.com/you/research-bot
 Installed:    2026-05-08T17:04:32+00:00
 
@@ -305,7 +305,7 @@ Environment variables:
 ### Update
 
 ```bash
-hermes profile update research-bot
+anan profile update research-bot
 ```
 
 What happens:
@@ -320,7 +320,7 @@ No re-downloading the whole archive. No stomping your local changes to config. N
 ### Remove
 
 ```bash
-hermes profile delete research-bot
+anan profile delete research-bot
 ```
 
 The delete prompt surfaces distribution info before asking you to confirm:
@@ -358,7 +358,7 @@ git remote add origin git@github.com:you/research-bot.git
 git push -u origin main
 
 # Workstation
-hermes profile install github.com/you/research-bot --alias
+anan profile install github.com/you/research-bot --alias
 # Fill in .env. Done.
 ```
 
@@ -377,7 +377,7 @@ git tag v1.0.0
 git push -u origin main --tags    # push to your company's internal Git host
 
 # Each engineer
-hermes profile install git@github.com:your-org/pr-reviewer.git --alias
+anan profile install git@github.com:your-org/pr-reviewer.git --alias
 # Fill in .env with their own API key (billed to them), .env.EXAMPLE points at what's required
 pr-reviewer chat
 ```
@@ -399,7 +399,7 @@ git remote add origin https://github.com/you/anan-polymarket-trader.git
 git push -u origin main --tags
 
 # Anyone
-hermes profile install github.com/you/anan-polymarket-trader --alias
+anan profile install github.com/you/anan-polymarket-trader --alias
 ```
 
 Tweet the install command. People who try it send you issues and PRs. If someone wants to customize, they fork — same git workflow everyone already knows.
@@ -442,10 +442,10 @@ You're the ops lead. You want a temporary agent that diagnoses a production inci
 git push -u origin main
 
 # Each on-call
-hermes profile install git@github.com:your-org/incident-2026-q2.git --alias
+anan profile install git@github.com:your-org/incident-2026-q2.git --alias
 
 # Incident resolved — tear it down
-hermes profile delete incident-2026-q2
+anan profile delete incident-2026-q2
 ```
 
 The install-delete cycle is cheap enough to be disposable.
@@ -464,7 +464,7 @@ Git ref pinning (`#v1.2.0`) is planned but not in the initial release — instal
 
 ```bash
 # Your installed version
-hermes profile info research-bot | grep Version
+anan profile info research-bot | grep Version
 
 # Latest upstream (without installing)
 git ls-remote --tags https://github.com/you/research-bot | tail -5
@@ -485,11 +485,11 @@ The default update behavior already does this: `config.yaml` is preserved. To be
 
 ```bash
 # Nuke and re-install from scratch (loses memories/sessions too)
-hermes profile delete research-bot --yes
-hermes profile install github.com/you/research-bot --alias
+anan profile delete research-bot --yes
+anan profile install github.com/you/research-bot --alias
 
 # Update to current main but reset config.yaml to the distribution's default
-hermes profile update research-bot --force-config --yes
+anan profile update research-bot --force-config --yes
 ```
 
 ### Fork and customize
@@ -498,7 +498,7 @@ The standard git workflow — distributions are just repos:
 
 ```bash
 # Fork the repo on GitHub, then install your fork
-hermes profile install github.com/yourname/forked-research-bot --alias
+anan profile install github.com/yourname/forked-research-bot --alias
 
 # Iterate locally in ~/.anan/profiles/forked-research-bot/
 # Edit SOUL.md, commit, push to your fork
@@ -511,11 +511,11 @@ From the author's machine:
 
 ```bash
 # Install from a local directory (no git push needed)
-hermes profile install ~/.anan/profiles/research-bot --name research-bot-test --alias
+anan profile install ~/.anan/profiles/research-bot --name research-bot-test --alias
 
 # Tweak, delete, re-install until it's right
-hermes profile delete research-bot-test --yes
-hermes profile install ~/.anan/profiles/research-bot --name research-bot-test
+anan profile delete research-bot-test --yes
+anan profile install ~/.anan/profiles/research-bot --name research-bot-test
 ```
 
 ---
@@ -561,13 +561,13 @@ The short version:
 - The manifest format is YAML with a tiny required schema (`name` only).
 - The installer uses your local `git` binary for cloning, so any auth your shell already handles (SSH keys, credential helpers) works transparently.
 - After clone, `.git/` is stripped — the installed profile isn't itself a git checkout, avoiding "oh my, I accidentally committed my `.env` to the distribution's git history" traps.
-- Reserved profile names (`hermes`, `test`, `tmp`, `root`, `sudo`) are rejected at install time to avoid collisions with common binaries.
+- Reserved profile names (`anan`, `test`, `tmp`, `root`, `sudo`) are rejected at install time to avoid collisions with common binaries.
 
 ## See also
 
 - [Profiles: Running Multiple Agents](./profiles.md) — the base concept
 - [Profile Commands reference](../reference/profile-commands.md) — every flag, every option
 - [`anan profile export` / `import`](../reference/profile-commands.md#anan-profile-export) — local backup / restore (not distribution)
-- [Using SOUL with Hermes](../guides/use-soul-with-hermes.md) — authoring personalities
+- [Using SOUL with anan Agent](../guides/use-soul-with-anan.md) — authoring personalities
 - [Personality & SOUL](./features/personality.md) — how SOUL fits into the agent
 - [Skills catalog](../reference/skills-catalog.md) — skills you can bundle

@@ -4,12 +4,12 @@ sidebar_position: 7
 
 # Profile Commands Reference
 
-This page covers all commands related to [Hermes profiles](../user-guide/profiles.md). For general CLI commands, see [CLI Commands Reference](./cli-commands.md).
+This page covers all commands related to [anan Agent profiles](../user-guide/profiles.md). For general CLI commands, see [CLI Commands Reference](./cli-commands.md).
 
 ## `anan profile`
 
 ```bash
-hermes profile <subcommand>
+anan profile <subcommand>
 ```
 
 Top-level command for managing profiles. Running `anan profile` without a subcommand shows help.
@@ -29,7 +29,7 @@ Top-level command for managing profiles. Running `anan profile` without a subcom
 ## `anan profile list`
 
 ```bash
-hermes profile list
+anan profile list
 ```
 
 Lists all profiles. The currently active profile is marked with `*`.
@@ -49,10 +49,10 @@ No options.
 ## `anan profile use`
 
 ```bash
-hermes profile use <name>
+anan profile use <name>
 ```
 
-Sets `<name>` as the active profile. All subsequent `hermes` commands (without `-p`) will use this profile.
+Sets `<name>` as the active profile. All subsequent `anan` commands (without `-p`) will use this profile.
 
 | Argument | Description |
 |----------|-------------|
@@ -61,14 +61,14 @@ Sets `<name>` as the active profile. All subsequent `hermes` commands (without `
 **Example:**
 
 ```bash
-hermes profile use work
-hermes profile use default
+anan profile use work
+anan profile use default
 ```
 
 ## `anan profile create`
 
 ```bash
-hermes profile create <name> [options]
+anan profile create <name> [options]
 ```
 
 Creates a new profile.
@@ -87,22 +87,22 @@ Creating a profile does **not** make that profile directory the default project/
 
 ```bash
 # Blank profile — needs full setup
-hermes profile create mybot
+anan profile create mybot
 
 # Clone config only from current profile
-hermes profile create work --clone
+anan profile create work --clone
 
 # Clone everything from current profile
-hermes profile create backup --clone-all
+anan profile create backup --clone-all
 
 # Clone config from a specific profile
-hermes profile create work2 --clone --clone-from work
+anan profile create work2 --clone --clone-from work
 ```
 
 ## `anan profile delete`
 
 ```bash
-hermes profile delete <name> [options]
+anan profile delete <name> [options]
 ```
 
 Deletes a profile and removes its shell alias.
@@ -115,8 +115,8 @@ Deletes a profile and removes its shell alias.
 **Example:**
 
 ```bash
-hermes profile delete mybot
-hermes profile delete mybot --yes
+anan profile delete mybot
+anan profile delete mybot --yes
 ```
 
 :::warning
@@ -126,7 +126,7 @@ This permanently deletes the profile's entire directory including all config, me
 ## `anan profile show`
 
 ```bash
-hermes profile show <name>
+anan profile show <name>
 ```
 
 Displays details about a profile including its home directory, configured model, gateway status, skills count, and configuration file status.
@@ -154,10 +154,10 @@ Alias:   ~/.local/bin/work
 ## `anan profile alias`
 
 ```bash
-hermes profile alias <name> [options]
+anan profile alias <name> [options]
 ```
 
-Regenerates the shell alias script at `~/.local/bin/<name>`. Useful if the alias was accidentally deleted or if you need to update it after moving your Hermes installation.
+Regenerates the shell alias script at `~/.local/bin/<name>`. Useful if the alias was accidentally deleted or if you need to update it after moving your anan Agent installation.
 
 | Argument / Option | Description |
 |-------------------|-------------|
@@ -168,20 +168,20 @@ Regenerates the shell alias script at `~/.local/bin/<name>`. Useful if the alias
 **Example:**
 
 ```bash
-hermes profile alias work
+anan profile alias work
 # Creates/updates ~/.local/bin/work
 
-hermes profile alias work --name mywork
+anan profile alias work --name mywork
 # Creates ~/.local/bin/mywork
 
-hermes profile alias work --remove
+anan profile alias work --remove
 # Removes the wrapper script
 ```
 
 ## `anan profile rename`
 
 ```bash
-hermes profile rename <old-name> <new-name>
+anan profile rename <old-name> <new-name>
 ```
 
 Renames a profile. Updates the directory and shell alias.
@@ -194,7 +194,7 @@ Renames a profile. Updates the directory and shell alias.
 **Example:**
 
 ```bash
-hermes profile rename mybot assistant
+anan profile rename mybot assistant
 # ~/.anan/profiles/mybot → ~/.anan/profiles/assistant
 # ~/.local/bin/mybot → ~/.local/bin/assistant
 ```
@@ -202,7 +202,7 @@ hermes profile rename mybot assistant
 ## `anan profile export`
 
 ```bash
-hermes profile export <name> [options]
+anan profile export <name> [options]
 ```
 
 Exports a profile as a compressed tar.gz archive.
@@ -215,16 +215,16 @@ Exports a profile as a compressed tar.gz archive.
 **Example:**
 
 ```bash
-hermes profile export work
+anan profile export work
 # Creates work.tar.gz in the current directory
 
-hermes profile export work -o ./work-2026-03-29.tar.gz
+anan profile export work -o ./work-2026-03-29.tar.gz
 ```
 
 ## `anan profile import`
 
 ```bash
-hermes profile import <archive> [options]
+anan profile import <archive> [options]
 ```
 
 Imports a profile from a tar.gz archive.
@@ -237,10 +237,10 @@ Imports a profile from a tar.gz archive.
 **Example:**
 
 ```bash
-hermes profile import ./work-2026-03-29.tar.gz
+anan profile import ./work-2026-03-29.tar.gz
 # Infers profile name from the archive
 
-hermes profile import ./work-2026-03-29.tar.gz --name work-restored
+anan profile import ./work-2026-03-29.tar.gz --name work-restored
 ```
 
 ## Distribution commands
@@ -271,7 +271,7 @@ git so someone else can install it.
 ### `anan profile install`
 
 ```bash
-hermes profile install <source> [--name <name>] [--alias] [--force] [--yes]
+anan profile install <source> [--name <name>] [--alias] [--force] [--yes]
 ```
 
 Installs a profile distribution from a git URL or a local directory.
@@ -292,22 +292,22 @@ cron jobs before asking for confirmation. Required env vars go into a
 
 ```bash
 # Install from a GitHub repo (shorthand)
-hermes profile install github.com/kyle/telemetry-distribution --alias
+anan profile install github.com/kyle/telemetry-distribution --alias
 
 # Install from a full HTTPS git URL
-hermes profile install https://github.com/kyle/telemetry-distribution.git
+anan profile install https://github.com/kyle/telemetry-distribution.git
 
 # Install from SSH
-hermes profile install git@github.com:kyle/telemetry-distribution.git
+anan profile install git@github.com:kyle/telemetry-distribution.git
 
 # Install from a local directory during development
-hermes profile install ./telemetry/
+anan profile install ./telemetry/
 ```
 
 ### `anan profile update`
 
 ```bash
-hermes profile update <name> [--force-config] [--yes]
+anan profile update <name> [--force-config] [--yes]
 ```
 
 Re-clones the distribution from its recorded source and applies updates.
@@ -320,11 +320,11 @@ Pass `--force-config` to reset it to the distribution's shipped config.
 ### `anan profile info`
 
 ```bash
-hermes profile info <name>
+anan profile info <name>
 ```
 
 Prints the profile's distribution manifest — name, version, required
-Hermes version, author, env var requirements, the source URL/path, and
+anan Agent version, author, env var requirements, the source URL/path, and
 the `Installed:` timestamp recorded when the distribution was last
 `install`-ed or `update`-d. Useful for checking what a shared profile
 needs before installing it, and for spotting "this profile was installed
@@ -345,10 +345,10 @@ transparently.
 
 ```bash
 # Uses your SSH key, the same as any other `git clone`
-hermes profile install git@github.com:your-org/internal-assistant.git
+anan profile install git@github.com:your-org/internal-assistant.git
 
 # Uses your git credential helper
-hermes profile install https://github.com/your-org/internal-assistant.git
+anan profile install https://github.com/your-org/internal-assistant.git
 ```
 
 If a clone prompts for credentials interactively in your terminal during
@@ -383,7 +383,7 @@ distribution_owned:   # optional; defaults to SOUL.md, config.yaml,
 
 `sinoclaw_requires` supports `>=`, `<=`, `==`, `!=`, `>`, `<`, or a bare
 version (treated as `>=`). Install fails with a clear error if the current
-Hermes version doesn't satisfy the spec.
+anan Agent version doesn't satisfy the spec.
 
 `distribution_owned` is optional. If set, only those paths are replaced on
 update; anything else in the profile stays user-owned. If omitted, the
@@ -396,7 +396,7 @@ Authoring a distribution is just a git push:
 1. In your profile directory, create `distribution.yaml` with at least `name`
    and `version`.
 2. Initialize a git repo (or use an existing one) and push to GitHub /
-   GitLab / any host Hermes can clone from.
+   GitLab / any host anan Agent can clone from.
 3. Tell recipients to run `anan profile install <your-repo-url>`.
 
 Use git tags for versioned releases — recipients who clone `HEAD` get your
@@ -406,10 +406,10 @@ latest state, and you can always bump `version:` in the manifest.
 
 ```bash
 anan -p <name> <command> [options]
-hermes --profile <name> <command> [options]
+anan --profile <name> <command> [options]
 ```
 
-Global flag to run any Hermes command under a specific profile without changing the sticky default. This overrides the active profile for the duration of the command.
+Global flag to run any anan Agent command under a specific profile without changing the sticky default. This overrides the active profile for the duration of the command.
 
 | Option | Description |
 |--------|-------------|
@@ -419,7 +419,7 @@ Global flag to run any Hermes command under a specific profile without changing 
 
 ```bash
 anan -p work chat -q "Check the server status"
-hermes --profile dev gateway start
+anan --profile dev gateway start
 anan -p personal skills list
 anan -p work config edit
 ```
@@ -427,7 +427,7 @@ anan -p work config edit
 ## `anan completion`
 
 ```bash
-hermes completion <shell>
+anan completion <shell>
 ```
 
 Generates shell completion scripts. Includes completions for profile names and profile subcommands.
@@ -440,8 +440,8 @@ Generates shell completion scripts. Includes completions for profile names and p
 
 ```bash
 # Install completions
-hermes completion bash >> ~/.bashrc
-hermes completion zsh >> ~/.zshrc
+anan completion bash >> ~/.bashrc
+anan completion zsh >> ~/.zshrc
 
 # Reload shell
 source ~/.bashrc

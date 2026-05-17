@@ -24,7 +24,7 @@ Notion API via curl: pages, databases, blocks, search.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Notion API
@@ -148,7 +148,7 @@ curl -s -X PATCH "https://api.notion.com/v1/blocks/{page_id}/children" \
   -H "Content-Type: application/json" \
   -d '{
     "children": [
-      {"object": "block", "type": "paragraph", "paragraph": {"rich_text": [{"text": {"content": "Hello from Hermes!"}}]}}
+      {"object": "block", "type": "paragraph", "paragraph": {"rich_text": [{"text": {"content": "Hello from anan Agent!"}}]}}
     ]
   }'
 ```
@@ -182,5 +182,5 @@ Common property formats for database items:
 - Rate limit: ~3 requests/second average
 - The API cannot set database view filters — that's UI-only
 - Use `is_inline: true` when creating data sources to embed them in pages
-- Add `-s` flag to curl to suppress progress bars (cleaner output for Hermes)
+- Add `-s` flag to curl to suppress progress bars (cleaner output for anan Agent)
 - Pipe output through `jq` for readable JSON: `... | jq '.results[0].properties'`

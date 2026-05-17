@@ -20,12 +20,12 @@
 # Env inputs (set before sourcing to override defaults):
 #   SINOCLAW_NODE_MIN_VERSION   (default: 20)   — accepted on PATH
 #   SINOCLAW_NODE_TARGET_MAJOR  (default: 22)   — installed when we install
-#   ANAN_HOME               (default: $HOME/.hermes)
+#   ANAN_HOME               (default: $HOME/.anan)
 # ============================================================================
 
 SINOCLAW_NODE_MIN_VERSION="${SINOCLAW_NODE_MIN_VERSION:-20}"
 SINOCLAW_NODE_TARGET_MAJOR="${SINOCLAW_NODE_TARGET_MAJOR:-22}"
-ANAN_HOME="${ANAN_HOME:-$HOME/.hermes}"
+ANAN_HOME="${ANAN_HOME:-$HOME/.anan}"
 SINOCLAW_NODE_AVAILABLE=false
 
 # ---------------------------------------------------------------------------

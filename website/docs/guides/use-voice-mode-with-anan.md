@@ -1,10 +1,10 @@
 ---
 sidebar_position: 8
-title: "Use Voice Mode with Hermes"
-description: "A practical guide to setting up and using Hermes voice mode across CLI, Telegram, Discord, and Discord voice channels"
+title: "Use Voice Mode with anan Agent"
+description: "A practical guide to setting up and using anan Agent voice mode across CLI, Telegram, Discord, and Discord voice channels"
 ---
 
-# Use Voice Mode with Hermes
+# Use Voice Mode with anan Agent
 
 This guide is the practical companion to the [Voice Mode feature reference](/docs/user-guide/features/voice-mode).
 
@@ -15,12 +15,12 @@ If the feature page explains what voice mode can do, this guide shows how to act
 Voice mode is especially useful when:
 - you want a hands-free CLI workflow
 - you want spoken responses in Telegram or Discord
-- you want Hermes sitting in a Discord voice channel for live conversation
+- you want anan Agent sitting in a Discord voice channel for live conversation
 - you want quick idea capture, debugging, or back-and-forth while walking around instead of typing
 
 ## Choose your voice mode setup
 
-There are really three different voice experiences in Hermes.
+There are really three different voice experiences in anan Agent.
 
 | Mode | Best for | Platform |
 |---|---|---|
@@ -33,15 +33,15 @@ A good path is:
 2. enable voice replies second
 3. move to Discord voice channels last if you want the full experience
 
-## Step 1: make sure normal Hermes works first
+## Step 1: make sure normal anan Agent works first
 
 Before touching voice mode, verify that:
-- Hermes starts
+- anan Agent starts
 - your provider is configured
 - the agent can answer text prompts normally
 
 ```bash
-hermes
+anan
 ```
 
 Ask something simple:
@@ -108,7 +108,7 @@ Why these matter:
 
 ## Step 4: choose STT and TTS providers
 
-Hermes supports both local and cloud speech stacks.
+anan Agent supports both local and cloud speech stacks.
 
 ### Easiest / cheapest setup
 
@@ -149,7 +149,7 @@ ELEVENLABS_API_KEY=***
 
 ### If you use `anan setup`
 
-If you choose NeuTTS in the setup wizard, Hermes checks whether `neutts` is already installed. If it is missing, the wizard tells you NeuTTS needs the Python package `neutts` and the system package `espeak-ng`, offers to install them for you, installs `espeak-ng` with your platform package manager, and then runs:
+If you choose NeuTTS in the setup wizard, anan Agent checks whether `neutts` is already installed. If it is missing, the wizard tells you NeuTTS needs the Python package `neutts` and the system package `espeak-ng`, offers to install them for you, installs `espeak-ng` with your platform package manager, and then runs:
 
 ```bash
 python -m pip install -U neutts[all]
@@ -197,10 +197,10 @@ tts:
 
 ## Turn it on
 
-Start Hermes:
+Start anan Agent:
 
 ```bash
-hermes
+anan
 ```
 
 Inside the CLI:
@@ -218,7 +218,7 @@ Workflow:
 1. press `Ctrl+B`
 2. speak
 3. wait for silence detection to stop recording automatically
-4. Hermes transcribes and responds
+4. anan Agent transcribes and responds
 5. if TTS is on, it speaks the answer
 6. the loop can automatically restart for continuous use
 
@@ -252,17 +252,17 @@ Then continue hands-free:
 Great for:
 - walking around while thinking
 - dictating half-formed ideas
-- asking Hermes to structure your thoughts in real time
+- asking anan Agent to structure your thoughts in real time
 
 #### Accessibility / low-typing sessions
 
-If typing is inconvenient, voice mode is one of the fastest ways to stay in the full Hermes loop.
+If typing is inconvenient, voice mode is one of the fastest ways to stay in the full anan Agent loop.
 
 ## Tuning CLI behavior
 
 ### Silence threshold
 
-If Hermes starts/stops too aggressively, tune:
+If anan Agent starts/stops too aggressively, tune:
 
 ```yaml
 voice:
@@ -293,7 +293,7 @@ voice:
 
 This mode is simpler than full voice channels.
 
-Hermes stays a normal chat bot, but can speak replies.
+anan Agent stays a normal chat bot, but can speak replies.
 
 ### Start the gateway
 
@@ -335,7 +335,7 @@ or
 Use when:
 - you are away from your machine
 - you want to send voice notes and get quick spoken replies
-- you want Hermes to function like a portable research or ops assistant
+- you want anan Agent to function like a portable research or ops assistant
 
 #### Discord DMs with spoken output
 
@@ -372,9 +372,9 @@ In a Discord text channel where the bot is present:
 ### What happens when joined
 
 - users speak in the VC
-- Hermes detects speech boundaries
+- anan Agent detects speech boundaries
 - transcripts are posted in the associated text channel
-- Hermes responds in text and audio
+- anan Agent responds in text and audio
 - the text channel is the one where `/voice join` was issued
 
 ### Best practices for Discord VC use
@@ -439,7 +439,7 @@ By default, the bot needs an `@mention` in Discord server text channels unless c
 
 If you want the shortest path to success:
 
-1. get text Hermes working
+1. get text anan Agent working
 2. install `anan[voice]`
 3. use CLI voice mode with local STT + Edge TTS
 4. then enable `/voice on` in Telegram or Discord

@@ -76,7 +76,7 @@ anan/
 │   └── trajectory.py         # Trajectory saving helpers
 │
 ├── anan_cli/               # CLI subcommands and setup
-│   ├── main.py               # Entry point — all `hermes` subcommands (~10,400 lines)
+│   ├── main.py               # Entry point — all `anan` subcommands (~10,400 lines)
 │   ├── config.py             # DEFAULT_CONFIG, OPTIONAL_ENV_VARS, migration
 │   ├── commands.py           # COMMAND_REGISTRY — central slash command definitions
 │   ├── auth.py               # PROVIDER_REGISTRY, credential resolution
@@ -199,7 +199,7 @@ The synchronous orchestration engine (`AIAgent` in `run_agent.py`). Handles prov
 
 Prompt construction and maintenance across the conversation lifecycle:
 
-- **`prompt_builder.py`** — Assembles the system prompt from: personality (SOUL.md), memory (MEMORY.md, USER.md), skills, context files (AGENTS.md, .hermes.md), tool-use guidance, and model-specific instructions
+- **`prompt_builder.py`** — Assembles the system prompt from: personality (SOUL.md), memory (MEMORY.md, USER.md), skills, context files (AGENTS.md, .anan.md), tool-use guidance, and model-specific instructions
 - **`prompt_caching.py`** — Applies Anthropic cache breakpoints for prefix caching
 - **`context_compressor.py`** — Summarizes middle conversation turns when context exceeds thresholds
 
@@ -231,7 +231,7 @@ Long-running process with 20 platform adapters, unified session routing, user au
 
 ### Plugin System
 
-Three discovery sources: `~/.anan/plugins/` (user), `.hermes/plugins/` (project), and pip entry points. Plugins register tools, hooks, and CLI commands through a context API. Two specialized plugin types exist: memory providers (`plugins/memory/`) and context engines (`plugins/context_engine/`). Both are single-select — only one of each can be active at a time, configured via `anan plugins` or `config.yaml`.
+Three discovery sources: `~/.anan/plugins/` (user), `.anan/plugins/` (project), and pip entry points. Plugins register tools, hooks, and CLI commands through a context API. Two specialized plugin types exist: memory providers (`plugins/memory/`) and context engines (`plugins/context_engine/`). Both are single-select — only one of each can be active at a time, configured via `anan plugins` or `config.yaml`.
 
 → [Plugin Guide](/docs/guides/build-a-anan-plugin), [Memory Provider Plugin](./memory-provider-plugin.md)
 
@@ -243,7 +243,7 @@ First-class agent tasks (not shell tasks). Jobs store in JSON, support multiple 
 
 ### ACP Integration
 
-Exposes Hermes as an editor-native agent over stdio/JSON-RPC for VS Code, Zed, and JetBrains.
+Exposes anan Agent as an editor-native agent over stdio/JSON-RPC for VS Code, Zed, and JetBrains.
 
 → [ACP Internals](./acp-internals.md)
 

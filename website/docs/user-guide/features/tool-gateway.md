@@ -9,7 +9,7 @@ sidebar_position: 2
 
 **One subscription. Every tool built in.**
 
-The Tool Gateway is included with every paid [Nous Portal](https://portal.nousresearch.com) subscription. It routes Hermes' tool calls — web search, image generation, text-to-speech, and cloud browser automation — through infrastructure Nous already runs, so you don't have to sign up with Firecrawl, FAL, OpenAI, Browser Use, or anyone else just to make your agent useful.
+The Tool Gateway is included with every paid [Nous Portal](https://portal.nousresearch.com) subscription. It routes anan Agent's tool calls — web search, image generation, text-to-speech, and cloud browser automation — through infrastructure Nous already runs, so you don't have to sign up with Firecrawl, FAL, OpenAI, Browser Use, or anyone else just to make your agent useful.
 
 <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', margin: '1.5rem 0'}}>
   <a href="https://portal.nousresearch.com/manage-subscription" style={{background: 'var(--ifm-color-primary)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold'}}>Start or manage subscription →</a>
@@ -20,7 +20,7 @@ The Tool Gateway is included with every paid [Nous Portal](https://portal.nousre
 | | Tool | What you get |
 |---|---|---|
 | 🔍 | **Web search & extract** | Agent-grade web search and full-page extraction via Firecrawl. No rate limits to worry about — the gateway handles scaling. |
-| 🎨 | **Image generation** | Nine models under one endpoint: **FLUX 2 Klein 9B**, **FLUX 2 Pro**, **Z-Image Turbo**, **Nano Banana Pro** (Gemini 3 Pro Image), **GPT Image 1.5**, **GPT Image 2**, **Ideogram V3**, **Recraft V4 Pro**, **Qwen Image**. Pick per-generation with a flag, or let Hermes default to FLUX 2 Klein. |
+| 🎨 | **Image generation** | Nine models under one endpoint: **FLUX 2 Klein 9B**, **FLUX 2 Pro**, **Z-Image Turbo**, **Nano Banana Pro** (Gemini 3 Pro Image), **GPT Image 1.5**, **GPT Image 2**, **Ideogram V3**, **Recraft V4 Pro**, **Qwen Image**. Pick per-generation with a flag, or let anan Agent default to FLUX 2 Klein. |
 | 🔊 | **Text-to-speech** | OpenAI TTS voices wired into the `text_to_speech` tool. Drop voice notes into Telegram, generate audio for pipelines, narrate anything. |
 | 🌐 | **Cloud browser automation** | Headless Chromium sessions via Browser Use. `browser_navigate`, `browser_click`, `browser_type`, `browser_vision` — all the agent-driving primitives, no Browserbase account required. |
 
@@ -40,15 +40,15 @@ Bring your own keys anytime — per-tool, whenever you want to. The gateway isn'
 ## Get started
 
 ```bash
-hermes model          # Pick Nous Portal as your provider
+anan model          # Pick Nous Portal as your provider
 ```
 
-When you select Nous Portal, Hermes offers to turn on the Tool Gateway. Accept, and you're done — every supported tool is live on the next run.
+When you select Nous Portal, anan Agent offers to turn on the Tool Gateway. Accept, and you're done — every supported tool is live on the next run.
 
 Check what's active at any time:
 
 ```bash
-hermes status
+anan status
 ```
 
 You'll see a section like:
@@ -135,7 +135,7 @@ Precedence: `use_gateway: true` routes through Nous regardless of any direct key
 
 ```yaml
 web:
-  use_gateway: false   # Hermes now uses FIRECRAWL_API_KEY from .env
+  use_gateway: false   # anan Agent now uses FIRECRAWL_API_KEY from .env
 ```
 
 `anan tools` automatically clears the flag when you pick a non-gateway provider, so this usually happens for you.
@@ -161,7 +161,7 @@ Yes. Tool Gateway operates at the tool-execution layer, not the CLI. Every inter
 
 ### What happens if my subscription expires?
 
-Tools routed through the gateway stop working until you renew or swap in direct API keys via `anan tools`. Hermes shows a clear error pointing at the portal.
+Tools routed through the gateway stop working until you renew or swap in direct API keys via `anan tools`. anan Agent shows a clear error pointing at the portal.
 
 ### Can I see usage or costs per tool?
 
@@ -173,4 +173,4 @@ Modal is available as an **optional add-on** through the Nous subscription, not 
 
 ### Do I need to delete my existing API keys when I enable the gateway?
 
-No — keep them in `.env`. When `use_gateway: true`, Hermes skips direct keys and uses the gateway. Flip the flag back to `false` and your keys become the source again. The gateway isn't a lock-in.
+No — keep them in `.env`. When `use_gateway: true`, anan Agent skips direct keys and uses the gateway. Flip the flag back to `false` and your keys become the source again. The gateway isn't a lock-in.

@@ -6,7 +6,7 @@ description: "Connect anan Agent to the Yuanbao enterprise messaging platform vi
 
 # Yuanbao
 
-Connect Hermes to [Yuanbao](https://yuanbao.tencent.com/), Tencent's enterprise messaging platform. The adapter uses a WebSocket gateway for real-time message delivery and supports both direct (C2C) and group conversations.
+Connect anan Agent to [Yuanbao](https://yuanbao.tencent.com/), Tencent's enterprise messaging platform. The adapter uses a WebSocket gateway for real-time message delivery and supports both direct (C2C) and group conversations.
 
 :::info
 Yuanbao is an enterprise messaging platform primarily used within Tencent and enterprise environments. It uses WebSocket for real-time communication, HMAC-based authentication, and supports rich media including images, files, and voice messages.
@@ -170,7 +170,7 @@ The bot responds in the same conversation thread.
 
 ### Available Commands
 
-All standard Hermes commands work on Yuanbao:
+All standard anan Agent commands work on Yuanbao:
 
 | Command | Description |
 |---------|-------------|
@@ -278,7 +278,7 @@ platforms:
 
 ### Message Chunking
 
-Yuanbao has a maximum message size. Hermes automatically chunks large responses with Markdown-aware splitting (respects code fences, tables, and paragraph boundaries).
+Yuanbao has a maximum message size. anan Agent automatically chunks large responses with Markdown-aware splitting (respects code fences, tables, and paragraph boundaries).
 
 ### Connection Parameters
 
@@ -330,7 +330,7 @@ Run long operations without blocking the conversation:
 Send a message from CLI to Yuanbao:
 
 ```bash
-hermes chat -q "Send 'Hello from CLI' to yuanbao:group:group_code"
+anan chat -q "Send 'Hello from CLI' to yuanbao:group:group_code"
 ```
 
 ## Related Documentation

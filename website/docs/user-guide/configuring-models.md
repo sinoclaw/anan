@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Configuring Models
 
-Hermes uses two kinds of model slots:
+anan Agent uses two kinds of model slots:
 
 - **Main model** — what the agent thinks with. Every user message, every tool-call loop, every streamed response goes through this model.
 - **Auxiliary models** — smaller side-jobs the agent offloads. Context compression, vision (image analysis), web-page summarization, session search, approval scoring, MCP tool routing, session-title generation, and skill search. Each has its own slot and can be overridden independently.
@@ -31,7 +31,7 @@ Click **Change** on the Main model row:
 The picker has two columns:
 
 - **Left** — authenticated providers. Only providers you've set up (API key set, OAuth'd, or defined as a custom endpoint) show up here. If a provider is missing, head to **Keys** and add its credential.
-- **Right** — the curated model list for the selected provider. These are the agentic models Hermes recommends for that provider, not the raw `/models` dump (which on OpenRouter includes 400+ models including TTS, image generators, and rerankers).
+- **Right** — the curated model list for the selected provider. These are the agentic models anan Agent recommends for that provider, not the raw `/models` dump (which on OpenRouter includes 400+ models including TTS, image generators, and rerankers).
 
 Type in the filter box to narrow by provider name, slug, or model ID.
 
@@ -43,7 +43,7 @@ Click **Show auxiliary** to reveal the eight task slots:
 
 ![Auxiliary panel expanded](/img/docs/dashboard-models/auxiliary-expanded.png)
 
-Every auxiliary task defaults to `auto` — meaning Hermes uses your main model for that job too. Override a specific task when you want a cheaper or faster model for a side-job.
+Every auxiliary task defaults to `auto` — meaning anan Agent uses your main model for that job too. Override a specific task when you want a cheaper or faster model for a side-job.
 
 ### Common override patterns
 
@@ -116,7 +116,7 @@ auxiliary:
     # ... other fields unchanged
 ```
 
-`provider: auto` with `model: ''` tells Hermes to use the main model for that task.
+`provider: auto` with `model: ''` tells anan Agent to use the main model for that task.
 
 ## When does it take effect?
 
@@ -130,7 +130,7 @@ Changes never invalidate prompt caches on running sessions. That's deliberate: s
 
 ### "No authenticated providers" in the picker
 
-Hermes lists a provider only if it has a working credential. Check **Keys** in the sidebar — you should see one of: an API key, a successful OAuth, or a custom endpoint URL. If the provider you want isn't there, run `anan setup` to wire it up, or go to **Keys** and add the env var.
+anan Agent lists a provider only if it has a working credential. Check **Keys** in the sidebar — you should see one of: an API key, a successful OAuth, or a custom endpoint URL. If the provider you want isn't there, run `anan setup` to wire it up, or go to **Keys** and add the env var.
 
 ### Main model didn't change in my running chat
 
@@ -144,7 +144,7 @@ Three things to check:
 2. **Is `provider` set to something other than `auto`?** If the field shows `auto`, the task is still using your main model. Click **Change** and pick a real provider.
 3. **Is the provider authenticated?** If you assigned `minimax` to a task but don't have a MiniMax API key, that task falls back to the openrouter default and logs a warning in `agent.log`.
 
-### I picked a model but Hermes switched providers on me
+### I picked a model but anan Agent switched providers on me
 
 On OpenRouter (or any aggregator), bare model names resolve *within* the aggregator first. So `claude-sonnet-4` on OpenRouter becomes `anthropic/claude-sonnet-4.6`, staying on your OpenRouter auth. But if you typed `claude-sonnet-4` on a native Anthropic auth, it would stay as `claude-sonnet-4-6`. If you see an unexpected provider switch, check that your current provider is what you expect — the picker always shows the current main at the top of the dialog.
 
@@ -188,8 +188,8 @@ Then `/model fav` or `/model grok` in chat. User aliases shadow built-in short n
 ### `anan model` subcommand
 
 ```bash
-hermes model list                   # list authenticated providers + models
-hermes model set anthropic/claude-opus-4.7 --provider openrouter
+anan model list                   # list authenticated providers + models
+anan model set anthropic/claude-opus-4.7 --provider openrouter
 ```
 
 ### Direct config edit

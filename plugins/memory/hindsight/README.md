@@ -11,14 +11,14 @@ Long-term memory with knowledge graph, entity resolution, and multi-strategy ret
 ## Setup
 
 ```bash
-hermes memory setup    # select "hindsight"
+anan memory setup    # select "hindsight"
 ```
 
 The setup wizard will install dependencies automatically via `uv` and walk you through configuration.
 
 Or manually (cloud mode with defaults):
 ```bash
-hermes config set memory.provider hindsight
+anan config set memory.provider hindsight
 echo "HINDSIGHT_API_KEY=your-key" >> ~/.anan/.env
 ```
 
@@ -28,7 +28,7 @@ Connects to the Hindsight Cloud API. Requires an API key from [ui.hindsight.vect
 
 ### Local Embedded
 
-Hermes spins up a local Hindsight daemon with built-in PostgreSQL. Requires an LLM API key for memory extraction and synthesis. The daemon starts automatically in the background on first use and stops after 5 minutes of inactivity.
+Anan spins up a local Hindsight daemon with built-in PostgreSQL. Requires an LLM API key for memory extraction and synthesis. The daemon starts automatically in the background on first use and stops after 5 minutes of inactivity.
 
 Supports any OpenAI-compatible LLM endpoint (llama.cpp, vLLM, LM Studio, etc.) — pick `openai_compatible` as the provider and enter the base URL.
 
@@ -59,8 +59,8 @@ Config file: `~/.anan/hindsight/config.json`
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `bank_id` | `hermes` | Memory bank name (static fallback used when `bank_id_template` is unset or resolves empty) |
-| `bank_id_template` | — | Optional template to derive the bank name dynamically. Placeholders: `{profile}`, `{workspace}`, `{platform}`, `{user}`, `{session}`. Example: `anan-{profile}` isolates memory per active Hermes profile. Empty placeholders collapse cleanly (e.g. `anan-{user}` with no user becomes `hermes`). |
+| `bank_id` | `anan` | Memory bank name (static fallback used when `bank_id_template` is unset or resolves empty) |
+| `bank_id_template` | — | Optional template to derive the bank name dynamically. Placeholders: `{profile}`, `{workspace}`, `{platform}`, `{user}`, `{session}`. Example: `anan-{profile}` isolates memory per active Anan profile. Empty placeholders collapse cleanly (e.g. `anan-{user}` with no user becomes `anan`). |
 | `bank_mission` | — | Reflect mission (identity/framing for reflect reasoning). Applied via Banks API. |
 | `bank_retain_mission` | — | Retain mission (steers what gets extracted). Applied via Banks API. |
 

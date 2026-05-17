@@ -1,12 +1,12 @@
 ---
-title: "Hermes Atropos Environments — Build, test, and debug anan Agent RL environments for Atropos training"
-sidebar_label: "Hermes Atropos Environments"
+title: "anan Agent Atropos Environments — Build, test, and debug anan Agent RL environments for Atropos training"
+sidebar_label: "anan Agent Atropos Environments"
 description: "Build, test, and debug anan Agent RL environments for Atropos training"
 ---
 
 {/* This page is auto-generated from the skill's SKILL.md by website/scripts/generate-skill-docs.py. Edit the source SKILL.md, not this page. */}
 
-# Hermes Atropos Environments
+# anan Agent Atropos Environments
 
 Build, test, and debug anan Agent RL environments for Atropos training. Covers the SinoclawAgentBaseEnv interface, reward functions, agent loop integration, evaluation with tools, wandb logging, and the three CLI modes (serve/process/evaluate). Use when creating, reviewing, or fixing RL environments in the anan repo.
 
@@ -25,7 +25,7 @@ Build, test, and debug anan Agent RL environments for Atropos training. Covers t
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that anan Agent loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # anan Agent Atropos Environments
@@ -47,7 +47,7 @@ Atropos BaseEnv (atroposlib/envs/base.py)
 ```
 <!-- ascii-guard-ignore-end -->
 
-Hermes environments are special because they run a **multi-turn agent loop with tool calling** — not just single-turn completions. The base env handles the loop; you implement the task and scoring.
+anan Agent environments are special because they run a **multi-turn agent loop with tool calling** — not just single-turn completions. The base env handles the loop; you implement the task and scoring.
 
 ## File Locations
 

@@ -1,12 +1,12 @@
 # Kanban tutorial
 
-A walkthrough of the four use-cases the Hermes Kanban system was designed for, with the dashboard open in a browser. If you haven't read the [Kanban overview](./kanban) yet, start there — this assumes you know what a task, run, assignee, and dispatcher are.
+A walkthrough of the four use-cases the anan Agent Kanban system was designed for, with the dashboard open in a browser. If you haven't read the [Kanban overview](./kanban) yet, start there — this assumes you know what a task, run, assignee, and dispatcher are.
 
 ## Setup
 
 ```bash
-hermes kanban init           # optional; first `anan kanban <anything>` auto-inits
-hermes dashboard             # opens http://127.0.0.1:9119 in your browser
+anan kanban init           # optional; first `anan kanban <anything>` auto-inits
+anan dashboard             # opens http://127.0.0.1:9119 in your browser
 # click Kanban in the left nav
 ```
 
@@ -42,18 +42,18 @@ If the profile lanes are noisy, toggle "Lanes by profile" off and the In Progres
 You're building a feature. Classic flow: design a schema, implement the API, write the tests. Three tasks with parent→child dependencies.
 
 ```bash
-SCHEMA=$(hermes kanban create "Design auth schema" \
+SCHEMA=$(anan kanban create "Design auth schema" \
     --assignee backend-dev --tenant auth-project --priority 2 \
     --body "Design the user/session/token schema for the auth module." \
     --json | jq -r .id)
 
-API=$(hermes kanban create "Implement auth API endpoints" \
+API=$(anan kanban create "Implement auth API endpoints" \
     --assignee backend-dev --tenant auth-project --priority 2 \
     --parent $SCHEMA \
     --body "POST /register, POST /login, POST /refresh, POST /logout." \
     --json | jq -r .id)
 
-hermes kanban create "Write auth integration tests" \
+anan kanban create "Write auth integration tests" \
     --assignee qa-dev --tenant auth-project --priority 2 \
     --parent $API \
     --body "Cover happy path, wrong password, expired token, concurrent refresh."
@@ -97,8 +97,8 @@ The Run History section at the bottom is the key addition. One attempt: outcome 
 You can inspect the same data from your terminal at any time — these commands are **you** peeking at the board, not the worker:
 
 ```bash
-hermes kanban show $SCHEMA
-hermes kanban runs $SCHEMA
+anan kanban show $SCHEMA
+anan kanban runs $SCHEMA
 # #  OUTCOME       PROFILE       ELAPSED  STARTED
 # 1  completed     backend-dev        0s  2026-04-27 19:34
 #     → users(id, email, pw_hash), sessions(id, user_id, jti, expires_at); refresh tokens ...
@@ -183,7 +183,7 @@ kanban_block(
 Now you (the human, or a separate reviewer profile) read the block reason, decide the fix direction is clear, and unblock from the dashboard's "Unblock" button — or from the CLI / slash command:
 
 ```bash
-hermes kanban unblock $IMPL
+anan kanban unblock $IMPL
 # or from a chat: /kanban unblock $IMPL
 ```
 
@@ -235,7 +235,7 @@ Real workers fail. Missing credentials, OOM kills, transient network errors. The
 A deploy task that can't spawn its worker because `AWS_ACCESS_KEY_ID` isn't set in the profile's environment:
 
 ```bash
-hermes kanban create "Deploy to staging (missing creds)" \
+anan kanban create "Deploy to staging (missing creds)" \
     --assignee deploy-bot --tenant ops
 ```
 
@@ -250,7 +250,7 @@ Three runs, all with the same error on the `error` field. The first two are `spa
 On the terminal:
 
 ```bash
-hermes kanban runs t_ef5d
+anan kanban runs t_ef5d
 # #   OUTCOME        PROFILE        ELAPSED  STARTED
 # 1   spawn_failed   deploy-bot          0s  2026-04-27 19:34
 #       ! AWS_ACCESS_KEY_ID not set in deploy-bot env

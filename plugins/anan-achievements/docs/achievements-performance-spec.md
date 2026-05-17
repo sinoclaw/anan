@@ -1,4 +1,4 @@
-# Hermes Achievements Performance Spec (Post-Hackathon)
+# Anan Achievements Performance Spec (Post-Hackathon)
 
 Status: Draft (no code changes yet)
 Owner: anan-achievements plugin

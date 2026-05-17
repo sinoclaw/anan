@@ -1,6 +1,6 @@
 ---
 name: debugging-anan-tui-commands
-description: "Debug Hermes TUI slash commands: Python, gateway, Ink UI."
+description: "Debug Anan TUI slash commands: Python, gateway, Ink UI."
 version: 1.0.0
 author: anan Agent
 license: MIT
@@ -11,13 +11,13 @@ metadata:
     related_skills: [python-debugpy, node-inspect-debugger, systematic-debugging]
 ---
 
-# Debugging Hermes TUI Slash Commands
+# Debugging Anan TUI Slash Commands
 
 ## Overview
 
-Hermes slash commands span three layers — Python command registry, tui_gateway JSON-RPC bridge, and the Ink/TypeScript frontend. When a command misbehaves (missing from autocomplete, works in CLI but not TUI, config persists but UI doesn't update), the bug is almost always one layer being out of sync with another.
+Anan slash commands span three layers — Python command registry, tui_gateway JSON-RPC bridge, and the Ink/TypeScript frontend. When a command misbehaves (missing from autocomplete, works in CLI but not TUI, config persists but UI doesn't update), the bug is almost always one layer being out of sync with another.
 
-Use this skill when you encounter issues with slash commands in the Hermes TUI, particularly when commands aren't showing in autocomplete, aren't working properly in the TUI, or need to be added/updated.
+Use this skill when you encounter issues with slash commands in the Anan TUI, particularly when commands aren't showing in autocomplete, aren't working properly in the TUI, or need to be added/updated.
 
 ## When to Use
 

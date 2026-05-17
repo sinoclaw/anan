@@ -1,12 +1,12 @@
 ---
 sidebar_position: 5
 title: "Prompt Assembly"
-description: "How Hermes builds the system prompt, preserves cache stability, and injects ephemeral layers"
+description: "How anan Agent builds the system prompt, preserves cache stability, and injects ephemeral layers"
 ---
 
 # Prompt Assembly
 
-Hermes deliberately separates:
+anan Agent deliberately separates:
 
 - **cached system prompt state**
 - **ephemeral API-call-time additions**
@@ -47,7 +47,7 @@ Here is a simplified view of what the final system prompt looks like when all la
 
 ```
 # Layer 1: Agent Identity (from ~/.anan/SOUL.md)
-You are Hermes, an AI assistant created by anan Team.
+You are anan Agent, an AI assistant created by anan Team.
 You are an expert software engineer and researcher.
 You value correctness, clarity, and efficiency.
 ...
@@ -157,7 +157,7 @@ def build_context_files_prompt(cwd=None, skip_soul=False):
 
     # Priority: first match wins — only ONE project context loaded
     project_context = (
-        _load_sinoclaw_md(cwd_path)       # 1. .hermes.md / HERMES.md (walks to git root)
+        _load_sinoclaw_md(cwd_path)       # 1. .anan.md / HERMES.md (walks to git root)
         or _load_agents_md(cwd_path)    # 2. AGENTS.md (cwd only)
         or _load_claude_md(cwd_path)    # 3. CLAUDE.md (cwd only)
         or _load_cursorrules(cwd_path)  # 4. .cursorrules / .cursor/rules/*.mdc
@@ -188,7 +188,7 @@ def build_context_files_prompt(cwd=None, skip_soul=False):
 
 | Priority | Files | Search scope | Notes |
 |----------|-------|-------------|-------|
-| 1 | `.hermes.md`, `HERMES.md` | CWD up to git root | anan-native project config |
+| 1 | `.anan.md`, `HERMES.md` | CWD up to git root | anan-native project config |
 | 2 | `AGENTS.md` | CWD only | Common agent instruction file |
 | 3 | `CLAUDE.md` | CWD only | Claude Code compatibility |
 | 4 | `.cursorrules`, `.cursor/rules/*.mdc` | CWD only | Cursor compatibility |
@@ -196,7 +196,7 @@ def build_context_files_prompt(cwd=None, skip_soul=False):
 All context files are:
 - **Security scanned** — checked for prompt injection patterns (invisible unicode, "ignore previous instructions", credential exfiltration attempts)
 - **Truncated** — capped at 20,000 characters using 70/20 head/tail ratio with a truncation marker
-- **YAML frontmatter stripped** — `.hermes.md` frontmatter is removed (reserved for future config overrides)
+- **YAML frontmatter stripped** — `.anan.md` frontmatter is removed (reserved for future config overrides)
 
 ## API-call-time-only layers
 
@@ -217,7 +217,7 @@ Local memory and user profile data are injected as frozen snapshots at session s
 
 `agent/prompt_builder.py` scans and sanitizes project context files using a **priority system** — only one type is loaded (first match wins):
 
-1. `.hermes.md` / `HERMES.md` (walks to git root)
+1. `.anan.md` / `HERMES.md` (walks to git root)
 2. `AGENTS.md` (CWD at startup; subdirectories discovered progressively during the session via `agent/subdirectory_hints.py`)
 3. `CLAUDE.md` (CWD only)
 4. `.cursorrules` / `.cursor/rules/*.mdc` (CWD only)
@@ -232,15 +232,15 @@ The skills system contributes a compact skills index to the prompt when skills t
 
 ## Supported prompt customization surfaces
 
-Most users should treat `agent/prompt_builder.py` as implementation code, not a configuration surface. The supported customization path is to change the prompt inputs Hermes already loads, rather than editing Python templates in place.
+Most users should treat `agent/prompt_builder.py` as implementation code, not a configuration surface. The supported customization path is to change the prompt inputs anan Agent already loads, rather than editing Python templates in place.
 
 ### Use these surfaces first
 
 - `~/.anan/SOUL.md` — replace the built-in default identity block with your own agent persona and standing behavior.
 - `~/.anan/MEMORY.md` and `~/.anan/USER.md` — provide durable cross-session facts and user profile data that should be snapshotted into new sessions.
-- Project context files such as `.hermes.md`, `HERMES.md`, `AGENTS.md`, `CLAUDE.md`, or `.cursorrules` — inject repo-specific working rules.
+- Project context files such as `.anan.md`, `HERMES.md`, `AGENTS.md`, `CLAUDE.md`, or `.cursorrules` — inject repo-specific working rules.
 - Skills — package reusable workflows and references without editing core prompt code.
-- Optional system prompt config / API overrides — add deployment-specific instruction text without forking Hermes.
+- Optional system prompt config / API overrides — add deployment-specific instruction text without forking anan Agent.
 - Ephemeral overlays such as `SINOCLAW_EPHEMERAL_SYSTEM_PROMPT` or prefill messages — add turn-scoped guidance that should not become part of the cached prompt prefix.
 
 ### When to edit code instead
@@ -252,7 +252,7 @@ In other words:
 - if you want a different assistant identity, edit `SOUL.md`
 - if you want different repo rules, edit project context files
 - if you want reusable operating procedures, add or modify skills
-- if you want to change how Hermes assembles prompts for everyone, change Python and treat it as a code contribution
+- if you want to change how anan Agent assembles prompts for everyone, change Python and treat it as a code contribution
 
 ## Why prompt assembly is split this way
 

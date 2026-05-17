@@ -4,7 +4,7 @@ sidebar_position: 9
 
 # Adding a Platform Adapter
 
-This guide covers adding a new messaging platform to the anan gateway. A platform adapter connects Hermes to an external messaging service (Telegram, Discord, WeCom, etc.) so users can interact with the agent through that service.
+This guide covers adding a new messaging platform to the anan gateway. A platform adapter connects anan Agent to an external messaging service (Telegram, Discord, WeCom, etc.) so users can interact with the agent through that service.
 
 :::tip
 There are two ways to add a platform:
@@ -30,7 +30,7 @@ Inbound messages are received by the adapter and forwarded via `self.handle_mess
 
 ## Plugin Path (Recommended)
 
-The plugin system lets you add a platform adapter without modifying any core Hermes code. Your plugin is a directory with two files:
+The plugin system lets you add a platform adapter without modifying any core anan Agent code. Your plugin is a directory with two files:
 
 ```
 ~/.anan/plugins/my-platform/
@@ -115,7 +115,7 @@ def _env_enablement() -> dict | None:
 
 
 def register(ctx):
-    """Plugin entry point — called by the Hermes plugin system."""
+    """Plugin entry point — called by the anan Agent plugin system."""
     ctx.register_platform(
         name="my_platform",
         label="My Platform",
@@ -331,7 +331,7 @@ See `plugins/platforms/irc/` in the repo for a complete working example — a fu
 ## Step-by-Step Checklist (Built-in Path)
 
 :::note
-This checklist is for adding a platform directly to the Hermes core codebase — typically done by core contributors for officially supported platforms. Community/third-party platforms should use the [Plugin Path](#plugin-path-recommended) above.
+This checklist is for adding a platform directly to the anan Agent core codebase — typically done by core contributors for officially supported platforms. Community/third-party platforms should use the [Plugin Path](#plugin-path-recommended) above.
 :::
 
 ### 1. Platform Enum

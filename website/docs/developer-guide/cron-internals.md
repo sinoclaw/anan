@@ -1,7 +1,7 @@
 ---
 sidebar_position: 11
 title: "Cron Internals"
-description: "How Hermes stores, schedules, edits, pauses, skill-loads, and delivers cron jobs"
+description: "How anan Agent stores, schedules, edits, pauses, skill-loads, and delivers cron jobs"
 ---
 
 # Cron Internals
@@ -212,13 +212,13 @@ The scheduler uses cross-process file-based locking (`fcntl.flock` on Unix, `msv
 The `anan cron` CLI provides direct job management:
 
 ```bash
-hermes cron list                    # Show all jobs
-hermes cron create                  # Interactive job creation (alias: add)
-hermes cron edit <job_id>           # Edit job configuration
-hermes cron pause <job_id>          # Pause a running job
-hermes cron resume <job_id>         # Resume a paused job
-hermes cron run <job_id>            # Trigger immediate execution
-hermes cron remove <job_id>         # Delete a job
+anan cron list                    # Show all jobs
+anan cron create                  # Interactive job creation (alias: add)
+anan cron edit <job_id>           # Edit job configuration
+anan cron pause <job_id>          # Pause a running job
+anan cron resume <job_id>         # Resume a paused job
+anan cron run <job_id>            # Trigger immediate execution
+anan cron remove <job_id>         # Delete a job
 ```
 
 ## Related Docs

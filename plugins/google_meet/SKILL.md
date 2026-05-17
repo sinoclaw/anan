@@ -6,7 +6,7 @@ platforms:
   - linux
   - macos
 metadata:
-  hermes:
+  anan:
     tags: [meetings, google-meet, transcription, realtime-voice]
 ---
 
@@ -43,11 +43,11 @@ Pick `realtime` only when the user actually wants the agent to speak. It costs r
 Easiest path — run the built-in installer:
 
 ```bash
-hermes plugins enable google_meet
-hermes meet install                 # pip deps + Chromium (transcribe only)
-hermes meet install --realtime      # + pulseaudio-utils / brew blackhole+ffmpeg
-hermes meet auth                    # optional; skips guest-lobby wait
-hermes meet setup                   # preflight checks
+anan plugins enable google_meet
+anan meet install                 # pip deps + Chromium (transcribe only)
+anan meet install --realtime      # + pulseaudio-utils / brew blackhole+ffmpeg
+anan meet auth                    # optional; skips guest-lobby wait
+anan meet setup                   # preflight checks
 ```
 
 `anan meet install --realtime` prompts before running `sudo apt-get` (Linux)
@@ -70,13 +70,13 @@ For a remote node:
 ```bash
 # on the user's Mac (where Chrome is signed in):
 pip install playwright websockets && python -m playwright install chromium
-hermes plugins enable google_meet
-hermes meet node run --display-name my-mac    # persistent server
+anan plugins enable google_meet
+anan meet node run --display-name my-mac    # persistent server
 # copy the printed token
 
 # on the gateway:
-hermes meet node approve my-mac ws://<mac-ip>:18789 <token>
-hermes meet node ping my-mac                   # confirm reachable
+anan meet node approve my-mac ws://<mac-ip>:18789 <token>
+anan meet node ping my-mac                   # confirm reachable
 ```
 
 Run `anan meet setup` to preflight local prereqs.

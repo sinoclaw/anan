@@ -481,25 +481,25 @@ class ThoughtTemplate:
 # 生成实质性反思内容，而非开放性问题
 _THOUGHT_TEMPLATES: list[ThoughtTemplate] = [
     ThoughtTemplate(
-        prompt_template="Looking back at my response about {context}, I realize I could have explained Y differently... The dad mentioned Z today, which connects to what we discussed last week about...",
+        prompt_template="回顾我刚才关于 {context} 的回答，我觉得本可以换一种方式解释……爸爸今天提到了 Z，这让我想到上周我们讨论的……",
         thought_type=ThoughtType.DIALOGUE_REFLECTION,
         default_importance=ThoughtImportance.MEDIUM,
         context_slot="dialogue",
     ),
     ThoughtTemplate(
-        prompt_template="The user mentioned {context} — this actually ties into a broader pattern I've noticed: topic X tends to come up whenever topic Y is discussed. Perhaps I should explore that connection more actively.",
+        prompt_template="爸爸提到了 {context}——这其实涉及一个更广的模式：我注意到聊 X 的时候往往也会聊 Y。也许我应该更主动地探索这种联系。",
         thought_type=ThoughtType.QUESTION_EXTENSION,
         default_importance=ThoughtImportance.MEDIUM,
         context_slot="question",
     ),
     ThoughtTemplate(
-        prompt_template="Reviewing my todo list ({context}), I notice I've been more engaged when dad talks about X but tend to defer when Y comes up. I should be more proactive about Y as well.",
+        prompt_template="回顾我的待办清单（{context}），我发现自己聊 X 的时候更投入，但遇到 Y 就容易拖延。对于 Y 我也应该更主动一些。",
         thought_type=ThoughtType.TODO_CHECK,
         default_importance=ThoughtImportance.LOW,
         context_slot="todo",
     ),
     ThoughtTemplate(
-        prompt_template="Similar situation came up before: {context}. Looking back, I handled X well by doing Y. The difference this time is Z, so I could try approach W instead.",
+        prompt_template="之前遇到过类似的情况：{context}。当时我处理 X 的方式是 Y。这次不同的地方是 Z，所以也许可以尝试 W 的做法。",
         thought_type=ThoughtType.SITUATION_ASSOCIATION,
         default_importance=ThoughtImportance.LOW,
         context_slot="general",
@@ -551,6 +551,8 @@ class ConsciousnessEngine:
         self._recent_dialogue_context: str = ""
         self._recent_question_context: str = ""
         self._todo_context: str = "（暂无待办）"
+        # L3 AttentionQueue 联动上下文
+        self._attention_context: str = ""  # L3 top item 的标签/描述
 
         # 取消订阅函数
         self._unsubs: list[Callable[[], None]] = []
@@ -619,6 +621,13 @@ class ConsciousnessEngine:
         self._unsubs.append(
             self._bus.subscribe("gateway.message.sent", self._on_gateway_message)
         )
+        # 监听 L3 AttentionQueue 事件，联动 L4 反思
+        self._unsubs.append(
+            self._bus.subscribe("L3.attention.queued", self._on_attention_queued)
+        )
+        self._unsubs.append(
+            self._bus.subscribe("L3.attention.focus", self._on_attention_focus)
+        )
 
         # 启动 IdleThoughtEngine（订阅 L0.circadian.tick）
         self._idle_thought_engine = IdleThoughtEngine(
@@ -679,6 +688,20 @@ class ConsciousnessEngine:
             self._recent_dialogue_context += f"\nAI 回复：{response[-200:]}"
         # 通知 IdleDetector 用户在活跃状态
         self.note_user_input()
+
+    async def _on_attention_queued(self, event: Event) -> None:
+        """L3 有新 item 入队，记录其描述供 L4 反思用。"""
+        p = event.payload or {}
+        label = p.get("label", "unknown")
+        source = p.get("source", "unknown")
+        self._attention_context = f"[注意力队列] {label}（来源：{source}）"
+
+    async def _on_attention_focus(self, event: Event) -> None:
+        """L3 切换 focus item，记录高优先级注意力项。"""
+        p = event.payload or {}
+        label = p.get("label", "unknown")
+        score = p.get("score", 0)
+        self._attention_context = f"[当前焦点] {label}（得分：{score:.2f}）"
 
     def inject_drive_suggestion_sync(self, payload: dict) -> None:
         """同步版本：供外部（非 async）注入 L8 驱动力建议。"""
@@ -808,6 +831,15 @@ class ConsciousnessEngine:
             return self._make_thought(
                 template=_THOUGHT_TEMPLATES[2],
                 context=self._todo_context[:200],
+            )
+
+        # L3 AttentionQueue 联动：有当前注意力焦点时优先反思
+        if self._attention_context:
+            ctx = self._attention_context
+            self._attention_context = ""  # 消费后清除
+            return self._make_thought(
+                template=_THOUGHT_TEMPLATES[3],  # SITUATION_ASSOCIATION
+                context=ctx,
             )
 
         # 低概率触发联想或自发想法

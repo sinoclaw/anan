@@ -2,19 +2,19 @@
 sidebar_position: 11
 sidebar_label: "Plugins"
 title: "Plugins"
-description: "Extend Hermes with custom tools, hooks, and integrations via the plugin system"
+description: "Extend anan Agent with custom tools, hooks, and integrations via the plugin system"
 ---
 
 # Plugins
 
-Hermes has a plugin system for adding custom tools, hooks, and integrations without modifying core code.
+anan Agent has a plugin system for adding custom tools, hooks, and integrations without modifying core code.
 
 If you want to create a custom tool for yourself, your team, or one project,
 this is usually the right path. The developer guide's
-[Adding Tools](/docs/developer-guide/adding-tools) page is for built-in Hermes
+[Adding Tools](/docs/developer-guide/adding-tools) page is for built-in anan Agent
 core tools that live in `tools/` and `toolsets.py`.
 
-**→ [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin)** — step-by-step guide with a complete working example.
+**→ [Build a anan Agent Plugin](/docs/guides/build-a-anan-plugin)** — step-by-step guide with a complete working example.
 
 ## Quick overview
 
@@ -28,7 +28,7 @@ Drop a directory into `~/.anan/plugins/` with a `plugin.yaml` and Python code:
 └── tools.py         # tool handlers (what runs when called)
 ```
 
-Start Hermes — your tools appear alongside built-in tools. The model can call them immediately.
+Start anan Agent — your tools appear alongside built-in tools. The model can call them immediately.
 
 ### Minimal working example
 
@@ -45,7 +45,7 @@ description: A minimal example plugin
 **`~/.anan/plugins/hello-world/__init__.py`**
 
 ```python
-"""Minimal Hermes plugin — registers a tool and a hook."""
+"""Minimal anan Agent plugin — registers a tool and a hook."""
 
 import json
 
@@ -87,9 +87,9 @@ def register(ctx):
     ctx.register_hook("post_tool_call", on_tool_call)
 ```
 
-Drop both files into `~/.anan/plugins/hello-world/`, restart Hermes, and the model can immediately call `hello_world`. The hook prints a log line after every tool invocation.
+Drop both files into `~/.anan/plugins/hello-world/`, restart anan Agent, and the model can immediately call `hello_world`. The hook prints a log line after every tool invocation.
 
-Project-local plugins under `./.anan/plugins/` are disabled by default. Enable them only for trusted repositories by setting `SINOCLAW_ENABLE_PROJECT_PLUGINS=true` before starting Hermes.
+Project-local plugins under `./.anan/plugins/` are disabled by default. Enable them only for trusted repositories by setting `SINOCLAW_ENABLE_PROJECT_PLUGINS=true` before starting anan Agent.
 
 ## What plugins can do
 
@@ -117,9 +117,9 @@ Every `ctx.*` API below is available inside a plugin's `register(ctx)` function.
 
 | Source | Path | Use case |
 |--------|------|----------|
-| Bundled | `<repo>/plugins/` | Ships with Hermes — see [Built-in Plugins](/docs/user-guide/features/built-in-plugins) |
+| Bundled | `<repo>/plugins/` | Ships with anan Agent — see [Built-in Plugins](/docs/user-guide/features/built-in-plugins) |
 | User | `~/.anan/plugins/` | Personal plugins |
-| Project | `.hermes/plugins/` | Project-specific plugins (requires `SINOCLAW_ENABLE_PROJECT_PLUGINS=true`) |
+| Project | `.anan/plugins/` | Project-specific plugins (requires `SINOCLAW_ENABLE_PROJECT_PLUGINS=true`) |
 | pip | `sinoclaw_agent.plugins` entry_points | Distributed packages |
 | Nix | `services.anan.extraPlugins` / `extraPythonPackages` | NixOS declarative installs — see [Nix Setup](/docs/getting-started/nix-setup#plugins) |
 
@@ -127,7 +127,7 @@ Later sources override earlier ones on name collision, so a user plugin with the
 
 ### Plugin sub-categories
 
-Within each source, Hermes also recognizes sub-category directories that route plugins to specialized discovery systems:
+Within each source, anan Agent also recognizes sub-category directories that route plugins to specialized discovery systems:
 
 | Sub-directory | What it holds | Discovery system |
 |---|---|---|
@@ -156,16 +156,16 @@ plugins:
 Three ways to flip state:
 
 ```bash
-hermes plugins                    # interactive toggle (space to check/uncheck)
-hermes plugins enable <name>      # add to allow-list
-hermes plugins disable <name>     # remove from allow-list + add to disabled
+anan plugins                    # interactive toggle (space to check/uncheck)
+anan plugins enable <name>      # add to allow-list
+anan plugins disable <name>     # remove from allow-list + add to disabled
 ```
 
 After `anan plugins install owner/repo`, you're asked `Enable 'name' now? [y/N]` — defaults to no. Skip the prompt for scripted installs with `--enable` or `--no-enable`.
 
 ### What the allow-list does NOT gate
 
-Several categories of plugin bypass `plugins.enabled` — they're part of Hermes' built-in surface and would break basic functionality if gated off by default:
+Several categories of plugin bypass `plugins.enabled` — they're part of anan Agent's built-in surface and would break basic functionality if gated off by default:
 
 | Plugin kind | How it's activated instead |
 |---|---|
@@ -181,7 +181,7 @@ In short: **bundled "always-works" infrastructure loads automatically; third-par
 
 ### Migration for existing users
 
-When you upgrade to a version of Hermes that has opt-in plugins (config schema v21+), any user plugins already installed under `~/.anan/plugins/` that weren't already in `plugins.disabled` are **automatically grandfathered** into `plugins.enabled`. Your existing setup keeps working. Bundled standalone plugins are NOT grandfathered — even existing users have to opt in explicitly. (Bundled platform/backend plugins never needed grandfathering because they were never gated.)
+When you upgrade to a version of anan Agent that has opt-in plugins (config schema v21+), any user plugins already installed under `~/.anan/plugins/` that weren't already in `plugins.disabled` are **automatically grandfathered** into `plugins.enabled`. Your existing setup keeps working. Bundled standalone plugins are NOT grandfathered — even existing users have to opt in explicitly. (Bundled platform/backend plugins never needed grandfathering because they were never gated.)
 
 ## Available hooks
 
@@ -202,7 +202,7 @@ Plugins can register callbacks for these lifecycle events. See the **[Event Hook
 
 ## Plugin types
 
-Hermes has four kinds of plugins:
+anan Agent has four kinds of plugins:
 
 | Type | What it does | Selection | Location |
 |------|-------------|-----------|----------|
@@ -215,13 +215,13 @@ Memory providers and context engines are **provider plugins** — only one of ea
 
 ## Pluggable interfaces — where to go for each
 
-The table above shows the four plugin categories, but within "General plugins" the `PluginContext` exposes several distinct extension points — and Hermes also accepts extensions outside the Python plugin system (config-driven backends, shell-hooked commands, external servers, etc.). Use this table to find the right doc for what you want to build:
+The table above shows the four plugin categories, but within "General plugins" the `PluginContext` exposes several distinct extension points — and anan Agent also accepts extensions outside the Python plugin system (config-driven backends, shell-hooked commands, external servers, etc.). Use this table to find the right doc for what you want to build:
 
 | Want to add… | How | Authoring guide |
 |---|---|---|
-| A **tool** the LLM can call | Python plugin — `ctx.register_tool()` | [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin) · [Adding Tools](/docs/developer-guide/adding-tools) |
-| A **lifecycle hook** (pre/post LLM, session start/end, tool filter) | Python plugin — `ctx.register_hook()` | [Hooks reference](/docs/user-guide/features/hooks) · [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin) |
-| A **slash command** for the CLI / gateway | Python plugin — `ctx.register_command()` | [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin) · [Extending the CLI](/docs/developer-guide/extending-the-cli) |
+| A **tool** the LLM can call | Python plugin — `ctx.register_tool()` | [Build a anan Agent Plugin](/docs/guides/build-a-anan-plugin) · [Adding Tools](/docs/developer-guide/adding-tools) |
+| A **lifecycle hook** (pre/post LLM, session start/end, tool filter) | Python plugin — `ctx.register_hook()` | [Hooks reference](/docs/user-guide/features/hooks) · [Build a anan Agent Plugin](/docs/guides/build-a-anan-plugin) |
+| A **slash command** for the CLI / gateway | Python plugin — `ctx.register_command()` | [Build a anan Agent Plugin](/docs/guides/build-a-anan-plugin) · [Extending the CLI](/docs/developer-guide/extending-the-cli) |
 | A **subcommand** for `anan <thing>` | Python plugin — `ctx.register_cli_command()` | [Extending the CLI](/docs/developer-guide/extending-the-cli) |
 | A bundled **skill** that your plugin ships | Python plugin — `ctx.register_skill()` | [Creating Skills](/docs/developer-guide/creating-skills) |
 | An **inference backend** (LLM provider: OpenAI-compat, Codex, Anthropic-Messages, Bedrock) | Provider plugin — `register_provider(ProviderProfile(...))` in `plugins/model-providers/<name>/` | **[Model Provider Plugins](/docs/developer-guide/model-provider-plugin)** · [Adding Providers](/docs/developer-guide/adding-providers) |
@@ -231,7 +231,7 @@ The table above shows the four plugin categories, but within "General plugins" t
 | An **image-generation backend** (DALL·E, SDXL, …) | Backend plugin — `ctx.register_image_gen_provider()` | [Image Generation Provider Plugins](/docs/developer-guide/image-gen-provider-plugin) |
 | A **TTS backend** (any CLI — Piper, VoxCPM, Kokoro, xtts, voice-cloning scripts, …) | Config-driven — declare under `tts.providers.<name>` with `type: command` in `config.yaml` | [TTS setup](/docs/user-guide/features/tts#custom-command-providers) |
 | An **STT backend** (custom whisper binary, local ASR CLI) | Config-driven — set `SINOCLAW_LOCAL_STT_COMMAND` env var to a shell template | [Voice Message Transcription (STT)](/docs/user-guide/features/tts#voice-message-transcription-stt) |
-| **External tools via MCP** (filesystem, GitHub, Linear, Notion, any MCP server) | Config-driven — declare `mcp_servers.<name>` with `command:` / `url:` in `config.yaml`. Hermes auto-discovers the server's tools and registers them alongside built-ins. | [MCP](/docs/user-guide/features/mcp) |
+| **External tools via MCP** (filesystem, GitHub, Linear, Notion, any MCP server) | Config-driven — declare `mcp_servers.<name>` with `command:` / `url:` in `config.yaml`. anan Agent auto-discovers the server's tools and registers them alongside built-ins. | [MCP](/docs/user-guide/features/mcp) |
 | **Additional skill sources** (custom GitHub repos, private skill indexes) | CLI — `anan skills tap add <repo>` | [Skills Hub](/docs/user-guide/features/skills#skills-hub) · [Publishing a custom tap](/docs/user-guide/features/skills#publishing-a-custom-skill-tap) |
 | **Gateway event hooks** (fire on `gateway:startup`, `session:start`, `agent:end`, `command:*`) | Drop `HOOK.yaml` + `handler.py` into `~/.anan/hooks/<name>/` | [Event Hooks](/docs/user-guide/features/hooks#gateway-event-hooks) |
 | **Shell hooks** (run a shell command on events — notifications, audit logs, desktop alerts) | Config-driven — declare under `hooks:` in `config.yaml` | [Shell Hooks](/docs/user-guide/features/hooks#shell-hooks) |
@@ -260,15 +260,15 @@ Declarative plugins are symlinked with a `nix-managed-` prefix — they coexist 
 ## Managing plugins
 
 ```bash
-hermes plugins                               # unified interactive UI
-hermes plugins list                          # table: enabled / disabled / not enabled
-hermes plugins install user/repo             # install from Git, then prompt Enable? [y/N]
-hermes plugins install user/repo --enable    # install AND enable (no prompt)
-hermes plugins install user/repo --no-enable # install but leave disabled (no prompt)
-hermes plugins update my-plugin              # pull latest
-hermes plugins remove my-plugin              # uninstall
-hermes plugins enable my-plugin              # add to allow-list
-hermes plugins disable my-plugin             # remove from allow-list + add to disabled
+anan plugins                               # unified interactive UI
+anan plugins list                          # table: enabled / disabled / not enabled
+anan plugins install user/repo             # install from Git, then prompt Enable? [y/N]
+anan plugins install user/repo --enable    # install AND enable (no prompt)
+anan plugins install user/repo --no-enable # install but leave disabled (no prompt)
+anan plugins update my-plugin              # pull latest
+anan plugins remove my-plugin              # uninstall
+anan plugins enable my-plugin              # add to allow-list
+anan plugins disable my-plugin             # remove from allow-list + add to disabled
 ```
 
 ### Interactive UI

@@ -6,7 +6,7 @@ author: arceus77-7, enhanced by anan Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
-  hermes:
+  anan:
     tags: [security, secrets, 1password, op, cli]
     category: security
 setup:
@@ -27,7 +27,7 @@ Use this skill when the user wants secrets managed through 1Password instead of 
 - 1Password account
 - 1Password CLI (`op`) installed
 - One of: desktop app integration, service account token (`OP_SERVICE_ACCOUNT_TOKEN`), or Connect server
-- `tmux` available for stable authenticated sessions during Hermes terminal calls (desktop app flow only)
+- `tmux` available for stable authenticated sessions during Anan terminal calls (desktop app flow only)
 
 ## When to Use
 
@@ -39,7 +39,7 @@ Use this skill when the user wants secrets managed through 1Password instead of 
 
 ## Authentication Methods
 
-### Service Account (recommended for Hermes)
+### Service Account (recommended for Anan)
 
 Set `OP_SERVICE_ACCOUNT_TOKEN` in `~/.anan/.env` (the skill will prompt for this on first load).
 No desktop app needed. Supports `op read`, `op inject`, `op run`.
@@ -85,9 +85,9 @@ op --version
 
 3. Choose an auth method above and configure it.
 
-## Hermes Execution Pattern (desktop app flow)
+## Anan Execution Pattern (desktop app flow)
 
-Hermes terminal commands are non-interactive by default and can lose auth context between calls.
+Anan terminal commands are non-interactive by default and can lose auth context between calls.
 For reliable `op` use with desktop app integration, run sign-in and secret operations inside a dedicated tmux session.
 
 Note: This is NOT needed when using `OP_SERVICE_ACCOUNT_TOKEN` — the token persists across terminal calls automatically.

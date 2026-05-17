@@ -28,7 +28,7 @@ When you run `anan update`, the following steps occur:
 2. **Git pull** — pulls the latest code from the `main` branch and updates submodules
 3. **Dependency install** — runs `uv pip install -e ".[all]"` to pick up new or changed dependencies
 4. **Config migration** — detects new config options added since your version and prompts you to set them
-5. **Gateway auto-restart** — running gateways are refreshed after the update completes so the new code takes effect immediately. Service-managed gateways (systemd on Linux, launchd on macOS) are restarted through the service manager. Manual gateways are relaunched automatically when Hermes can map the running PID back to a profile.
+5. **Gateway auto-restart** — running gateways are refreshed after the update completes so the new code takes effect immediately. Service-managed gateways (systemd on Linux, launchd on macOS) are restarted through the service manager. Manual gateways are relaunched automatically when anan Agent can map the running PID back to a profile.
 
 ### Preview-only: `anan update --check`
 
@@ -100,7 +100,7 @@ You no longer need to wrap `anan update` in `screen` or `tmux` to survive a term
 ### Checking your current version
 
 ```bash
-hermes version
+anan version
 ```
 
 Compare against the latest release at the [GitHub releases page](https://github.com/anan/anan/releases).
@@ -192,7 +192,7 @@ See [Nix Setup](./nix-setup.md) for more details.
 ## Uninstalling
 
 ```bash
-hermes uninstall
+anan uninstall
 ```
 
 The uninstaller gives you the option to keep your configuration files (`~/.anan/`) for a future reinstall.
@@ -200,7 +200,7 @@ The uninstaller gives you the option to keep your configuration files (`~/.anan/
 ### Manual Uninstall
 
 ```bash
-rm -f ~/.local/bin/hermes
+rm -f ~/.local/bin/anan
 rm -rf /path/to/anan
 rm -rf ~/.anan            # Optional — keep if you plan to reinstall
 ```
@@ -210,6 +210,6 @@ If you installed the gateway as a system service, stop and disable it first:
 ```bash
 anan gateway stop
 # Linux: systemctl --user disable anan-gateway
-# macOS: launchctl remove ai.hermes.gateway
+# macOS: launchctl remove ai.anan.gateway
 ```
 :::

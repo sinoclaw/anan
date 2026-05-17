@@ -8,26 +8,26 @@ description: "Set up anan Agent as a Discord bot"
 
 anan Agent integrates with Discord as a bot, letting you chat with your AI assistant through direct messages or server channels. The bot receives your messages, processes them through the anan Agent pipeline (including tool use, memory, and reasoning), and responds in real time. It supports text, voice messages, file attachments, and slash commands.
 
-Before setup, here's the part most people want to know: how Hermes behaves once it's in your server.
+Before setup, here's the part most people want to know: how anan Agent behaves once it's in your server.
 
-## How Hermes Behaves
+## How anan Agent Behaves
 
 | Context | Behavior |
 |---------|----------|
-| **DMs** | Hermes responds to every message. No `@mention` needed. Each DM has its own session. |
-| **Server channels** | By default, Hermes only responds when you `@mention` it. If you post in a channel without mentioning it, Hermes ignores the message. |
+| **DMs** | anan Agent responds to every message. No `@mention` needed. Each DM has its own session. |
+| **Server channels** | By default, anan Agent only responds when you `@mention` it. If you post in a channel without mentioning it, anan Agent ignores the message. |
 | **Free-response channels** | You can make specific channels mention-free with `DISCORD_FREE_RESPONSE_CHANNELS`, or disable mentions globally with `DISCORD_REQUIRE_MENTION=false`. Messages in these channels are answered inline — auto-threading is skipped so the channel stays a lightweight chat. |
-| **Threads** | Hermes replies in the same thread. Mention rules still apply unless that thread or its parent channel is configured as free-response. Threads stay isolated from the parent channel for session history. |
-| **Shared channels with multiple users** | By default, Hermes isolates session history per user inside the channel for safety and clarity. Two people talking in the same channel do not share one transcript unless you explicitly disable that. |
-| **Messages mentioning other users** | When `DISCORD_IGNORE_NO_MENTION` is `true` (the default), Hermes stays silent if a message @mentions other users but does **not** mention the bot. This prevents the bot from jumping into conversations directed at other people. Set to `false` if you want the bot to respond to all messages regardless of who is mentioned. This only applies in server channels, not DMs. |
+| **Threads** | anan Agent replies in the same thread. Mention rules still apply unless that thread or its parent channel is configured as free-response. Threads stay isolated from the parent channel for session history. |
+| **Shared channels with multiple users** | By default, anan Agent isolates session history per user inside the channel for safety and clarity. Two people talking in the same channel do not share one transcript unless you explicitly disable that. |
+| **Messages mentioning other users** | When `DISCORD_IGNORE_NO_MENTION` is `true` (the default), anan Agent stays silent if a message @mentions other users but does **not** mention the bot. This prevents the bot from jumping into conversations directed at other people. Set to `false` if you want the bot to respond to all messages regardless of who is mentioned. This only applies in server channels, not DMs. |
 
 :::tip
-If you want a normal bot-help channel where people can talk to Hermes without tagging it every time, add that channel to `DISCORD_FREE_RESPONSE_CHANNELS`.
+If you want a normal bot-help channel where people can talk to anan Agent without tagging it every time, add that channel to `DISCORD_FREE_RESPONSE_CHANNELS`.
 :::
 
 ### Discord Gateway Model
 
-Hermes on Discord is not a webhook that replies statelessly. It runs through the full messaging gateway, which means each incoming message goes through:
+anan Agent on Discord is not a webhook that replies statelessly. It runs through the full messaging gateway, which means each incoming message goes through:
 
 1. authorization (`DISCORD_ALLOWED_USERS`)
 2. mention / free-response checks
@@ -46,7 +46,7 @@ By default:
 - each server thread gets its own session namespace
 - each user in a shared channel gets their own session inside that channel
 
-So if Alice and Bob both talk to Hermes in `#research`, Hermes treats those as separate conversations by default even though they are using the same visible Discord channel.
+So if Alice and Bob both talk to anan Agent in `#research`, anan Agent treats those as separate conversations by default even though they are using the same visible Discord channel.
 
 This is controlled by `config.yaml`:
 
@@ -68,7 +68,7 @@ Shared sessions can be useful for a collaborative room, but they also mean:
 
 ### Interrupts and Concurrency
 
-Hermes tracks running agents by session key.
+anan Agent tracks running agents by session key.
 
 With the default `group_sessions_per_user: true`:
 
@@ -280,7 +280,7 @@ Discord behavior is controlled through two files: **`~/.anan/.env`** for credent
 | `DISCORD_FREE_RESPONSE_CHANNELS` | No | — | Comma-separated channel IDs where the bot responds without requiring an `@mention`, even when `DISCORD_REQUIRE_MENTION` is `true`. |
 | `DISCORD_IGNORE_NO_MENTION` | No | `true` | When `true`, the bot stays silent if a message `@mentions` other users but does **not** mention the bot. Prevents the bot from jumping into conversations directed at other people. Only applies in server channels, not DMs. |
 | `DISCORD_AUTO_THREAD` | No | `true` | When `true`, automatically creates a new thread for every `@mention` in a text channel, so each conversation is isolated (similar to Slack behavior). Messages already inside threads or DMs are unaffected. |
-| `DISCORD_ALLOW_BOTS` | No | `"none"` | Controls how the bot handles messages from other Discord bots. `"none"` — ignore all other bots. `"mentions"` — only accept bot messages that `@mention` Hermes. `"all"` — accept all bot messages. |
+| `DISCORD_ALLOW_BOTS` | No | `"none"` | Controls how the bot handles messages from other Discord bots. `"none"` — ignore all other bots. `"mentions"` — only accept bot messages that `@mention` anan Agent. `"all"` — accept all bot messages. |
 | `DISCORD_REACTIONS` | No | `true` | When `true`, the bot adds emoji reactions to messages during processing (👀 when starting, ✅ on success, ❌ on error). Set to `false` to disable reactions entirely. |
 | `DISCORD_IGNORED_CHANNELS` | No | — | Comma-separated channel IDs where the bot **never** responds, even when `@mentioned`. Takes priority over all other channel settings. |
 | `DISCORD_ALLOWED_CHANNELS` | No | — | Comma-separated channel IDs. When set, the bot **only** responds in these channels (plus DMs if allowed). Overrides `config.yaml` `discord.allowed_channels`. Combine with `DISCORD_IGNORED_CHANNELS` to express allow/deny rules. |
@@ -418,7 +418,7 @@ discord:
 
 Behavior:
 - Exact thread/channel ID matches win.
-- If a message arrives inside a thread or forum post and that thread has no explicit entry, Hermes falls back to the parent channel/forum ID.
+- If a message arrives inside a thread or forum post and that thread has no explicit entry, anan Agent falls back to the parent channel/forum ID.
 - Prompts are applied ephemerally at runtime, so changing them affects future turns immediately without rewriting past session history.
 
 #### `group_sessions_per_user`
@@ -427,7 +427,7 @@ Behavior:
 
 This is a global gateway setting (not Discord-specific) that controls whether users in the same channel get isolated session histories.
 
-When `true`: Alice and Bob talking in `#research` each have their own separate conversation with Hermes. When `false`: the entire channel shares one conversation transcript and one running-agent slot.
+When `true`: Alice and Bob talking in `#research` each have their own separate conversation with anan Agent. When `false`: the entire channel shares one conversation transcript and one running-agent slot.
 
 ```yaml
 group_sessions_per_user: true
@@ -473,7 +473,7 @@ The picker times out after 120 seconds. Only authorized users (those in `DISCORD
 
 ## Native Slash Commands for Skills
 
-Hermes automatically registers installed skills as **native Discord Application Commands**. This means skills appear in Discord's autocomplete `/` menu alongside built-in commands.
+anan Agent automatically registers installed skills as **native Discord Application Commands**. This means skills appear in Discord's autocomplete `/` menu alongside built-in commands.
 
 - Each skill becomes a Discord slash command (e.g., `/code-review`, `/ascii-art`)
 - Skills accept an optional `args` string parameter
@@ -508,7 +508,7 @@ The Discord adapter supports native file uploads for every common media type via
 | Audio / Voice | `send_voice` — native voice message when possible, file attachment otherwise |
 | Documents (PDF/ZIP/docx/etc.) | `send_document` — native attachment with download button |
 
-Discord's per-upload size limit depends on the server's boost tier (25 MB free, up to 500 MB). If Hermes gets an HTTP 413, the adapter falls back to a link pointing at the local cache path rather than failing silently.
+Discord's per-upload size limit depends on the server's boost tier (25 MB free, up to 500 MB). If anan Agent gets an HTTP 413, the adapter falls back to a link pointing at the local cache path rather than failing silently.
 
 ## Home Channel
 
@@ -535,15 +535,15 @@ anan Agent supports Discord voice messages:
 
 - **Incoming voice messages** are automatically transcribed using the configured STT provider: local `faster-whisper` (no key), Groq Whisper (`GROQ_API_KEY`), or OpenAI Whisper (`VOICE_TOOLS_OPENAI_KEY`).
 - **Text-to-speech**: Use `/voice tts` to have the bot send spoken audio responses alongside text replies.
-- **Discord voice channels**: Hermes can also join a voice channel, listen to users speaking, and talk back in the channel.
+- **Discord voice channels**: anan Agent can also join a voice channel, listen to users speaking, and talk back in the channel.
 
 For the full setup and operational guide, see:
 - [Voice Mode](/docs/user-guide/features/voice-mode)
-- [Use Voice Mode with Hermes](/docs/guides/use-voice-mode-with-hermes)
+- [Use Voice Mode with anan Agent](/docs/guides/use-voice-mode-with-anan)
 
 ## Forum Channels
 
-Discord forum channels (type 15) don't accept direct messages — every post in a forum must be a thread. Hermes auto-detects forum channels and creates a new thread post whenever it needs to send there, so `send_message`, TTS, images, voice messages, and file attachments all work without special handling from the agent.
+Discord forum channels (type 15) don't accept direct messages — every post in a forum must be a thread. anan Agent auto-detects forum channels and creates a new thread post whenever it needs to send there, so `send_message`, TTS, images, voice messages, and file attachments all work without special handling from the agent.
 
 - **Thread name** is derived from the first line of the message (markdown heading prefix stripped, capped at 100 chars). When the message is attachment-only, the filename is used as the fallback thread name.
 - **Attachments** ride along on the starter message of the new thread — no separate upload step, no partial sends.
@@ -628,7 +628,7 @@ This is the preferred pattern when the moderation team churns — new moderators
 
 ### Mention Control
 
-By default, Hermes blocks the bot from pinging `@everyone`, `@here`, and role mentions, even if its reply contains those tokens. This prevents a poorly-worded prompt or echoed user content from spamming a whole server. Individual `@user` pings and reply-reference pings (the little "replying to…" chip) stay enabled so normal conversation still works.
+By default, anan Agent blocks the bot from pinging `@everyone`, `@here`, and role mentions, even if its reply contains those tokens. This prevents a poorly-worded prompt or echoed user content from spamming a whole server. Individual `@user` pings and reply-reference pings (the little "replying to…" chip) stay enabled so normal conversation still works.
 
 You can relax these defaults via either env vars or `config.yaml`:
 

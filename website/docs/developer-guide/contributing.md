@@ -22,8 +22,8 @@ We value contributions in this order:
 
 ## Common contribution paths
 
-- Building a custom/local tool without modifying Hermes core? Start with [Build a Hermes Plugin](../guides/build-a-anan-plugin.md)
-- Building a new built-in core tool for Hermes itself? Start with [Adding Tools](./adding-tools.md)
+- Building a custom/local tool without modifying anan Agent core? Start with [Build a anan Agent Plugin](../guides/build-a-anan-plugin.md)
+- Building a new built-in core tool for anan Agent itself? Start with [Adding Tools](./adding-tools.md)
 - Building a new skill? Start with [Creating Skills](./creating-skills.md)
 - Building a new inference provider? Start with [Adding Providers](./adding-providers.md)
 
@@ -72,11 +72,11 @@ echo 'OPENROUTER_API_KEY=sk-or-v1-your-key' >> ~/.anan/.env
 ```bash
 # Symlink for global access
 mkdir -p ~/.local/bin
-ln -sf "$(pwd)/venv/bin/anan" ~/.local/bin/hermes
+ln -sf "$(pwd)/venv/bin/anan" ~/.local/bin/anan
 
 # Verify
 anan doctor
-hermes chat -q "Hello"
+anan chat -q "Hello"
 ```
 
 ### Run Tests
@@ -95,7 +95,7 @@ pytest tests/ -v
 
 ## Cross-Platform Compatibility
 
-Hermes officially supports **Linux, macOS, WSL2, and native Windows (early beta — via PowerShell install)**.  Native Windows uses Git Bash (from [Git for Windows](https://git-scm.com/download/win)) for shell commands.  A few features require POSIX kernel primitives and are gated: the dashboard's embedded PTY terminal pane (`/chat` tab) is WSL2-only. The native-Windows path is new and moves fast — if you're doing Windows-heavy dev, expect to hit and fix rough edges.
+anan Agent officially supports **Linux, macOS, WSL2, and native Windows (early beta — via PowerShell install)**.  Native Windows uses Git Bash (from [Git for Windows](https://git-scm.com/download/win)) for shell commands.  A few features require POSIX kernel primitives and are gated: the dashboard's embedded PTY terminal pane (`/chat` tab) is WSL2-only. The native-Windows path is new and moves fast — if you're doing Windows-heavy dev, expect to hit and fix rough edges.
 
 When contributing code, keep these rules in mind:
 
@@ -150,7 +150,7 @@ Use `pathlib.Path` instead of string concatenation with `/`.
 
 ## Security Considerations
 
-Hermes has terminal access. Security matters.
+anan Agent has terminal access. Security matters.
 
 ### Existing Protections
 
@@ -187,7 +187,7 @@ refactor/description   # Code restructuring
 ### Before Submitting
 
 1. **Run tests**: `pytest tests/ -v`
-2. **Test manually**: Run `hermes` and exercise the code path you changed
+2. **Test manually**: Run `anan` and exercise the code path you changed
 3. **Check cross-platform impact**: Consider macOS and different Linux distros
 4. **Keep PRs focused**: One logical change per PR
 
@@ -228,7 +228,7 @@ fix(security): prevent shell injection in sudo password piping
 ## Reporting Issues
 
 - Use [GitHub Issues](https://github.com/anan/anan/issues)
-- Include: OS, Python version, Hermes version (`anan version`), full error traceback
+- Include: OS, Python version, anan Agent version (`anan version`), full error traceback
 - Include steps to reproduce
 - Check existing issues before creating duplicates
 - For security vulnerabilities, please report privately

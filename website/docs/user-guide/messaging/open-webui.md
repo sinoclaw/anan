@@ -18,21 +18,21 @@ flowchart LR
     B -->|SSE streaming response| A
 ```
 
-Open WebUI connects to anan Agent's API server just like it would connect to OpenAI. Hermes handles the requests with its full toolset — terminal, file operations, web search, memory, skills — and returns the final response.
+Open WebUI connects to anan Agent's API server just like it would connect to OpenAI. anan Agent handles the requests with its full toolset — terminal, file operations, web search, memory, skills — and returns the final response.
 
 :::important Runtime location
-The API server is a **anan agent runtime**, not a pure LLM proxy. For each request, Hermes creates a server-side `AIAgent` on the API-server host. Tool calls run where that API server is running.
+The API server is a **anan agent runtime**, not a pure LLM proxy. For each request, anan Agent creates a server-side `AIAgent` on the API-server host. Tool calls run where that API server is running.
 
 For example, if a laptop points Open WebUI or another OpenAI-compatible client at a anan API server on a remote machine, `pwd`, file tools, browser tools, local MCP tools, and other workspace tools run on the remote API-server host, not on the laptop.
 :::
 
-Open WebUI talks to Hermes server-to-server, so you do not need `API_SERVER_CORS_ORIGINS` for this integration.
+Open WebUI talks to anan Agent server-to-server, so you do not need `API_SERVER_CORS_ORIGINS` for this integration.
 
 ## Quick Setup
 
 ### One-command local bootstrap (macOS/Linux, no Docker)
 
-If you want Hermes + Open WebUI wired together locally with a reusable launcher, run:
+If you want anan Agent + Open WebUI wired together locally with a reusable launcher, run:
 
 ```bash
 cd ~/.anan/anan
@@ -44,21 +44,21 @@ What the script does:
 - ensures `~/.anan/.env` contains `API_SERVER_ENABLED`, `API_SERVER_HOST`, `API_SERVER_KEY`, `API_SERVER_PORT`, and `API_SERVER_MODEL_NAME`
 - restarts the anan gateway so the API server comes up
 - installs Open WebUI into `~/.local/open-webui-venv`
-- writes a launcher at `~/.local/bin/start-open-webui-hermes.sh`
+- writes a launcher at `~/.local/bin/start-open-webui-anan.sh`
 - on macOS, installs a `launchd` user service; on Linux with `systemd --user`, installs a user service there
 
 Defaults:
 
-- Hermes API: `http://127.0.0.1:8642/v1`
+- anan Agent API: `http://127.0.0.1:8642/v1`
 - Open WebUI: `http://127.0.0.1:8080`
 - model name advertised to Open WebUI: `anan Agent`
 
 Useful overrides:
 
 ```bash
-OPEN_WEBUI_NAME='My Hermes UI' \
+OPEN_WEBUI_NAME='My anan Agent UI' \
 OPEN_WEBUI_ENABLE_SIGNUP=true \
-SINOCLAW_API_MODEL_NAME='My anan Agent' \
+SINOCLAW_API_MODEL_NAME='My anan Agent's \
 bash scripts/setup_open_webui.sh
 ```
 
@@ -168,7 +168,7 @@ If you prefer to configure the connection through the UI instead of environment 
 5. Click **+ Add New Connection**
 6. Enter:
    - **URL**: `http://host.docker.internal:8642/v1`
-   - **API Key**: the exact same value as `API_SERVER_KEY` in Hermes
+   - **API Key**: the exact same value as `API_SERVER_KEY` in anan Agent
 7. Click the **checkmark** to verify the connection
 8. **Save**
 
@@ -200,7 +200,7 @@ To use the Responses API mode:
 3. Change **API Type** from "Chat Completions" to **"Responses (Experimental)"**
 4. Save
 
-With the Responses API, Open WebUI sends requests in the Responses format (`input` array + `instructions`), and anan Agent can preserve full tool call history across turns via `previous_response_id`. When `stream: true`, Hermes also streams spec-native `function_call` and `function_call_output` items, which enables custom structured tool-call UI in clients that render Responses events.
+With the Responses API, Open WebUI sends requests in the Responses format (`input` array + `instructions`), and anan Agent can preserve full tool call history across turns via `previous_response_id`. When `stream: true`, anan Agent also streams spec-native `function_call` and `function_call_output` items, which enables custom structured tool-call UI in clients that render Responses events.
 
 :::note
 Open WebUI currently manages conversation history client-side even in Responses mode — it sends the full message history in each request rather than using `previous_response_id`. The main advantage of Responses mode today is the structured event stream: text deltas, `function_call`, and `function_call_output` items arrive as OpenAI Responses SSE events instead of Chat Completions chunks.
@@ -217,9 +217,9 @@ When you send a message in Open WebUI:
 5. The agent's final text response streams back to Open WebUI
 6. Open WebUI displays the response in its chat interface
 
-Your agent has access to the same tools and capabilities as that API-server Hermes instance. If the API server is remote, those tools are remote too.
+Your agent has access to the same tools and capabilities as that API-server anan Agent instance. If the API server is remote, those tools are remote too.
 
-If you need tools to run against your **local** workspace today, run Hermes locally and point it at a pure LLM provider or pure OpenAI-compatible model proxy (for example vLLM, LiteLLM, Ollama, llama.cpp, OpenAI, OpenRouter, etc.). A future split-runtime mode for "remote brain, local hands" is being tracked in [#18715](https://github.com/anan/anan/issues/18715); it is not the behavior of the current API server.
+If you need tools to run against your **local** workspace today, run anan Agent locally and point it at a pure LLM provider or pure OpenAI-compatible model proxy (for example vLLM, LiteLLM, Ollama, llama.cpp, OpenAI, OpenRouter, etc.). A future split-runtime mode for "remote brain, local hands" is being tracked in [#18715](https://github.com/anan/anan/issues/18715); it is not the behavior of the current API server.
 
 :::tip Tool Progress
 With streaming enabled (the default), you'll see brief inline indicators as tools run — the tool emoji and its key argument. These appear in the response stream before the agent's final answer, giving you visibility into what's happening behind the scenes.
@@ -251,7 +251,7 @@ With streaming enabled (the default), you'll see brief inline indicators as tool
 - **Verify the gateway is running**: `curl http://localhost:8642/health` should return `{"status": "ok"}`
 - **Check model listing**: `curl -H "Authorization: Bearer your-secret-key" http://localhost:8642/v1/models` should return a list with `anan`
 - **Docker networking**: From inside Docker, `localhost` means the container, not your host. Use `host.docker.internal` or `--network=host`.
-- **Empty Ollama backend shadowing the picker**: If you omitted `ENABLE_OLLAMA_API=false`, Open WebUI shows an empty Ollama section above your Hermes models. Restart the container with `-e ENABLE_OLLAMA_API=false` or disable Ollama in **Admin Settings → Connections**.
+- **Empty Ollama backend shadowing the picker**: If you omitted `ENABLE_OLLAMA_API=false`, Open WebUI shows an empty Ollama section above your anan Agent models. Restart the container with `-e ENABLE_OLLAMA_API=false` or disable Ollama in **Admin Settings → Connections**.
 
 ### Connection test passes but no models load
 
@@ -271,17 +271,17 @@ Open WebUI persists OpenAI-compatible connection settings in its own database af
 
 ## Multi-User Setup with Profiles
 
-To run separate Hermes instances per user — each with their own config, memory, and skills — use [profiles](/docs/user-guide/profiles). Each profile runs its own API server on a different port and automatically advertises the profile name as the model in Open WebUI.
+To run separate anan Agent instances per user — each with their own config, memory, and skills — use [profiles](/docs/user-guide/profiles). Each profile runs its own API server on a different port and automatically advertises the profile name as the model in Open WebUI.
 
 ### 1. Create profiles and configure API servers
 
 ```bash
-hermes profile create alice
+anan profile create alice
 anan -p alice config set API_SERVER_ENABLED true
 anan -p alice config set API_SERVER_PORT 8643
 anan -p alice config set API_SERVER_KEY alice-secret
 
-hermes profile create bob
+anan profile create bob
 anan -p bob config set API_SERVER_ENABLED true
 anan -p bob config set API_SERVER_PORT 8644
 anan -p bob config set API_SERVER_KEY bob-secret

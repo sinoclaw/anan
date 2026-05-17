@@ -7,9 +7,9 @@ description: "Plugins shipped with anan Agent that run automatically via lifecyc
 
 # Built-in Plugins
 
-Hermes ships a small set of plugins bundled with the repository. They live under `<repo>/plugins/<name>/` and load automatically alongside user-installed plugins in `~/.anan/plugins/`. They use the same plugin surface as third-party plugins — hooks, tools, slash commands — just maintained in-tree.
+anan Agent ships a small set of plugins bundled with the repository. They live under `<repo>/plugins/<name>/` and load automatically alongside user-installed plugins in `~/.anan/plugins/`. They use the same plugin surface as third-party plugins — hooks, tools, slash commands — just maintained in-tree.
 
-See the [Plugins](/docs/user-guide/features/plugins) page for the general plugin system, and [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin) to write your own.
+See the [Plugins](/docs/user-guide/features/plugins) page for the general plugin system, and [Build a anan Agent Plugin](/docs/guides/build-a-anan-plugin) to write your own.
 
 ## How discovery works
 
@@ -29,7 +29,7 @@ On name collision, later sources win — a user plugin named `disk-cleanup` woul
 Bundled plugins ship disabled. Discovery finds them (they appear in `anan plugins list` and the interactive `anan plugins` UI), but none load until you explicitly enable them:
 
 ```bash
-hermes plugins enable disk-cleanup
+anan plugins enable disk-cleanup
 ```
 
 Or via `~/.anan/config.yaml`:
@@ -40,12 +40,12 @@ plugins:
     - disk-cleanup
 ```
 
-This is the same mechanism user-installed plugins use. Bundled plugins are never auto-enabled — not on fresh install, not for existing users upgrading to a newer Hermes. You always opt in explicitly.
+This is the same mechanism user-installed plugins use. Bundled plugins are never auto-enabled — not on fresh install, not for existing users upgrading to a newer anan Agent. You always opt in explicitly.
 
 To turn a bundled plugin off again:
 
 ```bash
-hermes plugins disable disk-cleanup
+anan plugins disable disk-cleanup
 # or: remove it from plugins.enabled in config.yaml
 ```
 
@@ -118,7 +118,7 @@ Auto-tracks and removes ephemeral files created during sessions — test scripts
 
 ### observability/langfuse
 
-Traces Hermes turns, LLM calls, and tool invocations to [Langfuse](https://langfuse.com) — an open-source LLM observability platform. One span per turn, one generation per API call, one tool observation per tool call. Usage totals, per-type token counts, and cost estimates come out of Hermes' canonical `agent.usage_pricing` numbers, so the Langfuse dashboard sees the same breakdown (input / output / `cache_read_input_tokens` / `cache_creation_input_tokens` / `reasoning_tokens`) that appears in `anan logs`.
+Traces anan Agent turns, LLM calls, and tool invocations to [Langfuse](https://langfuse.com) — an open-source LLM observability platform. One span per turn, one generation per API call, one tool observation per tool call. Usage totals, per-type token counts, and cost estimates come out of anan Agent's canonical `agent.usage_pricing` numbers, so the Langfuse dashboard sees the same breakdown (input / output / `cache_read_input_tokens` / `cache_creation_input_tokens` / `reasoning_tokens`) that appears in `anan logs`.
 
 The plugin is fail-open: no SDK installed, no credentials, or a transient Langfuse error — all turn into a silent no-op in the hook. The agent loop is never impacted.
 
@@ -134,7 +134,7 @@ The wizard collects your keys, `pip install`s the `langfuse` SDK, and adds `obse
 
 ```bash
 pip install langfuse
-hermes plugins enable observability/langfuse
+anan plugins enable observability/langfuse
 ```
 
 Then put the credentials in `~/.anan/.env`:
@@ -149,7 +149,7 @@ SINOCLAW_LANGFUSE_BASE_URL=https://cloud.langfuse.com   # or your self-hosted UR
 
 | Hook | Behaviour |
 |---|---|
-| `pre_api_request` / `pre_llm_call` | Open (or reuse) a per-turn root span "Hermes turn". Start a `generation` child observation for this API call with serialized recent messages as input. |
+| `pre_api_request` / `pre_llm_call` | Open (or reuse) a per-turn root span "anan Agent turn". Start a `generation` child observation for this API call with serialized recent messages as input. |
 | `post_api_request` / `post_llm_call` | Close the generation, attach `usage_details`, `cost_details`, `finish_reason`, assistant output + tool calls. If no tool calls and non-empty content, close the turn. |
 | `pre_tool_call` | Start a `tool` child observation with sanitized `args`. |
 | `post_tool_call` | Close the tool observation with sanitized `result`. `read_file` payloads get summarized (head + tail + omitted-line count) so a huge file read stays under `SINOCLAW_LANGFUSE_MAX_CHARS`. |
@@ -159,8 +159,8 @@ Session grouping keys off the anan session ID (or task ID for sub-agents) via `l
 **Verify:**
 
 ```bash
-hermes plugins list                 # observability/langfuse should show "enabled"
-hermes chat -q "hello"              # check the Langfuse UI for a "Hermes turn" trace
+anan plugins list                 # observability/langfuse should show "enabled"
+anan chat -q "hello"              # check the Langfuse UI for a "anan Agent turn" trace
 ```
 
 **Optional tuning** (in `.env`):
@@ -193,7 +193,7 @@ Lets the agent **join, transcribe, and participate in Google Meet calls** — ta
 **Setup:**
 
 ```bash
-hermes plugins enable google_meet
+anan plugins enable google_meet
 # Prompts you to sign in via the plugin's OAuth flow on first use —
 # needs a Google account with Meet access. Host approval may be required
 # if the meeting enforces "only invited participants can join".
@@ -211,7 +211,7 @@ The agent kicks off the meeting join, streams the transcription back into its co
 
 ### anan-achievements
 
-Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, tiered badges generated from your real anan session history. Tool-chain feats, debugging patterns, vibe-coding streaks, skill/memory usage, model/provider variety, lifestyle quirks (weekend and night sessions). Originally authored by [@PCinkusz](https://github.com/PCinkusz) as an external plugin; brought in-tree so it stays in lockstep with Hermes feature changes.
+Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, tiered badges generated from your real anan session history. Tool-chain feats, debugging patterns, vibe-coding streaks, skill/memory usage, model/provider variety, lifestyle quirks (weekend and night sessions). Originally authored by [@PCinkusz](https://github.com/PCinkusz) as an external plugin; brought in-tree so it stays in lockstep with anan Agent feature changes.
 
 **How it works:**
 
@@ -228,7 +228,7 @@ Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, ti
 |---|---|
 | Unlocked | At least one tier achieved |
 | Discovered | Known achievement, progress visible, not yet earned |
-| Secret | Hidden until Hermes detects the first related signal in your history |
+| Secret | Hidden until anan Agent detects the first related signal in your history |
 
 **API** — routes mount under `/api/plugins/anan-achievements/`:
 
@@ -245,7 +245,7 @@ Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, ti
 
 | File | Contents |
 |---|---|
-| `state.json` | Unlock history: which badges you've earned and when. Stable across Hermes updates. |
+| `state.json` | Unlock history: which badges you've earned and when. Stable across anan Agent updates. |
 | `scan_snapshot.json` | Last completed scan payload (served immediately on dashboard load) |
 | `scan_checkpoint.json` | Per-session stats cache keyed by fingerprint (makes warm rescans fast) |
 
@@ -262,7 +262,7 @@ Adds a **Steam-style achievements tab to the dashboard** — 60+ collectible, ti
 
 ## Adding a bundled plugin
 
-Bundled plugins are written exactly like any other Hermes plugin — see [Build a Hermes Plugin](/docs/guides/build-a-anan-plugin). The only differences are:
+Bundled plugins are written exactly like any other anan Agent plugin — see [Build a anan Agent Plugin](/docs/guides/build-a-anan-plugin). The only differences are:
 
 - Directory lives at `<repo>/plugins/<name>/` instead of `~/.anan/plugins/<name>/`
 - Manifest source is reported as `bundled` in `anan plugins list`

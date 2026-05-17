@@ -8,23 +8,23 @@ the session) detect problems early and intervene effectively.
 
 ```bash
 # Live event stream — task spawns, status changes, heartbeats, completions
-hermes kanban watch --tenant <project-slug>
+anan kanban watch --tenant <project-slug>
 
 # Snapshot of the board
-hermes kanban list --tenant <project-slug>
-hermes kanban list --tenant <project-slug> --json     # machine-readable
+anan kanban list --tenant <project-slug>
+anan kanban list --tenant <project-slug> --json     # machine-readable
 
 # Per-status counts + oldest-ready age
-hermes kanban stats --tenant <project-slug>
+anan kanban stats --tenant <project-slug>
 
 # Visual dashboard (browser)
-hermes dashboard
+anan dashboard
 
 # Inspect a specific task (includes comments + events)
-hermes kanban show <task-id>
+anan kanban show <task-id>
 
 # Follow a single task's event stream
-hermes kanban tail <task-id>
+anan kanban tail <task-id>
 ```
 
 Verify available subcommands with `anan kanban --help` — the kanban CLI
@@ -68,11 +68,11 @@ When a renderer ships a clip that doesn't pass review:
 
 ```bash
 # 1. Comment on the renderer's task with specific feedback
-hermes kanban comment <renderer-task-id> "Scene 3 looks too sparse \
+anan kanban comment <renderer-task-id> "Scene 3 looks too sparse \
 — increase visual density. Tighten color palette to brand spec."
 
 # 2. Create a re-render task with the original as parent
-hermes kanban create "Scene 3 — re-render with feedback" \
+anan kanban create "Scene 3 — re-render with feedback" \
     --assignee renderer-ascii \
     --parent <renderer-task-id> \
     --workspace dir:"$HOME/projects/video-pipeline/<slug>" \
@@ -88,14 +88,14 @@ file):
 
 ```bash
 # 1. Create the new task and capture its id
-NEW_TASK_ID=$(hermes kanban create "Generate SRT captions from voiceover" \
+NEW_TASK_ID=$(anan kanban create "Generate SRT captions from voiceover" \
     --assignee captioner \
     --workspace dir:"$HOME/projects/video-pipeline/<slug>" \
     --tenant <slug> \
     --json | python3 -c "import json,sys;print(json.load(sys.stdin)['id'])")
 
 # 2. Wire it as a parent of the editor's task with `kanban link`
-hermes kanban link "$NEW_TASK_ID" <editor-task-id>
+anan kanban link "$NEW_TASK_ID" <editor-task-id>
 ```
 
 `kanban link` takes `parent_id child_id` (parent first). Use `kanban unlink`
@@ -108,13 +108,13 @@ The kanban dispatcher will SIGTERM (then SIGKILL) any task that exceeds its
 
 ```bash
 # Mark blocked so the dispatcher leaves it alone, then archive
-hermes kanban block <task-id>
-hermes kanban archive <task-id>
+anan kanban block <task-id>
+anan kanban archive <task-id>
 
 # Diagnose what happened
-hermes kanban show <task-id>      # task body, comments, recent events
-hermes kanban tail <task-id>      # follow the live event stream
-hermes kanban log <task-id>       # worker process log
+anan kanban show <task-id>      # task body, comments, recent events
+anan kanban tail <task-id>      # follow the live event stream
+anan kanban log <task-id>       # worker process log
 ```
 
 After stopping, decide: fix root cause + re-create the task, or skip and

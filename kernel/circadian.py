@@ -50,11 +50,17 @@ SleepCycleFn = Callable[[str, EventBus, int], Awaitable[int]]
 
 @dataclass
 class CircadianConfig:
-    """Tunables for the loop. Defaults are demo-friendly (fast cycles)."""
+    """Tunables for the loop. Defaults are production-friendly (slow cycles).
 
-    tick_interval_s: float = 0.05        # how long between ticks
-    fatigue_per_tick: float = 1.0        # cost per tick
-    sleep_threshold: float = 5.0         # when to trigger sleep
+    With tick_interval_s=30.0, fatigue_per_tick=0.5, sleep_threshold=20.0:
+    - 20 ticks × 30s = 600 seconds = 10 minutes before CircadianLoop wants to sleep
+    - This is intentional: an "always-on" cognitive system should stay awake
+      for minutes at a time; real sleep is handled by L1 DreamingPlugin.
+    """
+
+    tick_interval_s: float = 30.0         # how long between ticks (was 0.05 = 50ms, way too fast)
+    fatigue_per_tick: float = 0.5       # cost per tick (was 1.0, too aggressive)
+    sleep_threshold: float = 20.0       # when to trigger sleep (was 5.0 = 0.25s total, way too soon)
     max_cycles: Optional[int] = None     # None = forever; int = stop after N
     day_provider: Callable[[], str] = field(
         default_factory=lambda: (lambda: datetime.now().strftime("%Y-%m-%d"))

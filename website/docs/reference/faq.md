@@ -12,7 +12,7 @@ Quick answers and fixes for the most common questions and issues.
 
 ## Frequently Asked Questions
 
-### What LLM providers work with Hermes?
+### What LLM providers work with anan Agent?
 
 anan Agent works with any OpenAI-compatible API. Supported providers include:
 
@@ -30,33 +30,33 @@ Set your provider with `anan model` or by editing `~/.anan/.env`. See the [Envir
 
 ### Does it work on Windows?
 
-**Not natively.** anan Agent requires a Unix-like environment. On Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run Hermes from inside it. The standard install command works perfectly in WSL2:
+**Not natively.** anan Agent requires a Unix-like environment. On Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run anan Agent from inside it. The standard install command works perfectly in WSL2:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
 
-### I run Hermes in WSL2. What's the best way to control my normal Windows Chrome?
+### I run anan Agent in WSL2. What's the best way to control my normal Windows Chrome?
 
 Prefer an MCP bridge over `/browser connect`.
 
 Recommended pattern:
 
-- run Hermes inside WSL2
+- run anan Agent inside WSL2
 - keep using your normal signed-in Chrome on Windows
 - add `chrome-devtools-mcp` as an MCP server through `cmd.exe` or `powershell.exe`
-- let Hermes use the resulting MCP browser tools
+- let anan Agent use the resulting MCP browser tools
 
-This is more reliable than trying to force Hermes core browser transport to attach directly across the WSL2/Windows boundary.
+This is more reliable than trying to force anan Agent core browser transport to attach directly across the WSL2/Windows boundary.
 
 See:
 
-- [Use MCP with Hermes](../guides/use-mcp-with-hermes.md#wsl2-bridge-anan-in-wsl-to-windows-chrome)
+- [Use MCP with anan Agent](../guides/use-mcp-with-anan.md#wsl2-bridge-anan-in-wsl-to-windows-chrome)
 - [Browser Automation](../user-guide/features/browser.md#wsl2--windows-chrome-prefer-mcp-over-browser-connect)
 
 ### Does it work on Android / Termux?
 
-Yes — Hermes now has a tested Termux install path for Android phones.
+Yes — anan Agent now has a tested Termux install path for Android phones.
 
 Quick install:
 
@@ -77,7 +77,7 @@ API calls go **only to the LLM provider you configure** (e.g., OpenRouter, your 
 Yes. Run `anan model`, select **Custom endpoint**, and enter your server's URL:
 
 ```bash
-hermes model
+anan model
 # Select: Custom endpoint (enter URL manually)
 # API base URL: http://localhost:11434/v1
 # API key: ollama
@@ -94,16 +94,16 @@ model:
   base_url: http://localhost:11434/v1
 ```
 
-Hermes persists the endpoint, provider, and base URL in `config.yaml` so it survives restarts. If your local server has exactly one model loaded, `/model custom` auto-detects it. You can also set `provider: custom` in config.yaml — it's a first-class provider, not an alias for anything else.
+anan Agent persists the endpoint, provider, and base URL in `config.yaml` so it survives restarts. If your local server has exactly one model loaded, `/model custom` auto-detects it. You can also set `provider: custom` in config.yaml — it's a first-class provider, not an alias for anything else.
 
 This works with Ollama, vLLM, llama.cpp server, SGLang, LocalAI, and others. See the [Configuration guide](../user-guide/configuration.md) for details.
 
 :::tip Ollama users
-If you set a custom `num_ctx` in Ollama (e.g., `ollama run --num_ctx 16384`), make sure to set the matching context length in Hermes — Ollama's `/api/show` reports the model's *maximum* context, not the effective `num_ctx` you configured.
+If you set a custom `num_ctx` in Ollama (e.g., `ollama run --num_ctx 16384`), make sure to set the matching context length in anan Agent — Ollama's `/api/show` reports the model's *maximum* context, not the effective `num_ctx` you configured.
 :::
 
 :::tip Timeouts with local models
-Hermes auto-detects local endpoints and relaxes streaming timeouts (read timeout raised from 120s to 1800s, stale stream detection disabled). If you still hit timeouts on very large contexts, set `SINOCLAW_STREAM_READ_TIMEOUT=1800` in your `.env`. See the [Local LLM guide](../guides/local-llm-on-mac.md#timeouts) for details.
+anan Agent auto-detects local endpoints and relaxes streaming timeouts (read timeout raised from 120s to 1800s, stale stream detection disabled). If you still hit timeouts on very large contexts, set `SINOCLAW_STREAM_READ_TIMEOUT=1800` in your `.env`. See the [Local LLM guide](../guides/local-llm-on-mac.md#timeouts) for details.
 :::
 
 ### How much does it cost?
@@ -123,7 +123,7 @@ Both persist across sessions. See [Memory](../user-guide/features/memory.md) and
 
 ### Can I use it in my own Python project?
 
-Yes. Import the `AIAgent` class and use Hermes programmatically:
+Yes. Import the `AIAgent` class and use anan Agent programmatically:
 
 ```python
 from run_agent import AIAgent
@@ -140,7 +140,7 @@ See the [Python Library guide](../user-guide/features/code-execution.md) for ful
 
 ### Installation Issues
 
-#### `hermes: command not found` after installation
+#### `anan: command not found` after installation
 
 **Cause:** Your shell hasn't reloaded the updated PATH.
 
@@ -155,8 +155,8 @@ source ~/.zshrc     # zsh
 
 If it still doesn't work, verify the install location:
 ```bash
-which hermes
-ls ~/.local/bin/hermes
+which anan
+ls ~/.local/bin/anan
 ```
 
 :::tip
@@ -165,7 +165,7 @@ The installer adds `~/.local/bin` to your PATH. If you use a non-standard shell 
 
 #### Python version too old
 
-**Cause:** Hermes requires Python 3.11 or newer.
+**Cause:** anan Agent requires Python 3.11 or newer.
 
 **Solution:**
 ```bash
@@ -180,9 +180,9 @@ The installer handles this automatically — if you see this error during manual
 
 #### Terminal commands say `node: command not found` (or `nvm`, `pyenv`, `asdf`, …)
 
-**Cause:** Hermes builds a per-session environment snapshot by running `bash -l` once at startup. A bash login shell reads `/etc/profile`, `~/.bash_profile`, and `~/.profile`, but **does not source `~/.bashrc`** — so tools that install themselves there (`nvm`, `asdf`, `pyenv`, `cargo`, custom `PATH` exports) stay invisible to the snapshot. This most commonly happens when Hermes runs under systemd or in a minimal shell where nothing has pre-loaded the interactive shell profile.
+**Cause:** anan Agent builds a per-session environment snapshot by running `bash -l` once at startup. A bash login shell reads `/etc/profile`, `~/.bash_profile`, and `~/.profile`, but **does not source `~/.bashrc`** — so tools that install themselves there (`nvm`, `asdf`, `pyenv`, `cargo`, custom `PATH` exports) stay invisible to the snapshot. This most commonly happens when anan Agent runs under systemd or in a minimal shell where nothing has pre-loaded the interactive shell profile.
 
-**Solution:** Hermes auto-sources `~/.bashrc` by default. If that's not enough — e.g. you're a zsh user whose PATH lives in `~/.zshrc`, or you init `nvm` from a standalone file — list the extra files to source in `~/.anan/config.yaml`:
+**Solution:** anan Agent auto-sources `~/.bashrc` by default. If that's not enough — e.g. you're a zsh user whose PATH lives in `~/.zshrc`, or you init `nvm` from a standalone file — list the extra files to source in `~/.anan/config.yaml`:
 
 ```yaml
 terminal:
@@ -223,7 +223,7 @@ source ~/.bashrc
 ```bash
 # Don't use sudo with the installer — it installs to ~/.local/bin
 # If you previously installed with sudo, clean up:
-sudo rm /usr/local/bin/hermes
+sudo rm /usr/local/bin/anan
 # Then re-run the standard installer
 curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh | bash
 ```
@@ -239,10 +239,10 @@ curl -fsSL https://raw.githubusercontent.com/anan/anan/main/scripts/install.sh |
 **Solution:** Exit your session and use `anan model` from your terminal to add new providers:
 
 ```bash
-# Exit the Hermes chat session first (Ctrl+C or /quit)
+# Exit the anan Agent chat session first (Ctrl+C or /quit)
 
 # Run the full provider setup wizard
-hermes model
+anan model
 
 # This lets you: add providers, run OAuth, enter API keys, configure endpoints
 ```
@@ -268,7 +268,7 @@ After adding a new provider via `anan model`, start a new chat session — `/mod
 anan config show
 
 # Re-configure your provider
-hermes model
+anan model
 
 # Or set directly
 anan config set OPENROUTER_API_KEY sk-or-v1-xxxxxxxxxxxx
@@ -285,13 +285,13 @@ Make sure the key matches the provider. An OpenAI key won't work with OpenRouter
 **Solution:**
 ```bash
 # List available models for your provider
-hermes model
+anan model
 
 # Set a valid model
 anan config set SINOCLAW_MODEL anthropic/claude-opus-4.7
 
 # Or specify per-session
-hermes chat --model openrouter/meta-llama/llama-3.1-70b-instruct
+anan chat --model openrouter/meta-llama/llama-3.1-70b-instruct
 ```
 
 #### Rate limiting (429 errors)
@@ -305,7 +305,7 @@ hermes chat --model openrouter/meta-llama/llama-3.1-70b-instruct
 
 #### Context length exceeded
 
-**Cause:** The conversation has grown too long for the model's context window, or Hermes detected the wrong context length for your model.
+**Cause:** The conversation has grown too long for the model's context window, or anan Agent detected the wrong context length for your model.
 
 **Solution:**
 ```bash
@@ -313,13 +313,13 @@ hermes chat --model openrouter/meta-llama/llama-3.1-70b-instruct
 /compress
 
 # Or start a fresh session
-hermes chat
+anan chat
 
 # Use a model with a larger context window
-hermes chat --model openrouter/google/gemini-3-flash-preview
+anan chat --model openrouter/google/gemini-3-flash-preview
 ```
 
-If this happens on the first long conversation, Hermes may have the wrong context length for your model. Check what it detected:
+If this happens on the first long conversation, anan Agent may have the wrong context length for your model. Check what it detected:
 
 Look at the CLI startup line — it shows the detected context length (e.g., `📊 Context limit: 128000 tokens`). You can also check with `/usage` during a session.
 
@@ -351,14 +351,14 @@ See [Context Length Detection](../integrations/providers.md#context-length-detec
 
 #### Command blocked as dangerous
 
-**Cause:** Hermes detected a potentially destructive command (e.g., `rm -rf`, `DROP TABLE`). This is a safety feature.
+**Cause:** anan Agent detected a potentially destructive command (e.g., `rm -rf`, `DROP TABLE`). This is a safety feature.
 
 **Solution:** When prompted, review the command and type `y` to approve it. You can also:
 - Ask the agent to use a safer alternative
 - See the full list of dangerous patterns in the [Security docs](../user-guide/security.md)
 
 :::tip
-This is working as intended — Hermes never silently runs destructive commands. The approval prompt shows you exactly what will execute.
+This is working as intended — anan Agent never silently runs destructive commands. The approval prompt shows you exactly what will execute.
 :::
 
 #### `sudo` not working via messaging gateway
@@ -458,7 +458,7 @@ anan gateway run
 
 # Option 2: Persistent via tmux (survives terminal close)
 tmux new -s anan 'anan gateway run'
-# Reattach later: tmux attach -t hermes
+# Reattach later: tmux attach -t anan
 
 # Option 3: Background via nohup
 nohup anan gateway run > ~/.anan/logs/gateway.log 2>&1 &
@@ -496,7 +496,7 @@ anan gateway start      # Detects the updated plist and reloads
 You can verify the plist has the correct PATH:
 ```bash
 /usr/libexec/PlistBuddy -c "Print :EnvironmentVariables:PATH" \
-  ~/Library/LaunchAgents/ai.hermes.gateway.plist
+  ~/Library/LaunchAgents/ai.anan.gateway.plist
 ```
 
 ---
@@ -540,10 +540,10 @@ Use `/compress` regularly during long sessions. It summarizes the conversation h
 /compress
 
 # Start a new session with a reference to the old one
-hermes chat
+anan chat
 
 # Resume a specific session later if needed
-hermes chat --continue
+anan chat --continue
 ```
 
 ---
@@ -591,12 +591,12 @@ mcp_servers:
 anan config show | grep -A 12 mcp_servers
 
 # Restart anan or reload MCP after config changes
-hermes chat
+anan chat
 ```
 
 See also:
 - [MCP (Model Context Protocol)](/docs/user-guide/features/mcp)
-- [Use MCP with Hermes](/docs/guides/use-mcp-with-hermes)
+- [Use MCP with anan Agent](/docs/guides/use-mcp-with-anan)
 - [MCP Config Reference](/docs/reference/mcp-config-reference)
 
 #### MCP timeout errors
@@ -609,7 +609,7 @@ See also:
 - For remote HTTP MCP servers, check network connectivity
 
 :::warning
-If an MCP server crashes mid-request, Hermes will report a timeout. Check the server's own logs (not just Hermes logs) to diagnose the root cause.
+If an MCP server crashes mid-request, anan Agent will report a timeout. Check the server's own logs (not just anan Agent logs) to diagnose the root cause.
 :::
 
 ---
@@ -645,7 +645,7 @@ There is no hard limit. Each profile is just a directory under `~/.anan/profiles
 
 **Scenario:** You use GPT-5.4 as your daily driver, but Gemini or Grok writes better social media content. Manually switching models every time is tedious.
 
-**Solution: Delegation config.** Hermes can route subagents to a different model automatically. Set this in `~/.anan/config.yaml`:
+**Solution: Delegation config.** anan Agent can route subagents to a different model automatically. Set this in `~/.anan/config.yaml`:
 
 ```yaml
 delegation:
@@ -653,7 +653,7 @@ delegation:
   provider: "openrouter"                    # provider for subagents
 ```
 
-Now when you tell Hermes "write me a Twitter thread about X" and it spawns a `delegate_task` subagent, that subagent runs on Gemini instead of your main model. Your primary conversation stays on GPT-5.4.
+Now when you tell anan Agent "write me a Twitter thread about X" and it spawns a `delegate_task` subagent, that subagent runs on Gemini instead of your main model. Your primary conversation stays on GPT-5.4.
 
 You can also be explicit in your prompt: *"Delegate a task to write social media posts about our product launch. Use your subagent for the actual writing."* The agent will use `delegate_task`, which automatically picks up the delegation config.
 
@@ -669,9 +669,9 @@ See [Subagent Delegation](../user-guide/features/delegation.md) for more on how 
 
 ### Running multiple agents on one WhatsApp number (per-chat binding)
 
-**Scenario:** In OpenClaw, you had multiple independent agents bound to specific WhatsApp chats — one for a family shopping list group, another for your private chat. Can Hermes do this?
+**Scenario:** In OpenClaw, you had multiple independent agents bound to specific WhatsApp chats — one for a family shopping list group, another for your private chat. Can anan Agent do this?
 
-**Current limitation:** Hermes profiles each require their own WhatsApp number/session. You cannot bind multiple profiles to different chats on the same WhatsApp number — the WhatsApp bridge (Baileys) uses one authenticated session per number.
+**Current limitation:** anan Agent profiles each require their own WhatsApp number/session. You cannot bind multiple profiles to different chats on the same WhatsApp number — the WhatsApp bridge (Baileys) uses one authenticated session per number.
 
 **Workarounds:**
 
@@ -687,7 +687,7 @@ See [Profiles](../user-guide/profiles.md) and [WhatsApp setup](../user-guide/mes
 
 ### Controlling what shows up in Telegram (hiding logs and reasoning)
 
-**Scenario:** You see gateway exec logs, Hermes reasoning, and tool call details in Telegram instead of just the final output.
+**Scenario:** You see gateway exec logs, anan Agent reasoning, and tool call details in Telegram instead of just the final output.
 
 **Solution:** The `display.tool_progress` setting in `config.yaml` controls how much tool activity is shown:
 
@@ -733,7 +733,7 @@ Skills with very long descriptions are truncated to 40 characters in the Telegra
 
 **Scenario:** You have a Telegram or Discord thread where multiple people mention the bot. You want all mentions in that thread to be part of one shared conversation, not separate per-user sessions.
 
-**Current behavior:** Hermes creates sessions keyed by user ID on most platforms, so each person gets their own conversation context. This is by design for privacy and context isolation.
+**Current behavior:** anan Agent creates sessions keyed by user ID on most platforms, so each person gets their own conversation context. This is by design for privacy and context isolation.
 
 **Workarounds:**
 
@@ -743,7 +743,7 @@ Skills with very long descriptions are truncated to 40 characters in the Telegra
 
 3. **Use a Discord channel.** Discord sessions are keyed by channel, so all users in the same channel share context. Use a dedicated channel for the shared conversation.
 
-### Exporting Hermes to another machine
+### Exporting anan Agent to another machine
 
 **Scenario:** You've built up skills, cron jobs, and memories on one machine and want to move everything to a new dedicated Linux box.
 
@@ -777,10 +777,10 @@ Skills with very long descriptions are truncated to 40 characters in the Telegra
 
 ```bash
 # On the source machine
-hermes profile export work ./work-backup.tar.gz
+anan profile export work ./work-backup.tar.gz
 
 # Copy the file to the target machine, then:
-hermes profile import ./work-backup.tar.gz work
+anan profile import ./work-backup.tar.gz work
 ```
 
 The imported profile will have all config, memories, sessions, and skills from the export. You may need to update paths or re-authenticate with providers if the new machine has a different setup.
@@ -801,12 +801,12 @@ rsync -av --exclude='anan' ~/.anan/ newmachine:~/.anan/
 ```
 
 :::tip
-`anan backup` produces a consistent snapshot even while Hermes is actively running. The restored archive excludes machine-local runtime files like `gateway.pid` and `cron.pid`.
+`anan backup` produces a consistent snapshot even while anan Agent is actively running. The restored archive excludes machine-local runtime files like `gateway.pid` and `cron.pid`.
 :::
 
 ### Permission denied when reloading shell after install
 
-**Scenario:** After running the Hermes installer, `source ~/.zshrc` gives a permission denied error.
+**Scenario:** After running the anan Agent installer, `source ~/.zshrc` gives a permission denied error.
 
 **Cause:** This usually happens when `~/.zshrc` (or `~/.bashrc`) has incorrect file permissions, or when the installer couldn't write to it cleanly. It's not a anan-specific issue — it's a shell config permissions problem.
 
@@ -841,10 +841,10 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 anan config show | head -20
 
 # Re-run model selection
-hermes model
+anan model
 
 # Or test with a known-good model
-hermes chat -q "hello" --model anthropic/claude-opus-4.7
+anan chat -q "hello" --model anthropic/claude-opus-4.7
 ```
 
 If using OpenRouter, make sure your API key has credits. A 400 from OpenRouter often means the model requires a paid plan or the model ID has a typo.
@@ -857,4 +857,4 @@ If your issue isn't covered here:
 
 1. **Search existing issues:** [GitHub Issues](https://github.com/anan/anan/issues)
 2. **Ask the community:** [anan Team Discord](https://discord.gg/anan)
-3. **File a bug report:** Include your OS, Python version (`python3 --version`), Hermes version (`anan --version`), and the full error message
+3. **File a bug report:** Include your OS, Python version (`python3 --version`), anan Agent version (`anan --version`), and the full error message

@@ -10,15 +10,15 @@ anan Agent integrates with Feishu and Lark as a full-featured bot. Once connecte
 
 The integration supports both connection modes:
 
-- `websocket` — recommended; Hermes opens the outbound connection and you do not need a public webhook endpoint
+- `websocket` — recommended; anan Agent opens the outbound connection and you do not need a public webhook endpoint
 - `webhook` — useful when you want Feishu/Lark to push events into your gateway over HTTP
 
-## How Hermes Behaves
+## How anan Agent Behaves
 
 | Context | Behavior |
 |---------|----------|
-| Direct messages | Hermes responds to every message. |
-| Group chats | Hermes responds only when the bot is @mentioned in the chat. |
+| Direct messages | anan Agent responds to every message. |
+| Group chats | anan Agent responds only when the bot is @mentioned in the chat. |
 | Shared group chats | By default, session history is isolated per user inside a shared chat. |
 
 This shared-chat behavior is controlled by `config.yaml`:
@@ -37,7 +37,7 @@ Set it to `false` only if you explicitly want one shared conversation per chat.
 anan gateway setup
 ```
 
-Select **Feishu / Lark** and scan the QR code with your Feishu or Lark mobile app. Hermes will automatically create a bot application with the correct permissions and save the credentials.
+Select **Feishu / Lark** and scan the QR code with your Feishu or Lark mobile app. anan Agent will automatically create a bot application with the correct permissions and save the credentials.
 
 ### Alternative: Manual Setup
 
@@ -59,7 +59,7 @@ Keep the App Secret private. Anyone with it can impersonate your app.
 
 ### Recommended: WebSocket mode
 
-Use WebSocket mode when Hermes runs on your laptop, workstation, or a private server. No public URL is required. The official Lark SDK opens and maintains a persistent outbound WebSocket connection with automatic reconnection.
+Use WebSocket mode when anan Agent runs on your laptop, workstation, or a private server. No public URL is required. The official Lark SDK opens and maintains a persistent outbound WebSocket connection with automatic reconnection.
 
 ```bash
 FEISHU_CONNECTION_MODE=websocket
@@ -71,13 +71,13 @@ FEISHU_CONNECTION_MODE=websocket
 
 ### Optional: Webhook mode
 
-Use webhook mode only when you already run Hermes behind a reachable HTTP endpoint.
+Use webhook mode only when you already run anan Agent behind a reachable HTTP endpoint.
 
 ```bash
 FEISHU_CONNECTION_MODE=webhook
 ```
 
-In webhook mode, Hermes starts an HTTP server (via `aiohttp`) and serves a Feishu endpoint at:
+In webhook mode, anan Agent starts an HTTP server (via `aiohttp`) and serves a Feishu endpoint at:
 
 ```text
 /feishu/webhook
@@ -95,7 +95,7 @@ FEISHU_WEBHOOK_PATH=/feishu/webhook  # default: /feishu/webhook
 
 When Feishu sends a URL verification challenge (`type: url_verification`), the webhook responds automatically so you can complete the subscription setup in the Feishu developer console.
 
-## Step 3: Configure Hermes
+## Step 3: Configure anan Agent
 
 ### Option A: Interactive Setup
 
@@ -189,7 +189,7 @@ Both `FEISHU_ENCRYPT_KEY` and `FEISHU_VERIFICATION_TOKEN` can be used together f
 
 ## Group Message Policy
 
-The `FEISHU_GROUP_POLICY` environment variable controls whether and how Hermes responds in group chats:
+The `FEISHU_GROUP_POLICY` environment variable controls whether and how anan Agent responds in group chats:
 
 ```bash
 FEISHU_GROUP_POLICY=allowlist   # default
@@ -197,13 +197,13 @@ FEISHU_GROUP_POLICY=allowlist   # default
 
 | Value | Behavior |
 |-------|----------|
-| `open` | Hermes responds to @mentions from any user in any group. |
-| `allowlist` | Hermes only responds to @mentions from users listed in `FEISHU_ALLOWED_USERS`. |
-| `disabled` | Hermes ignores all group messages entirely. |
+| `open` | anan Agent responds to @mentions from any user in any group. |
+| `allowlist` | anan Agent only responds to @mentions from users listed in `FEISHU_ALLOWED_USERS`. |
+| `disabled` | anan Agent ignores all group messages entirely. |
 
 In all modes, the bot must be explicitly @mentioned (or @all) in the group before the message is processed. Direct messages always bypass this gate.
 
-Set `FEISHU_REQUIRE_MENTION=false` to let Hermes read all group traffic without requiring an @mention:
+Set `FEISHU_REQUIRE_MENTION=false` to let anan Agent read all group traffic without requiring an @mention:
 
 ```bash
 FEISHU_REQUIRE_MENTION=false
@@ -213,7 +213,7 @@ For per-chat control, set `require_mention` on a `group_rules` entry — see [Pe
 
 ### Bot Identity
 
-Hermes auto-detects the bot's `open_id` and display name on startup. You only need to set these manually when auto-detection cannot reach the Feishu API, or when your app uses tenant-scoped user IDs:
+anan Agent auto-detects the bot's `open_id` and display name on startup. You only need to set these manually when auto-detection cannot reach the Feishu API, or when your app uses tenant-scoped user IDs:
 
 ```bash
 FEISHU_BOT_OPEN_ID=ou_xxx     # only when auto-detection fails
@@ -223,7 +223,7 @@ FEISHU_BOT_NAME=MyBot         # only when auto-detection fails
 
 ## Bot-to-Bot Messaging
 
-By default Hermes ignores messages sent by other bots. Enable bot-to-bot messaging when you want Hermes to participate in A2A orchestration or receive notifications from other bots in the same group.
+By default anan Agent ignores messages sent by other bots. Enable bot-to-bot messaging when you want anan Agent to participate in A2A orchestration or receive notifications from other bots in the same group.
 
 ```bash
 FEISHU_ALLOW_BOTS=mentions   # default: none
@@ -232,7 +232,7 @@ FEISHU_ALLOW_BOTS=mentions   # default: none
 | Value | Behavior |
 |-------|----------|
 | `none` | Ignore all messages from other bots (default). |
-| `mentions` | Accept only when the peer bot @mentions Hermes. |
+| `mentions` | Accept only when the peer bot @mentions anan Agent. |
 | `all` | Accept every peer bot message. |
 
 Also configurable as `feishu.allow_bots` in `config.yaml` (env wins when both are set).
@@ -249,7 +249,7 @@ When users click buttons or interact with interactive cards sent by the bot, the
 - The action's `value` payload from the card definition is included as JSON.
 - Card actions are deduplicated with a 15-minute window to prevent double processing.
 
-Gateway-driven update prompts use a native Feishu `Yes` / `No` card instead of falling back to plain text replies. When `anan update --gateway` needs confirmation, the adapter records the selected answer in Hermes's `.update_response` file and replaces the card inline with a resolved state.
+Gateway-driven update prompts use a native Feishu `Yes` / `No` card instead of falling back to plain text replies. When `anan update --gateway` needs confirmation, the adapter records the selected answer in anan Agent's `.update_response` file and replaces the card inline with a resolved state.
 
 Card action events are dispatched with `MessageType.COMMAND`, so they flow through the normal command processing pipeline.
 
@@ -274,7 +274,7 @@ Without all three steps, Feishu will successfully *send* interactive cards (send
 
 ## Document Comment Intelligent Reply
 
-Beyond chat, the adapter can also answer `@`-mentions left on **Feishu/Lark documents**. When a user comments on a document (local text selection or whole-doc comment) and @-mentions the bot, Hermes reads the document plus the surrounding comment thread and posts an LLM reply inline on the thread.
+Beyond chat, the adapter can also answer `@`-mentions left on **Feishu/Lark documents**. When a user comments on a document (local text selection or whole-doc comment) and @-mentions the bot, anan Agent reads the document plus the surrounding comment thread and posts an LLM reply inline on the thread.
 
 Powered by the `drive.notice.comment_add_v1` event, the handler:
 
@@ -516,14 +516,14 @@ WebSocket and per-group ACL settings are configured via `config.yaml` under `pla
 | `websockets not installed; websocket mode unavailable` | Install websockets: `pip install websockets` |
 | `aiohttp not installed; webhook mode unavailable` | Install aiohttp: `pip install aiohttp` |
 | `FEISHU_APP_ID or FEISHU_APP_SECRET not set` | Set both env vars or configure via `anan gateway setup` |
-| `Another local anan gateway is already using this Feishu app_id` | Only one Hermes instance can use the same app_id at a time. Stop the other gateway first. |
+| `Another local anan gateway is already using this Feishu app_id` | Only one anan Agent instance can use the same app_id at a time. Stop the other gateway first. |
 | Bot doesn't respond in groups | Ensure the bot is @mentioned, check `FEISHU_GROUP_POLICY`, and verify the sender is in `FEISHU_ALLOWED_USERS` if policy is `allowlist` |
 | `Webhook rejected: invalid verification token` | Ensure `FEISHU_VERIFICATION_TOKEN` matches the token in your Feishu app's Event Subscriptions config |
 | `Webhook rejected: invalid signature` | Ensure `FEISHU_ENCRYPT_KEY` matches the encrypt key in your Feishu app config |
 | Post messages show as plain text | The Feishu API rejected the post payload; this is normal fallback behavior. Check logs for details. |
 | Images/files not received by bot | Grant `im:message` and `im:resource` permission scopes to your Feishu app |
 | Bot identity not auto-detected | Usually a transient network issue reaching Feishu's bot info endpoint. Set `FEISHU_BOT_OPEN_ID` and `FEISHU_BOT_NAME` manually as a workaround. |
-| Peer bot messages still ignored after enabling `FEISHU_ALLOW_BOTS` | Hermes can't identify itself yet — set `FEISHU_BOT_OPEN_ID` (and `FEISHU_BOT_USER_ID` if your app uses `sender_id_type=user_id`). |
+| Peer bot messages still ignored after enabling `FEISHU_ALLOW_BOTS` | anan Agent can't identify itself yet — set `FEISHU_BOT_OPEN_ID` (and `FEISHU_BOT_USER_ID` if your app uses `sender_id_type=user_id`). |
 | Peer bots show as `ou_xxxxxx` instead of by name | Grant the `application:bot.basic_info:read` scope. |
 | Error 200340 when clicking approval buttons | Enable **Interactive Card** capability and configure **Card Request URL** in the Feishu Developer Console. See [Required Feishu App Configuration](#required-feishu-app-configuration) above. |
 | `Webhook rate limit exceeded` | More than 120 requests/minute from the same IP. This is usually a misconfiguration or loop. |
