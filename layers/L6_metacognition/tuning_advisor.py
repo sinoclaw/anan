@@ -317,10 +317,15 @@ class MetacognitionAdvisor:
             return fallback_evaluate(action, metrics_before, metrics_after, self._applied_history)
 
         try:
+
             result_text = await self._delegate_fn(
-                goal=f"评估调参效果: {action.target} {action.old_value}→{action.new_value}",
+
+                goal="task 评估",
+
                 context=prompt,
-                skills=["agent"],
+
+                parent_agent=None,
+
             )
 
             parsed = self._parse_response(result_text, action.id)

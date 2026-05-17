@@ -192,11 +192,10 @@ class ProgressAssessor:
         try:
             # Launch subagent via delegate_task
             result_text = await self._delegate_fn(
-                goal=f"评估目标进度: {goal.description}",
+                goal="L7 Goal progress 评估",
                 context=prompt,
-                skills=["agent"],
+                parent_agent=None,
             )
-
             parsed = self._parse_response(result_text)
             logger.info(
                 "ProgressAssessor: goal=%s progress=%d via subagent",

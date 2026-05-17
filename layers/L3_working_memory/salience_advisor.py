@@ -166,9 +166,9 @@ class SalienceAdvisor:
 
         try:
             result_text = await self._delegate_fn(
-                goal="事件 salience 评估 — Working Memory",
+                goal="L3 WorkingMemory 事件重要性评估",
                 context=prompt,
-                skills=["agent"],
+                parent_agent=None,
             )
             return self._parse_response(result_text, event_topic, event_payload, context_tags)
         except Exception as exc:

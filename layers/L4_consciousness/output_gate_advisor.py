@@ -179,9 +179,9 @@ class OutputGateAdvisor:
 
         try:
             result_text = await self._delegate_fn(
-                goal="思考推送决策 — Output Gate",
+                goal="L4 Consciousness 思考推送决策",
                 context=prompt,
-                skills=["agent"],
+                parent_agent=None,
             )
             return self._parse_response(result_text, thought_type, importance, content, recent)
         except Exception as exc:

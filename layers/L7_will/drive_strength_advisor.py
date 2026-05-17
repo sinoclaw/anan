@@ -248,9 +248,9 @@ class DriveStrengthAdvisor:
 
         try:
             result_text = await self._delegate_fn(
-                goal=f"评估 L7 驱动抑制决策: {issues[:2]}",
+                goal="task 评估",
                 context=prompt,
-                skills=["agent"],
+                parent_agent=None,
             )
             parsed = self._parse_response(result_text)
             logger.info(

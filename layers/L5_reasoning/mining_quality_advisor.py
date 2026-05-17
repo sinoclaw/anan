@@ -242,9 +242,9 @@ class MiningQualityAdvisor:
 
         try:
             result_text = await self._delegate_fn(
-                goal=f"评估 L5 挖掘质量: {patterns_found} patterns from {total_events} events",
+                goal="L5 阈值调整评估",
                 context=prompt,
-                skills=["agent"],
+                parent_agent=None,
             )
             decision = self._parse_response(result_text)
             logger.info(

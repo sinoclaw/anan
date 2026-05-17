@@ -23,9 +23,50 @@ EVENTS = ["gateway:startup", "gateway:shutdown", "agent:start", "agent:end"]
 
 # 全局 runner 引用，避免被 GC
 _mind_stack_runner = None
+_runtime_handle = None
 
 
-# 全局格式化后的心智上下文（被 agent:start 填充，run.py 读取）
+# ── MinimalRuntimeHandle ────────────────────────────────────────────────────
+# A duck-type "parent agent" that satisfies delegate_task's getattr() calls.
+# Allows MindStackRunner's async advisors to spawn real subagents via
+# delegate_task without needing a full AIAgent instance.
+#
+# Required attributes (all getattr-safe, default to None):
+#   _delegate_depth, _subagent_id, valid_tool_names, enabled_toolsets,
+#   terminal_cwd, cwd, _delegate_spinner, tool_progress_callback
+# ─────────────────────────────────────────────────────────────────────────────
+class MinimalRuntimeHandle:
+    """Minimal parent-agent handle for delegate_task in async contexts."""
+
+    def __init__(self):
+        # delegate_task reads these via getattr(x, attr, None)
+        self._delegate_depth = 0
+        self._subagent_id = None
+        self.valid_tool_names = []          # empty = all tools allowed
+        self.enabled_toolsets = None         # None = all toolsets enabled
+        self.terminal_cwd = "/data/anan"
+        self.cwd = "/data/anan"
+        self._delegate_spinner = None
+        self.tool_progress_callback = None
+        self._subdirectory_hints = None
+
+    async def _delegate_async(self, **kwargs) -> str:
+        """Async wrapper: run sync delegate_task in a thread pool."""
+        import concurrent.futures
+        from tools.delegate_tool import delegate_task
+        loop = asyncio.get_event_loop()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            result = await loop.run_in_executor(
+                pool, lambda: delegate_task(**kwargs)
+            )
+        return result
+
+    def delegate_task(self, **kwargs) -> str:
+        """Sync delegate_task — call this from async code via _delegate_async."""
+        raise RuntimeError("call _delegate_async() not delegate_task() directly")
+
+
+# ── 全局格式化后的心智上下文（被 agent:start 填充，run.py 读取）
 _mind_stack_context: str = ""
 
 # agent:end 时需要配对的 context（上一轮 agent:start 的 message）
@@ -67,6 +108,9 @@ def _start_mind_stack(context: dict) -> None:
         logger.error("Failed to import MindStackRunner: %s", exc)
         return
 
+    global _runtime_handle
+    _runtime_handle = MinimalRuntimeHandle()
+
     config = CircadianConfig(
         tick_interval_s=30.0,   # 每30秒一次心跳（idle 场景）
         fatigue_per_tick=0.5,     # 每次心跳累积0.5疲劳值
@@ -77,6 +121,7 @@ def _start_mind_stack(context: dict) -> None:
     _mind_stack_runner = MindStackRunner(
         circadian_config=config,
         gateway_events=True,
+        runtime_handle=_runtime_handle,
     )
 
     # 在新任务里启动，不阻塞 gateway 启动流程

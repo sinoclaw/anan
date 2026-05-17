@@ -180,9 +180,9 @@ class DrivePriorityAdvisor:
 
         try:
             result_text = await self._delegate_fn(
-                goal="目标优先级评估 — 驱动力匹配",
+                goal="L8 Drive 目标优先级评估",
                 context=prompt,
-                skills=["agent"],
+                parent_agent=None,
             )
             return self._parse_response(result_text, goal_tags, goal_description, active_drives, top_drives)
         except Exception as exc:

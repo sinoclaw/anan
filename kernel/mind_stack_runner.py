@@ -36,6 +36,13 @@ from typing import Optional, Dict, Any
 from kernel.event_bus import Event, EventBus, get_bus
 from kernel.circadian import CircadianConfig, CircadianLoop
 from kernel.idle_detector import IdleDetector
+from tools.delegate_tool import delegate_task
+
+async def _noop_async_delegate(**kwargs) -> str:
+    """Fallback when no runtime_handle is available."""
+    return '{"results": [], "error": "no runtime"}'
+
+
 
 logger = logging.getLogger("gateway.builtin.mind_stack")
 
@@ -417,6 +424,7 @@ class MindStackRunner:
         circadian_config: Optional[CircadianConfig] = None,
         gateway_events: bool = True,
         idle_threshold_s: float = 30.0,
+        runtime_handle=None,
     ):
         self._circadian_cfg = circadian_config or CircadianConfig(
             tick_interval_s=60.0,   # 每60秒一次心跳（可测试）
@@ -433,6 +441,7 @@ class MindStackRunner:
         self._gateway_unsub: Optional[callable] = None
         self._running = False
         self._tasks: list[asyncio.Task] = []
+        self._runtime_handle = runtime_handle
 
         # L5 PatternMiner 实例
         self._pattern_miner = None
@@ -695,7 +704,7 @@ class MindStackRunner:
                     self_model=self_model,
                     tick_interval=6,
                 )
-                self._self_evaluator.set_delegate(delegate_task)
+                self._self_evaluator.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
                 self._layers.append(self._self_evaluator)
                 logger.info("  ✓ L9 SelfEvaluator 就绪（subagent mode）")
             except Exception as exc:
@@ -714,7 +723,7 @@ class MindStackRunner:
                 mine_on_event="L0.circadian.bedtime",
                 self_model=self_model,
             )
-            self._pattern_miner.set_delegate(delegate_task)
+            self._pattern_miner.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(self._pattern_miner)
             logger.info("  ✓ L5 PatternMiner 就绪（subagent mode）")
         except Exception as exc:
@@ -769,7 +778,7 @@ class MindStackRunner:
         try:
             from layers.L2_memory.memory_tier import MemoryTier
             self._memory_tier = MemoryTier(bus=self._bus)
-            self._memory_tier.set_delegate(delegate_task)
+            self._memory_tier.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(self._memory_tier)
             logger.info("  ✓ L2 Memory 就绪（subagent mode）")
         except Exception as exc:
@@ -791,7 +800,7 @@ class MindStackRunner:
         try:
             from layers.L3_working_memory.working_memory import WorkingMemory
             self._working_memory = WorkingMemory(capacity=64, half_life_s=120.0)
-            self._working_memory.set_delegate(delegate_task)
+            self._working_memory.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(self._working_memory)
             logger.info("  ✓ L3 WorkingMemory 就绪（subagent mode）")
         except Exception as exc:
@@ -850,7 +859,7 @@ class MindStackRunner:
                 predictor=self._predictor if hasattr(self, '_predictor') else None,
                 pattern_miner=self._pattern_miner if hasattr(self, '_pattern_miner') else None,
             )
-            st.set_delegate(delegate_task)
+            st.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(st)
             logger.info("  ✓ L6 SelfTuner 就绪（subagent mode）")
         except Exception as exc:
@@ -875,7 +884,7 @@ class MindStackRunner:
             from layers.L7_goals.goal_engine import GoalGenerator
 
             goal_generator = GoalGenerator(bus=self._bus, self_model=self_model, llm=None)
-            goal_generator.set_delegate(delegate_task)
+            goal_generator.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(goal_generator)
             logger.info("  ✓ L7 Goals 就绪（subagent mode）")
         except Exception as exc:
@@ -891,7 +900,7 @@ class MindStackRunner:
                 bus=self._bus,
                 intent_stack=self._intent_stack if hasattr(self, '_intent_stack') else None,
             )
-            regulator.set_delegate(delegate_task)
+            regulator.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(regulator)
             logger.info("  ✓ L7 Will 就绪（subagent mode）")
         except Exception as exc:
@@ -901,7 +910,7 @@ class MindStackRunner:
         try:
             from layers.L8_drives.drive_system import DriveSystem
             self._drive_system = DriveSystem(bus=self._bus)
-            self._drive_system.set_delegate(delegate_task)
+            self._drive_system.set_delegate(self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate)
             self._layers.append(self._drive_system)
             logger.info("  ✓ L8 Drives 就绪（subagent mode）")
         except Exception as exc:

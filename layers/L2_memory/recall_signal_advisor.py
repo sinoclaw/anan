@@ -187,9 +187,9 @@ class RecallSignalAdvisor:
 
         try:
             result_text = await self._delegate_fn(
-                goal="记忆晋升优先级评估",
+                goal="L2 Memory 记忆晋升评估",
                 context=prompt,
-                skills=["agent"],
+                parent_agent=None,
             )
             return self._parse_response(
                 result_text, content, current_importance, access_count, age_hours, context_tags,

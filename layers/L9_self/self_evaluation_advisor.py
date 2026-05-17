@@ -292,7 +292,7 @@ class SelfEvaluationAdvisor:
             result_text = await self._delegate_fn(
                 goal="anan 全系统健康评估",
                 context=prompt,
-                skills=["agent"],
+                parent_agent=None,
             )
             evaluation = self._parse_response(result_text)
             logger.info(
