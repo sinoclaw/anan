@@ -159,7 +159,8 @@ Milestone 由用户在创建 goal 时指定，或由 subagent 推理建议。
 | L6 Meta | Mirror: issue 积累、warn 条件判断（硬编码） | MirrorHealthAdvisor: LLM 健康评估 + attach 启动循环 ✓ 已完成；MetacognitionAdvisor: tuning 效果评估 + auto rollback ✓ 已完成 |
 | L7 Goals | achieve/abandon/milestone 状态变更 ✓ 已有 | **GoalAdvisor: generation/decompose/conflict/score ✓ 已完成** + ProgressAssessor: progress 量化 ✓ 已有 |
 | L7 Will | adaptation history、执行 action、avoid signal 检查 | DriveStrengthAdvisor: action 选择 + 强度评估 ✓ 已完成；**因果模式主动干预（decide_causal_pattern）✓ 已完成** |
-| **L8 Intent** | propose/reinforce/satisfy/decay/abandon 状态机 | **IntentMonitoringAdvisor: intent 创建/强化/削弱决策 ✓ 已完成** |
+| **L4 Proactive** | 已有 probe 库（keep_attention_balanced、grow_identity、heal_bus）、probe_catchall 启发式 | **ObservabilityAdvisor: LLM 通用意图验证 ✓ 已完成** + **VerificationScheduler: 自适应验证间隔 ✓ 已完成** |
+| **L8 Intent** | propose/reinforce/satisfy/decay/abandon 状态机 | **IntentMonitoringAdvisor: intent 创建/强化/削弱决策 ✓ 已完成** + MonitoringAdvisor: 指标趋势 + 告警生成 ✓ 已完成 |
 | L9 Self | 状态写入、wisdom_facts 存储 | self-evaluation 总体评估 |
 
 ---
