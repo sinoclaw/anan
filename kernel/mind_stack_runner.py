@@ -791,8 +791,9 @@ class MindStackRunner:
         try:
             from layers.L3_working_memory.working_memory import WorkingMemory
             self._working_memory = WorkingMemory(capacity=64, half_life_s=120.0)
+            self._working_memory.set_delegate(delegate_task)
             self._layers.append(self._working_memory)
-            logger.info("  ✓ L3 WorkingMemory 就绪")
+            logger.info("  ✓ L3 WorkingMemory 就绪（subagent mode）")
         except Exception as exc:
             logger.warning("  ✗ L3 WorkingMemory 启动失败: %s", exc)
             self._working_memory = None

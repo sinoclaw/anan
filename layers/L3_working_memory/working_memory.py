@@ -33,6 +33,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L3_working_memory.salience_advisor import SalienceAdvisor, SalienceScore
 
 logger = logging.getLogger("anan.L3.working_memory")
 
@@ -112,6 +113,11 @@ class WorkingMemory:
         self._lock: asyncio.Lock = asyncio.Lock()  # created here (not lazy) so it's bound to the event loop that constructs this object
         self.captured_total = 0
         self.evicted_total = 0
+        self._salience_advisor = SalienceAdvisor()
+
+    def set_delegate(self, fn: callable) -> None:
+        """Inject delegate_task for SalienceAdvisor subagent calls."""
+        self._salience_advisor.set_delegate(fn)
 
     async def attach(self, bus: Optional[EventBus] = None) -> None:
         # Lock is created once in __init__ (sync context, bound to gateway main event loop).
@@ -129,13 +135,32 @@ class WorkingMemory:
         # NOTE: _lock is intentionally left intact — it was created in __init__
         # and belongs to the lifetime of this object. Do NOT reset it here.
 
+    async def _get_salience(self, event: Event) -> float:
+        """Get salience score: advisor if available, else salience_fn."""
+        # Fast path: salience_fn for obvious low-value events
+        topic = event.topic
+        if topic == "L0.circadian.tick":
+            return 0.1
+        if not self._salience_advisor._delegate_fn:
+            return self.salience_fn(event)
+
+        # Use advisor for contextual scoring
+        try:
+            result = await self._salience_advisor.score(
+                event_topic=topic,
+                event_payload=event.payload,
+            )
+            return result.score
+        except Exception:
+            return self.salience_fn(event)
+
     async def _on_event(self, event: Event) -> None:
         # Don't capture our own events — would create a feedback loop
         if event.topic.startswith("L3.working_memory."):
             return
         if self._lock is None:
             return  # not attached yet
-        salience = self.salience_fn(event)
+        salience = await self._get_salience(event)
         if salience < self.min_salience:
             return
         async with self._lock:
