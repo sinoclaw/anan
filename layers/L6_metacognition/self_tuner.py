@@ -53,6 +53,11 @@ from enum import Enum
 from typing import Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L6_metacognition.tuning_advisor import (
+    MetacognitionAdvisor,
+    MetricsTracker,
+    TuningEvaluation,
+)
 
 logger = logging.getLogger("anan.L6.self_tuner")
 
@@ -133,6 +138,17 @@ class SelfTuner:
         self._pending: list[TuningAction] = []
         self._applied: list[TuningAction] = []
         self._rejected: list[TuningAction] = []
+
+        # Metrics tracker + subagent advisor for tuning evaluation
+        self._metrics_tracker = MetricsTracker()
+        self._advisor = MetacognitionAdvisor(
+            metrics_tracker=self._metrics_tracker,
+            applied_history=self._applied,
+        )
+
+    def set_delegate(self, fn: callable) -> None:
+        """Inject delegate_task for MetacognitionAdvisor subagent calls."""
+        self._advisor.set_delegate(fn)
 
     # ------------------------------------------------------------------
     # Wiring
@@ -459,7 +475,14 @@ class SelfTuner:
     # ------------------------------------------------------------------
 
     async def _apply(self, action: TuningAction) -> None:
-        """执行一个调参动作。"""
+        """执行一个调参动作，然后通过 MetacognitionAdvisor 评估效果。"""
+        # 记录调参前的指标快照
+        self._metrics_tracker.record_before(
+            predictor=self._pred,
+            pending_count=len(self._pending),
+        )
+
+        # 执行调参
         if action.layer == "L5" and self._pred is not None:
             if action.target == "min_lift":
                 self._pred._min_lift = action.new_value
@@ -483,7 +506,54 @@ class SelfTuner:
             action.id, action.layer, action.target,
             action.old_value, action.new_value,
         )
-        # 发事件通知
+
+        # 记录调参后的指标快照
+        after_snap = self._metrics_tracker.snapshot(
+            predictor=self._pred,
+            pending_count=len(self._pending),
+        )
+
+        # 通过 subagent 评估效果
+        evaluation = await self._advisor.evaluate(action)
+
+        # 发布评估结果事件
+        await self._bus.publish(Event(
+            topic="L6.tuning.evaluated",
+            source="L6.self_tuner",
+            payload={
+                "action_id": action.id,
+                **evaluation.to_dict(),
+            },
+        ))
+
+        # 如果 advisor 建议 rollback，自动执行
+        if evaluation.rollback_recommended:
+            logger.warning(
+                "SelfTuner: advisor recommends ROLLBACK for [%s] — %s",
+                action.id, evaluation.reasoning,
+            )
+            action.status = TuningStatus.APPLIED  # mark as applied before rollback
+            # Revert
+            if action.layer == "L5" and self._pred is not None:
+                if action.target == "min_lift":
+                    self._pred._min_lift = action.old_value
+                    if self._miner is not None:
+                        self._miner.set_min_lift(action.old_value)
+                elif action.target == "horizon_s":
+                    self._pred._horizon_s = action.old_value
+            # Queue rollback event
+            await self._bus.publish(Event(
+                topic="L6.tuning.rollback",
+                source="L6.self_tuner",
+                payload={
+                    "action_id": action.id,
+                    "target": action.target,
+                    "restored_value": action.old_value,
+                    "reasoning": evaluation.reasoning,
+                },
+            ))
+
+        # 发布 applied 通知（原有的）
         await self._bus.publish(Event(
             topic="L6.tuning.applied",
             source="L6.self_tuner",

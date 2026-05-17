@@ -828,12 +828,14 @@ class MindStackRunner:
         # SelfTuner 订阅 L6.metacognition.warn 做元认知调参
         try:
             from layers.L6_metacognition.self_tuner import SelfTuner
-            self._layers.append(SelfTuner(
+            st = SelfTuner(
                 bus=self._bus,
                 predictor=self._predictor if hasattr(self, '_predictor') else None,
                 pattern_miner=self._pattern_miner if hasattr(self, '_pattern_miner') else None,
-            ))
-            logger.info("  ✓ L6 SelfTuner 就绪")
+            )
+            st.set_delegate(delegate_task)
+            self._layers.append(st)
+            logger.info("  ✓ L6 SelfTuner 就绪（subagent mode）")
         except Exception as exc:
             logger.warning("  ✗ L6 SelfTuner 启动失败: %s", exc)
 
