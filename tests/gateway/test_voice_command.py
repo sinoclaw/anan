@@ -2131,7 +2131,7 @@ class TestVoiceChannelAwareness:
         adapter._voice_sources = {}
         adapter._voice_receivers = {}
         adapter._client = MagicMock()
-        adapter._client.user = SimpleNamespace(id=99999, name="SinoclawBot")
+        adapter._client.user = SimpleNamespace(id=99999, name="AnanBot")
         return adapter
 
     def _make_member(self, user_id, display_name, is_bot=False):
@@ -2154,7 +2154,7 @@ class TestVoiceChannelAwareness:
         adapter = self._make_adapter()
         vc = MagicMock()
         vc.is_connected.return_value = True
-        bot_member = self._make_member(99999, "SinoclawBot", is_bot=True)
+        bot_member = self._make_member(99999, "AnanBot", is_bot=True)
         user_a = self._make_member(1001, "Alice")
         user_b = self._make_member(1002, "Bob")
         vc.channel.name = "general-voice"
@@ -2168,7 +2168,7 @@ class TestVoiceChannelAwareness:
         names = [m["display_name"] for m in info["members"]]
         assert "Alice" in names
         assert "Bob" in names
-        assert "SinoclawBot" not in names
+        assert "AnanBot" not in names
 
     def test_speaking_detection(self):
         adapter = self._make_adapter()
