@@ -1088,6 +1088,91 @@ class MindStackRunner:
             self._bus.subscribe("gateway.message.sent", _on_user_message)
             logger.info("  ✓ gateway.message.sent → DriveSystem.trigger() 已连接")
 
+        # ── L5 Pattern 持久化 ──────────────────────────────────────────
+        from layers.L5_reasoning.pattern_persistor import persist_pattern
+        async def _on_pattern_discovered_persist(event: Event):
+            p = event.payload or {}
+            persist_pattern(
+                antecedent=p.get("antecedent", "?"),
+                consequent=p.get("consequent", "?"),
+                support=p.get("support", 0),
+                confidence=p.get("confidence", 0.0),
+                lift=p.get("lift", 0.0),
+            )
+        self._bus.subscribe("L5.pattern.discovered", _on_pattern_discovered_persist)
+        logger.info("  ✓ L5.pattern.discovered → pattern_persistor 已连接")
+
+        # ── L6 Tuning 持久化 ──────────────────────────────────────────
+        from layers.L6_metacognition.tuning_persistor import persist_tuning
+        async def _on_tuning_applied(event: Event):
+            p = event.payload or {}
+            persist_tuning(
+                action_id=p.get("action_id", ""),
+                layer=p.get("layer", ""),
+                target=p.get("target", ""),
+                old_value=p.get("old_value", 0.0),
+                new_value=p.get("new_value", 0.0),
+                reason=p.get("reason", ""),
+                status=p.get("status", "applied"),
+            )
+        self._bus.subscribe("L6.tuning.applied", _on_tuning_applied)
+        logger.info("  ✓ L6.tuning.applied → tuning_persistor 已连接")
+
+        async def _on_tuning_rollback(event: Event):
+            p = event.payload or {}
+            persist_tuning(
+                action_id=p.get("action_id", ""),
+                layer=p.get("layer", ""),
+                target=p.get("target", ""),
+                old_value=p.get("old_value", 0.0),
+                new_value=p.get("new_value", 0.0),
+                reason=p.get("reason", "rollback"),
+                status="rollback",
+                rollback=True,
+            )
+        self._bus.subscribe("L6.tuning.rollback", _on_tuning_rollback)
+        logger.info("  ✓ L6.tuning.rollback → tuning_persistor 已连接")
+
+        # ── L7 Goal 持久化 ────────────────────────────────────────────
+        from layers.L7_goals.goal_persistor import persist_goal_event
+        async def _on_goal_event(event: Event):
+            p = event.payload or {}
+            persist_goal_event(
+                event=event.topic.replace("L7.goal.", ""),
+                goal_id=p.get("id", ""),
+                description=p.get("description", ""),
+                completed=p.get("completed", False),
+                completed_at=p.get("completed_at"),
+                progress=p.get("progress"),
+                reason=p.get("reason"),
+                scope=p.get("scope"),
+                tags=p.get("tags"),
+                sub_goals=p.get("sub_goals"),
+            )
+        for topic in ["L7.goal.created", "L7.goal.proposed", "L7.goal.achieved",
+                       "L7.goal.abandoned", "L7.goal.progress_updated",
+                       "L7.goal.decomposed", "L7.goal.conflict", "L7.goal.conflict_resolved"]:
+            self._bus.subscribe(topic, _on_goal_event)
+        logger.info("  ✓ L7.goal.* → goal_persistor 已连接（8 topics）")
+
+        # ── L8 Drive 持久化 ──────────────────────────────────────────
+        from layers.L8_drives.drive_persistor import persist_drive_event
+        async def _on_drive_event(event: Event):
+            p = event.payload or {}
+            persist_drive_event(
+                event=event.topic.replace("L8.drive.", ""),
+                drive_type=p.get("type", p.get("drive_type", "unknown")),
+                strength=p.get("strength", 0.0),
+                active=p.get("active", False),
+                reason=p.get("reason"),
+                event_count=p.get("event_count"),
+                satisfaction_rate=p.get("satisfaction_rate"),
+            )
+        for topic in ["L8.drive.active", "L8.drive.updated", "L8.drive.satisfied",
+                       "L8.drive.dormant", "L8.drive.suggestion"]:
+            self._bus.subscribe(topic, _on_drive_event)
+        logger.info("  ✓ L8.drive.* → drive_persistor 已连接（5 topics）")
+
     def _make_sleep_fn(self):
         """
         制造 sleep_fn 传给 CircadianLoop。
