@@ -1,9 +1,9 @@
 """Tests for OAuth server metadata persistence across process restarts.
 
 Covers:
-- :class:`SinoclawTokenStorage` ``.meta.json`` roundtrip (save / load / remove)
-- The production manager provider
-  (:class:`tools.mcp_oauth_manager.SinoclawMCPOAuthProvider`) restoring metadata
+- :class:`AnanTokenStorage` ``.meta.json`` roundtrip (save / load / remove)
+ - The production manager provider
+   (:class:`tools.mcp_oauth_manager._ANAN_PROVIDER_CLS`) restoring metadata
   on cold-load init and persisting metadata at the end of ``async_auth_flow``.
 
 Context
@@ -26,7 +26,7 @@ import pytest
 
 from mcp.shared.auth import OAuthMetadata
 
-from tools.mcp_oauth import SinoclawTokenStorage
+from tools.mcp_oauth import AnanTokenStorage
 from tools.mcp_oauth_manager import _SINOCLAW_PROVIDER_CLS
 
 
@@ -42,14 +42,14 @@ def _make_metadata(token_endpoint: str = "https://auth.example.com/oauth/token")
 
 
 # ---------------------------------------------------------------------------
-# SinoclawTokenStorage metadata roundtrip
+# AnanTokenStorage metadata roundtrip
 # ---------------------------------------------------------------------------
 
 
 class TestMetadataStorage:
     def test_save_and_load_roundtrip(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("example-server")
+        storage = AnanTokenStorage("example-server")
 
         meta = _make_metadata()
         storage.save_oauth_metadata(meta)
@@ -64,12 +64,12 @@ class TestMetadataStorage:
 
     def test_load_missing_returns_none(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("nonexistent")
+        storage = AnanTokenStorage("nonexistent")
         assert storage.load_oauth_metadata() is None
 
     def test_load_corrupt_returns_none(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("corrupt-server")
+        storage = AnanTokenStorage("corrupt-server")
 
         # Write something that doesn't validate as OAuthMetadata
         meta_path = storage._meta_path()
@@ -80,7 +80,7 @@ class TestMetadataStorage:
 
     def test_remove_deletes_meta_file(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("cleanup-server")
+        storage = AnanTokenStorage("cleanup-server")
 
         storage.save_oauth_metadata(_make_metadata())
         assert storage._meta_path().exists()
@@ -94,7 +94,7 @@ class TestMetadataStorage:
 # ---------------------------------------------------------------------------
 
 
-def _manager_provider_with_context(storage: SinoclawTokenStorage, **context_attrs):
+def _manager_provider_with_context(storage: AnanTokenStorage, **context_attrs):
     """Build an uninitialized manager provider with a mocked context.
 
     Bypasses the full OAuthClientProvider init so we can exercise the
@@ -118,7 +118,7 @@ class TestManagerOAuthProviderMetadata:
     def test_initialize_restores_metadata_from_disk(self, tmp_path, monkeypatch):
         """Cold-load: if we have no in-memory metadata but disk has some, restore it."""
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("mgr-srv")
+        storage = AnanTokenStorage("mgr-srv")
         storage.save_oauth_metadata(_make_metadata("https://mgr.example.com/token"))
         provider = _manager_provider_with_context(storage, oauth_metadata=None)
 
@@ -134,7 +134,7 @@ class TestManagerOAuthProviderMetadata:
     def test_initialize_skips_restore_when_in_memory_present(self, tmp_path, monkeypatch):
         """If SDK already has metadata in memory, don't overwrite from disk."""
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("mgr-srv2")
+        storage = AnanTokenStorage("mgr-srv2")
         storage.save_oauth_metadata(_make_metadata("https://disk.example.com/token"))
         in_memory = _make_metadata("https://memory.example.com/token")
 
@@ -151,7 +151,7 @@ class TestManagerOAuthProviderMetadata:
     def test_persist_metadata_if_changed_writes_on_first_discover(self, tmp_path, monkeypatch):
         """When nothing on disk yet, persist what the SDK discovered in-memory."""
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("persist-srv")
+        storage = AnanTokenStorage("persist-srv")
         assert storage.load_oauth_metadata() is None
 
         discovered = _make_metadata("https://discovered.example.com/token")
@@ -166,14 +166,14 @@ class TestManagerOAuthProviderMetadata:
     def test_persist_metadata_noop_when_unchanged(self, tmp_path, monkeypatch):
         """No-op write when disk already matches in-memory metadata."""
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("noop-srv")
+        storage = AnanTokenStorage("noop-srv")
         meta = _make_metadata("https://same.example.com/token")
         storage.save_oauth_metadata(meta)
 
         provider = _manager_provider_with_context(storage, oauth_metadata=meta)
 
         with patch.object(
-            SinoclawTokenStorage, "save_oauth_metadata"
+            AnanTokenStorage, "save_oauth_metadata"
         ) as save_spy:
             provider._persist_oauth_metadata_if_changed()
             save_spy.assert_not_called()
@@ -181,7 +181,7 @@ class TestManagerOAuthProviderMetadata:
     def test_async_auth_flow_persists_on_completion(self, tmp_path, monkeypatch):
         """End-to-end: running the wrapped auth_flow persists discovered metadata."""
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("flow-srv")
+        storage = AnanTokenStorage("flow-srv")
         provider = _manager_provider_with_context(
             storage,
             oauth_metadata=_make_metadata("https://flow.example.com/token"),

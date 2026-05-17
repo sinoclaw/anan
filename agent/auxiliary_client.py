@@ -310,7 +310,7 @@ _PROVIDERS_WITHOUT_VISION: frozenset = frozenset({
 # reads; the previous `X-OpenRouter-Title` label was not recognized there.
 _OR_HEADERS_BASE = {
     "HTTP-Referer": "https://anan.nousresearch.com",
-    "X-Title": "Anan Agent",
+    "X-Title": "anan Agent",
     "X-OpenRouter-Categories": "productivity,cli-agent",
 }
 
@@ -375,8 +375,8 @@ from anan_cli import __version__ as _SINOCLAW_VERSION
 
 _AI_GATEWAY_HEADERS = {
     "HTTP-Referer": "https://anan.nousresearch.com",
-    "X-Title": "Anan Agent",
-    "User-Agent": f"AnanAgent/{_SINOCLAW_VERSION}",
+    "X-Title": "anan Agent",
+    "User-Agent": f"anan-agent/{_SINOCLAW_VERSION}",
 }
 
 # Nous Portal extra_body for product attribution.

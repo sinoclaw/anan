@@ -11,7 +11,7 @@ from unittest.mock import patch, MagicMock, AsyncMock
 import pytest
 
 from tools.mcp_oauth import (
-    SinoclawTokenStorage,
+    AnanTokenStorage,
     OAuthNonInteractiveError,
     build_oauth_auth,
     remove_oauth_tokens,
@@ -24,13 +24,13 @@ from tools.mcp_oauth import (
 
 
 # ---------------------------------------------------------------------------
-# SinoclawTokenStorage
+# AnanTokenStorage
 # ---------------------------------------------------------------------------
 
-class TestSinoclawTokenStorage:
+class TestAnanTokenStorage:
     def test_roundtrip_tokens(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("test-server")
+        storage = AnanTokenStorage("test-server")
 
         import asyncio
 
@@ -62,7 +62,7 @@ class TestSinoclawTokenStorage:
         the fix shipped for ``agent/google_oauth.py`` in #19673.
         """
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("perm-test-server")
+        storage = AnanTokenStorage("perm-test-server")
 
         import asyncio
         mock_token = MagicMock()
@@ -85,7 +85,7 @@ class TestSinoclawTokenStorage:
 
     def test_roundtrip_client_info(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("test-server")
+        storage = AnanTokenStorage("test-server")
         import asyncio
 
         assert asyncio.run(storage.get_client_info()) is None
@@ -102,7 +102,7 @@ class TestSinoclawTokenStorage:
 
     def test_remove_cleans_up(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("test-server")
+        storage = AnanTokenStorage("test-server")
 
         # Create files
         d = tmp_path / "mcp-tokens"
@@ -116,7 +116,7 @@ class TestSinoclawTokenStorage:
 
     def test_has_cached_tokens(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("my-server")
+        storage = AnanTokenStorage("my-server")
 
         assert not storage.has_cached_tokens()
 
@@ -128,7 +128,7 @@ class TestSinoclawTokenStorage:
 
     def test_corrupt_tokens_returns_none(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("bad-server")
+        storage = AnanTokenStorage("bad-server")
 
         d = tmp_path / "mcp-tokens"
         d.mkdir(parents=True)
@@ -139,7 +139,7 @@ class TestSinoclawTokenStorage:
 
     def test_corrupt_client_info_returns_none(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("bad-server")
+        storage = AnanTokenStorage("bad-server")
 
         d = tmp_path / "mcp-tokens"
         d.mkdir(parents=True)
@@ -250,7 +250,7 @@ class TestPathTraversal:
 
     def test_path_traversal_blocked(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("../../.ssh/config")
+        storage = AnanTokenStorage("../../.ssh/config")
         path = storage._tokens_path()
         # Should stay within mcp-tokens directory
         assert "mcp-tokens" in str(path)
@@ -258,19 +258,19 @@ class TestPathTraversal:
 
     def test_dots_and_slashes_sanitized(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("../../../etc/passwd")
+        storage = AnanTokenStorage("../../../etc/passwd")
         path = storage._tokens_path()
         resolved = path.resolve()
         assert resolved.is_relative_to((tmp_path / "mcp-tokens").resolve())
 
     def test_normal_name_unchanged(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("my-mcp-server")
+        storage = AnanTokenStorage("my-mcp-server")
         assert "my-mcp-server.json" in str(storage._tokens_path())
 
     def test_special_chars_sanitized(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ANAN_HOME", str(tmp_path))
-        storage = SinoclawTokenStorage("server@host:8080/path")
+        storage = AnanTokenStorage("server@host:8080/path")
         path = storage._tokens_path()
         assert "@" not in path.name
         assert ":" not in path.name
@@ -549,7 +549,7 @@ def test_build_oauth_auth_preserves_server_url_path():
          patch.object(mcp_oauth, "OAuthClientProvider", _FakeProvider), \
          patch.object(mcp_oauth, "_is_interactive", return_value=True), \
          patch.object(mcp_oauth, "_maybe_preregister_client"), \
-         patch.object(mcp_oauth, "SinoclawTokenStorage") as mock_storage_cls:
+         patch.object(mcp_oauth, "AnanTokenStorage") as mock_storage_cls:
         mock_storage_cls.return_value = MagicMock(has_cached_tokens=lambda: True)
         build_oauth_auth(
             server_name="notion",

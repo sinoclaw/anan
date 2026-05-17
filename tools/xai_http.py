@@ -9,4 +9,4 @@ def anan_xai_user_agent() -> str:
         from anan_cli import __version__
     except Exception:
         __version__ = "unknown"
-    return f"Anan-Agent/{__version__}"
+    return f"anan-agent/{__version__}"
