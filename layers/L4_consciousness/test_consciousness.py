@@ -131,7 +131,7 @@ class TestOutputGate:
         stream = ThoughtStream()
         gate = OutputGate(bus, stream)
         thought = _make_thought(ThoughtType.SPONTANEOUS, importance=ThoughtImportance.LOW)
-        result = gate.evaluate(thought)
+        result = gate.evaluate_sync(thought)
         assert result.push_decision == "internal"
         assert gate.stats["pushed"] == 0
         assert gate.stats["generated"] == 1
@@ -141,7 +141,7 @@ class TestOutputGate:
         stream = ThoughtStream()
         gate = OutputGate(bus, stream)
         thought = _make_thought(ThoughtType.SPONTANEOUS, importance=ThoughtImportance.CRITICAL)
-        result = gate.evaluate(thought)
+        result = gate.evaluate_sync(thought)
         assert result.push_decision == "push"
         assert gate.stats["pushed"] == 1
 
@@ -150,7 +150,7 @@ class TestOutputGate:
         stream = ThoughtStream()
         gate = OutputGate(bus, stream)
         thought = _make_thought(ThoughtType.DRIVE_SUGGESTION, importance=ThoughtImportance.HIGH)
-        result = gate.evaluate(thought)
+        result = gate.evaluate_sync(thought)
         assert result.push_decision == "push"
 
     def test_high_dialogue_reflection_pushed(self):
@@ -158,7 +158,7 @@ class TestOutputGate:
         stream = ThoughtStream()
         gate = OutputGate(bus, stream)
         thought = _make_thought(ThoughtType.DIALOGUE_REFLECTION, importance=ThoughtImportance.HIGH)
-        result = gate.evaluate(thought)
+        result = gate.evaluate_sync(thought)
         assert result.push_decision == "push"
 
     def test_high_other_type_not_pushed(self):
@@ -166,7 +166,7 @@ class TestOutputGate:
         stream = ThoughtStream()
         gate = OutputGate(bus, stream)
         thought = _make_thought(ThoughtType.TODO_CHECK, importance=ThoughtImportance.HIGH)
-        result = gate.evaluate(thought)
+        result = gate.evaluate_sync(thought)
         assert result.push_decision == "internal"
 
     def test_medium_not_pushed_unless_duplicate(self):
@@ -175,7 +175,7 @@ class TestOutputGate:
         gate = OutputGate(bus, stream)
         # 非重复 → 不推送
         thought = _make_thought(ThoughtType.SPONTANEOUS, importance=ThoughtImportance.MEDIUM)
-        result = gate.evaluate(thought)
+        result = gate.evaluate_sync(thought)
         assert result.push_decision == "internal"
 
     def test_medium_pushed_when_duplicate(self):
@@ -186,10 +186,10 @@ class TestOutputGate:
         t1 = _make_thought(ThoughtType.SPONTANEOUS, importance=ThoughtImportance.LOW,
                            content="重复的思考内容")
         stream.add(t1)
-        # 再来一条几乎相同的 MEDIUM
+        # 再来一条几乎相同的 MEDIUM — 用 sync 版本（同步测试）
         t2 = _make_thought(ThoughtType.SPONTANEOUS, importance=ThoughtImportance.MEDIUM,
                            content="重复的思考内容")
-        result = gate.evaluate(t2)
+        result = gate.evaluate_sync(t2)
         assert result.push_decision == "push"
 
     def test_thought_generated_event_fired(self):
@@ -199,7 +199,7 @@ class TestOutputGate:
         stream = ThoughtStream()
         gate = OutputGate(bus, stream)
         thought = _make_thought(ThoughtType.SPONTANEOUS)
-        gate.evaluate(thought)
+        gate.evaluate_sync(thought)
         assert len(fired) == 1
 
     def test_thought_pushed_event_fired_on_critical(self):
@@ -209,7 +209,7 @@ class TestOutputGate:
         stream = ThoughtStream()
         gate = OutputGate(bus, stream)
         thought = _make_thought(ThoughtType.SPONTANEOUS, importance=ThoughtImportance.CRITICAL)
-        gate.evaluate(thought)
+        gate.evaluate_sync(thought)
         assert len(fired) == 1
 
     def test_non_pushable_high_never_pushed_event(self):
@@ -219,7 +219,7 @@ class TestOutputGate:
         stream = ThoughtStream()
         gate = OutputGate(bus, stream)
         thought = _make_thought(ThoughtType.TODO_CHECK, importance=ThoughtImportance.HIGH)
-        gate.evaluate(thought)
+        gate.evaluate_sync(thought)
         assert len(fired) == 0
 
 

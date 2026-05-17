@@ -41,6 +41,12 @@ from typing import Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
 
+from layers.L8_intent.intent_monitoring_advisor import (
+    IntentMonitoringAdvisor,
+    IntentContext,
+    IntentDecision,
+)
+
 logger = logging.getLogger("anan.L8.intent_stack")
 
 
@@ -101,6 +107,13 @@ class IntentStack:
         self._intents: dict[str, Intent] = {}
         self._abandoned: list[Intent] = []
         self._unsubs: list[Callable[[], None]] = []
+        self._advisor = IntentMonitoringAdvisor()
+        self._delegate_fn: Optional[Callable[..., any]] = None
+
+    def set_delegate(self, fn: Callable[..., any]) -> None:
+        """MindStackRunner 注入 runtime handle 的 delegate 函数."""
+        self._delegate_fn = fn
+        self._advisor.set_delegate(fn)
 
     # ------------------------------------------------------------------
     async def attach(self) -> None:
@@ -266,41 +279,98 @@ class IntentStack:
             logger.debug("L8 publish failed (non-fatal): %s", exc)
 
     # ------------------------------------------------------------------
+    # Advisor integration helpers
+    # ------------------------------------------------------------------
+
+    def _stack_health(self) -> dict:
+        """Build stack health dict for IntentContext."""
+        top = self.top(3)
+        return {
+            "stack_size": len(self._intents),
+            "capacity": self._capacity,
+            "decay_rate": self._decay,
+            "top_intents": [i.to_dict() for i in top],
+            "abandoned_recently": len([a for a in self._abandoned[-10:]]),
+        }
+
+    async def _apply_decision(self, decision: IntentDecision, ctx: IntentContext) -> None:
+        """Apply advisor decision to the intent stack."""
+        d = decision.decision
+        if d == "propose" and decision.key:
+            existing = self._intents.get(decision.key)
+            if existing is None:
+                intent = Intent(
+                    key=decision.key,
+                    description=decision.description or "",
+                    source=ctx.source_layer,
+                    strength=decision.strength,
+                    proposed_at=datetime.now().isoformat(),
+                    last_reinforced_at=datetime.now().isoformat(),
+                    detail=decision.detail,
+                )
+                self._intents[decision.key] = intent
+                await self._safe_publish("L8.intent.proposed", intent.to_dict())
+                self._enforce_capacity()
+            else:
+                existing.strength = self._reinforced(existing.strength)
+                existing.reinforce_count += 1
+                existing.last_reinforced_at = datetime.now().isoformat()
+                if decision.detail:
+                    existing.detail.update(decision.detail)
+                await self._safe_publish("L8.intent.reinforced", existing.to_dict())
+
+        elif d == "reinforce" and decision.key:
+            existing = self._intents.get(decision.key)
+            if existing:
+                existing.strength = self._reinforced(existing.strength)
+                existing.reinforce_count += 1
+                existing.last_reinforced_at = datetime.now().isoformat()
+                await self._safe_publish("L8.intent.reinforced", existing.to_dict())
+
+        elif d == "weaken" and decision.key:
+            existing = self._intents.get(decision.key)
+            if existing:
+                old = existing.strength
+                existing.strength = decision.strength
+                logger.debug("L8 advisor weakened '%s': %.3f → %.3f (%s)",
+                             decision.key, old, decision.strength, decision.reasoning)
+                await self._safe_publish("L8.intent.weakened", {
+                    **existing.to_dict(), "old_strength": round(old, 4),
+                    "reason": decision.reasoning,
+                })
+
+        elif d == "abandon" and decision.key:
+            existing = self._intents.get(decision.key)
+            if existing:
+                await self._abandon(existing, reason=f"advisor:{decision.reasoning}")
+
+    # ------------------------------------------------------------------
     # Listeners
     # ------------------------------------------------------------------
     async def _learn_from_l7(self, event: Event) -> None:
-        """L7 acted — promote each adaptation into a 'keep this fixed' intent."""
+        """L7 acted — ask advisor whether to promote to a persistent intent."""
         action = event.payload.get("action")
         detail = event.payload.get("detail", {})
-        if action == "attenuate_layer_salience":
-            layer = detail.get("layer", "?")
-            await self.propose(
-                key=f"keep_attention_balanced",
-                description=f"保持注意力均衡 (上次抑制 {layer})",
-                source="L7",
-                detail={"last_layer": layer, "factor": detail.get("factor")},
-            )
-        elif action == "shorten_sleep_threshold":
-            await self.propose(
-                key="grow_identity",
-                description="让身份持续生长 (缩短睡眠阈值寻求更多反思)",
-                source="L7",
-                detail=detail,
-            )
-        elif action == "emit_heal_intent":
-            await self.propose(
-                key="heal_bus",
-                description="修复事件总线错误源",
-                source="L7",
-                detail=detail,
-            )
+        if not action:
+            return
+
+        ctx = IntentContext(
+            source_layer="L7",
+            event_type="l7_acted",
+            action=action,
+            action_detail=detail,
+            **self._stack_health(),
+        )
+        decision = await self._advisor.evaluate(ctx)
+        if decision.decision != "skip":
+            await self._apply_decision(decision, ctx)
+        else:
+            logger.debug("IntentMonitoringAdvisor skipped L7 action '%s': %s", action, decision.reasoning)
 
     async def _weaken_most_failing(self, event: Event) -> None:
-        """L5 discovered 'failure → reinforce' loop — weaken the most reinforced failing intent.
-        
-        This is anan learning 'if it's not working, stop trying harder':
-        - Pick the intent with highest reinforce_count (being tried the most)
-        - Halve its strength; if below floor, abandon it
+        """L5 discovered 'failure → reinforce' loop — use advisor to decide how to respond.
+
+        Asks the advisor: weaken, abandon, or give another chance?
         """
         if not self._intents:
             return
@@ -309,106 +379,66 @@ class IntentStack:
         if most_tried.reinforce_count < 2:
             return  # only act on intents we've actually tried multiple times
 
-        # Halve it — "insanity is doing the same thing expecting different results"
-        old_strength = most_tried.strength
-        most_tried.strength *= 0.5
-        logger.debug(
-            "L5→L7 insight weakened intent '%s': %.2f → %.2f (reinforced %d times)",
-            most_tried.key, old_strength, most_tried.strength, most_tried.reinforce_count,
+        ctx = IntentContext(
+            source_layer="L5",
+            event_type="weaken_failing",
+            failing_intent_key=most_tried.key,
+            failing_intent_strength=most_tried.strength,
+            failing_intent_reinforce_count=most_tried.reinforce_count,
+            **self._stack_health(),
         )
-
-        if most_tried.strength < self._floor:
-            await self._abandon(most_tried, reason="L5_insight_failing_pattern")
-        else:
-            await self._safe_publish("L8.intent.weakened", {
-                **most_tried.to_dict(),
-                "old_strength": round(old_strength, 4),
-                "reason": event.payload.get("rationale", "L5 insight"),
-            })
+        decision = await self._advisor.evaluate(ctx)
+        if decision.decision == "skip":
+            logger.debug("IntentMonitoringAdvisor skipped weaken for '%s': %s",
+                        most_tried.key, decision.reasoning)
+            return
+        await self._apply_decision(decision, ctx)
 
     async def _learn_from_l6(self, event: Event) -> None:
-        """L6 reported — repeated issues become persistent intents."""
-        # Each issue text is hashed to a stable key so reappearance reinforces.
+        """L6 reported — ask advisor whether repeated issues become persistent intents."""
         for issue in event.payload.get("issues", []):
-            key = self._issue_to_key(issue)
-            if key:
-                await self.propose(
-                    key=key,
-                    description=self._issue_to_want(issue),
-                    source="L6",
-                    detail={"raw_issue": issue},
-                )
-
-    @staticmethod
-    def _issue_to_key(issue: str) -> Optional[str]:
-        if "注意力倾斜" in issue:
-            return "keep_attention_balanced"
-        if "身份" in issue and ("停滞" in issue or "没增长" in issue):
-            return "grow_identity"
-        if "错误率" in issue:
-            return "heal_bus"
-        if "我是谁" in issue or "self-model" in issue.lower():
-            return "know_myself"
-        return None
-
-    @staticmethod
-    def _issue_to_want(issue: str) -> str:
-        if "注意力倾斜" in issue:
-            return "保持注意力均衡, 不被某一层霸占"
-        if "身份" in issue:
-            return "让身份持续生长, 不停滞"
-        if "错误率" in issue:
-            return "保持事件总线健康"
-        return f"应对: {issue[:30]}"
+            if not issue:
+                continue
+            ctx = IntentContext(
+                source_layer="L6",
+                event_type="l6_report",
+                raw_issue=issue,
+                **self._stack_health(),
+            )
+            decision = await self._advisor.evaluate(ctx)
+            if decision.decision != "skip":
+                await self._apply_decision(decision, ctx)
 
     # ------------------------------------------------------------------
     # L5 因果 listener — L5 发现行动效果，L8 把它升格为持续意图
     # ------------------------------------------------------------------
     async def _on_action_effect(self, event: Event) -> None:
-        """L5 评估了某个 L7 action 的效果 — 如果是正向的，升格为持续意图."""
+        """L5 评估了某个 L7 action 的效果 — advisor 判断是否升格为持续意图."""
         payload = event.payload or {}
         action = payload.get("action", "")
         avg_delta = payload.get("avg_delta", 0.0)
         samples = payload.get("samples", 0)
 
-        if not action or samples < 2:
-            return  # need at least 2 samples before trusting the signal
+        if not action:
+            return
 
-        # If the action reliably improves health, make it a persistent want
-        if avg_delta > 0.05:
-            key = f"keep_doing_{action}"
-            await self.propose(
-                key=key,
-                description=f"继续 {action}（已证明平均提升 health +{avg_delta:.2f}）",
-                source="L5",
-                detail={
-                    "action": action,
-                    "avg_delta": avg_delta,
-                    "samples": samples,
-                },
-            )
-        elif avg_delta < -0.05:
-            # Action reliably hurts — avoid it (flag as negative pattern)
-            key = f"avoid_{action}"
-            existing = self._intents.get(key)
-            if existing is None:
-                intent = Intent(
-                    key=key,
-                    description=f"避免 {action}（已证明平均降低 health {avg_delta:.2f}）",
-                    source="L5",
-                    strength=0.3,  # low strength — we don't want to dwell on negatives
-                    proposed_at=datetime.now().isoformat(),
-                    last_reinforced_at=datetime.now().isoformat(),
-                    detail={"action": action, "avg_delta": avg_delta, "samples": samples},
-                )
-                self._intents[key] = intent
-                await self._safe_publish("L8.intent.proposed", intent.to_dict())
+        ctx = IntentContext(
+            source_layer="L5",
+            event_type="action_effect",
+            action=action,
+            avg_delta=avg_delta,
+            samples=samples,
+            **self._stack_health(),
+        )
+        decision = await self._advisor.evaluate(ctx)
+        if decision.decision != "skip":
+            await self._apply_decision(decision, ctx)
 
     # ------------------------------------------------------------------
     # L5 PatternMiner listener — L5 发现了正向因果规则，L8 把它升格为持续渴望
     # ------------------------------------------------------------------
     async def _on_pattern_discovered(self, event: Event) -> None:
-        """L5 PatternMiner 发现了 A→B 高置信规则 — 如果 B 是有益的，让 L8 持续想要它."""
+        """L5 PatternMiner 发现了 A→B 高置信规则 — advisor 判断是否升格为持续渴望."""
         payload = event.payload or {}
         antecedent = payload.get("antecedent", "")
         consequent = payload.get("consequent", "")
@@ -417,39 +447,19 @@ class IntentStack:
 
         if not antecedent or not consequent:
             return
-        if confidence < 0.7 or lift < 2.0:
-            return  # only strong, surprising rules become wants
 
-        # Positive patterns: B leads to good things → make it a keep_ intent
-        # Map the consequent to a want key
-        key = f"keep_triggering_{consequent.replace('.', '_')}"
-        existing = self._intents.get(key)
-        strength = 0.35 if existing is None else min(existing.strength + 0.05, 0.85)
-        description = (
-            f"保持触发 {consequent}（规则 {antecedent}→{consequent} "
-            f"置信{confidence:.0%}，提升{lift:.1f}x）"
+        ctx = IntentContext(
+            source_layer="L5.miner",
+            event_type="pattern_discovered",
+            antecedent=antecedent,
+            consequent=consequent,
+            confidence=confidence,
+            lift=lift,
+            **self._stack_health(),
         )
-        if existing is None:
-            intent = Intent(
-                key=key,
-                description=description,
-                source="L5.miner",
-                strength=strength,
-                proposed_at=datetime.now().isoformat(),
-                last_reinforced_at=datetime.now().isoformat(),
-                detail={
-                    "antecedent": antecedent,
-                    "consequent": consequent,
-                    "confidence": confidence,
-                    "lift": lift,
-                },
-            )
-            self._intents[key] = intent
-            await self._safe_publish("L8.intent.proposed", intent.to_dict())
-        else:
-            existing.last_reinforced_at = datetime.now().isoformat()
-            existing.strength = strength
-            await self._safe_publish("L8.intent.reinforced", existing.to_dict())
+        decision = await self._advisor.evaluate(ctx)
+        if decision.decision != "skip":
+            await self._apply_decision(decision, ctx)
 
     # ------------------------------------------------------------------
     # L3 Attention listener — 注意力长期集中在某类事件上 → 升格为持续意图

@@ -252,7 +252,7 @@ class MemoryTier:
         key = f"causal_rule:{cause}:{effect}"
         content = f"因果确认：{cause} → {effect}（lift={lift}）"
         importance = min(1.0, 0.5 + lift * 0.1)
-        self.memorize(key, content, importance=importance,
+        await self.memorize(key, content, importance=importance,
                       tags=["causal", "confirmed"], source="insight")
         logger.debug("Memorized confirmed causal rule: %s", key)
 
@@ -263,7 +263,7 @@ class MemoryTier:
         effect = p.get("effect", "?")
         key = f"failed_prediction:{cause}:{effect}"
         content = f"预测失败：{cause} → {effect}（未发生）"
-        self.memorize(key, content, importance=0.6,
+        await self.memorize(key, content, importance=0.6,
                       tags=["causal", "failed"], source="insight")
         logger.debug("Memorized failed prediction: %s", key)
 
@@ -277,7 +277,7 @@ class MemoryTier:
         key = f"causal_link:{cause}:{effect}"
         content = f"因果链路：{cause} → {effect}（lift={lift}, conf={confidence}）"
         importance = min(1.0, 0.4 + confidence * 0.4 + (lift - 1.0) * 0.1)
-        self.memorize(key, content, importance=importance,
+        await self.memorize(key, content, importance=importance,
                       tags=["causal", "rule"], source="causal_discovery")
         logger.debug("Memorized causal link: %s", key)
 
@@ -287,7 +287,7 @@ class MemoryTier:
         pattern = p.get("pattern", str(p))
         key = f"pattern:{pattern[:40]}"
         content = f"模式发现：{pattern}"
-        self.memorize(key, content, importance=0.5,
+        await self.memorize(key, content, importance=0.5,
                       tags=["pattern", "reflection"], source="insight")
         logger.debug("Memorized pattern: %s", key)
 
@@ -300,15 +300,15 @@ class MemoryTier:
 
         for fact in identity:
             key = f"identity:{fact[:60]}"
-            self.memorize(key, fact, importance=0.8,
+            await self.memorize(key, fact, importance=0.8,
                           tags=["identity"], source="self_model")
         for fact in history:
             key = f"history:{fact[:60]}"
-            self.memorize(key, fact, importance=0.7,
+            await self.memorize(key, fact, importance=0.7,
                           tags=["history"], source="self_model")
         for fact in vision:
             key = f"vision:{fact[:60]}"
-            self.memorize(key, fact, importance=0.7,
+            await self.memorize(key, fact, importance=0.7,
                           tags=["vision"], source="self_model")
         if identity or history or vision:
             logger.debug("Memorized %d self-model facts", len(identity) + len(history) + len(vision))
@@ -324,10 +324,27 @@ class MemoryTier:
         item = self.short.get(key)
         return item.content if item else None
 
-    def memorize(self, key: str, content: str, importance: float = 0.5,
+    async def memorize(self, key: str, content: str, importance: float = 0.5,
                 tags: Optional[list[str]] = None, source: str = "conversation") -> None:
-        item = MemoryItem(content=content, importance=importance, tags=tags or [], source=source)
+        """Store content. Uses RecallSignalAdvisor to decide whether to store/promote."""
+        signal = await self.evaluate_memorization(
+            content=content,
+            current_importance=importance,
+            context_tags=tags,
+        )
+        # advisor认为完全无价值 → skip
+        if signal.suggested_importance < 0.05:
+            return
+        # 用 advisor 建议的 importance（可上调但不下调）
+        effective_importance = max(importance, signal.suggested_importance)
+        item = MemoryItem(content=content, importance=effective_importance, tags=tags or [], source=source)
         self.short.put(key, item)
+        # 根据 advisor 的 promotion_priority 决定是否立即晋升
+        if signal.promotion_priority >= 0.75 or signal.longterm_candidate:
+            self.promote_short_to_mid(item)
+        if signal.longterm_candidate:
+            import asyncio
+            asyncio.create_task(self.append_longterm(content, tags))
 
     # ---- Promotion: short → mid ----
 

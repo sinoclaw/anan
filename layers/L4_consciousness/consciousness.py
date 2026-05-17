@@ -39,6 +39,7 @@ from typing import Callable, Optional
 from uuid import uuid4
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L4_consciousness.output_gate_advisor import OutputGateAdvisor, PushDecision
 
 logger = logging.getLogger("anan.L4.consciousness")
 
@@ -398,18 +399,49 @@ class OutputGate:
         self._stream = stream
         self._total_generated = 0
         self._total_pushed = 0
+        self._advisor = OutputGateAdvisor()
 
-    def evaluate(self, thought: Thought) -> Thought:
-        """评估并记录 thought 的 push_decision。
+    def set_delegate(self, fn: callable) -> None:
+        self._advisor.set_delegate(fn)
 
-        副作用：发布 L4.thought.generated 事件。
-        """
+    async def evaluate(self, thought: Thought) -> Thought:
+        """Async entry point: uses advisor (subagent) with rule-based fallback."""
         self._total_generated += 1
 
-        # 判断是否推送
+        recent = self._stream.recent(5)
+        recent_contents = [t.content for t in recent]
+
+        decision = await self._advisor.decide(
+            thought_type=thought.thought_type.value,
+            importance=thought.importance.value,
+            content=thought.content,
+            recent_thoughts=recent_contents,
+        )
+        should_push = decision.decision == "push"
+        thought.push_decision = decision.decision
+
+        self._bus.publish_sync(Event(
+            topic="L4.thought.generated",
+            payload=thought.to_dict(),
+            source="OutputGate",
+        ))
+
+        if should_push:
+            self._total_pushed += 1
+            self._bus.publish_sync(Event(
+                topic="L4.thought.pushed",
+                payload=thought.to_dict(),
+                source="OutputGate",
+            ))
+            logger.info(f"[L4 OutputGate] 推送给用户: {thought.thought_type.value} — {thought.content[:60]}")
+
+        return thought
+
+    def evaluate_sync(self, thought: Thought) -> Thought:
+        """Sync entry point: rule-based only (for tests and sync callers)."""
+        self._total_generated += 1
         should_push = self._should_push(thought)
-        decision = "push" if should_push else "internal"
-        thought.push_decision = decision
+        thought.push_decision = "push" if should_push else "internal"
 
         self._bus.publish_sync(Event(
             topic="L4.thought.generated",
@@ -429,26 +461,19 @@ class OutputGate:
         return thought
 
     def _should_push(self, thought: Thought) -> bool:
-        # CRITICAL 必须推
+        """Rule-based fallback (used when no delegate configured)."""
         if thought.importance == ThoughtImportance.CRITICAL:
             return True
-
-        # HIGH 必须推，且类型必须可推送
         if thought.importance == ThoughtImportance.HIGH:
             return thought.thought_type in self._PUSHABLE_TYPES
-
-        # MEDIUM 只有在跟近期想法重复时（提醒用户）才推
         if thought.importance == ThoughtImportance.MEDIUM:
             return self._is_duplicate_recent(thought)
-
-        # LOW 从不推送
         return False
 
     def _is_duplicate_recent(self, thought: Thought) -> bool:
         """检查是否与 recent buffer 中的想法内容重复。"""
         recent = self._stream.recent(5)
         import re
-        # 归一化：去除标点、转小写、去除多余空格
         def normalize(s: str) -> str:
             return re.sub(r"[^\w\u4e00-\u9fff]", "", s).lower()
         norm_content = normalize(thought.content)
@@ -459,6 +484,11 @@ class OutputGate:
 
     @property
     def stats(self) -> dict:
+        return {"generated": self._total_generated, "pushed": self._total_pushed}
+
+    # ----------------------------------------------------------------------
+    # ConsciousnessEngine
+    # ----------------------------------------------------------------------
         return {"generated": self._total_generated, "pushed": self._total_pushed}
 
 
@@ -597,6 +627,10 @@ class ConsciousnessEngine:
         if self._idle_thought_engine is not None:
             self._idle_thought_engine._working_memory = wm
 
+    def set_delegate(self, fn: callable) -> None:
+        """注入 delegate_fn，给 OutputGate 的 advisor 用。"""
+        self._output_gate.set_delegate(fn)
+
     # --- 生命周期 ---
 
     async def attach(self) -> None:
@@ -673,7 +707,7 @@ class ConsciousnessEngine:
 
     async def _on_drive_suggestion(self, event: Event) -> None:
         """收到 L8 驱动力建议，立即生成一个对应的思考。"""
-        self._inject_drive_thought(event.payload)
+        self._inject_drive_thought_sync(event.payload or {})
 
     async def _on_gateway_message(self, event: Event) -> None:
         """收到 gateway 对话事件，注入上下文供 idle 时反思，并取消 idle 状态。"""
@@ -705,9 +739,10 @@ class ConsciousnessEngine:
 
     def inject_drive_suggestion_sync(self, payload: dict) -> None:
         """同步版本：供外部（非 async）注入 L8 驱动力建议。"""
-        self._inject_drive_thought(payload)
+        self._inject_drive_thought_sync(payload)
 
-    def _inject_drive_thought(self, payload: dict) -> None:
+    def _inject_drive_thought_sync(self, payload: dict) -> None:
+        """同步部分：添加 thought 到 stream + 发布事件。"""
         thought = Thought(
             thought_id=uuid4().hex[:8],
             content=payload.get("content", ""),
@@ -716,7 +751,14 @@ class ConsciousnessEngine:
             source_context=f"L8 drive suggestion: {payload.get('drive_type', 'unknown')}",
         )
         self._stream.add(thought)
-        self._output_gate.evaluate(thought)
+        self._bus.publish_sync(Event(
+            topic="L4.thought.generated",
+            payload=thought.to_dict(),
+            source="OutputGate",
+        ))
+        # async advisor 评估通过事件循环调度
+        loop = asyncio.get_event_loop()
+        loop.call_soon(lambda: asyncio.create_task(self._output_gate.evaluate(thought)))
 
     # --- 持续思考循环（idle loop + continuous thinking） ---
 
@@ -770,7 +812,7 @@ class ConsciousnessEngine:
             thought = self._generate_one_thought(silent_s)
             if thought:
                 self._stream.add(thought)
-                self._output_gate.evaluate(thought)
+                await self._output_gate.evaluate(thought)
 
     async def _continuous_think(self) -> None:
         """非 idle 期间：从 working_memory 取样生成轻量反思。
@@ -800,7 +842,7 @@ class ConsciousnessEngine:
             payload=thought.to_dict(),
             source="ConsciousnessEngine",
         ))
-        self._output_gate.evaluate(thought)
+        await self._output_gate.evaluate(thought)
 
     def _generate_one_thought(self, silent_s: float) -> Optional[Thought]:
         """从上下文和模板生成一条思考。优先级如下：

@@ -71,7 +71,8 @@ class TestMemoryStore:
 
 
 class TestMemoryTier:
-    def test_memorize_and_recall(self, tmp_path):
+    @pytest.mark.asyncio
+    async def test_memorize_and_recall(self, tmp_path):
         from layers.L2_memory.memory_tier import MemoryTier
 
         recall = tmp_path / "recall.json"
@@ -79,19 +80,19 @@ class TestMemoryTier:
         long = tmp_path / "MEMORY.md"
 
         tier = MemoryTier(recall_path=recall, midterm_dir=mid, longterm_path=long)
-        tier.memorize("fact1", "爸爸不喜欢我重复问同一件事", importance=0.8, tags=["lesson"], source="conversation")
+        await tier.memorize("fact1", "爸爸不喜欢我重复问同一件事", importance=0.8, tags=["lesson"], source="conversation")
         results = tier.recall("爸爸", top_k=3)
         assert any("爸爸" in r for r in results)
 
-    def test_stats_reflects_counts(self, monkeypatch, tmp_path):
-        recall = tmp_path / "recall.json"
-        monkeypatch.setattr("layers.L2_memory.memory_tier.RECALL_PATH", recall)
+    @pytest.mark.asyncio
+    async def test_stats_reflects_counts(self, monkeypatch, tmp_path):
+        monkeypatch.setattr("layers.L2_memory.memory_tier.RECALL_PATH", tmp_path / "recall.json")
         monkeypatch.setattr("layers.L2_memory.memory_tier.MIDTERM_DIR", tmp_path / "mid")
         monkeypatch.setattr("layers.L2_memory.memory_tier.LONGTERM_PATH", tmp_path / "MEMORY.md")
 
         tier = MemoryTier()
-        tier.memorize("k1", "content", importance=0.5)
-        tier.memorize("k2", "content2", importance=0.5)
+        await tier.memorize("k1", "content", importance=0.5)
+        await tier.memorize("k2", "content2", importance=0.5)
         stats = tier.stats()
         assert stats["short_count"] == 2
         assert stats["midterm_files"] == 0

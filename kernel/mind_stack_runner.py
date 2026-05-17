@@ -612,7 +612,7 @@ class MindStackRunner:
                 weight = entry.weight(now=now, half_life_s=self._working_memory.half_life_s)
                 if weight < threshold:
                     continue
-                self._memory_tier.memorize(
+                await self._memory_tier.memorize(
                     key=f"wm:{entry.event.topic}:{int(entry.captured_at)}",
                     content=entry.event.topic if not entry.event.payload else f"{entry.event.topic}: {str(entry.event.payload)[:100]}",
                     importance=min(1.0, entry.salience * 1.5),
@@ -648,7 +648,7 @@ class MindStackRunner:
                 f"(lift={lift:.1f}x, conf={confidence:.0%}, support={support})"
             )
             key = f"pattern:{antecedent}:{consequent}"
-            self._memory_tier.memorize(
+            await self._memory_tier.memorize(
                 key=key,
                 content=content,
                 importance=min(1.0, lift / 50.0),  # lift 越高越重要
@@ -820,7 +820,10 @@ class MindStackRunner:
                 bus=self._bus,
                 llm=_conscious_llm,
             ))
-            logger.info("  ✓ L4 Consciousness 就绪 (LLM=yes)")
+            self._layers[-1].set_delegate(
+                self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate
+            )
+            logger.info("  ✓ L4 Consciousness 就绪 (subagent mode)")
         except Exception as exc:
             logger.warning("  ✗ L4 Consciousness 启动失败: %s", exc)
 
