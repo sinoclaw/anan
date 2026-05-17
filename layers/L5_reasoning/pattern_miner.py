@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from typing import Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L5_reasoning.mining_quality_advisor import MiningQualityAdvisor, MiningDecision
 
 logger = logging.getLogger("anan.L5.miner")
 _gateway_logger = logging.getLogger("gateway.builtin.mind_stack")
@@ -95,10 +96,17 @@ class PatternMiner:
         self._min_interval_std_s = min_interval_std_s
         self._min_occurrences_for_periodic_check = min_occurrences_for_periodic_check
 
+        # Mining quality advisor: subagent for dynamic threshold adjustment
+        self._quality_advisor = MiningQualityAdvisor()
+
         self._discovered: dict[tuple[str, str], _Discovered] = {}
         self._unsubs: list[Callable[[], None]] = []
         self._mine_count = 0
         self._active: bool = False
+
+    def set_delegate(self, fn: callable) -> None:
+        """Inject delegate_task for MiningQualityAdvisor subagent calls."""
+        self._quality_advisor.set_delegate(fn)
 
     # Class-level shared storage — all instances write here, agent:end reads here.
     # Solves the _layers_ref overwrite problem: multiple MindStackRunner instances
@@ -151,6 +159,39 @@ class PatternMiner:
             # cancels all siblings via gather(return_exceptions=False).
             logger.debug("L5 mine_now failed (non-fatal): %s", exc)
             return []
+
+    async def _assess_quality(self, patterns: list[Pattern]) -> None:
+        """Post-mine quality check: ask advisor whether thresholds need adjustment."""
+        try:
+            current = {
+                "min_support": self._min_support,
+                "min_confidence": self._min_confidence,
+                "min_lift": self._min_lift,
+            }
+            decision = await self._quality_advisor.assess(
+                patterns_found=len(patterns),
+                total_events=len(self._bus.history(limit=self._history_limit)),
+                current_thresholds=current,
+            )
+            if not decision.recommend_adjust or decision.adjust_direction == "keep":
+                return
+
+            # Apply advisor-suggested thresholds
+            changed = False
+            if decision.min_lift is not None and decision.min_lift != self._min_lift:
+                self._min_lift = decision.min_lift
+                changed = True
+                logger.info("MiningQualityAdvisor: min_lift → %.2f (%s)", decision.min_lift, decision.reasoning)
+            if decision.min_confidence is not None and decision.min_confidence != self._min_confidence:
+                self._min_confidence = decision.min_confidence
+                changed = True
+                logger.info("MiningQualityAdvisor: min_confidence → %.2f (%s)", decision.min_confidence, decision.reasoning)
+
+            # Re-mine with new thresholds
+            if changed:
+                asyncio.create_task(self.mine_now())
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("L5 quality assessment failed (non-fatal): %s", exc)
 
     async def _mine_now_impl(self) -> list[Pattern]:
         """Internal implementation — all exceptions are contained in mine_now()."""

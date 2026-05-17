@@ -156,9 +156,9 @@ Milestone 由用户在创建 goal 时指定，或由 subagent 推理建议。
 |---|---|---|
 | L1 Sleep | circadian 调度、sleep_stage 状态机 | Daydream/Lucid narrative 生成（已有 LLM bridge） |
 | L5 Pattern | 窗口滑动、计数器管理 | lift/conf 阈值动态调整 |
-| L6 Meta | **issue 积累、warn 条件判断（硬编码）** | **MetacognitionAdvisor: tuning 效果评估 + auto rollback ✓ 新增** |
-| L7 Goals | achieve/abandon/milestone 状态变更 ✓ 已有 | **ProgressAssessor: progress 量化 ✓ 已完成** |
-| L7 Will | 驱动压抑/释放阈值 | 驱动强度动态评估 |
+| L6 Meta | issue 积累、warn 条件判断（硬编码） | MetacognitionAdvisor: tuning 效果评估 + auto rollback ✓ 已完成 |
+| L7 Goals | achieve/abandon/milestone 状态变更 ✓ 已有 | ProgressAssessor: progress 量化 ✓ 已完成 |
+| L7 Will | adaptation history、执行 action、avoid signal 检查 | **DriveStrengthAdvisor: action 选择 + 强度评估 ✓ 已完成** |
 | L9 Self | 状态写入、wisdom_facts 存储 | self-evaluation 总体评估 |
 
 ---

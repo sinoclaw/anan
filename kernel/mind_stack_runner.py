@@ -700,8 +700,9 @@ class MindStackRunner:
                 mine_on_event="L0.circadian.bedtime",
                 self_model=self_model,
             )
+            self._pattern_miner.set_delegate(delegate_task)
             self._layers.append(self._pattern_miner)
-            logger.info("  ✓ L5 PatternMiner 就绪")
+            logger.info("  ✓ L5 PatternMiner 就绪（subagent mode）")
         except Exception as exc:
             logger.warning("  ✗ L5 PatternMiner 启动失败: %s", exc)
 
