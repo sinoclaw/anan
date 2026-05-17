@@ -187,7 +187,87 @@ def probe_catchall(intent, ctx: ProbeContext) -> ProbeResult:
             return ProbeResult("verified", f"{action} 仍在做", {"action": action})
         return ProbeResult("inconclusive", f"{action} 最近未观察到", {"action": action})
 
-    return ProbeResult("inconclusive", "无法判断（无启发式规则匹配）")
+class _IntentVerificationRecord:
+    """Per-intent verification state for OBS-1 adaptive scheduling."""
+
+    __slots__ = ("key", "last_verdict", "last_evidence", "consecutive_count", "next_verify_at")
+
+    def __init__(self, key: str):
+        self.key: str = key
+        self.last_verdict: str = "inconclusive"
+        self.last_evidence: str = ""
+        self.consecutive_count: int = 0  # how many times this intent was verified in a row
+        self.next_verify_at: float = 0.0  # monotonic timestamp (time.time() based)
+
+
+class _VerificationScheduler:
+    """OBS-1: Adaptive verification interval scheduler.
+
+    Instead of re-verifying every intent every N seconds, this tracks per-intent
+    state and dynamically picks which intents are due right now:
+
+      - verified + stable (consecutive ≥ 3) → slow down: base_interval × 2.5
+      - verified + fresh (consecutive < 3)   → normal:  base_interval × 1
+      - inconclusive                        → sooner:  base_interval × 0.7
+      - falsified                           → urgent:  next tick (0)
+      - newly seen / unknown                → immediate
+
+    The base_interval is the proactive_interval_s configured on ProactiveObserver.
+    """
+
+    __slots__ = ("base_interval", "_records", "_fresh_keys")
+
+    def __init__(self, base_interval: float):
+        # Minimum interval cap so nothing is checked more than once per tick
+        self.base_interval: float = max(base_interval, 10.0)
+        self._records: dict[str, _IntentVerificationRecord] = {}
+        # Keys seen this tick that have no prior record → verify immediately
+        self._fresh_keys: set[str] = set()
+
+    def mark_fresh(self, key: str) -> None:
+        """Call this when an intent appears in the top-N snapshot."""
+        if key not in self._records:
+            self._fresh_keys.add(key)
+
+    def get_due_keys(self, now: float) -> list[str]:
+        """Return intent keys that are due for verification at time `now`."""
+        due = []
+        for key in self._fresh_keys:
+            due.append(key)
+        self._fresh_keys.clear()
+        for key, rec in self._records.items():
+            if now >= rec.next_verify_at:
+                due.append(key)
+        return due
+
+    def record_result(self, key: str, verdict: str, evidence: str, now: float) -> None:
+        """Update tracking after a probe run for `key`."""
+        rec = self._records.get(key)
+        if rec is None:
+            rec = _IntentVerificationRecord(key)
+            self._records[key] = rec
+        rec.last_verdict = verdict
+        rec.last_evidence = evidence
+        if verdict == "verified":
+            rec.consecutive_count += 1
+        else:
+            rec.consecutive_count = 0
+        rec.next_verify_at = self._compute_next_at(rec, now)
+
+    def _compute_next_at(self, rec: _IntentVerificationRecord, now: float) -> float:
+        multiplier: float
+        if rec.last_verdict == "verified":
+            if rec.consecutive_count >= 3:
+                multiplier = 2.5
+            else:
+                multiplier = 1.0
+        elif rec.last_verdict == "inconclusive":
+            multiplier = 0.7
+        elif rec.last_verdict == "falsified":
+            multiplier = 0.0  # verify on next tick
+        else:
+            multiplier = 1.0
+        return now + self.base_interval * multiplier
 
 
 class ProactiveObserver:
@@ -200,6 +280,9 @@ class ProactiveObserver:
             working_memory=wm,
             self_model=l9.model,
             auto_satisfy=True,    # verified verdict → call l8.satisfy()
+            reinforce_on_falsify=True,
+            llm_probe_fn=some_async_fn,   # optional async(intent_key, description, ctx) → ProbeResult
+            proactive_interval_s=30.0,    # 0 = disabled (snapshot-driven only)
         )
         await l4.attach()
     """
@@ -239,6 +322,10 @@ class ProactiveObserver:
         # If no custom llm_probe_fn was provided, use the advisor as the LLM probe
         if self._llm_probe_fn is None:
             self._llm_probe_fn = self._obs_advisor.evaluate
+        # OBS-1: adaptive verification scheduler
+        self._verify_scheduler: Optional[_VerificationScheduler] = None
+        if proactive_interval_s > 0:
+            self._verify_scheduler = _VerificationScheduler(base_interval=proactive_interval_s)
 
     # ------------------------------------------------------------------
     # delegate injection (for MindStackRunner)
@@ -255,17 +342,28 @@ class ProactiveObserver:
             await self._on_snapshot(event)
 
         async def on_tick(event: Event):
-            # Proactive loop: verify top intents every N ticks
-            if self._proactive_interval <= 0:
+            # Proactive loop: use scheduler to pick which intents are due
+            if self._proactive_interval <= 0 or self._verify_scheduler is None:
                 return
             payload = event.payload or {}
             ticks = payload.get("ticks", 0)
-            if ticks % 3 == 0:  # every 3rd tick (~90s) to keep overhead low
-                logger.debug("L4 ProactiveObserver: proactive probe tick=%d", ticks)
-                try:
-                    await self.observe_now()
-                except Exception as exc:  # noqa: BLE001
-                    logger.warning("L4 proactive observe_now failed: %s", exc)
+            if ticks % 3 != 0:  # every 3rd tick to keep overhead low
+                return
+            if self._intent_stack is None:
+                return
+            import time as _time
+            now = _time.time()
+            # Mark current top-N as fresh (new/unknown → immediate)
+            for intent in self._intent_stack.top(7):
+                self._verify_scheduler.mark_fresh(intent.key)
+            due_keys = self._verify_scheduler.get_due_keys(now)
+            if not due_keys:
+                return
+            logger.debug("L4 ProactiveObserver: proactive probe tick=%d, due=%s", ticks, due_keys)
+            try:
+                await self._observe_due(due_keys)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("L4 proactive observe_now failed: %s", exc)
 
         self._unsubs.append(
             self._bus.subscribe("L8.intent.snapshot", on_snapshot)
@@ -284,37 +382,79 @@ class ProactiveObserver:
         self._probes[key] = probe
 
     # ------------------------------------------------------------------
-    async def observe_now(self) -> list[dict]:
-        """Trigger probes immediately for current top intents.
-        Returns list of observation dicts."""
+    async def _observe_due(self, intent_keys: list[str]) -> list[dict]:
+        """Run probes for a specific set of intent keys (used by proactive loop)."""
         if self._intent_stack is None:
             return []
-        results = []
+        import time as _time
+        now = _time.time()
         ctx = ProbeContext(
             bus=self._bus, working_memory=self._wm,
             self_model=self._sm, intent_stack=self._intent_stack,
         )
-        for intent in self._intent_stack.top(7):
-            probe = self._probes.get(intent.key)
-            result = None
-            if probe is not None:
-                try:
-                    result = probe(intent, ctx)
-                except Exception as exc:  # noqa: BLE001
-                    logger.debug("L4 probe %s failed: %s", intent.key, exc)
-                    result = ProbeResult("inconclusive", f"probe error: {exc}")
-            elif self._llm_probe_fn is not None:
-                # LLM probe for anything without a built-in probe
-                try:
-                    result = await self._llm_probe_fn(intent.key, intent.description, ctx)
-                except Exception as exc:  # noqa: BLE001
-                    logger.debug("L4 LLM probe %s failed: %s", intent.key, exc)
-                    result = ProbeResult("inconclusive", f"LLM probe error: {exc}")
-            else:
-                # No LLM configured — use catch-all heuristic
-                result = probe_catchall(intent, ctx)
+        # Build a quick lookup: key → intent object
+        key_to_intent = {i.key: i for i in self._intent_stack.top(10)}
+        results = []
+        for key in intent_keys:
+            intent = key_to_intent.get(key)
+            if intent is None:
+                continue
+            result = await self._run_probe(intent, ctx)
             if result is None:
                 continue
+            # Record in scheduler so next interval is adjusted
+            if self._verify_scheduler is not None:
+                self._verify_scheduler.record_result(key, result.verdict, result.evidence, now)
+            obs = {
+                "timestamp": datetime.now().isoformat(),
+                "intent_key": intent.key,
+                "verdict": result.verdict,
+                "evidence": result.evidence,
+                "detail": result.detail,
+            }
+            self._observations.append(obs)
+            results.append(obs)
+            await self._react(intent, result)
+        return results
+
+    async def _run_probe(self, intent, ctx: "ProbeContext") -> Optional[ProbeResult]:
+        """Run the appropriate probe for an intent, returning the result."""
+        probe = self._probes.get(intent.key)
+        if probe is not None:
+            try:
+                return probe(intent, ctx)
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("L4 probe %s failed: %s", intent.key, exc)
+                return ProbeResult("inconclusive", f"probe error: {exc}")
+        if self._llm_probe_fn is not None:
+            try:
+                return await self._llm_probe_fn(intent.key, intent.description, ctx)
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("L4 LLM probe %s failed: %s", intent.key, exc)
+                return ProbeResult("inconclusive", f"LLM probe error: {exc}")
+        return probe_catchall(intent, ctx)
+
+    # ------------------------------------------------------------------
+    async def observe_now(self) -> list[dict]:
+        """Trigger probes immediately for all current top intents (snapshot-driven).
+        Returns list of observation dicts."""
+        if self._intent_stack is None:
+            return []
+        import time as _time
+        now = _time.time()
+        ctx = ProbeContext(
+            bus=self._bus, working_memory=self._wm,
+            self_model=self._sm, intent_stack=self._intent_stack,
+        )
+        results = []
+        for intent in self._intent_stack.top(7):
+            result = await self._run_probe(intent, ctx)
+            if result is None:
+                continue
+            # Update scheduler record (snapshot-driven = treat as fresh/unknown intent)
+            if self._verify_scheduler is not None:
+                self._verify_scheduler.mark_fresh(intent.key)
+                self._verify_scheduler.record_result(intent.key, result.verdict, result.evidence, now)
             obs = {
                 "timestamp": datetime.now().isoformat(),
                 "intent_key": intent.key,
@@ -328,6 +468,7 @@ class ProactiveObserver:
         return results
 
     async def _on_snapshot(self, event: Event) -> None:
+        # Snapshot-driven: verify all current top intents immediately
         await self.observe_now()
 
     async def _react(self, intent, result: ProbeResult) -> None:

@@ -532,3 +532,122 @@ class TestOBSResultParsing:
         data = {"verdict": "maybe", "evidence": "test", "detail": {}}
         result = ObservabilityAdvisor._from_data(data)
         assert result.verdict == "inconclusive"
+
+
+# ---------------------------------------------------------------------------
+# OBS-1: _VerificationScheduler tests
+# ---------------------------------------------------------------------------
+
+class TestVerificationScheduler:
+    """Test the adaptive verification interval scheduler."""
+
+    def test_fresh_key_is_due_immediately(self):
+        from layers.L4_proactive.observer import _VerificationScheduler
+        sched = _VerificationScheduler(base_interval=30.0)
+        sched.mark_fresh("new_intent")
+        now = 100.0
+        due = sched.get_due_keys(now)
+        assert "new_intent" in due
+
+    def test_verified_stable_slows_down(self):
+        from layers.L4_proactive.observer import _VerificationScheduler
+        sched = _VerificationScheduler(base_interval=30.0)
+        now = 100.0
+        # Simulate 3 consecutive verified verdicts (now advances through the loop)
+        for _ in range(3):
+            sched.record_result("stable_intent", "verified", "ok", now)
+            now += 0.1
+        # After 3 verified, next interval should be 30 * 2.5 = 75s from the last record time
+        rec = sched._records["stable_intent"]
+        # now was 100.2 when last record_result was called (100 + 0.1*2)
+        expected_next = (100.0 + 0.2) + 30.0 * 2.5  # = 175.2
+        assert rec.next_verify_at == expected_next
+
+    def test_inconclusive_shortens_interval(self):
+        from layers.L4_proactive.observer import _VerificationScheduler
+        sched = _VerificationScheduler(base_interval=30.0)
+        now = 100.0
+        sched.record_result("maybe_intent", "inconclusive", "unclear", now)
+        rec = sched._records["maybe_intent"]
+        # inconclusive → 0.7 multiplier
+        expected_next = 100.0 + 30.0 * 0.7
+        assert rec.next_verify_at == expected_next
+
+    def test_falsified_next_tick(self):
+        from layers.L4_proactive.observer import _VerificationScheduler
+        sched = _VerificationScheduler(base_interval=30.0)
+        now = 100.0
+        sched.record_result("bad_intent", "falsified", "not working", now)
+        rec = sched._records["bad_intent"]
+        # falsified → multiplier 0 → immediate (but at least 10s cap applies: max(10, 30*0) = 10)
+        # actually base_interval is max(30, 10) = 30, multiplier 0, so 30*0=0, +now=100
+        assert rec.next_verify_at == now  # no cap needed because now >= base already
+
+    def test_get_due_keys_excludes_not_yet_due(self):
+        from layers.L4_proactive.observer import _VerificationScheduler
+        sched = _VerificationScheduler(base_interval=30.0)
+        now = 100.0
+        sched.record_result("slow_intent", "verified", "ok", now)
+        # Only 10s has passed — not due yet
+        due = sched.get_due_keys(now + 10.0)
+        assert "slow_intent" not in due
+
+    def test_base_interval_min_cap(self):
+        from layers.L4_proactive.observer import _VerificationScheduler
+        # base_interval < 10 gets capped to 10
+        sched = _VerificationScheduler(base_interval=5.0)
+        assert sched.base_interval == 10.0
+
+
+class TestObserverWithScheduler:
+    """Test ProactiveObserver wiring with _VerificationScheduler."""
+
+    @pytest.mark.asyncio
+    async def test_observe_now_updates_scheduler(self):
+        bus = EventBus()
+        l8 = IntentStack(bus=bus)
+        await l8.propose("test_intent", "测试意图")
+        await asyncio.sleep(0.01)
+
+        observer = ProactiveObserver(
+            bus=bus,
+            intent_stack=l8,
+            proactive_interval_s=30.0,
+        )
+        await observer.attach()
+        # Run observe_now
+        results = await observer.observe_now()
+        assert len(results) >= 1
+        # Scheduler should have a record for test_intent
+        assert observer._verify_scheduler is not None
+        rec = observer._verify_scheduler._records.get("test_intent")
+        assert rec is not None
+        await observer.detach()
+
+    @pytest.mark.asyncio
+    async def test_observe_due_filters_by_due_keys(self):
+        bus = EventBus()
+        l8 = IntentStack(bus=bus)
+        await l8.propose("due_intent", "due")
+        await l8.propose("not_due_intent", "not due")
+        await asyncio.sleep(0.01)
+
+        observer = ProactiveObserver(
+            bus=bus,
+            intent_stack=l8,
+            proactive_interval_s=30.0,
+        )
+        await observer.attach()
+
+        # Record "not_due_intent" as verified long ago — not due yet
+        import time
+        now = time.time()
+        observer._verify_scheduler.record_result("not_due_intent", "verified", "old", now - 100)
+
+        # Only "due_intent" should be in the snapshot and get processed
+        results = await observer._observe_due(["due_intent", "not_due_intent"])
+        processed_keys = [r["intent_key"] for r in results]
+        # "due_intent" was fresh → should be in results
+        assert "due_intent" in processed_keys
+        await observer.detach()
+
