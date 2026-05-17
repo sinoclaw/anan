@@ -870,16 +870,13 @@ class MindStackRunner:
         try:
             from layers.L7_will.regulator import SelfRegulator
 
-            async def _will_llm(messages: list, temperature: float = 0.3) -> str:
-                result = await async_call_llm(task="agent", messages=messages, temperature=temperature)
-                return result.choices[0].message.content
-
-            self._layers.append(SelfRegulator(
+            regulator = SelfRegulator(
                 bus=self._bus,
                 intent_stack=self._intent_stack if hasattr(self, '_intent_stack') else None,
-                llm=_will_llm,
-            ))
-            logger.info("  ✓ L7 Will 就绪 (LLM=yes)")
+            )
+            regulator.set_delegate(delegate_task)
+            self._layers.append(regulator)
+            logger.info("  ✓ L7 Will 就绪（subagent mode）")
         except Exception as exc:
             logger.warning("  ✗ L7 Will 启动失败: %s", exc)
 

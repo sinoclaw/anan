@@ -28,6 +28,7 @@ from datetime import datetime
 from typing import Any, Awaitable, Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
+from layers.L7_will.drive_strength_advisor import DriveStrengthAdvisor, DriveDecision
 
 logger = logging.getLogger("anan.L7.regulator")
 
@@ -90,7 +91,16 @@ class SelfRegulator:
         # Per-layer salience attenuation factor (1.0 = unchanged, <1 = damped)
         self._layer_atten: dict[str, float] = {}
         self._original_salience_fn = None
-        self._llm = llm  # LLM for reasoning about unknown issues
+        self._llm = llm  # Legacy bridge (superseded by DriveStrengthAdvisor)
+
+        # DriveStrengthAdvisor: subagent for deciding action + strength
+        self._advisor = DriveStrengthAdvisor(
+            adaptation_history=self._history,
+        )
+
+    def set_delegate(self, fn: callable) -> None:
+        """Inject delegate_task for DriveStrengthAdvisor subagent calls."""
+        self._advisor.set_delegate(fn)
 
     # ------------------------------------------------------------------
     async def attach(self) -> None:
@@ -205,28 +215,103 @@ class SelfRegulator:
 
     # ------------------------------------------------------------------
     async def _react(self, warn_event: Event) -> None:
+        """React to L6.metacognition.warn using DriveStrengthAdvisor subagent.
+
+        Subagent decides: action + strength, respecting avoid signals + history.
+        """
         issues: list[str] = warn_event.payload.get("issues", [])
-        actions_taken = 0
-        for issue in issues:
-            if actions_taken >= self._max_actions:
-                break
-            if "错误率" in issue and "严重" in issue:
-                await self._heal_bus(issue)
-                actions_taken += 1
-            elif "注意力倾斜" in issue:
-                await self._rebalance_attention(issue)
-                actions_taken += 1
-            elif "身份" in issue and ("停滞" in issue or "没增长" in issue):
-                await self._stir_identity(issue)
-                actions_taken += 1
-            elif "我是谁" in issue:
-                await self._stir_identity(issue)
-                actions_taken += 1
+        health_score: float = warn_event.payload.get("score", 0.6)
+
+        if not issues:
+            return
+
+        # Gather context for the advisor
+        avoid_signals = self._collect_avoid_signals()
+
+        # Get subagent decision
+        decision = await self._advisor.decide(
+            issues=issues,
+            health_score=health_score,
+            adaptation_history=[a.to_dict() for a in self._history],
+            avoid_signals=avoid_signals,
+            layer_attenuations=dict(self._layer_atten),
+        )
+
+        if decision.action == "noop":
+            logger.debug("DriveStrengthAdvisor recommended noop for issues: %s", issues)
+            return
+
+        # Execute the recommended action with recommended strength
+        await self._execute_decision(decision, issues)
+
+    # -------------------------------------------------------------------------
+    # Advisor helpers
+    # -------------------------------------------------------------------------
+
+    def _collect_avoid_signals(self) -> list[dict]:
+        """Collect avoid signals from L8 intent stack."""
+        avoid_signals = []
+        if self._intent_stack is not None:
+            # Scan intent stack for avoid_* intents
+            try:
+                for key, intent in self._intent_stack._intents.items():
+                    if key.startswith("avoid_"):
+                        avoid_signals.append({
+                            "intent": key,
+                            "action": key.replace("avoid_", ""),
+                            "strength": getattr(intent, "strength", 0.0),
+                        })
+            except Exception as exc:
+                logger.debug("Could not collect avoid signals: %s", exc)
+        return avoid_signals
+
+    async def _execute_decision(self, decision: DriveDecision, issues: list[str]) -> None:
+        """Execute a DriveDecision recommended by the subagent advisor."""
+        action = decision.action
+        strength = decision.strength
+        issue_text = "; ".join(issues)
+
+        # Apply advisor-recommended strength (scale base attenuation by strength)
+        if action == "heal_bus":
+            await self._heal_bus(f"[advisor@{strength:.0%}] {issue_text}")
+
+        elif action == "rebalance_attention":
+            # Extract layer from issue text
+            layer = self._extract_layer(issue_text) or "L5"
+            scaled_factor = max(0.05, self._sal_atten * strength)
+            await self._apply_layer_attenuation(layer, scaled_factor, f"[advisor@{strength:.0%}] {issue_text}")
+
+        elif action == "stir_identity":
+            # Scale threshold step by strength
+            step = self._thresh_step * strength
+            cur = self._circadian.config.sleep_threshold if self._circadian else 3.0
+            new = max(cur - step, self._min_thresh)
+            if self._circadian and new < cur:
+                self._circadian.config.sleep_threshold = new
+                await self._record_and_emit(
+                    trigger=f"[advisor@{strength:.0%}] {issue_text}",
+                    action="shorten_sleep_threshold",
+                    detail={"from": cur, "to": new, "advisor_strength": strength},
+                )
             else:
-                # LLM 推理未知 issue 的应对策略
-                handled = await self._react_unknown(issue)
-                if handled:
-                    actions_taken += 1
+                # circadian not wired — record noop
+                await self._record_and_emit(
+                    trigger=f"[advisor@{strength:.0%}] {issue_text}",
+                    action="noop",
+                    detail={"reason": "no circadian wired, cannot shorten sleep threshold", "advisor_strength": strength},
+                )
+
+        elif action == "apply_layer_attenuation":
+            layer = self._extract_layer(issue_text) or "L5"
+            await self._apply_layer_attenuation(layer, strength, f"[advisor] {issue_text}")
+
+        else:
+            # Record noop so test can observe advisor reasoning
+            await self._record_and_emit(
+                trigger=f"[advisor] {issue_text}",
+                action="noop",
+                detail={"reason": f"advisor chose noop (action={action})", "advisor_strength": strength},
+            )
 
     async def _heal_bus(self, trigger: str) -> None:
         """High bus error rate — flag intent, can't fix without knowing the offender."""

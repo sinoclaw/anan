@@ -162,7 +162,8 @@ class TestReact:
 
         # Without circadian wired, action is "noop" with reason
         assert len(acted) >= 1
-        assert acted[0]["trigger"] == "身份事实已经 6 个周期没增长"
+        # Advisor may prefix the trigger with [advisor@NN%]
+        assert "身份事实" in acted[0]["trigger"]
         assert acted[0]["action"] in ("shorten_sleep_threshold", "noop")
         await r.detach()
 
