@@ -1503,19 +1503,50 @@ class DreamingPlugin:
         await self._emit_hook("on_dream_phase_complete", phase, body_lines)
 
         snippets = [l for l in body_lines if l.startswith("- ") and not l.startswith("- No")]
-        if snippets and self._subagent:
-            narrative = await generate_dream_narrative(
-                self._subagent,
-                workspace_dir,
-                {"phase": phase, "snippets": snippets, "promotions": []},
-                now_ms,
-                timezone,
-                self.config.model,
-                logger,
-            )
-            if narrative:
-                append_dream_narrative(workspace_dir, narrative, now_ms, timezone)
-                await self._emit_hook("on_dream_narrative", phase, narrative)
+        if snippets:
+            narrative_generated = False
+            # Try subagent first
+            if self._subagent:
+                try:
+                    narrative = await generate_dream_narrative(
+                        self._subagent,
+                        workspace_dir,
+                        {"phase": phase, "snippets": snippets, "promotions": []},
+                        now_ms,
+                        timezone,
+                        self.config.model,
+                        logger,
+                    )
+                    if narrative:
+                        append_dream_narrative(workspace_dir, narrative, now_ms, timezone)
+                        await self._emit_hook("on_dream_narrative", phase, narrative)
+                        narrative_generated = True
+                except Exception as e:
+                    logger.debug(f"dreaming: subagent narrative failed: {e}")
+            # Fallback: async_call_llm bridge
+            if not narrative_generated and self._async_llm and snippets:
+                try:
+                    snippet_text = "\n".join(snippets[:10])
+                    messages = [
+                        {"role": "user", "content": f"""Dream phase: {phase}
+
+Snippets:
+{snippet_text}
+
+Write a short dream summary paragraph (40-80 chars) in first person, capturing the key theme.
+不要标题，不要列表。"""},
+                    ]
+                    result = await self._async_llm(task="agent", messages=messages, temperature=0.7)
+                    response = None
+                    if isinstance(result, dict):
+                        response = result.get("content") or result.get("text") or result.get("response")
+                    elif isinstance(result, str):
+                        response = result
+                    if response:
+                        append_dream_narrative(workspace_dir, response.strip(), now_ms, timezone)
+                        logger.info(f"dreaming: {phase} narrative generated via LLM ({len(response)} chars)")
+                except Exception as e:
+                    logger.debug(f"dreaming: async_llm narrative failed: {e}")
 
         logger.info(f"dreaming: {phase} phase complete, {len(body_lines)} lines")
 
