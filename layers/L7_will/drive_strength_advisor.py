@@ -58,6 +58,27 @@ class DriveDecision:
         }
 
 
+@dataclass
+class CausalPatternDecision:
+    """L5 因果规则评估决策 — 是否根据 L5 发现的因果模式主动干预."""
+    should_act: bool          # 是否行动
+    action: Optional[str] = None  # 行动类型
+    detail: dict = None      # 行动参数
+    reasoning: str = ""       # 判断理由
+
+    def __post_init__(self):
+        if self.detail is None:
+            self.detail = {}
+
+    def to_dict(self) -> dict:
+        return {
+            "should_act": self.should_act,
+            "action": self.action,
+            "detail": self.detail,
+            "reasoning": self.reasoning,
+        }
+
+
 # ---------------------------------------------------------------------------
 # Subagent prompt
 # ---------------------------------------------------------------------------
@@ -311,3 +332,140 @@ class DriveStrengthAdvisor:
             reasoning=data.get("reasoning", ""),
             suppress_other_drives=bool(data.get("suppress_other_drives", False)),
         )
+
+    # -------------------------------------------------------------------------
+    # L5 因果模式评估 — 接管 SelfRegulator._on_causal_pattern() 的硬编码阈值
+    # -------------------------------------------------------------------------
+
+    CAUSAL_PATTERN_PROMPT = """你是 anan 的 L7 主动干预决策器。给定 L5 因果reasoner 发现的因果规则，判断 anan 是否应该主动干预。
+
+## L5 发现的因果规则
+Antecedent: {antecedent}
+Consequent: {consequent}
+Confidence: {confidence:.2%}  (0-1，越高说明历史数据越支持这条规则)
+Lift: {lift:.2f}  (>1.0 表示正相关，>2.0 表示强正相关)
+
+## 当前栈状态
+Stack size: {stack_size}/{capacity}
+
+## 决策标准
+1. confidence >= 0.8 且 lift >= 2.0 → 高置信规则，考虑行动
+2. consequent 是 L6/metacognition 问题（如 L6.metacognition.warn）→ 主动预防有价值
+3. antecedent → L8.intent.* 且 consequent → L4.observation.* → "验证失败→意图加固"死循环，必须干预
+4. confidence 或 lift 太低（无历史数据支持）→ 跳过，避免噪声
+5. 已经对这个 pattern 采取过行动 → 跳过（避免重复干预同一规则）
+
+## 干预选项
+- attenuate_layer_salience: 当 antecedent 导致 L6 问题时，降权 antecedent 层
+- weaken_intent: 当发现意图→验证失败循环时，主动减弱意图
+- noop: 不干预（规则不够强或不适用）
+
+## 输出格式（严格 JSON）
+{{
+  "should_act": true|false,
+  "action": "action_name 或 null",
+  "detail": {{"layer": "...", "rationale": "...", "factor": 0.8, ...}} 或空字典,
+  "reasoning": "判断理由（1-2句）"
+}}"""
+
+    async def decide_causal_pattern(
+        self,
+        antecedent: str,
+        consequent: str,
+        confidence: float,
+        lift: float,
+        stack_size: int = 0,
+        capacity: int = 7,
+    ) -> CausalPatternDecision:
+        """评估 L5 因果模式是否值得 L7 主动干预。
+
+        接管了 SelfRegulator._on_causal_pattern() 的硬编码阈值：
+        旧: if confidence < 0.8 or lift < 2.0: return
+        新: 由 subagent 根据上下文判断
+        """
+        prompt = self.CAUSAL_PATTERN_PROMPT.format(
+            antecedent=antecedent,
+            consequent=consequent,
+            confidence=confidence,
+            lift=lift,
+            stack_size=stack_size,
+            capacity=capacity,
+        )
+
+        if not self._delegate_fn:
+            logger.debug("DriveStrengthAdvisor: no delegate_fn for causal pattern, using fallback")
+            return self._fallback_causal_pattern(confidence, lift, antecedent, consequent)
+
+        try:
+            result_text = await self._delegate_fn(
+                goal="因果模式评估",
+                context=prompt,
+                parent_agent=None,
+            )
+            parsed = self._parse_causal_response(result_text)
+            logger.info(
+                "DriveStrengthAdvisor: causal_pattern %s→%s conf=%.2f lift=%.1f → act=%s",
+                antecedent[:30], consequent[:30], confidence, lift, parsed.should_act,
+            )
+            return parsed
+        except Exception as exc:
+            logger.warning("DriveStrengthAdvisor causal pattern subagent failed: %s, falling back", exc)
+            return self._fallback_causal_pattern(confidence, lift, antecedent, consequent)
+
+    @staticmethod
+    def _fallback_causal_pattern(
+        confidence: float,
+        lift: float,
+        antecedent: str = "",
+        consequent: str = "",
+    ) -> CausalPatternDecision:
+        """规则兜底 — 原有的硬编码阈值逻辑 + action 映射."""
+        if confidence < 0.8 or lift < 2.0:
+            return CausalPatternDecision(
+                should_act=False,
+                reasoning=f"fallback: conf={confidence:.2f}<0.8 or lift={lift:.1f}<2.0",
+            )
+
+        # Pattern 1: X → L6.metacognition.* → attenuate that layer
+        if "L6.metacognition" in consequent:
+            layer = antecedent.split(".")[0] if antecedent else None
+            if layer in ("L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9"):
+                return CausalPatternDecision(
+                    should_act=True,
+                    action="attenuate_layer_salience",
+                    detail={"layer": layer, "factor": 0.3},
+                    reasoning="fallback: X→L6.metacognition pattern, attenuate layer",
+                )
+
+        # Pattern 2: L8.intent.* → L4.observation.* → weaken intent
+        if "L8.intent" in antecedent and "L4.observation" in consequent:
+            return CausalPatternDecision(
+                should_act=True,
+                action="weaken_intent",
+                detail={"rationale": "fallback: intent→observation死循环，主动减弱"},
+                reasoning="fallback: intent→observation死循环",
+            )
+
+        return CausalPatternDecision(
+            should_act=True,
+            reasoning="fallback: passed threshold, acting on pattern",
+        )
+
+    def _parse_causal_response(self, text: str) -> CausalPatternDecision:
+        """解析 LLM 返回的因果模式决策."""
+        import json, re
+        m = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
+        if not m:
+            m = re.search(r"\{.*\}", text, re.DOTALL)
+        if not m:
+            return self._fallback_causal_pattern(0.0, 0.0)
+        try:
+            data = json.loads(m.group())
+            return CausalPatternDecision(
+                should_act=bool(data.get("should_act", False)),
+                action=data.get("action"),
+                detail=data.get("detail", {}),
+                reasoning=data.get("reasoning", ""),
+            )
+        except (json.JSONDecodeError, KeyError):
+            return self._fallback_causal_pattern(confidence, lift, antecedent, consequent)

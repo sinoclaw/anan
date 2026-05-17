@@ -16,8 +16,7 @@ L6 镜子能照出问题但只是发报告。L7 是 anan 第一次"听镜子的�
   1. L7 **不直接做事**——通过修改其他组件的可调参数实现调节
   2. 每次调节有上限/下限，避免漂移
   3. adaptation 历史可查，便于 L6 评估"我的调节有用吗？"
-
-未来 v0.7+ 会引入 LLM 真"决策"，目前是规则引擎 + 阈值。
+  4. 所有关键决策通过 DriveStrengthAdvisor subagent 完成（包含 fallback 规则兜底）
 """
 
 from __future__ import annotations
@@ -28,7 +27,7 @@ from datetime import datetime
 from typing import Any, Awaitable, Callable, Optional
 
 from kernel.event_bus import Event, EventBus, get_bus
-from layers.L7_will.drive_strength_advisor import DriveStrengthAdvisor, DriveDecision
+from layers.L7_will.drive_strength_advisor import DriveStrengthAdvisor, DriveDecision, CausalPatternDecision
 
 logger = logging.getLogger("anan.L7.regulator")
 
@@ -145,11 +144,9 @@ class SelfRegulator:
             self._original_salience_fn = None
 
     async def _on_causal_pattern(self, event: Event) -> None:
-        """L5 discovered a causal pattern — evaluate if we should act preemptively.
+        """L5 discovered a causal pattern — use DriveStrengthAdvisor to decide if we should act.
 
-        Only acts on high-confidence patterns where:
-        - consequent is a known negative event (L6.metacognition.warn, bus errors)
-        - we haven't already acted on this pattern (avoid spam)
+        Replaces hardcoded conf/lift thresholds (conf<0.8 or lift<2.0) with subagent evaluation.
         """
         payload = event.payload
         antecedent = payload.get("antecedent", "")
@@ -157,56 +154,64 @@ class SelfRegulator:
         confidence = payload.get("confidence", 0.0)
         lift = payload.get("lift", 1.0)
 
-        # Skip if already acted, or confidence too low
+        # Skip if already acted on this pattern
         pattern_key = (antecedent, consequent)
         if pattern_key in self._learned_risky_patterns:
             return
-        if confidence < 0.8 or lift < 2.0:
+
+        # Use subagent to decide whether to act (replaces hardcoded conf/lift thresholds)
+        stack_size = len(self._intents) if self._intent_stack else 0
+        capacity = self._intent_stack._capacity if self._intent_stack else 7
+
+        decision = await self._advisor.decide_causal_pattern(
+            antecedent=antecedent,
+            consequent=consequent,
+            confidence=confidence,
+            lift=lift,
+            stack_size=stack_size,
+            capacity=capacity,
+        )
+
+        if not decision.should_act:
+            logger.debug(
+                "DriveStrengthAdvisor skipped causal pattern %s→%s: %s",
+                antecedent[:40], consequent[:40], decision.reasoning,
+            )
             return
 
-        # Is consequent something bad we can prevent?
-        is_bad = False
-        action = None
-        detail = {}
+        action = decision.action
+        detail = decision.detail or {}
 
-        # Pattern 1: X → L6.metacognition.* (X causes metacognition warnings)
-        if "L6.metacognition" in consequent:
-            layer = antecedent.split(".")[0]
-            if layer in ("L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9"):
-                is_bad = True
-                action = "attenuate_layer_salience"
-                detail = {
-                    "layer": layer,
-                    "rationale": f"[proactive from L5 insight] {antecedent} → {consequent} (置信={confidence:.0%}, 提升={lift:.1f}x)",
-                    "factor": self._sal_atten,
-                }
+        # Add original pattern info to rationale
+        if "rationale" not in detail:
+            detail["rationale"] = (
+                f"[proactive from L5 insight] {antecedent} → {consequent} "
+                f"(置信={confidence:.0%}, 提升={lift:.1f}x): {decision.reasoning}"
+            )
+        if "confidence" not in detail:
+            detail["confidence"] = confidence
+        if "lift" not in detail:
+            detail["lift"] = lift
 
-        # Pattern 2: L8.intent.* → L4.observation.* (intent leads to observation/verification)
-        # This means: every time we have an intent, we get observed/falsified
-        # That's the "try harder → fail → try harder" loop — L7 should intervene
-        elif "L8.intent" in antecedent and "L4.observation" in consequent:
-            is_bad = True
-            action = "weaken_intent"
-            # The pattern tells us failure leads to reinforce, but not which specific intent
-            # We'll emit a general weaken signal; L8 can decide which intent to weaken
-            detail = {
-                "rationale": f"[proactive from L5 insight] 发现『验证失败→意图加固』死循环，{antecedent} → {consequent} (置信={confidence:.0%}, 提升={lift:.1f}x) — 这是疯狂的定义，主动减弱",
-                "confidence": confidence,
-                "lift": lift,
-            }
-
-        if is_bad and action:
-            if action == "attenuate_layer_salience" and self._wm is not None:
+        if action == "attenuate_layer_salience":
+            layer = detail.get("layer")
+            if not layer:
+                layer = antecedent.split(".")[0] if antecedent else None
+            if layer and self._wm is not None:
                 self._learned_risky_patterns.add(pattern_key)
-                await self._apply_layer_attenuation(detail["layer"], detail["factor"], detail["rationale"])
-            elif action == "weaken_intent":
-                self._learned_risky_patterns.add(pattern_key)
-                # Publish intent weaken signal for L8 to consume
-                await self._bus.publish(Event(
-                    topic="L7.regulator.weaken_intent",
-                    source="L7",
-                    payload=detail,
-                ))
+                await self._apply_layer_attenuation(
+                    layer, detail.get("factor", self._sal_atten), detail.get("rationale", ""),
+                )
+
+        elif action == "weaken_intent":
+            self._learned_risky_patterns.add(pattern_key)
+            await self._bus.publish(Event(
+                topic="L7.regulator.weaken_intent",
+                source="L7",
+                payload=detail,
+            ))
+
+        if action in ("attenuate_layer_salience", "weaken_intent"):
             await self._record_and_emit(
                 trigger=f"L5 insight: {antecedent} → {consequent}",
                 action=action,
