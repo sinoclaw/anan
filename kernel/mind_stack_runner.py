@@ -926,6 +926,9 @@ class MindStackRunner:
             from layers.L8_intent.intent_stack import IntentStack
             self._intent_stack = IntentStack(bus=self._bus)
             self._layers.append(self._intent_stack)
+            self._intent_stack.set_delegate(
+                self._runtime_handle._delegate_async if self._runtime_handle else _noop_async_delegate,
+            )
             logger.info("  ✓ L8 Intent 就绪")
         except Exception as exc:
             logger.warning("  ✗ L8 Intent 启动失败: %s", exc)
