@@ -97,5 +97,5 @@ let
       ]);
 in
 pythonSet.mkVirtualEnv "anan-agent-env" {
-  anan-agent = dependency-groups;
+  anan = dependency-groups;
 }
